@@ -30,6 +30,7 @@ purplemux-improved 仅当访问策略实际允许外部客户端时才绑 `0.0.0
 | `PORT` | `8022` | HTTP/WS 监听端口。`EADDRINUSE` 时回退到随机端口。 |
 | `HOST` | 未设 | 控制哪些客户端被允许的逗号分隔 CIDR / 关键字规约。关键字:`localhost`、`tailscale`、`lan`、`all`(或 `*` / `0.0.0.0`)。例:`HOST=localhost`、`HOST=localhost,tailscale`、`HOST=10.0.0.0/8,localhost`。通过环境变量设置时,应用内 **设置 → 网络访问** 会被锁定。 |
 | `NODE_ENV` | `production`(`purplemux-improved start`)、`development`(`pnpm dev`) | 在开发流水线(`tsx watch`、Next dev)和生产流水线(`tsup` 打包并代理到 Next standalone)之间选择。 |
+| `PURPLEMUX_ALLOWED_DEV_ORIGINS` | 未设 | 开发模式额外允许的热更新域名，逗号或空格分隔，支持 `*.example.com`。只填主机名，不含协议、端口或路径。可写入 `.env.development.local`，修改后重启开发服务。本机与本机网卡 IP 默认支持。 |
 | `__PMUX_APP_DIR` | `process.cwd()` | 覆盖包含 `dist/server.js` 和 `.next/standalone/` 的目录。由 `bin/purplemux.js` 自动设置,通常不要动。 |
 | `__PMUX_APP_DIR_UNPACKED` | 未设 | macOS Electron 应用中 asar-unpacked 路径下 `__PMUX_APP_DIR` 的变体。 |
 | `__PMUX_ELECTRON` | 未设 | 当 Electron 主进程在进程内启动服务时设此值,让 `server.ts` 跳过自动 `start()` 调用,把生命周期交给 Electron。 |

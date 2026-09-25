@@ -20,5 +20,16 @@
   "deleteFailed": "Failed to delete",
   "renameFailed": "Failed to rename",
   "reorderFailed": "Failed to reorder",
-  "validateFailed": "Failed to validate"
+  "validateFailed": "Failed to validate",
+  "worktree": {
+    "create": "Create worktree subtask",
+    "name": "Task name",
+    "branch": "New branch",
+    "base": "Base branch or commit",
+    "source": "Source project",
+    "notice": "Creates an independent directory from a committed version. Uncommitted changes are not copied. Removing the workspace keeps its directory and Git branch.",
+    "dirty": "The source has uncommitted changes.",
+    "path": "Worktree directory",
+    "loading": "Reading Git repository…"
+  }
 }

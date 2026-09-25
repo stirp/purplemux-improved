@@ -11,5 +11,16 @@
   "deleteFailed": "無法刪除",
   "renameFailed": "重新命名失敗",
   "reorderFailed": "排序失敗",
-  "validateFailed": "無法驗證"
+  "validateFailed": "無法驗證",
+  "worktree": {
+    "create": "建立 Git 工作樹子任務",
+    "name": "任務名稱",
+    "branch": "新分支名稱",
+    "base": "基準分支或提交",
+    "source": "來源專案",
+    "notice": "從已提交的版本建立獨立目錄，不複製未提交的變更。刪除工作區時會保留目錄和 Git 分支。",
+    "dirty": "來源專案有未提交的變更。",
+    "path": "工作樹目錄",
+    "loading": "正在讀取 Git 儲存庫…"
+  }
 }

@@ -79,6 +79,8 @@ export interface IWorkspace {
   name: string;
   directories: string[];
   groupId?: string | null;
+  parentWorkspaceId?: string;
+  worktree?: { repository: string; branch: string; baseCommit: string };
 }
 
 export interface IWorkspaceGroup {

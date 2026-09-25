@@ -31,7 +31,7 @@ import useIsMobile from "@/hooks/use-is-mobile";
 import useWorkspaceStore from "@/hooks/use-workspace-store";
 import useConfigStore from "@/hooks/use-config-store";
 import { setMessages } from "@/lib/i18n";
-import { MESSAGE_NAMESPACES } from "@/lib/message-namespaces";
+import { loadClientMessages } from "@/lib/load-client-messages";
 
 export type TNextPageWithLayout<P = object, IP = P> = NextPage<P, IP> & {
   getLayout?: (page: ReactElement) => ReactNode;
@@ -147,6 +147,10 @@ export default function App({ Component, pageProps }: TAppPropsWithLayout) {
   }
 
   const locale = useConfigStore((s) => s.locale);
+  const serverCatalogRef = useRef({ messages: pageProps.messages, locale });
+  if (serverCatalogRef.current.messages !== pageProps.messages) {
+    serverCatalogRef.current = { messages: pageProps.messages, locale };
+  }
   const [messages, setMessagesState] = useState<Record<string, Record<string, unknown>> | null>(
     pageProps.messages ?? null,
   );
@@ -159,12 +163,13 @@ export default function App({ Component, pageProps }: TAppPropsWithLayout) {
 
   useEffect(() => {
     let cancelled = false;
-    Promise.all(MESSAGE_NAMESPACES.map((ns) => import(`../../messages/${locale}/${ns}.json`))).then((modules) => {
+    loadClientMessages(locale, serverCatalogRef.current.locale, pageProps.messages).then((msgs) => {
       if (cancelled) return;
-      const msgs = Object.fromEntries(MESSAGE_NAMESPACES.map((ns, i) => [ns, modules[i].default]));
       loadedLocaleRef.current = locale;
       setMessagesState(msgs);
       setMessages({ [locale]: msgs });
+    }).catch((error) => {
+      if (!cancelled) console.error('Failed to load translations', error);
     });
     return () => { cancelled = true; };
   }, [locale, pageProps.messages]);

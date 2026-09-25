@@ -161,5 +161,9 @@
   "cancelQueuedMessage": "Cancel queued message",
   "queueRequestFailed": "Could not update the queue. Your draft has been kept.",
   "queueSendFailed": "Send failed. Check the terminal input before retrying or canceling this message.",
-  "queueSessionChanged": "The session has changed. Cancel these messages and send them again in the new session."
+  "queueSessionChanged": "The session has changed. Cancel these messages and send them again in the new session.",
+  "nativeCommandsOpen": "Yerel komut menüsünü aç",
+  "nativeCommandsHint": "Komutları seçip çalıştırmak için CLI menüsünü kullanın.",
+  "nativeCommandsReturn": "Girişi iptal et ve sohbete dön",
+  "nativeCommandsQueuePending": "Yerel komut menüsünü açmadan önce kuyruktaki mesajları gönderin veya kaldırın."
 }

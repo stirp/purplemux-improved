@@ -11,5 +11,16 @@
   "deleteFailed": "Löschen fehlgeschlagen",
   "renameFailed": "Umbenennung fehlgeschlagen",
   "reorderFailed": "Neuanordnung fehlgeschlagen",
-  "validateFailed": "Validierung fehlgeschlagen"
+  "validateFailed": "Validierung fehlgeschlagen",
+  "worktree": {
+    "create": "Worktree-Unteraufgabe erstellen",
+    "name": "Aufgabenname",
+    "branch": "Neuer Branch",
+    "base": "Ausgangsbranch oder Commit",
+    "source": "Quellprojekt",
+    "notice": "Erstellt ein separates Verzeichnis aus einem Commit. Nicht committete Änderungen werden nicht kopiert. Beim Entfernen des Arbeitsbereichs bleiben Verzeichnis und Git-Branch erhalten.",
+    "dirty": "Das Quellprojekt enthält nicht committete Änderungen.",
+    "path": "Worktree-Verzeichnis",
+    "loading": "Git-Repository wird gelesen…"
+  }
 }

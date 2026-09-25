@@ -11,5 +11,16 @@
   "deleteFailed": "Silinemedi",
   "renameFailed": "Yeniden adlandırma başarısız",
   "reorderFailed": "Yeniden sıralama başarısız",
-  "validateFailed": "Doğrulama başarısız"
+  "validateFailed": "Doğrulama başarısız",
+  "worktree": {
+    "create": "Worktree alt görevi oluştur",
+    "name": "Görev adı",
+    "branch": "Yeni dal",
+    "base": "Temel dal veya commit",
+    "source": "Kaynak proje",
+    "notice": "Commit edilmiş bir sürümden bağımsız bir dizin oluşturur. Commit edilmemiş değişiklikler kopyalanmaz. Çalışma alanı kaldırıldığında dizin ve Git dalı korunur.",
+    "dirty": "Kaynak projede commit edilmemiş değişiklikler var.",
+    "path": "Worktree dizini",
+    "loading": "Git deposu okunuyor…"
+  }
 }

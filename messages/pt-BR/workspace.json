@@ -11,5 +11,16 @@
   "deleteFailed": "Falha ao excluir",
   "renameFailed": "Falha ao renomear",
   "reorderFailed": "Falha ao reordenar",
-  "validateFailed": "Falha ao validar"
+  "validateFailed": "Falha ao validar",
+  "worktree": {
+    "create": "Criar subtarefa com worktree",
+    "name": "Nome da tarefa",
+    "branch": "Nova branch",
+    "base": "Branch ou commit de origem",
+    "source": "Projeto de origem",
+    "notice": "Cria um diretório independente a partir de um commit. Alterações não commitadas não são copiadas. Remover o espaço de trabalho mantém o diretório e a branch do Git.",
+    "dirty": "O projeto de origem tem alterações não commitadas.",
+    "path": "Diretório do worktree",
+    "loading": "Lendo repositório Git…"
+  }
 }

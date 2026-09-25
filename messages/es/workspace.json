@@ -11,5 +11,16 @@
   "deleteFailed": "No se pudo eliminar",
   "renameFailed": "Error al renombrar",
   "reorderFailed": "Error al reordenar",
-  "validateFailed": "No se pudo validar"
+  "validateFailed": "No se pudo validar",
+  "worktree": {
+    "create": "Crear subtarea con worktree",
+    "name": "Nombre de la tarea",
+    "branch": "Nueva rama",
+    "base": "Rama o commit de origen",
+    "source": "Proyecto de origen",
+    "notice": "Crea un directorio independiente a partir de una versión confirmada. No copia cambios sin confirmar. Al eliminar el espacio de trabajo se conservan el directorio y la rama de Git.",
+    "dirty": "El proyecto de origen tiene cambios sin confirmar.",
+    "path": "Directorio del worktree",
+    "loading": "Leyendo repositorio Git…"
+  }
 }

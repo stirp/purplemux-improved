@@ -30,6 +30,7 @@ Read by `server.ts` and the modules it loads on startup.
 | `PORT` | `8022` | HTTP/WS listen port. Falls back to a random port on `EADDRINUSE`. |
 | `HOST` | unset | Comma-separated CIDR/keyword spec for which clients are allowed. Keywords: `localhost`, `tailscale`, `lan`, `all` (or `*` / `0.0.0.0`). Examples: `HOST=localhost`, `HOST=localhost,tailscale`, `HOST=10.0.0.0/8,localhost`. When set via env, the in-app **Settings → Network access** is locked. |
 | `NODE_ENV` | `production` (in `purplemux-improved start`), `development` (in `pnpm dev`) | Selects between the dev pipeline (`tsx watch`, Next dev) and the prod pipeline (`tsup` bundle proxying to Next standalone). |
+| `PURPLEMUX_ALLOWED_DEV_ORIGINS` | unset | Additional development hot reload hostnames, separated by commas or whitespace; supports `*.example.com`. Omit protocols, ports, and paths. Can be set in `.env.development.local`; restart the dev server after changes. Localhost and local interface IPs remain supported by default. |
 | `__PMUX_APP_DIR` | `process.cwd()` | Override the directory that holds `dist/server.js` and `.next/standalone/`. Set automatically by `bin/purplemux.js`; you usually shouldn't touch it. |
 | `__PMUX_APP_DIR_UNPACKED` | unset | Variant of `__PMUX_APP_DIR` for the asar-unpacked path inside the macOS Electron app. |
 | `__PMUX_ELECTRON` | unset | When the Electron main process starts the server in-process, it sets this so `server.ts` skips the auto `start()` call and lets Electron drive the lifecycle. |

@@ -146,6 +146,14 @@ pnpm start
 pnpm dev
 ```
 
+通过自定义域名访问开发服务时，在 `.env.development.local` 中配置热更新白名单：
+
+```dotenv
+PURPLEMUX_ALLOWED_DEV_ORIGINS=dev.example.com,*.dev.example.com
+```
+
+多个域名可用逗号或空格分隔，只填写主机名（不含协议、端口或路径）。本机和本机网卡 IP 仍默认支持。修改后重启 `pnpm dev`；此文件不会提交到 Git。也可以在启动命令中设置同名环境变量。
+
 #### 日志等级设置
 
 整体等级通过 `LOG_LEVEL` (默认 `info`) 调整。

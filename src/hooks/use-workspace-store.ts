@@ -40,6 +40,7 @@ interface IWorkspaceState {
   fetchWorkspaces: () => Promise<void>;
   syncWorkspaces: () => Promise<void>;
   createWorkspace: (directory: string, name?: string, resumeSessionId?: string, panelType?: TPanelType) => Promise<IWorkspace | null>;
+  createWorktree: (workspaceId: string, options: { directoryIndex: number; name: string; branch: string; baseRef: string }) => Promise<IWorkspace>;
   deleteWorkspace: (workspaceId: string) => Promise<boolean>;
   removeWorkspace: (workspaceId: string) => void;
   markPendingDelete: (workspaceId: string) => void;
@@ -255,6 +256,21 @@ const useWorkspaceStore = create<IWorkspaceState>((set, get) => ({
     }
   },
 
+  createWorktree: async (workspaceId, options) => {
+    const res = await fetch('/api/workspace/worktree', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ workspaceId, ...options }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error([data.error, data.createdDirectory].filter(Boolean).join(': '));
+    const workspace: IWorkspace = data;
+    bumpMutationFence();
+    set((state) => ({ workspaces: reorderToVisual([
+      ...state.workspaces.filter((item) => item.id !== workspace.id), workspace,
+    ], state.groups) }));
+    return workspace;
+  },
+
   deleteWorkspace: async (workspaceId) => {
     try {
       const res = await fetch(`/api/workspace/${workspaceId}`, { method: 'DELETE' });
@@ -269,7 +285,8 @@ const useWorkspaceStore = create<IWorkspaceState>((set, get) => ({
 
   removeWorkspace: (workspaceId) => {
     set((state) => {
-      const remaining = state.workspaces.filter((w) => w.id !== workspaceId);
+      const remaining = state.workspaces.filter((w) => w.id !== workspaceId).map((workspace) =>
+        workspace.parentWorkspaceId === workspaceId ? { ...workspace, parentWorkspaceId: undefined } : workspace);
       const needSwitch = state.activeWorkspaceId === workspaceId;
       const activeWorkspaceId = needSwitch ? (remaining[0]?.id ?? null) : state.activeWorkspaceId;
       if (needSwitch) {
@@ -338,14 +355,15 @@ const useWorkspaceStore = create<IWorkspaceState>((set, get) => ({
       moved.groupId = nextGroupId;
     }
     list.splice(toIndex, 0, moved);
+    const ordered = reorderToVisual(list, get().groups);
     bumpMutationFence();
-    set({ workspaces: list });
+    set({ workspaces: ordered });
 
     fetch('/api/workspace/reorder', {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        items: list.map((w) => ({ id: w.id, groupId: w.groupId ?? null })),
+        items: ordered.map((w) => ({ id: w.id, groupId: w.groupId ?? null })),
       }),
     }).catch(() => {
       toast.error(t('workspace', 'reorderFailed'));

@@ -41,6 +41,8 @@ interface IMobileClaudeCodePanelProps {
   onCliStateChange: (state: TCliState) => void;
   onInputVisibleChange: (visible: boolean) => void;
   onRestartSession?: () => void;
+  onNativeCommands?: (text: string) => void;
+  nativeCommandsActive?: boolean;
   onNewSession?: () => void;
   trustPrompt?: ITrustPromptInfo | null;
   onTrustResponse?: (answer: TTrustAnswer) => void;
@@ -60,6 +62,8 @@ const MobileClaudeCodePanel = ({
   onCliStateChange,
   onInputVisibleChange,
   onRestartSession,
+  onNativeCommands,
+  nativeCommandsActive,
   onNewSession,
   trustPrompt,
   onTrustResponse,
@@ -350,6 +354,8 @@ const MobileClaudeCodePanel = ({
 
       <div className="shrink-0 pb-3">
         <WebInputBar
+          onNativeCommands={onNativeCommands}
+          nativeCommandsActive={nativeCommandsActive}
           tabId={tabId}
           wsId={wsId}
           sessionName={sessionName}

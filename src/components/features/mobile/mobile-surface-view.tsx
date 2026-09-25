@@ -11,6 +11,8 @@ import useTerminal from '@/hooks/use-terminal';
 import useTerminalWebSocket from '@/hooks/use-terminal-websocket';
 import useTabMetadataStore from '@/hooks/use-tab-metadata-store';
 import TerminalContainer from '@/components/features/workspace/terminal-container';
+import NativeCommandToolbar from '@/components/features/workspace/native-command-toolbar';
+import useNativeCommands from '@/hooks/use-native-commands';
 import ConnectionStatus from '@/components/features/workspace/connection-status';
 import MobileClaudeCodePanel from '@/components/features/mobile/mobile-claude-code-panel';
 import MobileCodexPanel from '@/components/features/mobile/mobile-codex-panel';
@@ -243,7 +245,7 @@ const MobileSurfaceView = ({
     return true;
   }, []);
 
-  const { terminalRef, write, clear, reset, fit, focus, isReady, getBufferText } = useTerminal({
+  const { terminalRef, write, clear, reset, fit, focus, focusAtBottom, isReady, getBufferText } = useTerminal({
     theme: terminalTheme.colors,
     fontSize: isAgentPanel ? undefined : MOBILE_FONT_SIZE,
     lineHeight: resolveLineHeight(configLineHeight, configLineHeightCustom),
@@ -717,6 +719,13 @@ const MobileSurfaceView = ({
   }, [activeTabId, paneId, layoutWsId]);
 
   const noTabs = tabs.length === 0;
+  const nativeCommands = useNativeCommands({
+    scopeKey: `${activeTabId}:${claudeSessionId}`,
+    sendStdin,
+    focusTerminal: focusAtBottom,
+    focusInput: () => focusInputRef.current?.(),
+  });
+  const showNativeCommands = isAgentPanel && nativeCommands.active;
   const ready = isWebBrowser || isDiff || isAgentSessionList || (isReady && status === 'connected' && !noTabs);
   const isFirstConnectionForTab =
     activeTabId !== null && attemptedTabId !== activeTabId;
@@ -778,6 +787,8 @@ const MobileSurfaceView = ({
 
       {isClaudeCode && activeTab && (
         <MobileClaudeCodePanel
+          onNativeCommands={nativeCommands.open}
+          nativeCommandsActive={nativeCommands.active}
           tabId={activeTabId ?? undefined}
           wsId={layoutWsId ?? undefined}
           sessionName={activeTab.sessionName}
@@ -799,6 +810,8 @@ const MobileSurfaceView = ({
 
       {isCodex && activeTab && (
         <MobileCodexPanel
+          onNativeCommands={nativeCommands.open}
+          nativeCommandsActive={nativeCommands.active}
           tabId={activeTabId ?? undefined}
           wsId={layoutWsId ?? undefined}
           sessionName={activeTab.sessionName}
@@ -817,18 +830,30 @@ const MobileSurfaceView = ({
         />
       )}
 
+      {showNativeCommands && (
+        <div className="absolute inset-0 z-20 bg-background">
+          <NativeCommandToolbar onClose={nativeCommands.close} />
+        </div>
+      )}
       {!isWebBrowser && !isDiff && (
         <TerminalContainer
           ref={terminalRef}
           className={cn(
             !usesHiddenTerminal && 'transition-opacity duration-150',
-            usesHiddenTerminal ? 'absolute inset-0 pointer-events-none opacity-0' : 'min-h-0 flex-1',
+            showNativeCommands ? 'absolute inset-x-0 bottom-10 top-12 z-30 h-auto opacity-100' : usesHiddenTerminal ? 'absolute inset-0 pointer-events-none opacity-0' : 'min-h-0 flex-1',
             !usesHiddenTerminal && ready && showTerminal ? 'opacity-100' : '',
             !usesHiddenTerminal && (!ready || !showTerminal) ? 'opacity-0' : '',
           )}
         />
       )}
 
+      {showNativeCommands && (
+        <div className="absolute inset-x-0 bottom-0 z-40 flex h-10 items-center justify-around border-t bg-card">
+          {[['Tab', '\t'], ['↑', '\x1b[A'], ['↓', '\x1b[B'], ['Enter', '\r']].map(([label, key]) => (
+            <Button key={label} size="sm" variant="ghost" disabled={status !== 'connected'} onClick={() => sendStdin(key)}>{label}</Button>
+          ))}
+        </div>
+      )}
       {!isAgentPanel && !isWebBrowser && !isDiff && !isAgentSessionList && status === 'connected' && (
         <MobileTerminalToolbar sendStdin={sendWebStdin} terminalConnected={status === 'connected'} />
       )}

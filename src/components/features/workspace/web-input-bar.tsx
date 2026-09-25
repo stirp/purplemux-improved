@@ -45,6 +45,8 @@ interface IWebInputBarProps {
   setInputValueRef: React.MutableRefObject<((v: string) => void) | undefined>;
   maxRows?: number;
   onRestartSession?: () => void;
+  onNativeCommands?: (text: string) => void;
+  nativeCommandsActive?: boolean;
   onSend?: () => void;
   onOptimisticSend?: (text: string) => void;
   onAddPendingMessage?: (text: string, options?: { autoHide?: boolean; attachmentPlaceholder?: boolean }) => string;
@@ -66,6 +68,8 @@ const WebInputBar = ({
   setInputValueRef,
   maxRows = DEFAULT_MAX_ROWS,
   onRestartSession,
+  onNativeCommands,
+  nativeCommandsActive = false,
   onSend,
   onOptimisticSend,
   attachFilesRef,
@@ -164,7 +168,7 @@ const WebInputBar = ({
   }, [value, adjustHeight]);
 
   const dispatch = async () => {
-    if (!canSend || dispatchingRef.current || isUploading) return;
+    if (!canSend || nativeCommandsActive || dispatchingRef.current || isUploading) return;
     const trimmed = value.trim();
     if (!trimmed && !attachments.length) return;
     if (!attachments.length && ['/new', '/clear'].includes(trimmed.toLowerCase())) {
@@ -229,6 +233,18 @@ const WebInputBar = ({
       dispatch();
       return;
     }
+  };
+
+  const openNativeCommands = (text: string) => {
+    if (!onNativeCommands || !canSend || cliState === 'needs-input' || cliState === 'unknown' || attachments.length) return false;
+    if (queue.messages.length || queue.sending || isDispatching) {
+      toast.info(t('nativeCommandsQueuePending'));
+      return false;
+    }
+    onNativeCommands(text);
+    setValue('');
+    if (tabId) clearInputDraft(tabId);
+    return true;
   };
 
   const handleSendClick = () => {
@@ -388,10 +404,10 @@ const WebInputBar = ({
     await uploadAndAttach(Array.from(e.dataTransfer.files));
   }, [uploadAndAttach]);
 
-  const isDisabled = mode === 'disabled';
+  const isDisabled = mode === 'disabled' || nativeCommandsActive;
   const hasValue = value.trim().length > 0;
   const hasAttachments = attachments.length > 0;
-  const canDispatch = canSend && (hasValue || hasAttachments) && !isDispatching && !isUploading;
+  const canDispatch = canSend && !nativeCommandsActive && (hasValue || hasAttachments) && !isDispatching && !isUploading;
 
   return (
     <>
@@ -490,11 +506,16 @@ const WebInputBar = ({
 
             <textarea
               ref={textareaRef}
+              disabled={nativeCommandsActive}
               value={value}
-              onChange={(e) => setValue(e.target.value)}
+              onChange={(e) => {
+                const next = e.target.value;
+                if (!value && next === '/' && !(e.nativeEvent as InputEvent).isComposing && openNativeCommands(next)) return;
+                setValue(next);
+              }}
               onKeyDown={handleKeyDown}
               onPaste={handlePaste}
-              placeholder={t('inputPlaceholder')}
+              placeholder={t(nativeCommandsActive ? 'nativeCommandsHint' : 'inputPlaceholder')}
               aria-label={isCodex ? t('codexInputAriaLabel') : t('inputAriaLabel')}
               className="flex-1 resize-none bg-transparent py-1 text-sm text-foreground outline-none placeholder:text-muted-foreground"
               rows={1}
@@ -537,6 +558,12 @@ const WebInputBar = ({
               </Button>
             )}
             </div>
+            {onNativeCommands && /^\/[^\r\n]*$/.test(value) && (
+              <Button variant="ghost" size="sm" className="self-start text-xs" onClick={() => openNativeCommands(value)}
+                disabled={!canSend || cliState === 'needs-input' || cliState === 'unknown' || hasAttachments}>
+                {t('nativeCommandsOpen')}
+              </Button>
+            )}
             {queue.messages.length > 0 && (
               <div className="border-t border-border pt-2">
                 <div className="mb-1 flex items-center justify-between gap-2">
@@ -549,7 +576,7 @@ const WebInputBar = ({
                     size="sm"
                     className="h-7 px-2 text-xs"
                     onClick={submitQueuedNow}
-                    disabled={!canSend || isDispatching || queue.sending || cliState === 'unknown' || queue.error === 'sessionChanged'}
+                    disabled={!canSend || nativeCommandsActive || isDispatching || queue.sending || cliState === 'unknown' || queue.error === 'sessionChanged'}
                     title={t('submitQueuedNowHint')}
                   >
                     {queue.sending ? <Loader2 size={12} className="animate-spin" /> : <SendHorizontal size={12} />}

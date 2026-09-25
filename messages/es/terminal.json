@@ -161,5 +161,9 @@
   "cancelQueuedMessage": "Cancel queued message",
   "queueRequestFailed": "Could not update the queue. Your draft has been kept.",
   "queueSendFailed": "Send failed. Check the terminal input before retrying or canceling this message.",
-  "queueSessionChanged": "The session has changed. Cancel these messages and send them again in the new session."
+  "queueSessionChanged": "The session has changed. Cancel these messages and send them again in the new session.",
+  "nativeCommandsOpen": "Abrir menú de comandos nativo",
+  "nativeCommandsHint": "Usa el menú de la CLI para seleccionar y ejecutar comandos.",
+  "nativeCommandsReturn": "Cancelar entrada y volver al chat",
+  "nativeCommandsQueuePending": "Envía o elimina los mensajes en cola antes de abrir el menú de comandos nativo."
 }

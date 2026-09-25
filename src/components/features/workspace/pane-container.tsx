@@ -24,6 +24,9 @@ import { sendCodexQuitCommand } from '@/lib/agent-terminal-commands';
 import TerminalContainer from '@/components/features/workspace/terminal-container';
 import ClaudeCodePanel from '@/components/features/workspace/claude-code-panel';
 import CodexPanel from '@/components/features/workspace/codex-panel';
+import CodexStatusLine from '@/components/features/workspace/codex-status-line';
+import NativeCommandToolbar from '@/components/features/workspace/native-command-toolbar';
+import useNativeCommands from '@/hooks/use-native-commands';
 import AgentSessionsPanel from '@/components/features/workspace/agent-sessions-panel';
 import WebInputBar from '@/components/features/workspace/web-input-bar';
 import QuickPromptBar from '@/components/features/workspace/quick-prompt-bar';
@@ -430,7 +433,7 @@ const PaneContainer = memo(({ paneId, paneNumber }: IPaneContainerProps) => {
     wsActionsRef.current.sendResize(size.cols, size.rows);
   }, [normalizeTerminalSize]);
 
-  const { terminalRef, write, clear, reset, fit, focus, isReady, getBufferText } = useTerminal({
+  const { terminalRef, write, clear, reset, fit, focus, focusAtBottom, isReady, getBufferText } = useTerminal({
     theme: terminalTheme.colors,
     fontSize: (TERMINAL_FONT_SIZES[configFontSize] ?? TERMINAL_FONT_SIZES.normal)[isAgentPanel ? 'claudeCode' : 'normal'],
     lineHeight: resolveLineHeight(configLineHeight, configLineHeightCustom),
@@ -1069,6 +1072,14 @@ const PaneContainer = memo(({ paneId, paneNumber }: IPaneContainerProps) => {
     }, 150);
   }, [isTerminalCollapsed, isReady, status, fit, isAgentPanel, activeTabId, paneId, activeTab?.terminalRatio, updateTabTerminalLayout, sendEffectiveResize]);
 
+  const nativeCommands = useNativeCommands({
+    scopeKey: `${activeTabId}:${claudeSessionId}`,
+    sendStdin,
+    focusTerminal: focusAtBottom,
+    focusInput: () => focusInputRef.current?.(),
+    revealTerminal: () => { if (isTerminalCollapsed) handleToggleTerminal(); },
+  });
+
   useEffect(() => {
     if (!splitGroupRef.current) return;
     suppressTerminalSaveRef.current = true;
@@ -1278,6 +1289,8 @@ const PaneContainer = memo(({ paneId, paneNumber }: IPaneContainerProps) => {
               )}
               {isAgentPanel && !showInitialLoading && agentInputVisible && (
                 <WebInputBar
+                  onNativeCommands={nativeCommands.open}
+                  nativeCommandsActive={nativeCommands.active}
                   key={activeTabId}
                   tabId={activeTabId ?? undefined}
                   wsId={layoutWsId ?? undefined}
@@ -1304,6 +1317,13 @@ const PaneContainer = memo(({ paneId, paneNumber }: IPaneContainerProps) => {
                   prompts={quickPrompts}
                   visible
                   onSelect={handleSelectQuickPrompt}
+                />
+              )}
+              {isCodex && activeTab && activeTabId && !showInitialLoading && agentInputVisible && (
+                <CodexStatusLine
+                  key={`${activeTab.sessionName}:${claudeSessionId ?? ''}`}
+                  tabId={activeTabId}
+                  enabled={status === 'connected'}
                 />
               )}
             </div>
@@ -1339,6 +1359,7 @@ const PaneContainer = memo(({ paneId, paneNumber }: IPaneContainerProps) => {
 
           <Panel id="terminal-area" minSize={0} collapsible collapsedSize={0}>
             <div className="flex h-full flex-col" onMouseDown={() => { clickedTerminalRef.current = true; }}>
+              {isAgentPanel && nativeCommands.active && <NativeCommandToolbar onClose={nativeCommands.close} />}
               <TerminalContainer
                 ref={terminalRef}
                 minHeight={isAgentPanel ? 256 : undefined}

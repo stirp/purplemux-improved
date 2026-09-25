@@ -161,5 +161,9 @@
   "cancelQueuedMessage": "取消排队消息",
   "queueRequestFailed": "更新队列失败，草稿已保留。",
   "queueSendFailed": "发送失败，消息已保留。请先检查终端中的输入，再重试或取消。",
-  "queueSessionChanged": "会话已变更，请取消这些消息后在新会话中重新发送。"
+  "queueSessionChanged": "会话已变更，请取消这些消息后在新会话中重新发送。",
+  "nativeCommandsOpen": "打开原生命令菜单",
+  "nativeCommandsHint": "使用终端原生菜单选择并执行命令。",
+  "nativeCommandsReturn": "取消输入并返回聊天",
+  "nativeCommandsQueuePending": "请先发送或移除排队消息，再打开原生命令菜单。"
 }

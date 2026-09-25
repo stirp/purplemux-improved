@@ -1,5 +1,5 @@
-import { useCallback, useEffect, memo } from 'react';
-import { Pencil, Trash2, FolderPlus, FolderMinus, Folder } from 'lucide-react';
+import { useCallback, useEffect, useState, memo } from 'react';
+import { Pencil, Trash2, FolderPlus, FolderMinus, Folder, GitBranch } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
 import {
@@ -17,6 +17,7 @@ import useTabStore, { selectWorkspacePortsLabel } from '@/hooks/use-tab-store';
 import useWorkspaceStore from '@/hooks/use-workspace-store';
 import useInlineEdit from '@/hooks/use-inline-edit';
 import WorkspaceStatusIndicator from '@/components/features/workspace/workspace-status-indicator';
+import CreateWorktreeDialog from './create-worktree-dialog';
 
 interface IWorkspaceItemProps {
   workspace: IWorkspace;
@@ -45,6 +46,21 @@ const WorkspaceItem = ({
   const tc = useTranslations('common');
   const ts = useTranslations('sidebar');
   const groups = useWorkspaceStore((s) => s.groups);
+  const tw = useTranslations('workspace.worktree');
+  const [creatingWorktree, setCreatingWorktree] = useState(false);
+  const depth = useWorkspaceStore((s) => {
+    let parent = workspace.parentWorkspaceId;
+    let count = 0;
+    const seen = new Set([workspace.id]);
+    while (parent && !seen.has(parent)) {
+      const ancestor = s.workspaces.find((item) => item.id === parent);
+      if (!ancestor) break;
+      seen.add(parent);
+      count++;
+      parent = ancestor.parentWorkspaceId;
+    }
+    return Math.min(count, 6);
+  });
 
   const { isEditing, draft, setDraft, inputRef, startEditing, commit, handleKeyDown } =
     useInlineEdit({
@@ -87,6 +103,7 @@ const WorkspaceItem = ({
   const portsLabel = useTabStore((state) => selectWorkspacePortsLabel(state.tabs, workspace.id));
 
   return (
+    <>
     <ContextMenu>
       <ContextMenuTrigger
         className={cn(
@@ -96,6 +113,7 @@ const WorkspaceItem = ({
             : 'border-l-transparent text-muted-foreground hover:bg-sidebar-accent',
         )}
         style={{
+          paddingLeft: 12 + depth * 12,
           opacity: isDeleting ? 0.5 : 1,
           transition: 'opacity 150ms, background-color 75ms',
         }}
@@ -135,6 +153,9 @@ const WorkspaceItem = ({
             {dir}
           </span>
         ))}
+        {workspace.worktree && <span className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
+          <GitBranch className="h-3 w-3 shrink-0" /><span className="truncate">{workspace.worktree.branch}</span>
+        </span>}
         {portsLabel && (
           <span className="mt-1 truncate text-xs leading-tight text-ui-green/80">
             {portsLabel}
@@ -143,12 +164,15 @@ const WorkspaceItem = ({
         <WorkspaceStatusIndicator workspaceId={workspace.id} tabs={tabs} />
       </ContextMenuTrigger>
       <ContextMenuContent>
+        <ContextMenuItem onClick={() => setCreatingWorktree(true)}>
+          <GitBranch className="mr-2 h-3.5 w-3.5" />{tw('create')}
+        </ContextMenuItem>
         <ContextMenuItem onClick={startEditing}>
           <Pencil className="mr-2 h-3.5 w-3.5" />
           {t('rename')}
         </ContextMenuItem>
         <ContextMenuSub>
-          <ContextMenuSubTrigger>
+          <ContextMenuSubTrigger disabled={!!workspace.parentWorkspaceId}>
             <Folder className="mr-2 h-3.5 w-3.5" />
             {ts('moveToGroup')}
           </ContextMenuSubTrigger>
@@ -189,6 +213,9 @@ const WorkspaceItem = ({
         </ContextMenuItem>
       </ContextMenuContent>
     </ContextMenu>
+    {creatingWorktree && <CreateWorktreeDialog workspace={workspace}
+      onClose={() => setCreatingWorktree(false)} onCreated={onSelect} />}
+    </>
   );
 };
 

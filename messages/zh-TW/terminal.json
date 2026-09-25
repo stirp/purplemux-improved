@@ -161,5 +161,9 @@
   "cancelQueuedMessage": "Cancel queued message",
   "queueRequestFailed": "Could not update the queue. Your draft has been kept.",
   "queueSendFailed": "Send failed. Check the terminal input before retrying or canceling this message.",
-  "queueSessionChanged": "The session has changed. Cancel these messages and send them again in the new session."
+  "queueSessionChanged": "The session has changed. Cancel these messages and send them again in the new session.",
+  "nativeCommandsOpen": "開啟原生命令選單",
+  "nativeCommandsHint": "使用終端原生選單選擇並執行命令。",
+  "nativeCommandsReturn": "取消輸入並返回聊天",
+  "nativeCommandsQueuePending": "請先傳送或移除排隊訊息，再開啟原生命令選單。"
 }

@@ -23,6 +23,7 @@ import useQuickPrompts from '@/hooks/use-quick-prompts';
 import { MetaCompact } from '@/components/features/workspace/session-meta-content';
 import MobileMetaSheet from './mobile-meta-sheet';
 import CodexSessionListView from '@/components/features/workspace/codex-session-list-view';
+import CodexStatusLine from '@/components/features/workspace/codex-status-line';
 import type { ICodexSessionEntry } from '@/lib/codex-session-list';
 import type { ICodexUpdatePromptInfo, TCodexUpdateAnswer } from '@/lib/codex-update-prompt-detector';
 import type { ITrustPromptInfo, TTrustAnswer } from '@/lib/trust-prompt-detector';
@@ -41,6 +42,8 @@ interface IMobileCodexPanelProps {
   setInputValueRef: React.MutableRefObject<((v: string) => void) | undefined>;
   onNewSession?: () => void;
   onRestart?: () => void;
+  onNativeCommands?: (text: string) => void;
+  nativeCommandsActive?: boolean;
   updatePrompt?: ICodexUpdatePromptInfo | null;
   onUpdatePromptResponse?: (answer: TCodexUpdateAnswer) => void;
   trustPrompt?: ITrustPromptInfo | null;
@@ -59,6 +62,8 @@ const MobileCodexPanel = ({
   setInputValueRef,
   onNewSession,
   onRestart,
+  onNativeCommands,
+  nativeCommandsActive,
   updatePrompt,
   onUpdatePromptResponse,
   trustPrompt,
@@ -356,6 +361,8 @@ const MobileCodexPanel = ({
       </div>
       <div className="shrink-0 pb-3">
         <WebInputBar
+          onNativeCommands={onNativeCommands}
+          nativeCommandsActive={nativeCommandsActive}
           tabId={tabId}
           wsId={wsId}
           sessionName={sessionName}
@@ -381,6 +388,7 @@ const MobileCodexPanel = ({
           onSelect={handleSelectQuickPrompt}
         />
       </div>
+      {tabId && <CodexStatusLine key={`${sessionName}:${codexSessionId ?? ''}`} tabId={tabId} enabled={terminalWsConnected} />}
       <MobileMetaSheet
         open={metaSheetOpen}
         onOpenChange={setMetaSheetOpen}

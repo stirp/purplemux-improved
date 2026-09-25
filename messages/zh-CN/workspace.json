@@ -20,5 +20,16 @@
   "deleteFailed": "无法删除",
   "renameFailed": "重命名失败",
   "reorderFailed": "排序失败",
-  "validateFailed": "无法验证"
+  "validateFailed": "无法验证",
+  "worktree": {
+    "create": "创建 Git 工作树子任务",
+    "name": "任务名称",
+    "branch": "新分支名称",
+    "base": "基准分支或提交",
+    "source": "来源项目",
+    "notice": "从已提交的版本创建独立目录，不复制未提交改动。删除工作区时会保留目录和 Git 分支。",
+    "dirty": "来源项目有未提交的改动。",
+    "path": "工作树目录",
+    "loading": "正在读取 Git 仓库…"
+  }
 }

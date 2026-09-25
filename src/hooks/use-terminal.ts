@@ -156,6 +156,11 @@ const useTerminal = ({ theme, fontSize = DEFAULT_FONT_SIZE, lineHeight = DEFAULT
     terminalInstance.current?.focus();
   }, []);
 
+  const focusAtBottom = useCallback(() => {
+    terminalInstance.current?.scrollToBottom();
+    terminalInstance.current?.focus();
+  }, []);
+
   useEffect(() => {
     if (!containerNode) return;
 
@@ -339,7 +344,7 @@ const useTerminal = ({ theme, fontSize = DEFAULT_FONT_SIZE, lineHeight = DEFAULT
     callbacksRef.current.onResize?.(terminal.cols, terminal.rows);
   }, [fontSize, lineHeight]);
 
-  return { terminalRef, write, clear, reset, fit, focus, isReady, getBufferText };
+  return { terminalRef, write, clear, reset, fit, focus, focusAtBottom, isReady, getBufferText };
 };
 
 export default useTerminal;

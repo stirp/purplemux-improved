@@ -146,6 +146,14 @@ Development mode:
 pnpm dev
 ```
 
+For development access through custom hostnames, configure the hot reload allowlist in `.env.development.local`:
+
+```dotenv
+PURPLEMUX_ALLOWED_DEV_ORIGINS=dev.example.com,*.dev.example.com
+```
+
+Separate hostnames with commas or whitespace; omit protocols, ports, and paths. Localhost and local network interface IPs remain supported by default. Restart `pnpm dev` after changes. This file is ignored by Git. The same environment variable can also be set in the launch command.
+
 #### Log level
 
 Set the overall level with `LOG_LEVEL` (default `info`).

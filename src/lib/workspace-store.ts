@@ -302,7 +302,8 @@ export const getWorkspaceById = async (wsId: string): Promise<IWorkspace | undef
   return data?.workspaces.find((w) => w.id === wsId);
 };
 
-export const createWorkspace = async (directory: string, name?: string, layoutOptions?: ICreateLayoutOptions): Promise<IWorkspace> =>
+export const createWorkspace = async (directory: string, name?: string, layoutOptions?: ICreateLayoutOptions,
+  taskOptions?: Pick<IWorkspace, 'parentWorkspaceId' | 'worktree'>): Promise<IWorkspace> =>
   withLock(async () => {
     let stat;
     try {
@@ -318,6 +319,8 @@ export const createWorkspace = async (directory: string, name?: string, layoutOp
     const data = (await readWorkspacesFile()) ?? emptyState();
 
     const wsId = `ws-${nanoid(6)}`;
+    const parent = taskOptions?.parentWorkspaceId ? data.workspaces.find((ws) => ws.id === taskOptions.parentWorkspaceId) : undefined;
+    if (taskOptions?.parentWorkspaceId && !parent) throw new Error('Parent workspace not found');
     const wsName = name?.trim() || nextWorkspaceName(data.workspaces);
 
     const layout = await createDefaultLayout(wsId, directory, {
@@ -327,7 +330,8 @@ export const createWorkspace = async (directory: string, name?: string, layoutOp
     await fs.mkdir(resolveLayoutDir(wsId), { recursive: true });
     await writeLayoutFile(layout, resolveLayoutFile(wsId));
 
-    const workspace: IWorkspace = { id: wsId, name: wsName, directories: [directory] };
+    const workspace: IWorkspace = { id: wsId, name: wsName, directories: [directory], ...taskOptions,
+      ...(parent ? { groupId: parent.groupId } : {}) };
     data.workspaces.push(workspace);
     await writeWorkspacesFile(data);
     await writeWorkspacePrompts(workspace);
@@ -359,6 +363,9 @@ export const deleteWorkspace = async (workspaceId: string): Promise<boolean> =>
     } catch {}
 
     data.workspaces.splice(idx, 1);
+    for (const child of data.workspaces) {
+      if (child.parentWorkspaceId === workspaceId) delete child.parentWorkspaceId;
+    }
 
     await writeWorkspacesFile(data);
     log.info(`Deleted: ${workspaceId} (${ws.name})`);

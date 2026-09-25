@@ -11,5 +11,16 @@
   "deleteFailed": "Impossible de supprimer",
   "renameFailed": "Échec du renommage",
   "reorderFailed": "Échec de la réorganisation",
-  "validateFailed": "Impossible de valider"
+  "validateFailed": "Impossible de valider",
+  "worktree": {
+    "create": "Créer une sous-tâche avec un worktree",
+    "name": "Nom de la tâche",
+    "branch": "Nouvelle branche",
+    "base": "Branche ou commit de départ",
+    "source": "Projet source",
+    "notice": "Crée un répertoire indépendant à partir d’un commit. Les modifications non commitées ne sont pas copiées. La suppression de l’espace de travail conserve le répertoire et la branche Git.",
+    "dirty": "Le projet source contient des modifications non commitées.",
+    "path": "Répertoire du worktree",
+    "loading": "Lecture du dépôt Git…"
+  }
 }
