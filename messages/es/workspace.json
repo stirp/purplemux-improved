@@ -13,6 +13,9 @@
   "reorderFailed": "Error al reordenar",
   "validateFailed": "No se pudo validar",
   "worktree": {
+    "localBranches": "Ramas locales",
+    "remoteBranches": "Ramas remotas",
+    "customRef": "Commit o referencia personalizada",
     "create": "Crear subtarea con worktree",
     "name": "Nombre de la tarea",
     "branch": "Nueva rama",

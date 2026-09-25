@@ -20,12 +20,19 @@ export const inspectWorktreeSource = async (workspace: IWorkspace, directoryInde
   const directory = workspace.directories[directoryIndex];
   if (!directory) throw new Error('Source directory not found');
   const repository = await git(directory, ['rev-parse', '--show-toplevel']);
-  const [head, branch, status] = await Promise.all([
+  const [head, branch, status, refs] = await Promise.all([
     git(repository, ['rev-parse', '--verify', 'HEAD^{commit}']),
     git(repository, ['symbolic-ref', '--quiet', '--short', 'HEAD']).catch(() => 'HEAD'),
     git(repository, ['status', '--porcelain']),
+    git(repository, ['for-each-ref', '--sort=refname', '--format=%(refname)%09%(symref)', 'refs/heads/', 'refs/remotes/']),
   ]);
-  return { repository, head, branch, dirty: !!status,
+  const branches = refs.split('\n').filter(Boolean).flatMap((line) => {
+    const [ref, symbolicTarget] = line.split('\t');
+    if (symbolicTarget) return [];
+    const remote = ref.startsWith('refs/remotes/');
+    return [{ ref, name: ref.slice(remote ? 'refs/remotes/'.length : 'refs/heads/'.length), remote }];
+  });
+  return { repository, head, branch, branches, dirty: !!status,
     worktreeRoot: path.join(os.homedir(), '.purplemux', 'worktrees', workspace.id) };
 };
 

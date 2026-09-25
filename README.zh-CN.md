@@ -1,6 +1,27 @@
 # purplemux-improved
 
-基于 [subicura/purplemux-improved](https://github.com/subicura/purplemux-improved) 的改进分支。保留 `purplemux` / `pmux` 命令别名和 `~/.purplemux` 数据目录以兼容现有配置。npm 安装命令需待本分支发布后使用；发布前请从源码运行。
+基于 [subicura/purplemux](https://github.com/subicura/purplemux) 的改进分支。保留 `purplemux` / `pmux` 命令别名和 `~/.purplemux` 数据目录以兼容现有配置。npm 安装命令需待本分支发布后使用；发布前请从源码运行。
+
+## Fork 后的主要改进
+
+以下为基于提交 [`52140216`](https://github.com/stirp/purplemux-improved/commit/52140216d8bb5bfffed30d8d452f77b88339a4ae) 之后新增或增强的功能，重点改善多需求并行开发与 Claude Code / Codex 的 Web 交互体验。
+
+| 改进模块 | 主要功能 |
+| --- | --- |
+| **Git Worktree 子任务** | 右键工作区创建独立分支和 Worktree，并作为子工作区展示；不同需求可在各自目录启动 Agent，并行开发。 |
+| **工作区与 Tab 管理** | 通过目录浏览器选择目录、批量创建工作区；支持 Tab 右键改名、工作区分组拖动排序，以及空工作区的布局恢复。 |
+| **排队与立即提交** | 输入框支持排队和立即提交两种模式，默认排队；Agent 忙碌时保留后续消息，空闲后按顺序发送，也可点击“立即提交”提前发送。 |
+| **历史会话管理** | 工作区会话列表和全局 Sessions 均支持移除历史会话，可选择同时删除 Claude / Codex 的原始会话记录；正在使用的原始会话受到删除保护。 |
+| **交互式选项卡片** | 统一 Claude 与 Codex 的卡片样式；Codex 问题答案直接提交，无需先填入输入框再发送，提交后保留选择结果，并可从历史记录恢复。 |
+| **原生 `/` 命令菜单** | 从 Web 输入框联动当前 Claude / Codex CLI 的原生命令菜单，展开终端进行选择，使用当前会话实际可用的命令。 |
+| **Agent 底部状态栏** | 在桌面和移动端展示 Claude / Codex 终端实际渲染的状态栏文字，收起终端后仍可见；按会话匹配，并在短暂重绘时保留最近有效内容。 |
+| **Todo / Plan 进度展示** | 统一展示 Claude 的 `TodoWrite`、`TaskCreate` / `TaskUpdate` 与 Codex 的计划进度；支持计划快照替换，以及 `exec` 中直接传入列表的 `tools.update_plan(...)` 调用。 |
+| **启动与会话连接** | 修复嵌套 shell 下 Claude 进程识别、会话关联和就绪状态恢复；设置页支持配置 Codex 启动环境变量，供新启动的进程使用。 |
+| **附件、翻译与开发体验** | 改善附件草稿处理和 Codex 消息解析；补齐新增功能的多语言文案并修复客户端翻译加载；通过 `PURPLEMUX_ALLOWED_DEV_ORIGINS` 动态配置开发热更新允许的域名。 |
+
+> 状态栏依赖 CLI 实际输出；Todo / Plan 展示依赖当前会话开放并调用相应工具。Worktree 子工作区的移除不会自动删除磁盘上的 Worktree 或 Git 分支。
+
+---
 
 **Claude Code 与 Codex,多任务同时进行。更快。**
 

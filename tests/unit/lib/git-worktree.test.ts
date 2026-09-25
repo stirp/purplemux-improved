@@ -24,6 +24,25 @@ beforeEach(async () => {
 });
 afterEach(async () => { vi.restoreAllMocks(); await fs.rm(root, { recursive: true, force: true }); });
 describe('isolated Git worktrees', () => {
+  it('lists local and remote branches with unambiguous refs, excluding remote HEAD aliases', async () => {
+    const head = await git('rev-parse', 'HEAD');
+    await git('branch', 'origin/topic');
+    await git('update-ref', 'refs/remotes/origin/topic', head);
+    await git('symbolic-ref', 'refs/remotes/origin/HEAD', 'refs/remotes/origin/topic');
+    const source = await inspectWorktreeSource(workspace, 0);
+    expect(source.branches).toEqual(expect.arrayContaining([
+      { ref: 'refs/heads/origin/topic', name: 'origin/topic', remote: false },
+      { ref: 'refs/remotes/origin/topic', name: 'origin/topic', remote: true },
+    ]));
+    expect(source.branches.some((item) => item.name === 'origin/HEAD')).toBe(false);
+    const created = await createGitWorktree(workspace, 0, 'task/from-remote', 'refs/remotes/origin/topic');
+    expect(created.baseCommit).toBe(head);
+    await git('checkout', '--detach', head);
+    const detached = await inspectWorktreeSource(workspace, 0);
+    expect(detached.branch).toBe('HEAD');
+    expect(detached.branches).toEqual(expect.arrayContaining(source.branches));
+    expect((await createGitWorktree(workspace, 0, 'task/from-commit', head)).baseCommit).toBe(head);
+  });
   it('creates an independent branch without copying or altering dirty source changes', async () => {
     const original = await git('branch', '--show-current');
     await fs.writeFile(path.join(workspace.directories[0], 'file.txt'), 'dirty');

@@ -13,6 +13,9 @@
   "reorderFailed": "Échec de la réorganisation",
   "validateFailed": "Impossible de valider",
   "worktree": {
+    "localBranches": "Branches locales",
+    "remoteBranches": "Branches distantes",
+    "customRef": "Commit ou référence personnalisée",
     "create": "Créer une sous-tâche avec un worktree",
     "name": "Nom de la tâche",
     "branch": "Nouvelle branche",

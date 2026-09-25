@@ -22,6 +22,9 @@
   "reorderFailed": "Failed to reorder",
   "validateFailed": "Failed to validate",
   "worktree": {
+    "localBranches": "Local branches",
+    "remoteBranches": "Remote branches",
+    "customRef": "Custom commit or reference",
     "create": "Create worktree subtask",
     "name": "Task name",
     "branch": "New branch",

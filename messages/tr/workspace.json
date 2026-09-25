@@ -13,6 +13,9 @@
   "reorderFailed": "Yeniden sıralama başarısız",
   "validateFailed": "Doğrulama başarısız",
   "worktree": {
+    "localBranches": "Yerel dallar",
+    "remoteBranches": "Uzak dallar",
+    "customRef": "Özel commit veya referans",
     "create": "Worktree alt görevi oluştur",
     "name": "Görev adı",
     "branch": "Yeni dal",

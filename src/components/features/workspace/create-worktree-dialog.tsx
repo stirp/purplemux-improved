@@ -6,7 +6,10 @@ import { Button } from '@/components/ui/button';
 import useWorkspaceStore from '@/hooks/use-workspace-store';
 import type { IWorkspace } from '@/types/terminal';
 
-interface ISource { branch: string; dirty: boolean; worktreeRoot: string }
+interface ISource {
+  branch: string; dirty: boolean; worktreeRoot: string;
+  branches: { ref: string; name: string; remote: boolean }[];
+}
 
 export default function CreateWorktreeDialog({ workspace, onClose, onCreated }: {
   workspace: IWorkspace; onClose: () => void; onCreated: (id: string) => void;
@@ -17,6 +20,8 @@ export default function CreateWorktreeDialog({ workspace, onClose, onCreated }: 
   const [name, setName] = useState('');
   const [branch, setBranch] = useState('');
   const [baseRef, setBaseRef] = useState('HEAD');
+  const [customRef, setCustomRef] = useState('');
+  const selectedBaseRef = baseRef === 'custom' ? customRef.trim() : baseRef;
   const [source, setSource] = useState<ISource | null>(null);
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -24,6 +29,8 @@ export default function CreateWorktreeDialog({ workspace, onClose, onCreated }: 
   useEffect(() => {
     const controller = new AbortController();
     setSource(null);
+    setBaseRef('HEAD');
+    setCustomRef('');
     setError('');
     fetch(`/api/workspace/worktree?workspaceId=${encodeURIComponent(workspace.id)}&directoryIndex=${directoryIndex}`, { signal: controller.signal })
       .then(async (res) => {
@@ -41,7 +48,7 @@ export default function CreateWorktreeDialog({ workspace, onClose, onCreated }: 
     setError('');
     try {
       const child = await useWorkspaceStore.getState().createWorktree(workspace.id, {
-        directoryIndex, name: name.trim(), branch: branch.trim(), baseRef: baseRef.trim(),
+        directoryIndex, name: name.trim(), branch: branch.trim(), baseRef: selectedBaseRef,
       });
       onCreated(child.id);
       onClose();
@@ -68,8 +75,23 @@ export default function CreateWorktreeDialog({ workspace, onClose, onCreated }: 
           <Input value={branch} onChange={(event) => setBranch(event.target.value)} placeholder="task/my-feature" required maxLength={80} disabled={submitting} />
         </label>
         <label className="flex flex-col gap-1 text-sm">{t('base')}{source && ` (${source.branch})`}
-          <Input value={baseRef} onChange={(event) => setBaseRef(event.target.value)} required maxLength={200} disabled={submitting} />
+          <select className="rounded border bg-background p-2" value={baseRef}
+            onChange={(event) => setBaseRef(event.target.value)} disabled={submitting || !source}>
+            <option value="HEAD">HEAD{source && ` (${source.branch})`}</option>
+            <optgroup label={t('localBranches')}>
+              {source?.branches.filter((item) => !item.remote).map((item) =>
+                <option key={item.ref} value={item.ref}>{item.name}</option>)}
+            </optgroup>
+            <optgroup label={t('remoteBranches')}>
+              {source?.branches.filter((item) => item.remote).map((item) =>
+                <option key={item.ref} value={item.ref}>{item.name}</option>)}
+            </optgroup>
+            <option value="custom">{t('customRef')}</option>
+          </select>
         </label>
+        {baseRef === 'custom' && <label className="flex flex-col gap-1 text-sm">{t('customRef')}
+          <Input value={customRef} onChange={(event) => setCustomRef(event.target.value)} required maxLength={200} disabled={submitting} placeholder="HEAD~1" />
+        </label>}
         <p className="text-xs text-muted-foreground">{t('notice')}</p>
         {source?.dirty && <p className="text-xs text-muted-foreground">{t('dirty')}</p>}
         {source ? branch.trim() && <p className="break-all text-xs text-muted-foreground">{t('path')}: {source.worktreeRoot}/{branch.trim().replace(/[/\\]/g, '-')}</p>
@@ -77,7 +99,7 @@ export default function CreateWorktreeDialog({ workspace, onClose, onCreated }: 
         {error && <p role="alert" className="break-all text-sm text-ui-red">{error}</p>}
         <DialogFooter>
           <Button type="button" variant="outline" disabled={submitting} onClick={onClose}>{tc('cancel')}</Button>
-          <Button type="submit" disabled={submitting || !source || !name.trim() || !branch.trim() || !baseRef.trim()}>{t('create')}{submitting && '…'}</Button>
+          <Button type="submit" disabled={submitting || !source || !name.trim() || !branch.trim() || !selectedBaseRef}>{t('create')}{submitting && '…'}</Button>
         </DialogFooter>
       </form>
     </DialogContent>

@@ -13,6 +13,9 @@
   "reorderFailed": "並び替えに失敗しました",
   "validateFailed": "検証できません",
   "worktree": {
+    "localBranches": "ローカルブランチ",
+    "remoteBranches": "リモートブランチ",
+    "customRef": "コミットまたは参照を入力",
     "create": "ワークツリーのサブタスクを作成",
     "name": "タスク名",
     "branch": "新しいブランチ名",

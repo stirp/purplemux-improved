@@ -13,6 +13,9 @@
   "reorderFailed": "Falha ao reordenar",
   "validateFailed": "Falha ao validar",
   "worktree": {
+    "localBranches": "Branches locais",
+    "remoteBranches": "Branches remotas",
+    "customRef": "Commit ou referência personalizada",
     "create": "Criar subtarefa com worktree",
     "name": "Nome da tarefa",
     "branch": "Nova branch",

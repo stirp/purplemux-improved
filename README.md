@@ -1,6 +1,27 @@
 # purplemux-improved
 
-An improved fork of [subicura/purplemux-improved](https://github.com/subicura/purplemux-improved). The `purplemux` / `pmux` aliases and `~/.purplemux` data directory remain compatible. npm installation requires this fork to be published; until then, run from source.
+An improved fork of [subicura/purplemux](https://github.com/subicura/purplemux). The `purplemux` / `pmux` aliases and `~/.purplemux` data directory remain compatible. npm installation requires this fork to be published; until then, run from source.
+
+## Main improvements in this fork
+
+These additions and enhancements build on commit [`52140216`](https://github.com/stirp/purplemux-improved/commit/52140216d8bb5bfffed30d8d452f77b88339a4ae), focusing on parallel development and the Claude Code / Codex web experience. [简体中文](README.zh-CN.md#fork-后的主要改进)
+
+| Area | Improvements |
+| --- | --- |
+| **Git worktree subtasks** | Create a branch and worktree from a workspace context menu, shown as a child workspace. Run agents in separate directories to develop multiple changes in parallel. |
+| **Workspaces and tabs** | Browse directories and create multiple workspaces, rename tabs from their context menu, reorder workspace groups by dragging, and restore layouts for empty workspaces. |
+| **Queued and immediate input** | Choose between queued and immediate submission, with queuing as the default. Messages wait while the agent is busy and are sent in order when it becomes idle; “Submit now” sends them sooner. |
+| **Session history management** | Remove historical sessions from workspace lists and the global Sessions view, with an option to delete the original Claude / Codex session records. Active original sessions are protected from deletion. |
+| **Interactive question cards** | Consistent styling for Claude and Codex. Codex answers submit directly without an extra composer step, preserve the selected result, and restore submitted answers from history. |
+| **Native `/` command menus** | Open the current Claude / Codex CLI menu from the web composer and select commands in the expanded terminal, using commands actually available in that session. |
+| **Agent status lines** | Show the status text rendered by the Claude / Codex terminal on desktop and mobile, including when the terminal is collapsed. Match it to the session and retain the latest valid text during brief redraws. |
+| **Todo and plan progress** | Unified progress for Claude `TodoWrite`, `TaskCreate` / `TaskUpdate`, and Codex plans. Supports plan snapshot replacement and `tools.update_plan(...)` calls with inline lists inside `exec`. |
+| **Agent startup and connection** | Fix Claude process detection through nested shells, session association, and readiness recovery. Configure environment variables for newly launched Codex processes from Settings. |
+| **Attachments, translations, and development** | Improve attachment drafts and Codex message parsing, translate new controls and fix client translation loading, and configure development hot-reload origins through `PURPLEMUX_ALLOWED_DEV_ORIGINS`. |
+
+> Status lines require actual CLI output; todo and plan displays require the corresponding tools to be available and called in the session. Removing a child workspace does not automatically delete its on-disk worktree or Git branch.
+
+---
 
 **Claude Code and Codex, many tasks at once. Faster.**
 

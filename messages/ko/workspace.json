@@ -13,6 +13,9 @@
   "reorderFailed": "순서 변경에 실패했습니다",
   "validateFailed": "검증할 수 없습니다",
   "worktree": {
+    "localBranches": "로컬 브랜치",
+    "remoteBranches": "원격 브랜치",
+    "customRef": "커밋 또는 참조 직접 입력",
     "create": "워크트리 하위 작업 만들기",
     "name": "작업 이름",
     "branch": "새 브랜치 이름",

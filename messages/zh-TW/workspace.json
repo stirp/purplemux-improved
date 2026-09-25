@@ -13,6 +13,9 @@
   "reorderFailed": "排序失敗",
   "validateFailed": "無法驗證",
   "worktree": {
+    "localBranches": "本機分支",
+    "remoteBranches": "遠端分支",
+    "customRef": "手動輸入提交或引用",
     "create": "建立 Git 工作樹子任務",
     "name": "任務名稱",
     "branch": "新分支名稱",
