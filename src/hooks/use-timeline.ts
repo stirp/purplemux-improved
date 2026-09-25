@@ -1,3 +1,4 @@
+import { resolveAsyncQuestionAnswers } from '@/lib/async-question-answers';
 import { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import type {
   ITimelineEntry,
@@ -426,8 +427,10 @@ const useTimeline = ({
     return items;
   }, [entries]);
 
+  const resolvedEntries = useMemo(() => resolveAsyncQuestionAnswers(entries), [entries]);
+
   return {
-    entries,
+    entries: resolvedEntries,
     tasks,
     sessionId,
     jsonlPath,

@@ -1,6 +1,4 @@
 {
-  "composeAnswer": "Insert answer into composer",
-  "composeAnswerHint": "Select or enter answers, then insert them into the composer and send.",
   "requestCancelled": "Request cancelled",
   "sessionExit": "Session exited (/exit)",
   "connectionError": "Connection error",
@@ -32,5 +30,8 @@
   "toolUsageCount": "{count} tool uses",
   "diffShow": "Show diff",
   "diffHide": "Hide diff",
-  "closeAria": "Close"
+  "closeAria": "Close",
+  "submitAnswer": "Submit answer now",
+  "submitAnswerHint": "Submit answers immediately without adding them to the message queue.",
+  "answerSubmitted": "Answer submitted"
 }

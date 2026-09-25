@@ -30,5 +30,8 @@
   "toolUsageCount": "{count}回のツール使用",
   "diffShow": "差分を表示",
   "diffHide": "差分を隠す",
-  "closeAria": "閉じる"
+  "closeAria": "閉じる",
+  "submitAnswer": "Submit answer now",
+  "submitAnswerHint": "Submit answers immediately without adding them to the message queue.",
+  "answerSubmitted": "Answer submitted"
 }

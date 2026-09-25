@@ -427,7 +427,7 @@ const SessionExitItem = () => {
   );
 };
 
-const TimelineEntryRenderer = ({ entry, sessionName }: { entry: ITimelineEntry; sessionName?: string }) => {
+const TimelineEntryRenderer = ({ entry, sessionName, tabId, sessionId }: { entry: ITimelineEntry; sessionName?: string; tabId?: string; sessionId: string | null }) => {
   switch (entry.type) {
     case 'user-message':
       return <UserMessageItem entry={entry} />;
@@ -440,7 +440,7 @@ const TimelineEntryRenderer = ({ entry, sessionName }: { entry: ITimelineEntry; 
     case 'plan':
       return <PlanItem entry={entry} sessionName={sessionName} />;
     case 'ask-user-question':
-      return <AskUserQuestionItem entry={entry} sessionName={sessionName} />;
+      return <AskUserQuestionItem entry={entry} sessionName={sessionName} tabId={tabId} agentSessionId={sessionId} />;
     case 'task-progress':
       return <TaskProgressItem entry={entry} />;
     case 'interrupt':
@@ -914,7 +914,7 @@ const TimelineView = ({
               {item.type === 'tool-group' ? (
                 <ToolGroupItem toolCalls={item.toolCalls} toolResults={item.toolResults} />
               ) : (
-                <TimelineEntryRenderer entry={item.entry} sessionName={sessionName} />
+                <TimelineEntryRenderer entry={item.entry} sessionName={sessionName} tabId={tabId} sessionId={sessionId} />
               )}
             </div>
           ))}

@@ -193,6 +193,7 @@ export interface ITimelineAskUserQuestion {
   status: TToolStatus;
   answer?: string;
   answerMode?: 'compose';
+  answers?: string[];
 }
 
 export interface ITimelineInterrupt {

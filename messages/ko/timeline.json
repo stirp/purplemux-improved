@@ -30,5 +30,8 @@
   "toolUsageCount": "도구 {count}회 사용",
   "diffShow": "diff 보기",
   "diffHide": "diff 숨기기",
-  "closeAria": "닫기"
+  "closeAria": "닫기",
+  "submitAnswer": "Submit answer now",
+  "submitAnswerHint": "Submit answers immediately without adding them to the message queue.",
+  "answerSubmitted": "Answer submitted"
 }

@@ -67,6 +67,32 @@ export class InputQueue {
     if (!entry.messages.length && !entry.sending) this.entries.delete(tabId);
   }
 
+  async sendImmediately(target: IInputTarget, message: IQueuedInput) {
+    const status = this.status(target.tabId);
+    if (!status || status.workspaceId !== target.workspaceId
+      || status.agentSessionId !== target.agentSessionId
+      || (status.agentProviderId && status.agentProviderId !== target.provider)
+      || status.cliState === 'inactive' || status.cliState === 'unknown') {
+      throw new Error('Session changed or unavailable');
+    }
+    let entry = this.entries.get(target.tabId);
+    if (entry?.sending) throw new Error('Input is already being sent');
+    if (!entry) {
+      entry = { target, messages: [], sending: false, error: null };
+      this.entries.set(target.tabId, entry);
+    }
+    entry.sending = true;
+    try {
+      await this.deliver(target, message, status.cliState === 'busy');
+      entry.waiting = { seq: status.eventSeq ?? 0, sawBusy: status.cliState === 'busy' };
+    } catch (error) {
+      entry.error = 'sendFailed';
+      throw error;
+    } finally {
+      entry.sending = false;
+    }
+  }
+
   async flush(tabId: string, immediately = false) {
     const entry = this.entries.get(tabId);
     if (!entry || entry.sending) return;

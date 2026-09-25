@@ -30,5 +30,8 @@
   "toolUsageCount": "{count} araç kullanımı",
   "diffShow": "Farkı göster",
   "diffHide": "Farkı gizle",
-  "closeAria": "Kapat"
+  "closeAria": "Kapat",
+  "submitAnswer": "Submit answer now",
+  "submitAnswerHint": "Submit answers immediately without adding them to the message queue.",
+  "answerSubmitted": "Answer submitted"
 }

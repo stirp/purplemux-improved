@@ -1,14 +1,18 @@
-import { useState, memo } from 'react';
+import { useState, useRef, memo } from 'react';
 import { useTranslations } from 'next-intl';
 import { MessageCircleQuestion, Check } from 'lucide-react';
 import Spinner from '@/components/ui/spinner';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import useTabStore from '@/hooks/use-tab-store';
+import { formatQuestionAnswers } from '@/lib/async-question-answers';
 import type { ITimelineAskUserQuestion } from '@/types/timeline';
 
 interface IAskUserQuestionItemProps {
   entry: ITimelineAskUserQuestion;
   sessionName?: string;
+  tabId?: string;
+  agentSessionId?: string | null;
 }
 
 const sendSelection = async (session: string, optionIndex: number): Promise<boolean> => {
@@ -24,13 +28,13 @@ const sendSelection = async (session: string, optionIndex: number): Promise<bool
   }
 };
 
-const AskUserQuestionItem = ({ entry, sessionName }: IAskUserQuestionItemProps) => {
+const AskUserQuestionItem = ({ entry, sessionName, tabId, agentSessionId }: IAskUserQuestionItemProps) => {
   const t = useTranslations('timeline');
   const [localSelected, setLocalSelected] = useState<number | null>(null);
   const isAnswered = entry.status === 'success';
   const question = entry.questions[0];
 
-  if (entry.answerMode === 'compose') return <AsyncQuestionItem entry={entry} sessionName={sessionName} />;
+  if (entry.answerMode === 'compose') return <AsyncQuestionItem key={`${agentSessionId}:${entry.toolUseId}`} entry={entry} tabId={tabId} agentSessionId={agentSessionId} />;
 
   if (!question) return null;
 
@@ -112,36 +116,79 @@ const AskUserQuestionItem = ({ entry, sessionName }: IAskUserQuestionItemProps) 
   );
 };
 
-const AsyncQuestionItem = ({ entry, sessionName }: IAskUserQuestionItemProps) => {
+const AsyncQuestionItem = ({ entry, tabId, agentSessionId }: IAskUserQuestionItemProps) => {
   const t = useTranslations('timeline');
   const [answers, setAnswers] = useState<Record<number, string>>({});
+  const [submitted, setSubmitted] = useState<string[] | null>(null);
+  const [sending, setSending] = useState(false);
+  const sendingRef = useRef(false);
+  const workspaceId = useTabStore((state) => tabId ? state.tabs[tabId]?.workspaceId : undefined);
+  const savedAnswers = entry.answers ?? submitted;
+  const answered = entry.status === 'success' || savedAnswers !== null;
   const ready = entry.questions.every((_, index) => answers[index]?.trim());
+
+  const submit = async () => {
+    if (!ready || answered || sendingRef.current || !tabId || !workspaceId || !agentSessionId) return;
+    sendingRef.current = true;
+    setSending(true);
+    const selected = entry.questions.map((_, index) => answers[index].trim());
+    try {
+      const response = await fetch(`/api/input-queue?${new URLSearchParams({ workspaceId, tabId })}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'send-immediate', id: entry.toolUseId, agentSessionId,
+          text: formatQuestionAnswers(entry.questions, selected), attachments: [] }),
+      });
+      if (!response.ok) throw new Error('Answer submission failed');
+      setSubmitted(selected);
+    } catch {
+      toast.error(t('selectionFailed'));
+    } finally {
+      sendingRef.current = false;
+      setSending(false);
+    }
+  };
+
   return (
     <div className="space-y-3 rounded-lg border border-border bg-muted/30 p-4">
       {entry.questions.map((question, index) => (
-        <fieldset key={index} className="space-y-2">
+        <fieldset key={index} className="space-y-2" disabled={answered || sending}>
           <legend className="mb-2 text-sm">{question.question}</legend>
-          {question.options.map((option) => (
-            <label key={option.label} className="flex items-center gap-2 rounded border border-border p-2 text-sm">
-              <input type="radio" name={`${entry.toolUseId}-${index}`} checked={answers[index] === option.label}
-                onChange={() => setAnswers((prev) => ({ ...prev, [index]: option.label }))} />
-              {option.label}
-            </label>
-          ))}
-          <input className="w-full rounded border border-border bg-background p-2 text-sm"
-            aria-label={question.question} value={answers[index] ?? ''}
-            onChange={(event) => setAnswers((prev) => ({ ...prev, [index]: event.target.value }))} />
+          {question.options.map((option) => {
+            const selected = (savedAnswers?.[index] ?? answers[index]) === option.label;
+            return (
+              <label key={option.label} className={cn('flex items-center gap-2 rounded border p-2 text-sm',
+                selected ? 'border-claude-active/40 bg-claude-active/10' : 'border-border',
+                answered && !selected && 'opacity-50')}>
+                <input type="radio" name={`${agentSessionId}-${entry.toolUseId}-${index}`} checked={selected}
+                  onChange={() => setAnswers((prev) => ({ ...prev, [index]: option.label }))} />
+                {option.label}
+                {answered && selected && <Check size={14} className="ml-auto text-claude-active" />}
+              </label>
+            );
+          })}
+          {answered ? (
+            <p className="whitespace-pre-wrap break-words text-sm">{savedAnswers?.[index]}</p>
+          ) : (
+            <input className="w-full rounded border border-border bg-background p-2 text-sm"
+              aria-label={question.question} value={answers[index] ?? ''}
+              onChange={(event) => setAnswers((prev) => ({ ...prev, [index]: event.target.value }))} />
+          )}
         </fieldset>
       ))}
-      <button type="button" disabled={!ready || !sessionName}
-        className="rounded border border-border px-3 py-2 text-sm disabled:opacity-50"
-        onClick={() => window.dispatchEvent(new CustomEvent('compose-question-answer', { detail: {
-          sessionName,
-          text: entry.questions.map((question, index) => `${question.question}\n${answers[index]}`).join('\n\n'),
-        } }))}>
-        {t.has('composeAnswer') ? t('composeAnswer') : 'Insert answer into composer'}
-      </button>
-      <p className="text-xs text-muted-foreground">{t.has('composeAnswerHint') ? t('composeAnswerHint') : 'Select or enter answers, then insert them into the composer and send.'}</p>
+      {answered ? (
+        <p className="flex items-center gap-1.5 text-xs text-claude-active"><Check size={14} />{t('answerSubmitted')}</p>
+      ) : (
+        <>
+          <button type="button" disabled={!ready || !tabId || !workspaceId || !agentSessionId || sending}
+            className="flex items-center gap-2 rounded border border-border px-3 py-2 text-sm disabled:opacity-50"
+            onClick={submit}>
+            {sending && <Spinner size={12} />}
+            {t('submitAnswer')}
+          </button>
+          <p className="text-xs text-muted-foreground">{t('submitAnswerHint')}</p>
+        </>
+      )}
     </div>
   );
 };

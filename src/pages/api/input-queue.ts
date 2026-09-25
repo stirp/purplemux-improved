@@ -26,7 +26,18 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   if (provider !== 'claude' && provider !== 'codex') return res.status(400).json({ error: 'Unsupported agent' });
   const queue = getInputQueue();
   if (req.method === 'POST') {
-    if (req.body?.action === 'submit-now') {
+    if (req.body?.action === 'send-immediate') {
+      const parsed = messageSchema.safeParse(req.body);
+      if (!parsed.success) return res.status(400).json({ error: 'Invalid message' });
+      if (!status?.agentSessionId || req.body.agentSessionId !== status.agentSessionId) {
+        return res.status(409).json({ error: 'Session changed' });
+      }
+      try {
+        await queue.sendImmediately({ tabId, workspaceId, sessionName: found.tab.sessionName, provider, agentSessionId: status.agentSessionId }, parsed.data);
+      } catch {
+        return res.status(409).json({ error: 'Could not send answer immediately' });
+      }
+    } else if (req.body?.action === 'submit-now') {
       await queue.flush(tabId, true);
     } else {
       const parsed = messageSchema.safeParse(req.body);

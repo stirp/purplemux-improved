@@ -12,6 +12,46 @@ const setup = (state: TCliState = 'busy') => {
 };
 
 describe('session input queue', () => {
+  it('sends a question answer immediately without consuming queued messages', async () => {
+    const { queue, deliver } = setup();
+    queue.enqueue(target, message('queued'));
+    await queue.sendImmediately(target, message('answer'));
+    expect(deliver).toHaveBeenCalledExactlyOnceWith(target, message('answer'), true);
+    expect(queue.snapshot(target.tabId).messages).toEqual([message('queued')]);
+  });
+
+  it('rejects an immediate answer for a replaced session', async () => {
+    const { queue, deliver, status } = setup();
+    status.agentSessionId = 'different-session';
+    await expect(queue.sendImmediately(target, message('answer'))).rejects.toThrow();
+    expect(deliver).not.toHaveBeenCalled();
+  });
+
+  it('serializes immediate answers with normal queue delivery', async () => {
+    const { queue, deliver } = setup('idle');
+    let release!: () => void;
+    deliver.mockImplementationOnce(() => new Promise<void>((resolve) => { release = resolve; }));
+    queue.enqueue(target, message('queued'));
+    const sending = queue.sendImmediately(target, message('answer'));
+    await queue.tick();
+    await expect(queue.sendImmediately(target, message('duplicate'))).rejects.toThrow();
+    expect(deliver).toHaveBeenCalledTimes(1);
+    release();
+    await sending;
+    await queue.tick();
+    expect(deliver).toHaveBeenCalledTimes(1);
+  });
+
+  it('reports a failed immediate answer and never automatically retries it', async () => {
+    const { queue, deliver } = setup('idle');
+    queue.enqueue(target, message('queued'));
+    deliver.mockRejectedValueOnce(new Error('Disconnected'));
+    await expect(queue.sendImmediately(target, message('answer'))).rejects.toThrow('Disconnected');
+    await queue.tick();
+    expect(deliver).toHaveBeenCalledTimes(1);
+    expect(queue.snapshot(target.tabId)).toMatchObject({ messages: [message('queued')], error: 'sendFailed', sending: false });
+  });
+
   it('waits for completion, sends in order, and waits for the next turn before sending again', async () => {
     const { status, deliver, queue } = setup();
     queue.enqueue(target, message('1'));

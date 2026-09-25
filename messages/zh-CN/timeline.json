@@ -1,6 +1,4 @@
 {
-  "composeAnswer": "填入回复框",
-  "composeAnswerHint": "选择或填写答案后，填入回复框并发送。",
   "requestCancelled": "请求已取消",
   "sessionExit": "会话已退出 (/exit)",
   "connectionError": "连接错误",
@@ -32,5 +30,8 @@
   "toolUsageCount": "{count}次工具使用",
   "diffShow": "显示差异",
   "diffHide": "隐藏差异",
-  "closeAria": "关闭"
+  "closeAria": "关闭",
+  "submitAnswer": "提交答案",
+  "submitAnswerHint": "立即发送答案，无需排队。提交后将保留本次选择。",
+  "answerSubmitted": "已提交答案"
 }

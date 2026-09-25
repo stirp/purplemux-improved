@@ -30,5 +30,8 @@
   "toolUsageCount": "使用了 {count} 個工具",
   "diffShow": "顯示差異",
   "diffHide": "隱藏差異",
-  "closeAria": "關閉"
+  "closeAria": "關閉",
+  "submitAnswer": "提交答案",
+  "submitAnswerHint": "立即傳送答案，無需排隊。提交後將保留本次選擇。",
+  "answerSubmitted": "已提交答案"
 }

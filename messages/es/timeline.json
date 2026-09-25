@@ -30,5 +30,8 @@
   "toolUsageCount": "{count} usos de herramientas",
   "diffShow": "Mostrar diferencias",
   "diffHide": "Ocultar diferencias",
-  "closeAria": "Cerrar"
+  "closeAria": "Cerrar",
+  "submitAnswer": "Submit answer now",
+  "submitAnswerHint": "Submit answers immediately without adding them to the message queue.",
+  "answerSubmitted": "Answer submitted"
 }

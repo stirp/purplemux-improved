@@ -55,7 +55,6 @@ interface IWebInputBarProps {
 const WebInputBar = ({
   tabId,
   wsId,
-  sessionName,
   agentSessionId,
   provider = 'claude',
   cliState,
@@ -123,16 +122,6 @@ const WebInputBar = ({
     updateAttachments(restored);
   }, [tabId]);
 
-  useEffect(() => {
-    const handler = (event: Event) => {
-      const detail = (event as CustomEvent<{ sessionName: string; text: string }>).detail;
-      if (detail.sessionName !== sessionName) return;
-      setValue(value ? `${value}\n${detail.text}` : detail.text);
-      focusInput();
-    };
-    window.addEventListener('compose-question-answer', handler);
-    return () => window.removeEventListener('compose-question-answer', handler);
-  }, [sessionName, value, setValue, focusInput]);
 
   useEffect(() => {
     attachmentsRef.current = attachments;
