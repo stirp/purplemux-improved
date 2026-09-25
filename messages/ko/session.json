@@ -37,5 +37,13 @@
     "session": "세션",
     "contextHintAmber": "컨텍스트가 절반을 넘었습니다",
     "contextHintRed": "한도에 가까워졌습니다 — 압축하거나 새 세션을 시작하세요"
-  }
+  },
+  "deleteHistory": "Remove from history",
+  "deleteHistoryDescription": "Remove this session from this app’s history? Original Claude / Codex session files are kept, and running sessions are not stopped.",
+  "deleteFailed": "Failed to remove session from history. Please try again.",
+  "deleteOriginalSession": "Also delete the original {provider} session",
+  "deleteOriginalDescription": "Delete the tool’s original session records and remove this session from this app’s history.",
+  "deleteOriginalWarning": "This cannot be undone. The session can no longer be resumed, and associated subagent records may also be deleted.",
+  "deletePermanently": "Delete permanently",
+  "deleteSessionInUse": "This session is in use. Close it before deleting its records."
 }

@@ -158,7 +158,6 @@ export default function App({ Component, pageProps }: TAppPropsWithLayout) {
   }
 
   useEffect(() => {
-    if (loadedLocaleRef.current === locale) return;
     let cancelled = false;
     Promise.all(MESSAGE_NAMESPACES.map((ns) => import(`../../messages/${locale}/${ns}.json`))).then((modules) => {
       if (cancelled) return;
@@ -168,7 +167,7 @@ export default function App({ Component, pageProps }: TAppPropsWithLayout) {
       setMessages({ [locale]: msgs });
     });
     return () => { cancelled = true; };
-  }, [locale]);
+  }, [locale, pageProps.messages]);
 
   useEffect(() => {
     document.documentElement.lang = locale;

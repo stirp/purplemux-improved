@@ -124,6 +124,7 @@ const SessionListView = ({
                 isResuming={session.sessionId === resumingSessionId}
                 isDisabled={isResumeInProgress}
                 onSelect={onSelectSession}
+                onDeleted={onRefresh}
               />
             ))}
           </TooltipProvider>

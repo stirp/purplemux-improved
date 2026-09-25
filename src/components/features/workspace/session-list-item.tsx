@@ -1,3 +1,4 @@
+import SessionHistoryActions from '@/components/features/workspace/session-history-actions';
 import { memo } from 'react';
 import { useTranslations } from 'next-intl';
 import dayjs from 'dayjs';
@@ -11,16 +12,17 @@ interface ISessionListItemProps {
   isResuming: boolean;
   isDisabled: boolean;
   onSelect: (sessionId: string) => void;
+  onDeleted: () => Promise<void>;
 }
 
 const handleArrowNavigation = (e: React.KeyboardEvent<HTMLButtonElement>) => {
   if (e.key === 'ArrowDown') {
     e.preventDefault();
-    const next = e.currentTarget.nextElementSibling as HTMLElement | null;
+    const next = e.currentTarget.closest('[data-session-row]')?.nextElementSibling?.querySelector('button') as HTMLElement | null;
     next?.focus();
   } else if (e.key === 'ArrowUp') {
     e.preventDefault();
-    const prev = e.currentTarget.previousElementSibling as HTMLElement | null;
+    const prev = e.currentTarget.closest('[data-session-row]')?.previousElementSibling?.querySelector('button') as HTMLElement | null;
     prev?.focus();
   }
 };
@@ -54,6 +56,7 @@ const SessionListItem = ({
   isResuming,
   isDisabled,
   onSelect,
+  onDeleted,
 }: ISessionListItemProps) => {
   const t = useTranslations('session');
   const absoluteTime = dayjs(session.lastActivityAt).format('MM/DD HH:mm');
@@ -61,45 +64,47 @@ const SessionListItem = ({
   const displayMessage = session.firstMessage || t('noMessage');
 
   return (
-    <button
-      type="button"
-      className={cn(
-        'w-full cursor-pointer border-b border-border/50 py-3 pl-1 pr-4 text-left transition-colors hover:bg-claude-active/5',
-        isDisabled && !isResuming && 'pointer-events-none opacity-50',
-        isResuming && 'bg-claude-active/5',
-      )}
-      onClick={() => onSelect(session.sessionId)}
-      onKeyDown={handleArrowNavigation}
-      disabled={isDisabled}
-      aria-label={t('sessionLabel', { message: displayMessage })}
-    >
-      <div className="flex items-center justify-between gap-2">
-        <div className="flex items-center gap-1.5 text-xs">
-          {isResuming ? (
-            <Loader2
-              size={14}
-              className="shrink-0 animate-spin text-claude-active"
-            />
-          ) : (
-            <span className="inline-block h-1.5 w-1.5 shrink-0" />
-          )}
-          <span className="text-muted-foreground">
-            {absoluteTime}
+    <SessionHistoryActions provider={'claude'} sessionId={session.sessionId} label={session.firstMessage} disabled={isDisabled} onDeleted={onDeleted}>
+      <button
+        type="button"
+        className={cn(
+          'w-full cursor-pointer border-b border-border/50 py-3 pl-1 pr-10 text-left transition-colors hover:bg-claude-active/5',
+          isDisabled && !isResuming && 'pointer-events-none opacity-50',
+          isResuming && 'bg-claude-active/5',
+        )}
+        onClick={() => onSelect(session.sessionId)}
+        onKeyDown={handleArrowNavigation}
+        disabled={isDisabled}
+        aria-label={t('sessionLabel', { message: displayMessage })}
+      >
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-1.5 text-xs">
+            {isResuming ? (
+              <Loader2
+                size={14}
+                className="shrink-0 animate-spin text-claude-active"
+              />
+            ) : (
+              <span className="inline-block h-1.5 w-1.5 shrink-0" />
+            )}
+            <span className="text-muted-foreground">
+              {absoluteTime}
+            </span>
+          </div>
+          <span className="shrink-0 text-xs text-muted-foreground">
+              {relativeTime}
+            </span>
+        </div>
+        <div className="mt-1 flex items-center justify-between gap-2 pl-[12px]">
+          <span className="min-w-0 truncate text-sm font-medium text-left">
+              {displayMessage}
+            </span>
+          <span className="shrink-0 text-xs text-muted-foreground">
+            {t('turnCount', { count: session.turnCount })}
           </span>
         </div>
-        <span className="shrink-0 text-xs text-muted-foreground">
-            {relativeTime}
-          </span>
-      </div>
-      <div className="mt-1 flex items-center justify-between gap-2 pl-[12px]">
-        <span className="min-w-0 truncate text-sm font-medium text-left">
-            {displayMessage}
-          </span>
-        <span className="shrink-0 text-xs text-muted-foreground">
-          {t('turnCount', { count: session.turnCount })}
-        </span>
-      </div>
-    </button>
+      </button>
+    </SessionHistoryActions>
   );
 };
 

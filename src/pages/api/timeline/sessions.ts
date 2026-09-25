@@ -1,6 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { hasSession } from '@/lib/tmux';
 import { listSessions } from '@/lib/session-list';
+import { readHiddenSessions, sessionHistoryKey } from '@/lib/hidden-sessions';
 
 const DEFAULT_LIMIT = 50;
 
@@ -26,7 +27,8 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   const cwdHint = req.query.cwd as string | undefined;
 
   try {
-    const allSessions = await listSessions(tmuxSession, cwdHint);
+    const [sessions, hidden] = await Promise.all([listSessions(tmuxSession, cwdHint), readHiddenSessions()]);
+    const allSessions = sessions.filter((session) => !hidden.has(sessionHistoryKey('claude', session.sessionId)));
     const total = allSessions.length;
     const sliced = allSessions.slice(offset, offset + limit);
     const hasMore = offset + limit < total;

@@ -1,3 +1,4 @@
+import SessionHistoryActions from '@/components/features/workspace/session-history-actions';
 import { memo, useCallback, useMemo, useRef, useState } from 'react';
 import { Loader2, Plus } from 'lucide-react';
 import { useTranslations } from 'next-intl';
@@ -56,11 +57,11 @@ const formatRelativeTime = (
 const handleArrowNavigation = (e: React.KeyboardEvent<HTMLButtonElement>) => {
   if (e.key === 'ArrowDown') {
     e.preventDefault();
-    const next = e.currentTarget.nextElementSibling as HTMLElement | null;
+    const next = e.currentTarget.closest('[data-session-row]')?.nextElementSibling?.querySelector('button') as HTMLElement | null;
     next?.focus();
   } else if (e.key === 'ArrowUp') {
     e.preventDefault();
-    const prev = e.currentTarget.previousElementSibling as HTMLElement | null;
+    const prev = e.currentTarget.closest('[data-session-row]')?.previousElementSibling?.querySelector('button') as HTMLElement | null;
     prev?.focus();
   }
 };
@@ -94,6 +95,7 @@ interface IAgentSessionItemProps {
   onSelect: (session: IAgentSessionEntry) => void;
   noMessageLabel: string;
   tSession: ReturnType<typeof useTranslations>;
+  onDeleted: () => Promise<void>;
 }
 
 const AgentSessionItem = memo(({
@@ -101,6 +103,7 @@ const AgentSessionItem = memo(({
   isResuming,
   isDisabled,
   onSelect,
+  onDeleted,
   noMessageLabel,
   tSession,
 }: IAgentSessionItemProps) => {
@@ -110,43 +113,45 @@ const AgentSessionItem = memo(({
   const providerLabel = session.provider === 'codex' ? 'Codex' : 'Claude';
 
   return (
-    <button
-      type="button"
-      className={cn(
-        'w-full cursor-pointer border-b border-border/50 py-3 pl-3 pr-4 text-left transition-colors',
-        'hover:bg-claude-active/5 focus-visible:bg-claude-active/5 focus:outline-none',
-        isDisabled && !isResuming && 'pointer-events-none opacity-50',
-        isResuming && 'bg-claude-active/5',
-      )}
-      onClick={() => onSelect(session)}
-      onKeyDown={handleArrowNavigation}
-      disabled={isDisabled}
-      aria-label={`${providerLabel}: ${displayMessage}`}
-    >
-      <div className="flex items-center justify-between gap-2">
-        <div className="flex min-w-0 items-center gap-1.5 text-xs">
-          {isResuming ? (
-            <Loader2 size={14} className="shrink-0 animate-spin text-claude-active" />
-          ) : (
-            <AgentIcon provider={session.provider} />
-          )}
-          <span className="text-muted-foreground">
-            {absoluteTime}
+    <SessionHistoryActions provider={session.provider} sessionId={session.sessionId} label={session.firstMessage} disabled={isDisabled} onDeleted={onDeleted}>
+      <button
+        type="button"
+        className={cn(
+          'w-full cursor-pointer border-b border-border/50 py-3 pl-3 pr-10 text-left transition-colors',
+          'hover:bg-claude-active/5 focus-visible:bg-claude-active/5 focus:outline-none',
+          isDisabled && !isResuming && 'pointer-events-none opacity-50',
+          isResuming && 'bg-claude-active/5',
+        )}
+        onClick={() => onSelect(session)}
+        onKeyDown={handleArrowNavigation}
+        disabled={isDisabled}
+        aria-label={`${providerLabel}: ${displayMessage}`}
+      >
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex min-w-0 items-center gap-1.5 text-xs">
+            {isResuming ? (
+              <Loader2 size={14} className="shrink-0 animate-spin text-claude-active" />
+            ) : (
+              <AgentIcon provider={session.provider} />
+            )}
+            <span className="text-muted-foreground">
+              {absoluteTime}
+            </span>
+          </div>
+          <span className="shrink-0 text-xs text-muted-foreground">
+            {relativeTime}
           </span>
         </div>
-        <span className="shrink-0 text-xs text-muted-foreground">
-          {relativeTime}
-        </span>
-      </div>
-      <div className="mt-1 flex items-center justify-between gap-2 pl-5">
-        <span className="min-w-0 truncate text-left text-sm font-medium">
-          {displayMessage}
-        </span>
-        <span className="shrink-0 text-xs text-muted-foreground">
-          {tSession('turnCount', { count: session.turnCount })}
-        </span>
-      </div>
-    </button>
+        <div className="mt-1 flex items-center justify-between gap-2 pl-5">
+          <span className="min-w-0 truncate text-left text-sm font-medium">
+            {displayMessage}
+          </span>
+          <span className="shrink-0 text-xs text-muted-foreground">
+            {tSession('turnCount', { count: session.turnCount })}
+          </span>
+        </div>
+      </button>
+    </SessionHistoryActions>
   );
 });
 
@@ -271,6 +276,7 @@ const AgentSessionListView = ({
               isResuming={session.key === resumingSessionKey}
               isDisabled={isResumeInProgress}
               onSelect={onSelectSession}
+              onDeleted={onRefresh}
               noMessageLabel={tSession('noMessage')}
               tSession={tSession}
             />

@@ -19,6 +19,8 @@ interface IWorkspaceGroupHeaderProps {
   onToggle: (groupId: string) => void;
   onRename: (groupId: string, name: string) => void;
   onUngroup: (groupId: string) => void;
+  onDragStart: (event: React.DragEvent) => void;
+  onDragEnd: (event: React.DragEvent) => void;
 }
 
 const WorkspaceGroupHeader = ({
@@ -27,6 +29,8 @@ const WorkspaceGroupHeader = ({
   onToggle,
   onRename,
   onUngroup,
+  onDragStart,
+  onDragEnd,
 }: IWorkspaceGroupHeaderProps) => {
   const t = useTranslations('sidebar');
   const [menuOpen, setMenuOpen] = useState(false);
@@ -57,8 +61,17 @@ const WorkspaceGroupHeader = ({
   return (
     <ContextMenu>
       <ContextMenuTrigger
-        className="group relative flex h-7 cursor-pointer items-center gap-1 px-2 text-[11px] font-medium tracking-wide text-muted-foreground hover:bg-sidebar-accent/50"
+        className="group relative flex h-7 cursor-grab items-center gap-1 px-2 text-[11px] font-medium tracking-wide text-muted-foreground hover:bg-sidebar-accent/50 active:cursor-grabbing"
         onClick={handleToggle}
+        draggable={!isEditing}
+        onDragStart={(event) => {
+          if ((event.target as HTMLElement).closest('button, input')) {
+            event.preventDefault();
+            return;
+          }
+          onDragStart(event);
+        }}
+        onDragEnd={onDragEnd}
         render={<div />}
       >
         <Icon className="h-3 w-3 shrink-0" />

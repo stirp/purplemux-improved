@@ -153,5 +153,13 @@
   "codexUpdateRunning": "Updating Codex...",
   "codexUpdateRunningHint": "This can take a few seconds. Codex will restart when the update finishes.",
   "codexUpdateSuccess": "Update finished. Restarting Codex...",
-  "codexUpdateRestarting": "Restarting Codex"
+  "codexUpdateRestarting": "Restarting Codex",
+  "queueSend": "空闲时发送",
+  "queuedCount": "已排队 {count} 条",
+  "submitQueuedNow": "立刻提交",
+  "submitQueuedNowHint": "立刻向当前会话提交下一条排队消息",
+  "cancelQueuedMessage": "取消排队消息",
+  "queueRequestFailed": "更新队列失败，草稿已保留。",
+  "queueSendFailed": "发送失败，消息已保留。请先检查终端中的输入，再重试或取消。",
+  "queueSessionChanged": "会话已变更，请取消这些消息后在新会话中重新发送。"
 }

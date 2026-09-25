@@ -469,6 +469,8 @@ const useWorkspaceStore = create<IWorkspaceState>((set, get) => ({
 
   reorderGroups: (fromIndex, toIndex) => {
     const list = [...get().groups];
+    if (!Number.isInteger(fromIndex) || !Number.isInteger(toIndex)
+      || fromIndex < 0 || toIndex < 0 || fromIndex >= list.length || toIndex >= list.length || fromIndex === toIndex) return;
     const [moved] = list.splice(fromIndex, 1);
     list.splice(toIndex, 0, moved);
     bumpMutationFence();
@@ -481,6 +483,8 @@ const useWorkspaceStore = create<IWorkspaceState>((set, get) => ({
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ groupIds: list.map((g) => g.id) }),
+    }).then((response) => {
+      if (!response.ok) throw new Error('Group reorder failed');
     }).catch(() => {
       toast.error(t('workspace', 'reorderFailed'));
       get().fetchWorkspaces();

@@ -1,3 +1,4 @@
+import SessionHistoryActions from '@/components/features/workspace/session-history-actions';
 import { memo, useCallback, useRef } from 'react';
 import { useTranslations } from 'next-intl';
 import dayjs from 'dayjs';
@@ -53,6 +54,7 @@ interface ICodexSessionItemProps {
   noMessageLabel: string;
   tSession: ReturnType<typeof useTranslations>;
   tTime: ReturnType<typeof useTranslations>;
+  onDeleted: () => Promise<void>;
 }
 
 const CodexSessionItem = memo(({
@@ -60,6 +62,7 @@ const CodexSessionItem = memo(({
   isResuming,
   isDisabled,
   onSelect,
+  onDeleted,
   noMessageLabel,
   tSession,
   tTime,
@@ -79,42 +82,44 @@ const CodexSessionItem = memo(({
     .join(' · ');
 
   return (
-    <button
-      type="button"
-      aria-label={ariaLabel}
-      disabled={isDisabled}
-      onClick={() => onSelect(session)}
-      className={cn(
-        'w-full cursor-pointer border-b border-border/50 py-3 pl-1 pr-4 text-left transition-colors',
-        'hover:bg-claude-active/5 focus-visible:bg-claude-active/5 focus:outline-none',
-        isResuming && 'bg-claude-active/5',
-        isDisabled && !isResuming && 'pointer-events-none opacity-50',
-      )}
-    >
-      <div className="flex items-center justify-between gap-2">
-        <div className="flex items-center gap-1.5 text-xs">
-          {isResuming ? (
-            <Loader2 size={14} className="shrink-0 animate-spin text-claude-active" />
-          ) : (
-            <span className="inline-block h-1.5 w-1.5 shrink-0" />
-          )}
-          <span className="text-muted-foreground">
-            {absoluteTime}
+    <SessionHistoryActions provider={'codex'} sessionId={session.sessionId} label={session.firstUserMessage} disabled={isDisabled} onDeleted={onDeleted}>
+      <button
+        type="button"
+        aria-label={ariaLabel}
+        disabled={isDisabled}
+        onClick={() => onSelect(session)}
+        className={cn(
+          'w-full cursor-pointer border-b border-border/50 py-3 pl-1 pr-10 text-left transition-colors',
+          'hover:bg-claude-active/5 focus-visible:bg-claude-active/5 focus:outline-none',
+          isResuming && 'bg-claude-active/5',
+          isDisabled && !isResuming && 'pointer-events-none opacity-50',
+        )}
+      >
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-1.5 text-xs">
+            {isResuming ? (
+              <Loader2 size={14} className="shrink-0 animate-spin text-claude-active" />
+            ) : (
+              <span className="inline-block h-1.5 w-1.5 shrink-0" />
+            )}
+            <span className="text-muted-foreground">
+              {absoluteTime}
+            </span>
+          </div>
+          <span className="shrink-0 text-xs text-muted-foreground">
+            {relative}
           </span>
         </div>
-        <span className="shrink-0 text-xs text-muted-foreground">
-          {relative}
-        </span>
-      </div>
-      <div className="mt-1 flex items-center justify-between gap-2 pl-[12px]">
-        <span className="min-w-0 truncate text-left text-sm font-medium">
-          {message}
-        </span>
-        <span className="shrink-0 text-xs text-muted-foreground">
-          {turnLabel}
-        </span>
-      </div>
-    </button>
+        <div className="mt-1 flex items-center justify-between gap-2 pl-[12px]">
+          <span className="min-w-0 truncate text-left text-sm font-medium">
+            {message}
+          </span>
+          <span className="shrink-0 text-xs text-muted-foreground">
+            {turnLabel}
+          </span>
+        </div>
+      </button>
+    </SessionHistoryActions>
   );
 });
 
@@ -203,6 +208,7 @@ const CodexSessionListView = ({
               isResuming={session.sessionId === resumingSessionId}
               isDisabled={isResumeInProgress}
               onSelect={onSelectSession}
+              onDeleted={onRefresh}
               noMessageLabel={tSession('noMessage')}
               tSession={tSession}
               tTime={tSession}

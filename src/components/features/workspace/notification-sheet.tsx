@@ -38,6 +38,7 @@ import type { ISessionHistoryEntry, TSessionHistoryProvider } from '@/types/sess
 import { stripMarkdown } from '@/lib/strip-markdown';
 import ClaudeCodeIcon from '@/components/icons/claude-code-icon';
 import OpenAIIcon from '@/components/icons/openai-icon';
+import SessionHistoryActions from './session-history-actions';
 
 const ACTION_ICONS: Record<string, typeof FileText> = {
   Read: FileText,
@@ -296,47 +297,61 @@ const SessionHistoryItem = ({
   }
 
   return (
-    <div
-      className={cn(
-        'flex items-start gap-3 rounded-md px-3 py-2.5 transition-colors',
-        isActiveSession
-          ? 'bg-claude-active/10'
-          : 'hover:bg-muted cursor-pointer',
-      )}
-      onClick={isActiveSession ? undefined : onClick}
+    <SessionHistoryActions
+      provider={entry.providerId}
+      sessionId={entry.agentSessionId}
+      historyEntryId={entry.id}
+      label={entry.prompt}
+      onDeleted={async () => {
+        useSessionHistoryStore.setState((state) => ({
+          entries: state.entries.filter((item) => item.providerId !== entry.providerId || (
+            entry.agentSessionId ? item.agentSessionId !== entry.agentSessionId : item.id !== entry.id
+          )),
+        }));
+      }}
     >
-      <span className="mt-1 shrink-0">
-        {icon ?? (entry.cancelled
-          ? <XCircle className="h-3.5 w-3.5 text-muted-foreground/50" />
-          : <CheckCircle2 className={cn('h-3.5 w-3.5', entry.dismissedAt ? 'text-muted-foreground' : 'text-muted-foreground/50')} />
+      <div
+        className={cn(
+          'flex items-start gap-3 rounded-md pl-3 pr-10 py-2.5 transition-colors',
+          isActiveSession
+            ? 'bg-claude-active/10'
+            : 'hover:bg-muted cursor-pointer',
         )}
-      </span>
-      <div className="min-w-0 flex-1">
-        <div className="flex items-center justify-between gap-2">
-          <span className="flex min-w-0 items-center gap-1 truncate text-xs text-muted-foreground">
-            <ProviderBadge providerId={entry.providerId} />
-            <span className="truncate">{entry.workspaceName}</span>
-          </span>
-          <span className="shrink-0 text-xs text-muted-foreground/60">
-            {formatNotificationTime(entry.completedAt)}
-          </span>
-        </div>
-        {entry.prompt && (
-          <p className={cn('mt-0.5 truncate text-sm', isActiveSession ? 'text-foreground' : 'text-muted-foreground')}>
-            {stripMarkdown(entry.prompt)}
-          </p>
-        )}
-        {entry.result && (
+        onClick={isActiveSession ? undefined : onClick}
+      >
+        <span className="mt-1 shrink-0">
+          {icon ?? (entry.cancelled
+            ? <XCircle className="h-3.5 w-3.5 text-muted-foreground/50" />
+            : <CheckCircle2 className={cn('h-3.5 w-3.5', entry.dismissedAt ? 'text-muted-foreground' : 'text-muted-foreground/50')} />
+          )}
+        </span>
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center justify-between gap-2">
+            <span className="flex min-w-0 items-center gap-1 truncate text-xs text-muted-foreground">
+              <ProviderBadge providerId={entry.providerId} />
+              <span className="truncate">{entry.workspaceName}</span>
+            </span>
+            <span className="shrink-0 text-xs text-muted-foreground/60">
+              {formatNotificationTime(entry.completedAt)}
+            </span>
+          </div>
+          {entry.prompt && (
+            <p className={cn('mt-0.5 truncate text-sm', isActiveSession ? 'text-foreground' : 'text-muted-foreground')}>
+              {stripMarkdown(entry.prompt)}
+            </p>
+          )}
+          {entry.result && (
+            <p className="mt-0.5 truncate text-xs text-muted-foreground/50">
+              {stripMarkdown(entry.result)}
+            </p>
+          )}
           <p className="mt-0.5 truncate text-xs text-muted-foreground/50">
-            {stripMarkdown(entry.result)}
+            {durationText}
+            {summaryText && ` · ${summaryText}`}
           </p>
-        )}
-        <p className="mt-0.5 truncate text-xs text-muted-foreground/50">
-          {durationText}
-          {summaryText && ` · ${summaryText}`}
-        </p>
+        </div>
       </div>
-    </div>
+    </SessionHistoryActions>
   );
 };
 

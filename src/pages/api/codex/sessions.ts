@@ -1,6 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { listCodexSessions } from '@/lib/codex-session-list';
 import { createLogger } from '@/lib/logger';
+import { readHiddenSessions, sessionHistoryKey } from '@/lib/hidden-sessions';
 
 const log = createLogger('api/codex/sessions');
 
@@ -25,7 +26,8 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
 
   try {
     const { sessions, scannedDirs, scannedFiles } = await listCodexSessions({ cwd, daysBack });
-    return res.status(200).json({ sessions, scannedDirs, scannedFiles });
+    const hidden = await readHiddenSessions();
+    return res.status(200).json({ sessions: sessions.filter((session) => !hidden.has(sessionHistoryKey('codex', session.sessionId))), scannedDirs, scannedFiles });
   } catch (err) {
     log.error({ err: err instanceof Error ? err.message : err }, 'codex session scan failed');
     return res.status(500).json({ error: 'scan-failed', message: 'Failed to scan codex sessions' });

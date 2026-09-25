@@ -494,6 +494,7 @@ export const ungroupGroup = async (groupId: string): Promise<boolean> =>
 
 export const reorderGroups = async (groupIds: string[]): Promise<boolean> =>
   withLock(async () => {
+    if (new Set(groupIds).size !== groupIds.length) return false;
     const data = await readWorkspacesFile();
     if (!data) return false;
     const groups = ensureGroups(data);

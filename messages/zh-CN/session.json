@@ -37,5 +37,13 @@
     "session": "会话",
     "contextHintAmber": "上下文已超过一半",
     "contextHintRed": "接近上限 — 考虑 /compact 或开启新会话"
-  }
+  },
+  "deleteHistory": "从历史列表删除",
+  "deleteHistoryDescription": "确认从 Purplemux 历史列表移除这条会话及其全部历史轮次？Claude / Codex 原始会话文件将保留，正在运行的会话不会停止。",
+  "deleteFailed": "删除历史记录失败，请重试。",
+  "deleteOriginalSession": "同时删除 {provider} 原始会话记录",
+  "deleteOriginalDescription": "删除对应工具的原始会话记录，并从本项目历史列表移除。",
+  "deleteOriginalWarning": "此操作不可撤销，该会话将无法恢复。会话关联的子代理记录也可能被删除。",
+  "deletePermanently": "永久删除",
+  "deleteSessionInUse": "该会话正在使用，请先关闭对应会话后再删除。"
 }

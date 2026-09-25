@@ -151,3 +151,16 @@ export const getSessionHistory = async (): Promise<ISessionHistoryEntry[]> => {
   const data = await readSessionHistory();
   return data.entries;
 };
+
+export const removeSessionHistory = async (
+  provider: ISessionHistoryEntry['providerId'],
+  sessionId: string | null,
+  historyEntryId?: string,
+): Promise<ISessionHistoryEntry[]> => withLock(async () => {
+  const data = await readSessionHistory();
+  const entries = data.entries.filter((entry) => entry.providerId !== provider || (
+    sessionId ? entry.agentSessionId !== sessionId : entry.agentSessionId !== null || entry.id !== historyEntryId
+  ));
+  if (entries.length !== data.entries.length) await writeSessionHistory({ ...data, entries });
+  return entries;
+});

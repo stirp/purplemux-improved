@@ -1,10 +1,12 @@
 import { useCallback, useEffect, useRef, useState, type ClipboardEvent, type DragEvent, type KeyboardEvent } from 'react';
 import { useTranslations } from 'next-intl';
+import { nanoid } from 'nanoid';
 import { toast } from 'sonner';
-import { Ban, Loader2, Paperclip, SendHorizontal, Square, X } from 'lucide-react';
+import { Ban, Clock3, Loader2, Paperclip, SendHorizontal, Square, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import useWebInput, { clearInputDraft } from '@/hooks/use-web-input';
+import useInputQueue from '@/hooks/use-input-queue';
 import useIsMobileDevice from '@/hooks/use-is-mobile-device';
 import useMessageHistory from '@/hooks/use-message-history';
 import { registerPushTarget } from '@/hooks/use-web-push';
@@ -13,15 +15,11 @@ import MessageHistoryPicker from '@/components/features/workspace/message-histor
 import { isImageFile, uploadImage } from '@/lib/upload-image-client';
 import { uploadFile } from '@/lib/upload-file-client';
 import { loadAttachmentDraft, saveAttachmentDraft } from '@/lib/attachment-draft';
-import { countImageRefs, waitForImageAttachments } from '@/lib/image-attach-detector';
 import type { TCliState } from '@/types/timeline';
 
 const DEFAULT_MAX_ROWS = 5;
 const LINE_HEIGHT = 20;
 const PADDING_Y = 16;
-
-const escapePathForPrompt = (filePath: string): string =>
-  filePath.replace(/[ \t\\'"(){}[\]!#$&;`|*?<>~^%]/g, '\\$&');
 
 interface IAttachment {
   id: string;
@@ -31,8 +29,6 @@ interface IAttachment {
 }
 
 const MAX_ATTACHMENTS = 20;
-const ATTACHMENT_CONFIRM_TIMEOUT_MS = 5000;
-const ATTACHMENT_POLL_INTERVAL_MS = 100;
 
 interface IWebInputBarProps {
   tabId?: string;
@@ -73,8 +69,6 @@ const WebInputBar = ({
   onRestartSession,
   onSend,
   onOptimisticSend,
-  onAddPendingMessage,
-  onRemovePendingMessage,
   attachFilesRef,
 }: IWebInputBarProps) => {
   const t = useTranslations('terminal');
@@ -104,6 +98,8 @@ const WebInputBar = ({
     },
   );
 
+  const queue = useInputQueue(wsId, tabId);
+  const dispatchingRef = useRef(false);
   const [interruptDialogOpen, setInterruptDialogOpen] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
@@ -178,101 +174,55 @@ const WebInputBar = ({
     adjustHeight();
   }, [value, adjustHeight]);
 
-  const dispatch = useCallback(async () => {
-    if (!canSend || isDispatching) return;
+  const dispatch = async () => {
+    if (!canSend || dispatchingRef.current || isUploading) return;
     const trimmed = value.trim();
-    const hasText = trimmed.length > 0;
-    const hasAttach = attachments.length > 0;
-    if (!hasText && !hasAttach) return;
-
-    if (!hasAttach) {
-      onSend?.();
-      if (agentSessionId) registerPushTarget(agentSessionId);
+    if (!trimmed && !attachments.length) return;
+    if (!attachments.length && ['/new', '/clear'].includes(trimmed.toLowerCase())) {
       send();
       return;
     }
-
+    dispatchingRef.current = true;
+    setIsDispatching(true);
     const sentAttachments = [...attachments];
     const text = value;
-    const isSlash = trimmed.startsWith('/');
-
-    sentAttachments.forEach((a) => URL.revokeObjectURL(a.thumbnail));
-    setAttachments([]);
-    setValue('');
-    if (tabId) clearInputDraft(tabId);
-    if (hasText && !isSlash) {
-      addHistory(trimmed);
-    }
-    onSend?.();
-    if (agentSessionId) registerPushTarget(agentSessionId);
-
-    setIsDispatching(true);
-    const pendingId = onAddPendingMessage?.(
-      t('attachingImages', { count: sentAttachments.length }),
-      { autoHide: false, attachmentPlaceholder: true },
-    );
-
-    const fetchPane = sessionName
-      ? async () => {
-          const r = await fetch(`/api/tmux/capture?session=${encodeURIComponent(sessionName)}`);
-          if (!r.ok) throw new Error(`capture ${r.status}`);
-          const d = (await r.json()) as { content?: string };
-          return d.content ?? '';
-        }
-      : null;
-
     try {
-      const shouldConfirmImageRefs = !isCodex && fetchPane !== null;
-      let baselineRefs = 0;
-      if (shouldConfirmImageRefs) {
-        try {
-          baselineRefs = countImageRefs(await fetchPane());
-        } catch {
-          /* ignore */
-        }
+      await queue.enqueue({
+        id: nanoid(),
+        text,
+        attachments: sentAttachments.map(({ path, filename }) => ({ path, filename })),
+      });
+      if (textareaRef.current?.value === text) {
+        setValue('');
+        if (tabId) clearInputDraft(tabId);
       }
-
-      let allConfirmed = true;
-      for (const att of sentAttachments) {
-        sendStdin(`\x1b[200~${escapePathForPrompt(att.path)}\x1b[201~`);
-        if (!shouldConfirmImageRefs) {
-          await new Promise((r) => setTimeout(r, 400));
-          continue;
-        }
-        const result = await waitForImageAttachments({
-          capture: fetchPane,
-          expectedNewRefs: 1,
-          baselineRefs,
-          timeoutMs: ATTACHMENT_CONFIRM_TIMEOUT_MS,
-          pollIntervalMs: ATTACHMENT_POLL_INTERVAL_MS,
-        });
-        baselineRefs = result.finalCount;
-        if (!result.confirmed) {
-          allConfirmed = false;
-          break;
-        }
-      }
-
-      if (!allConfirmed) {
-        toast.error(t('attachmentNotConfirmed'));
-        if (pendingId) onRemovePendingMessage?.(pendingId);
-        return;
-      }
-
-      if (hasText) {
-        const payload = ` ${text}`;
-        sendStdin(`\x1b[200~${payload}\x1b[201~`);
-        setTimeout(() => sendStdin('\r'), submitDelayMs);
-      } else {
-        sendStdin('\r');
-      }
-    } catch (err) {
-      if (pendingId) onRemovePendingMessage?.(pendingId);
-      throw err;
+      setAttachments((current) => current.filter((item) => !sentAttachments.some((sent) => sent.id === item.id)));
+      sentAttachments.forEach((item) => URL.revokeObjectURL(item.thumbnail));
+      if (trimmed && !trimmed.startsWith('/')) addHistory(trimmed);
+      if (agentSessionId) registerPushTarget(agentSessionId);
+      onSend?.();
+    } catch {
+      toast.error(t('queueRequestFailed'));
     } finally {
+      dispatchingRef.current = false;
       setIsDispatching(false);
     }
-  }, [canSend, isDispatching, value, attachments, send, sendStdin, setValue, onSend, agentSessionId, sessionName, tabId, addHistory, onAddPendingMessage, onRemovePendingMessage, t, submitDelayMs, isCodex, setAttachments]);
+  };
+
+  const submitQueuedNow = async () => {
+    if (dispatchingRef.current) return;
+    dispatchingRef.current = true;
+    setIsDispatching(true);
+    try {
+      await queue.submitNow();
+      onSend?.();
+    } catch {
+      toast.error(t('queueRequestFailed'));
+    } finally {
+      dispatchingRef.current = false;
+      setIsDispatching(false);
+    }
+  };
 
   const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.nativeEvent.isComposing || e.keyCode === 229) return;
@@ -369,7 +319,7 @@ const WebInputBar = ({
       accepted.map(async (file) => ({ file, result: await uploadImage(file, { wsId, tabId }) })),
     );
     const next: IAttachment[] = results.map(({ file, result }) => ({
-      id: typeof crypto.randomUUID === 'function' ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`,
+      id: nanoid(),
       path: result.path,
       filename: file.name || 'image',
       thumbnail: result.url || URL.createObjectURL(file),
@@ -452,7 +402,7 @@ const WebInputBar = ({
   const isDisabled = mode === 'disabled';
   const hasValue = value.trim().length > 0;
   const hasAttachments = attachments.length > 0;
-  const canDispatch = canSend && (hasValue || hasAttachments) && !isDispatching;
+  const canDispatch = canSend && (hasValue || hasAttachments) && !isDispatching && !isUploading;
 
   return (
     <>
@@ -591,12 +541,57 @@ const WebInputBar = ({
                 )}
                 onClick={handleSendClick}
                 disabled={!canDispatch}
-                aria-label={t('sendAriaLabel')}
+                aria-label={t('queueSend')}
+                title={t('queueSend')}
               >
                 {isDispatching ? <Loader2 size={14} className="animate-spin" /> : isDisabled ? <Ban size={14} /> : <SendHorizontal size={16} />}
               </Button>
             )}
             </div>
+            {queue.messages.length > 0 && (
+              <div className="border-t border-border pt-2">
+                <div className="mb-1 flex items-center justify-between gap-2">
+                  <span className="flex items-center gap-1 text-xs text-muted-foreground" role="status">
+                    <Clock3 size={12} />
+                    {t('queuedCount', { count: queue.messages.length })}
+                  </span>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 px-2 text-xs"
+                    onClick={submitQueuedNow}
+                    disabled={!canSend || isDispatching || queue.sending || cliState === 'unknown' || queue.error === 'sessionChanged'}
+                    title={t('submitQueuedNowHint')}
+                  >
+                    {queue.sending ? <Loader2 size={12} className="animate-spin" /> : <SendHorizontal size={12} />}
+                    {t('submitQueuedNow')}
+                  </Button>
+                </div>
+                <ul className="max-h-28 overflow-y-auto">
+                  {queue.messages.map((message, index) => (
+                    <li key={message.id} className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <span className="min-w-0 flex-1 truncate" title={message.text}>
+                        {message.text || message.attachments.map((item) => item.filename).join(', ')}
+                      </span>
+                      <button
+                        type="button"
+                        className="p-1 hover:text-foreground disabled:opacity-30"
+                        disabled={queue.sending && index === 0}
+                        aria-label={t('cancelQueuedMessage')}
+                        onClick={() => { void queue.remove(message.id).catch(() => toast.error(t('queueRequestFailed'))); }}
+                      >
+                        <X size={12} />
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+                {queue.error && (
+                  <p className="mt-1 text-xs text-ui-red" role="alert">
+                    {t(queue.error === 'sessionChanged' ? 'queueSessionChanged' : 'queueSendFailed')}
+                  </p>
+                )}
+              </div>
+            )}
           </div>
           </div>
         </div>

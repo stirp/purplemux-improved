@@ -153,5 +153,13 @@
   "codexUpdateRunning": "Updating Codex...",
   "codexUpdateRunningHint": "This can take a few seconds. Codex will restart when the update finishes.",
   "codexUpdateSuccess": "Update finished. Restarting Codex...",
-  "codexUpdateRestarting": "Restarting Codex"
+  "codexUpdateRestarting": "Restarting Codex",
+  "queueSend": "Send when idle",
+  "queuedCount": "{count} queued",
+  "submitQueuedNow": "Submit now",
+  "submitQueuedNowHint": "Submit the next queued message to the current session now",
+  "cancelQueuedMessage": "Cancel queued message",
+  "queueRequestFailed": "Could not update the queue. Your draft has been kept.",
+  "queueSendFailed": "Send failed. Check the terminal input before retrying or canceling this message.",
+  "queueSessionChanged": "The session has changed. Cancel these messages and send them again in the new session."
 }

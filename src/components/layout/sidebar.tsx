@@ -117,6 +117,8 @@ const Sidebar = () => {
   const [deletingIds, setDeletingIds] = useState<Set<string>>(new Set());
   const [fadingOutIds, setFadingOutIds] = useState<Set<string>>(new Set());
   const [dragIndex, setDragIndex] = useState<number | null>(null);
+  const [draggedGroupId, setDraggedGroupId] = useState<string | null>(null);
+  const [groupDropTarget, setGroupDropTarget] = useState<{ id: string; edge: 'before' | 'after' } | null>(null);
   const [dropTarget, setDropTarget] = useState<{
     position: number;
     groupId: string | null;
@@ -259,6 +261,8 @@ const Sidebar = () => {
   );
 
   const handleDragStart = useCallback((e: React.DragEvent, index: number) => {
+    setDraggedGroupId(null);
+    setGroupDropTarget(null);
     setDragIndex(index);
     e.dataTransfer.effectAllowed = 'move';
     e.dataTransfer.setData('text/plain', String(index));
@@ -271,7 +275,50 @@ const Sidebar = () => {
     (e.target as HTMLElement).style.opacity = '';
     setDragIndex(null);
     setDropTarget(null);
+    setDraggedGroupId(null);
+    setGroupDropTarget(null);
   }, []);
+
+  const handleGroupDragStart = useCallback((e: React.DragEvent, groupId: string) => {
+    e.stopPropagation();
+    setDragIndex(null);
+    setDropTarget(null);
+    setDraggedGroupId(groupId);
+    setGroupDropTarget(null);
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('application/x-purplemux-workspace-group', groupId);
+  }, []);
+
+  const handleGroupDragOver = useCallback((e: React.DragEvent, groupId: string) => {
+    if (!draggedGroupId) return;
+    e.preventDefault();
+    e.stopPropagation();
+    e.dataTransfer.dropEffect = 'move';
+    if (groupId === draggedGroupId) {
+      setGroupDropTarget(null);
+      return;
+    }
+    const rect = e.currentTarget.getBoundingClientRect();
+    setGroupDropTarget({ id: groupId, edge: e.clientY < rect.top + rect.height / 2 ? 'before' : 'after' });
+  }, [draggedGroupId]);
+
+  const handleGroupDrop = useCallback((e: React.DragEvent) => {
+    if (!draggedGroupId) return;
+    e.preventDefault();
+    e.stopPropagation();
+    if (groupDropTarget) {
+      const store = useWorkspaceStore.getState();
+      const from = store.groups.findIndex((group) => group.id === draggedGroupId);
+      const target = store.groups.findIndex((group) => group.id === groupDropTarget.id);
+      if (from >= 0 && target >= 0) {
+        const insertion = target + (groupDropTarget.edge === 'after' ? 1 : 0);
+        const to = from < insertion ? insertion - 1 : insertion;
+        if (from !== to) store.reorderGroups(from, to);
+      }
+    }
+    setDraggedGroupId(null);
+    setGroupDropTarget(null);
+  }, [draggedGroupId, groupDropTarget]);
 
   const handleWsDragOver = useCallback(
     (e: React.DragEvent, position: number, groupId: string | null) => {
@@ -309,6 +356,7 @@ const Sidebar = () => {
 
   const handleWsDrop = useCallback(
     (e: React.DragEvent) => {
+      if (draggedGroupId) return;
       e.preventDefault();
       e.stopPropagation();
       if (dragIndex === null || !dropTarget) {
@@ -332,7 +380,7 @@ const Sidebar = () => {
       setDragIndex(null);
       setDropTarget(null);
     },
-    [dragIndex, dropTarget],
+    [dragIndex, dropTarget, draggedGroupId],
   );
 
   const handleToggleCollapse = useCallback(() => {
@@ -531,7 +579,19 @@ const Sidebar = () => {
             {renderedSections.map((section) => {
               if (section.type === 'group') {
                 return (
-                  <div key={`group-${section.group.id}`}>
+                  <div
+                    key={`group-${section.group.id}`}
+                    onDragOver={(e) => handleGroupDragOver(e, section.group.id)}
+                    onDrop={handleGroupDrop}
+                    onDragLeave={(e) => {
+                      if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setGroupDropTarget(null);
+                    }}
+                    style={{
+                      opacity: draggedGroupId === section.group.id ? 0.4 : undefined,
+                      borderTop: groupDropTarget?.id === section.group.id && groupDropTarget.edge === 'before' ? '2px solid var(--focus-indicator)' : undefined,
+                      borderBottom: groupDropTarget?.id === section.group.id && groupDropTarget.edge === 'after' ? '2px solid var(--focus-indicator)' : undefined,
+                    }}
+                  >
                     <div
                       onDragOver={(e) =>
                         handleGroupHeaderDragOver(e, section.firstWsPosition, section.group.id)
@@ -550,6 +610,8 @@ const Sidebar = () => {
                         onToggle={handleToggleGroup}
                         onRename={handleRenameGroup}
                         onUngroup={handleUngroup}
+                        onDragStart={(e) => handleGroupDragStart(e, section.group.id)}
+                        onDragEnd={handleDragEnd}
                       />
                     </div>
                     {!section.group.collapsed &&
