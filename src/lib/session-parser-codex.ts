@@ -1,3 +1,5 @@
+import { parseTaskSnapshot } from '@/lib/timeline-tasks';
+import { parseCodexExecPlans } from '@/lib/codex-exec-plan';
 import fs from 'fs/promises';
 import { nanoid } from 'nanoid';
 import { z } from 'zod';
@@ -21,7 +23,6 @@ import type {
   ITimelinePlan,
   ITimelineReasoningSummary,
   ITimelineSessionExit,
-  ITimelineTaskProgress,
   ITimelineToolCall,
   ITimelineToolResult,
   ITimelineTurnEnd,
@@ -227,11 +228,6 @@ const approvalKindFromType = (type: string): TApprovalKind | null => {
   }
 };
 
-const taskStatusFromValue = (value: unknown): 'pending' | 'in_progress' | 'completed' | 'blocked' => {
-  if (value === 'in_progress' || value === 'completed' || value === 'blocked') return value;
-  return 'pending';
-};
-
 interface ICodexParseState {
   inFlight: Map<string, TInFlightEntry>;
   staleWarnings: Set<string>;
@@ -388,6 +384,13 @@ const processResponseItem = (
       }
       const argsRaw = payload.arguments;
       const args = typeof argsRaw === 'string' ? tryParseJson(argsRaw) ?? argsRaw : argsRaw;
+      if ((name === 'update_plan' || name === 'functions.update_plan') && args && typeof args === 'object') {
+        const tasks = parseTaskSnapshot((args as Record<string, unknown>).plan);
+        if (tasks !== null) {
+          return [{ id: nanoid(), type: 'task-progress', timestamp, action: 'replace',
+            taskId: '', toolUseId: callId, source: 'codex-plan', tasks, status: 'pending' }];
+        }
+      }
       if (name === 'request_user_input_async' && args && typeof args === 'object') {
         const raw = (args as Record<string, unknown>).questions;
         if (!Array.isArray(raw)) return [];
@@ -442,6 +445,13 @@ const processResponseItem = (
       const callId = safeString(payload.call_id);
       const name = safeString(payload.name);
       if (!callId || !name) return [];
+      if ((name === 'exec' || name === 'functions.exec') && payload.status === 'completed') {
+        const plans = parseCodexExecPlans(safeString(payload.input));
+        if (plans.length) return plans.map((tasks) => ({
+          id: nanoid(), type: 'task-progress', timestamp, action: 'replace',
+          taskId: '', toolUseId: callId, source: 'codex-plan', tasks, status: 'pending',
+        }));
+      }
       if (isPatchApply(name)) {
         const input = safeString(payload.input);
         const { files, diff } = parseApplyPatchInput(input);
@@ -643,27 +653,10 @@ const processEventMsg = (
     }
     case 'plan_update':
     case 'PlanUpdate': {
-      const planRaw = Array.isArray(payload.plan) ? payload.plan : [];
-      const entries: ITimelineEntry[] = [];
-      for (const item of planRaw) {
-        if (typeof item !== 'object' || item === null) continue;
-        const obj = item as Record<string, unknown>;
-        const taskId = safeString(obj.task_id ?? obj.id);
-        const status = taskStatusFromValue(obj.status);
-        const subject = safeString(obj.subject ?? obj.title ?? obj.description);
-        if (!taskId && !subject) continue;
-        entries.push({
-          id: nanoid(),
-          type: 'task-progress',
-          timestamp,
-          action: 'update',
-          taskId: taskId || subject,
-          subject,
-          description: typeof obj.description === 'string' ? obj.description : undefined,
-          status,
-        } satisfies ITimelineTaskProgress);
-      }
-      return entries;
+      const tasks = parseTaskSnapshot(payload.plan);
+      if (tasks === null) return [];
+      return [{ id: nanoid(), type: 'task-progress', timestamp, action: 'replace',
+        taskId: '', source: 'codex-plan', tasks, status: 'pending' }];
     }
     case 'entered_review_mode':
     case 'EnteredReviewMode': {

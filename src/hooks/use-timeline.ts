@@ -1,3 +1,4 @@
+import { collectTimelineTasks } from '@/lib/timeline-tasks';
 import { resolveAsyncQuestionAnswers } from '@/lib/async-question-answers';
 import { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import type {
@@ -401,31 +402,7 @@ const useTimeline = ({
     onSyncRef.current?.({ agentProcess, agentInstalled, isLoading });
   }, [agentProcess, agentInstalled, isLoading]);
 
-  const tasks = useMemo((): ITaskItem[] => {
-    const items: ITaskItem[] = [];
-    let createIndex = 0;
-
-    for (const entry of entries) {
-      if (entry.type !== 'task-progress') continue;
-
-      if (entry.action === 'create') {
-        createIndex++;
-        items.push({
-          taskId: entry.taskId || String(createIndex),
-          subject: entry.subject ?? '',
-          description: entry.description,
-          status: entry.status,
-        });
-      } else if (entry.action === 'update') {
-        const target = items.find((t) => t.taskId === entry.taskId);
-        if (target) {
-          target.status = entry.status;
-        }
-      }
-    }
-
-    return items;
-  }, [entries]);
+  const tasks = useMemo(() => collectTimelineTasks(entries), [entries]);
 
   const resolvedEntries = useMemo(() => resolveAsyncQuestionAnswers(entries), [entries]);
 

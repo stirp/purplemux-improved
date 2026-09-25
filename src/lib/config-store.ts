@@ -7,6 +7,7 @@ import { createLogger } from '@/lib/logger';
 import type { TNetworkAccess } from '@/lib/network-access';
 import type { TEditorPreset } from '@/lib/editor-url';
 import type { TToastPosition } from '@/lib/toast-position';
+import type { TAgentEnvironment } from '@/lib/agent-environment';
 
 export type TAgentProvider = 'claude' | 'codex';
 export type TGitAskProvider = TAgentProvider;
@@ -22,6 +23,7 @@ export interface IConfigData {
   customCSS?: string;
   dangerouslySkipPermissions?: boolean;
   claudeShowTerminal?: boolean;
+  codexEnvironment?: TAgentEnvironment;
   gitAskProvider?: TGitAskProvider;
   noteSummaryProvider?: TNoteSummaryProvider;
   editorUrl?: string;

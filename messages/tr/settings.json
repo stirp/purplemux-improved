@@ -81,6 +81,9 @@
     "errorCustomTemplate": "Şablon {folder} veya {folderEncoded} içermelidir"
   },
   "claude": {
+    "environmentTitle": "Codex Ortam Değişkenleri",
+    "environmentDescription": "Her satıra NAME=value yazın; tırnak veya export kullanmayın. Codex başlatılırken veya sürdürülürken devralınan değerleri geçersiz kılar. Boş satırlar yok sayılır. Devralınan ortam için tümünü silin. Kabuk ifadeleri genişletilmez.",
+    "environmentInvalid": "Her satır NAME=value olmalıdır. Benzersiz adlar harf veya alt çizgiyle başlamalı ve yalnızca harf, rakam ve alt çizgi içermelidir.",
     "skipPermissions": "İzin Kontrollerini Atla",
     "skipPermissionsDescription": "Claude ve Codex ajanları çalıştırılırken izin istemlerini atlar.",
     "showTerminal": "Terminali ajanla göster",

@@ -24,7 +24,7 @@ import { sendCodexQuitCommand } from '@/lib/agent-terminal-commands';
 import TerminalContainer from '@/components/features/workspace/terminal-container';
 import ClaudeCodePanel from '@/components/features/workspace/claude-code-panel';
 import CodexPanel from '@/components/features/workspace/codex-panel';
-import CodexStatusLine from '@/components/features/workspace/codex-status-line';
+import AgentStatusLine from '@/components/features/workspace/agent-status-line';
 import NativeCommandToolbar from '@/components/features/workspace/native-command-toolbar';
 import useNativeCommands from '@/hooks/use-native-commands';
 import AgentSessionsPanel from '@/components/features/workspace/agent-sessions-panel';
@@ -1319,8 +1319,8 @@ const PaneContainer = memo(({ paneId, paneNumber }: IPaneContainerProps) => {
                   onSelect={handleSelectQuickPrompt}
                 />
               )}
-              {isCodex && activeTab && activeTabId && !showInitialLoading && agentInputVisible && (
-                <CodexStatusLine
+              {isAgentPanel && activeTab && activeTabId && !showInitialLoading && agentInputVisible && (
+                <AgentStatusLine provider={isCodex ? 'codex' : 'claude'}
                   key={`${activeTab.sessionName}:${claudeSessionId ?? ''}`}
                   tabId={activeTabId}
                   enabled={status === 'connected'}

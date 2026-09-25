@@ -81,6 +81,9 @@
     "errorCustomTemplate": "テンプレートには {folder} または {folderEncoded} を含める必要があります。"
   },
   "claude": {
+    "environmentTitle": "Codex 環境変数",
+    "environmentDescription": "1行に NAME=value を入力します。引用符や export は不要です。新規起動・再開時に同名の継承変数を上書きします。空行は無視され、全削除すると継承環境を使用します。シェル式は展開されません。",
+    "environmentInvalid": "各行は NAME=value 形式にしてください。名前は英字またはアンダースコアで始め、英数字とアンダースコアのみ使用し、重複を避けてください。",
     "skipPermissions": "権限チェックをスキップ",
     "skipPermissionsDescription": "ClaudeとCodexエージェント実行時の権限確認をスキップします。",
     "showTerminal": "エージェントでターミナルを一緒に表示",

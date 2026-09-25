@@ -14,6 +14,7 @@ import { createRateLimitsWatcher } from '@/lib/rate-limits-watcher';
 import { createLogger } from '@/lib/logger';
 import { capturePaneAtWidth } from '@/lib/capture-at-width';
 import { isCodexTuiReadyContent } from '@/lib/codex-tui-ready-detector';
+import { isClaudeTuiReadyContent } from '@/lib/claude-tui-ready-detector';
 import { CODEX_PROVIDER_ID } from '@/lib/providers/codex';
 import { findCodexSessionById } from '@/lib/providers/codex/session-detection';
 import { cacheCodexRateLimitsFromJsonl } from '@/lib/codex-rate-limits-cache';
@@ -415,6 +416,15 @@ class StatusManager {
               this.broadcastUpdate(tab.id, existing);
               continue;
             }
+          }
+        }
+
+        if (existing.cliState === 'inactive' && existing.panelType === 'claude-code' && provider
+          && await checkAgentRunning()) {
+          const content = await capturePaneAtWidth(existing.tmuxSession, 120, 30).catch(() => null);
+          if (content && existing.cliState === 'inactive' && isClaudeTuiReadyContent(content)) {
+            this.updateTabFromHook(existing.tmuxSession, 'session-start');
+            continue;
           }
         }
 

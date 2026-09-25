@@ -5,8 +5,10 @@ import type { TNetworkAccess } from '@/lib/network-access';
 import { isBoundToLocalhostOnly, updateAccessFromConfig } from '@/lib/access-filter';
 import { isValidEditorPreset } from '@/lib/editor-url';
 import { isValidToastPosition } from '@/lib/toast-position';
+import { isValidAgentEnvironment } from '@/lib/agent-environment';
 
 const ALLOWED_FIELDS: (keyof Omit<IConfigData, 'updatedAt' | 'authSecret'>)[] = [
+  'codexEnvironment',
   'appTheme', 'terminalTheme', 'customCSS', 'dangerouslySkipPermissions', 'claudeShowTerminal', 'gitAskProvider', 'noteSummaryProvider', 'editorUrl', 'editorPreset', 'authPassword', 'notificationsEnabled', 'toastOnCompleteEnabled', 'toastDuration', 'toastPositionDesktop', 'toastPositionMobile', 'locale', 'fontSize', 'lineHeight', 'lineHeightCustom', 'terminalKeyBar', 'systemResourcesEnabled', 'networkAccess',
 ];
 
@@ -45,6 +47,10 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     const updates: Record<string, unknown> = {};
     for (const key of ALLOWED_FIELDS) {
       if (key in body) updates[key] = body[key];
+    }
+
+    if ('codexEnvironment' in updates && !isValidAgentEnvironment(updates.codexEnvironment)) {
+      return res.status(400).json({ error: 'codexEnvironment must contain valid environment variable names and string values without null bytes.' });
     }
 
     if ('editorUrl' in updates && !isValidEditorUrl(updates.editorUrl)) {

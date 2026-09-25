@@ -1,3 +1,4 @@
+import AgentStatusLine from '@/components/features/workspace/agent-status-line';
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { ChevronDown } from 'lucide-react';
 import Spinner from '@/components/ui/spinner';
@@ -380,6 +381,8 @@ const MobileClaudeCodePanel = ({
           onSelect={handleSelectQuickPrompt}
         />
       </div>
+
+      {tabId && <AgentStatusLine provider="claude" key={`${sessionName}:${claudeSessionId ?? ''}`} tabId={tabId} enabled={terminalWsConnected && isInputVisible} />}
 
       <MobileMetaSheet
         open={metaSheetOpen}

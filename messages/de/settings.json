@@ -81,6 +81,9 @@
     "errorCustomTemplate": "Vorlage muss {folder} oder {folderEncoded} enthalten"
   },
   "claude": {
+    "environmentTitle": "Codex-Umgebungsvariablen",
+    "environmentDescription": "Eine Zeile pro NAME=value, ohne Anführungszeichen oder export. Überschreibt geerbte Variablen beim Starten oder Fortsetzen von Codex. Leerzeilen werden ignoriert. Alle Einträge löschen, um die geerbte Umgebung zu verwenden. Keine Shell-Auswertung.",
+    "environmentInvalid": "Pro Zeile NAME=value mit eindeutigem Namen. Nur Buchstaben, Ziffern und Unterstriche; Beginn mit Buchstabe oder Unterstrich.",
     "skipPermissions": "Berechtigungsprüfungen überspringen",
     "skipPermissionsDescription": "Überspringt Berechtigungsabfragen beim Ausführen von Claude- und Codex-Agenten.",
     "showTerminal": "Terminal zusammen mit Agent anzeigen",

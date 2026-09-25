@@ -81,6 +81,9 @@
     "errorCustomTemplate": "Template must include {folder} or {folderEncoded}"
   },
   "claude": {
+    "environmentTitle": "Codex Environment Variables",
+    "environmentDescription": "One NAME=value per line, without quotes or export. Values override inherited variables for newly started or resumed Codex sessions. Blank lines are ignored; clear all entries to use the inherited environment. Values are literal; shell expressions are not expanded.",
+    "environmentInvalid": "Use unique names containing letters, digits and underscores, starting with a letter or underscore. Each line must be NAME=value.",
     "skipPermissions": "Skip Permission Checks",
     "skipPermissionsDescription": "Skips permission prompts when running Claude and Codex agents.",
     "showTerminal": "Show Terminal with Agent",

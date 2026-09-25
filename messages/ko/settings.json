@@ -81,6 +81,9 @@
     "errorCustomTemplate": "템플릿에는 {folder} 또는 {folderEncoded}가 포함되어야 합니다."
   },
   "claude": {
+    "environmentTitle": "Codex 환경 변수",
+    "environmentDescription": "한 줄에 NAME=value를 입력하세요. 따옴표나 export는 필요 없습니다. 새로 시작하거나 재개하는 세션에서 같은 이름의 상속 변수를 덮어씁니다. 빈 줄은 무시되며 모두 지우면 상속 환경을 사용합니다. 셸 표현식은 확장되지 않습니다.",
+    "environmentInvalid": "각 줄은 NAME=value 형식이어야 합니다. 이름은 문자 또는 밑줄로 시작하고 영문자, 숫자, 밑줄만 포함하며 중복되지 않아야 합니다.",
     "skipPermissions": "권한 확인 건너뛰기",
     "skipPermissionsDescription": "Claude와 Codex 에이전트 실행 시 권한 확인을 건너뜁니다.",
     "showTerminal": "에이전트에서 터미널 같이 보기",

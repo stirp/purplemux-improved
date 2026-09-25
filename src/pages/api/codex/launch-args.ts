@@ -2,6 +2,7 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import { buildCodexRuntimeArgs } from '@/lib/providers/codex';
 import { getActiveWorkspaceId } from '@/lib/workspace-store';
 import { createLogger } from '@/lib/logger';
+import { getConfig } from '@/lib/config-store';
 
 const log = createLogger('codex-launch-args');
 
@@ -20,7 +21,9 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
 
   try {
     const args = await buildCodexRuntimeArgs(workspaceId ?? undefined, resumeSessionId);
-    return res.status(200).json({ args });
+    const { codexEnvironment = {} } = await getConfig();
+    res.setHeader('Cache-Control', 'no-store');
+    return res.status(200).json({ args, env: codexEnvironment });
   } catch (err) {
     log.error(`codex launch args build failed: ${err instanceof Error ? err.message : err}`);
     return res.status(500).json({ error: 'Failed to build Codex launch args' });

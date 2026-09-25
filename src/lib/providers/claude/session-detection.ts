@@ -103,9 +103,16 @@ const isClaudeInstalled = async (): Promise<boolean> => {
   }
 };
 
+const getClaudeCandidatePids = async (panePid: number, preloadedChildPids?: number[]): Promise<number[]> => {
+  const directChildPids = preloadedChildPids ?? await getChildPids(panePid);
+  // Shell wrappers and Claude's resume launcher can add one process level.
+  const grandchildPids = (await Promise.all(directChildPids.map(getChildPids))).flat();
+  return [...new Set([...directChildPids, ...grandchildPids])];
+};
+
 export const isClaudeRunning = async (panePid: number, preloadedChildPids?: number[]): Promise<boolean> => {
-  const childPids = preloadedChildPids ?? await getChildPids(panePid);
-  for (const pid of childPids) {
+  const candidates = await getClaudeCandidatePids(panePid, preloadedChildPids);
+  for (const pid of candidates) {
     const args = await getProcessArgs(pid);
     if (args?.includes('claude')) return true;
   }
@@ -127,10 +134,7 @@ export const detectActiveSession = async (panePid: number, preloadedChildPids?: 
     return { status: 'not-running', sessionId: null, jsonlPath: null, pid: null, startedAt: null, cwd: null };
   }
 
-  // Claude CLI may spawn a child process (e.g. for --resume), so the session
-  // PID file can belong to a grandchild of the pane. Include one extra level.
-  const grandchildPids = (await Promise.all(directChildPids.map(getChildPids))).flat();
-  const allPids = [...directChildPids, ...grandchildPids];
+  const allPids = await getClaudeCandidatePids(panePid, directChildPids);
   const childPidSet = new Set(allPids);
 
   try {

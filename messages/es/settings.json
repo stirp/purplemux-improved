@@ -81,6 +81,9 @@
     "errorCustomTemplate": "La plantilla debe incluir {folder} o {folderEncoded}"
   },
   "claude": {
+    "environmentTitle": "Variables de entorno de Codex",
+    "environmentDescription": "Una línea NAME=value, sin comillas ni export. Sustituye las variables heredadas al iniciar o reanudar Codex. Las líneas vacías se ignoran. Borre todo para usar el entorno heredado. No se expanden expresiones del shell.",
+    "environmentInvalid": "Cada línea debe ser NAME=value. Use nombres únicos con letras, números y guiones bajos, empezando por una letra o un guion bajo.",
     "skipPermissions": "Omitir verificación de permisos",
     "skipPermissionsDescription": "Omite las solicitudes de permisos al ejecutar agentes Claude y Codex.",
     "showTerminal": "Mostrar terminal con el agente",

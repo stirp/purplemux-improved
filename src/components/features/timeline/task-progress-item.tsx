@@ -23,6 +23,14 @@ const StatusIcon = ({ status }: { status: ITimelineTaskProgress['status'] }) => 
 };
 
 const TaskProgressItem = ({ entry }: ITaskProgressItemProps) => {
+  if (entry.action === 'replace') {
+    return <div className="space-y-1 py-1">{entry.tasks?.map((task) => (
+      <div key={task.taskId} className="flex items-start gap-1.5 text-xs text-muted-foreground">
+        <span className="mt-0.5 shrink-0"><StatusIcon status={task.status} /></span>
+        <span>{task.subject}</span>
+      </div>
+    ))}</div>;
+  }
   const label =
     entry.action === 'create'
       ? entry.subject

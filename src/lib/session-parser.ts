@@ -2,6 +2,7 @@ import fs from 'fs/promises';
 import { z } from 'zod';
 import { nanoid } from 'nanoid';
 import { diffLines } from 'diff';
+import { parseTaskSnapshot } from '@/lib/timeline-tasks';
 import type {
   ITimelineEntry,
   ITimelineUserMessage,
@@ -324,6 +325,7 @@ const parseSingleEntry = (raw: unknown, base: z.infer<typeof BaseEntrySchema>): 
         const input = ('input' in content ? content.input : {}) as Record<string, unknown>;
         const toolName = (content as { name: string }).name;
         const toolUseId = (content as { id: string }).id;
+        const todoTasks = toolName === 'TodoWrite' ? parseTaskSnapshot(input.todos) : null;
 
         if (toolName === 'ExitPlanMode' && input.plan != null) {
           const planText = typeof input.plan === 'string' ? input.plan : JSON.stringify(input.plan, null, 2);
@@ -342,6 +344,11 @@ const parseSingleEntry = (raw: unknown, base: z.infer<typeof BaseEntrySchema>): 
               : undefined,
             status: 'pending' as TToolStatus,
           } satisfies ITimelinePlan);
+        } else if (todoTasks !== null) {
+          entries.push({
+            id: nanoid(), type: 'task-progress', timestamp, action: 'replace',
+            taskId: '', toolUseId, source: 'claude-todo', tasks: todoTasks, status: 'pending',
+          } satisfies ITimelineTaskProgress);
         } else if (toolName === 'TaskCreate') {
           entries.push({
             id: nanoid(),

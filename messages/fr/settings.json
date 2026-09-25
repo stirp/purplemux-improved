@@ -81,6 +81,9 @@
     "errorCustomTemplate": "Le modèle doit contenir {folder} ou {folderEncoded}"
   },
   "claude": {
+    "environmentTitle": "Variables d’environnement Codex",
+    "environmentDescription": "Une ligne NAME=value, sans guillemets ni export. Remplace les variables héritées au démarrage ou à la reprise de Codex. Les lignes vides sont ignorées. Effacez tout pour utiliser l’environnement hérité. Aucune expansion shell.",
+    "environmentInvalid": "Chaque ligne doit être NAME=value avec un nom unique composé de lettres, chiffres et traits de soulignement, commençant par une lettre ou un trait de soulignement.",
     "skipPermissions": "Ignorer les vérifications de permissions",
     "skipPermissionsDescription": "Ignore les demandes de permissions lors de l'exécution des agents Claude et Codex.",
     "showTerminal": "Afficher le terminal avec l'agent",

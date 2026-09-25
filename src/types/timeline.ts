@@ -148,7 +148,9 @@ export interface ITimelineTaskProgress {
   id: string;
   type: 'task-progress';
   timestamp: number;
-  action: 'create' | 'update';
+  action: 'create' | 'update' | 'replace';
+  tasks?: ITaskItem[];
+  source?: 'claude-todo' | 'codex-plan';
   taskId: string;
   toolUseId?: string;
   subject?: string;

@@ -152,12 +152,18 @@ const fetchArgs = async (payload) => {
   if (!Array.isArray(data.args) || data.args.some((arg) => typeof arg !== 'string')) {
     throw new Error('invalid Codex launch args response');
   }
-  return data.args;
+  const env = data.env ?? {};
+  if (typeof env !== 'object' || Array.isArray(env) ||
+      Object.entries(env).some(([key, value]) =>
+        !/^[A-Za-z_][A-Za-z0-9_]*$/.test(key) || typeof value !== 'string' || value.includes('\\0'))) {
+    throw new Error('invalid Codex environment response');
+  }
+  return { args: data.args, env };
 };
 
 const main = async () => {
-  const args = await fetchArgs(parseArgs(process.argv.slice(2)));
-  const child = spawn('codex', args, { stdio: 'inherit' });
+  const { args, env } = await fetchArgs(parseArgs(process.argv.slice(2)));
+  const child = spawn('codex', args, { stdio: 'inherit', env: { ...process.env, ...env } });
   child.on('exit', (code, signal) => {
     if (signal) {
       process.kill(process.pid, signal);

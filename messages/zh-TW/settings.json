@@ -81,6 +81,9 @@
     "errorCustomTemplate": "範本必須包含 {folder} 或 {folderEncoded}。"
   },
   "claude": {
+    "environmentTitle": "Codex 環境變數",
+    "environmentDescription": "每行填寫 NAME=value，不需引號或 export。新啟動或恢復 Codex 工作階段時，這些值會覆蓋同名繼承變數。忽略空行；清空設定則使用繼承的環境。值按原樣傳入，不展開 shell 運算式。",
+    "environmentInvalid": "每行須為 NAME=value；變數名稱只能包含字母、數字、底線，以字母或底線開頭，且不能重複。",
     "skipPermissions": "跳過權限檢查",
     "skipPermissionsDescription": "執行 Claude 和 Codex 代理時跳過權限確認。",
     "showTerminal": "在代理中一同顯示終端機",

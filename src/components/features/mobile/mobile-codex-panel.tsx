@@ -23,7 +23,7 @@ import useQuickPrompts from '@/hooks/use-quick-prompts';
 import { MetaCompact } from '@/components/features/workspace/session-meta-content';
 import MobileMetaSheet from './mobile-meta-sheet';
 import CodexSessionListView from '@/components/features/workspace/codex-session-list-view';
-import CodexStatusLine from '@/components/features/workspace/codex-status-line';
+import AgentStatusLine from '@/components/features/workspace/agent-status-line';
 import type { ICodexSessionEntry } from '@/lib/codex-session-list';
 import type { ICodexUpdatePromptInfo, TCodexUpdateAnswer } from '@/lib/codex-update-prompt-detector';
 import type { ITrustPromptInfo, TTrustAnswer } from '@/lib/trust-prompt-detector';
@@ -388,7 +388,7 @@ const MobileCodexPanel = ({
           onSelect={handleSelectQuickPrompt}
         />
       </div>
-      {tabId && <CodexStatusLine key={`${sessionName}:${codexSessionId ?? ''}`} tabId={tabId} enabled={terminalWsConnected} />}
+      {tabId && <AgentStatusLine provider="codex" key={`${sessionName}:${codexSessionId ?? ''}`} tabId={tabId} enabled={terminalWsConnected} />}
       <MobileMetaSheet
         open={metaSheetOpen}
         onOpenChange={setMetaSheetOpen}

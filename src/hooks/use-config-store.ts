@@ -3,6 +3,7 @@ import type { TEditorPreset } from '@/lib/editor-url';
 import type { TToastPosition } from '@/lib/toast-position';
 import type { TGitAskProvider, TNoteSummaryProvider } from '@/lib/config-store';
 import { DEFAULT_LINE_HEIGHT } from '@/lib/terminal-line-height';
+import type { TAgentEnvironment } from '@/lib/agent-environment';
 
 export type { TToastPosition } from '@/lib/toast-position';
 export type { TGitAskProvider, TNoteSummaryProvider } from '@/lib/config-store';
@@ -15,6 +16,7 @@ export const DEFAULT_TOAST_POSITION_DESKTOP: TToastPosition = 'top-right';
 export const DEFAULT_TOAST_POSITION_MOBILE: TToastPosition = 'top-center';
 
 export interface IConfigInitialData {
+  codexEnvironment?: TAgentEnvironment;
   appTheme?: string | null;
   terminalTheme?: { light: string; dark: string } | null;
   customCSS?: string;
@@ -42,6 +44,8 @@ export interface IConfigInitialData {
 }
 
 interface IConfigState {
+  codexEnvironment: TAgentEnvironment;
+  setCodexEnvironment: (env: TAgentEnvironment) => Promise<void>;
   dangerouslySkipPermissions: boolean;
   claudeShowTerminal: boolean;
   gitAskProvider: TGitAskProvider;
@@ -124,6 +128,20 @@ const saveConfig = (updates: Record<string, unknown>) => {
 };
 
 const useConfigStore = create<IConfigState>((set, get) => ({
+  codexEnvironment: {},
+  setCodexEnvironment: async (env) => {
+    const response = await fetch('/api/config', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ codexEnvironment: env }),
+    });
+    if (!response.ok) {
+      const data = await response.json().catch(() => null);
+      const detail = typeof data?.error === 'string' ? `: ${data.error}` : '';
+      throw new Error(`HTTP ${response.status}${detail}`);
+    }
+    set({ codexEnvironment: env });
+  },
   dangerouslySkipPermissions: initialConfig.dangerouslySkipPermissions,
   claudeShowTerminal: initialConfig.claudeShowTerminal,
   gitAskProvider: initialConfig.gitAskProvider,
@@ -149,6 +167,7 @@ const useConfigStore = create<IConfigState>((set, get) => ({
 
   hydrate: (data) => {
     set({
+      codexEnvironment: data.codexEnvironment ?? {},
       dangerouslySkipPermissions: data.dangerouslySkipPermissions ?? false,
       claudeShowTerminal: data.claudeShowTerminal ?? true,
       gitAskProvider: data.gitAskProvider === 'codex' ? 'codex' : 'claude',
