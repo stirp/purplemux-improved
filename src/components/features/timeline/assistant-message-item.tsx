@@ -1,4 +1,5 @@
-import { memo, type AnchorHTMLAttributes } from 'react';
+import EditorFileLink, { editorMarkdownUrlTransform } from '@/components/features/timeline/editor-file-link';
+import { memo } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeHighlight from 'rehype-highlight';
@@ -7,9 +8,7 @@ import type { ITimelineAssistantMessage } from '@/types/timeline';
 const REMARK_PLUGINS = [remarkGfm];
 const REHYPE_PLUGINS = [rehypeHighlight];
 const MARKDOWN_COMPONENTS = {
-  a: (props: AnchorHTMLAttributes<HTMLAnchorElement>) => (
-    <a {...props} target="_blank" rel="noopener noreferrer" />
-  ),
+  a: EditorFileLink,
 };
 
 interface IAssistantMessageItemProps {
@@ -23,6 +22,7 @@ const AssistantMessageItem = ({ entry }: IAssistantMessageItemProps) => (
         remarkPlugins={REMARK_PLUGINS}
         rehypePlugins={REHYPE_PLUGINS}
         components={MARKDOWN_COMPONENTS}
+        urlTransform={editorMarkdownUrlTransform}
       >
         {entry.markdown ?? ''}
       </ReactMarkdown>

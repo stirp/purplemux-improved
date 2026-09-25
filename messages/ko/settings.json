@@ -56,11 +56,15 @@
     }
   },
   "editor": {
+    "sshHost": "SSH 호스트",
+    "sshHostDescription": "VS Code를 실행하는 컴퓨터의 SSH Host 별칭 또는 user@host를 입력하고 Remote - SSH를 설치하세요. 원격 작업 경로는 Purplemux와 같아야 합니다.",
+    "errorSshHost": "유효한 SSH 별칭 또는 user@host를 입력하세요. URL, 경로, 포트를 포함하지 마세요. 포트는 SSH 설정에서 지정하세요.",
     "preset": "에디터",
     "presetDescription": "헤더의 EDITOR 버튼을 클릭했을 때 실행할 에디터를 선택합니다.",
     "presets": {
       "code-server": "Code Server (웹)",
       "vscode": "VS Code",
+      "vscode-remote": "VS Code Remote SSH",
       "vscode-insiders": "VS Code Insiders",
       "cursor": "Cursor",
       "windsurf": "Windsurf",

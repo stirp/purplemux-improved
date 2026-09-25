@@ -119,6 +119,7 @@ export const EditorIcon = ({
   switch (preset) {
     case 'code-server':
       return <CodeServerIcon className={className} />;
+    case 'vscode-remote':
     case 'vscode':
     case 'vscode-insiders':
       return <VSCodeIcon className={className} />;

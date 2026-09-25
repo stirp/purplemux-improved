@@ -1,4 +1,5 @@
-import { useState, useEffect, memo, type AnchorHTMLAttributes } from 'react';
+import EditorFileLink, { editorMarkdownUrlTransform } from '@/components/features/timeline/editor-file-link';
+import { useState, useEffect, memo } from 'react';
 import { useTranslations } from 'next-intl';
 import { ClipboardList, Eye, TerminalSquare, Check } from 'lucide-react';
 import Spinner from '@/components/ui/spinner';
@@ -19,9 +20,7 @@ import type { ITimelinePlan } from '@/types/timeline';
 const REMARK_PLUGINS = [remarkGfm];
 const REHYPE_PLUGINS = [rehypeHighlight];
 const MARKDOWN_COMPONENTS = {
-  a: (props: AnchorHTMLAttributes<HTMLAnchorElement>) => (
-    <a {...props} target="_blank" rel="noopener noreferrer" />
-  ),
+  a: EditorFileLink,
 };
 
 interface IPlanItemProps {
@@ -203,6 +202,7 @@ const PlanItem = ({ entry, sessionName }: IPlanItemProps) => {
                 remarkPlugins={REMARK_PLUGINS}
                 rehypePlugins={REHYPE_PLUGINS}
                 components={MARKDOWN_COMPONENTS}
+                urlTransform={editorMarkdownUrlTransform}
               >
                 {entry.markdown}
               </ReactMarkdown>

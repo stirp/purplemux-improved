@@ -307,6 +307,7 @@ const ClaudeCodePanel = ({
       )}
       <div className="min-h-0 flex-1">
         <TimelineView
+          cwd={cwd}
           entries={entries}
           tasks={tasks}
           sessionId={sessionId}

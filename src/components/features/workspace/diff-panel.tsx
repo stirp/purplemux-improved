@@ -496,7 +496,7 @@ const DiffPanel = ({ sessionName, onSendToAgent, onClose, settings, onSettingsCh
 
       <div className="min-h-0 flex-1 overflow-auto">
         {activeTab === 'history' ? (
-          <DiffHistoryView sessionName={sessionName} refreshToken={historyRefreshToken} viewMode={viewMode} />
+          <DiffHistoryView repoRoot={repoRoot} sessionName={sessionName} refreshToken={historyRefreshToken} viewMode={viewMode} />
         ) : (
           <>
             {!diff && (
@@ -507,7 +507,7 @@ const DiffPanel = ({ sessionName, onSendToAgent, onClose, settings, onSettingsCh
                 </div>
               </div>
             )}
-            {diff && <DiffFileList diff={diff} viewMode={viewMode} sessionName={sessionName} />}
+            {diff && <DiffFileList repoRoot={repoRoot} diff={diff} viewMode={viewMode} sessionName={sessionName} />}
           </>
         )}
       </div>

@@ -46,7 +46,7 @@ import { TOAST_POSITIONS, type TToastPosition } from '@/lib/toast-position';
 import useWorkspaceStore from '@/hooks/use-workspace-store';
 import { getEndpoint } from '@/hooks/use-web-push';
 import { TERMINAL_THEMES } from '@/lib/terminal-themes';
-import { EDITOR_PRESETS, buildEditorUrl, type TEditorPreset } from '@/lib/editor-url';
+import { EDITOR_PRESETS, buildEditorUrl, isValidSshHost, type TEditorPreset } from '@/lib/editor-url';
 import { EditorIcon } from '@/components/icons/editor-icons';
 import type { ITerminalThemeColors } from '@/lib/terminal-themes';
 import QuickPromptsSettings from '@/components/features/settings/quick-prompts-settings';
@@ -511,13 +511,19 @@ const EditorTab = () => {
   const [localEditorUrl, setLocalEditorUrl] = useState(editorUrl);
   const [localPreset, setLocalPreset] = useState<TEditorPreset>(editorPreset);
 
-  const needsUrlInput = localPreset === 'code-server' || localPreset === 'custom';
+  const isRemote = localPreset === 'vscode-remote';
+  const needsUrlInput = localPreset === 'code-server' || localPreset === 'custom' || isRemote;
   const isDirty = localPreset !== editorPreset || (needsUrlInput && localEditorUrl.trim() !== editorUrl);
 
   const previewUrl = buildEditorUrl(localPreset, localEditorUrl, '/Users/me/project');
 
   const handleSave = () => {
     const trimmed = needsUrlInput ? localEditorUrl.trim() : '';
+
+    if (isRemote && !isValidSshHost(trimmed)) {
+      toast.error(t('errorSshHost'));
+      return;
+    }
 
     if (localPreset === 'code-server' && trimmed) {
       try {
@@ -575,13 +581,13 @@ const EditorTab = () => {
       {needsUrlInput && (
         <div className="space-y-2">
           <p className="text-sm font-medium">
-            {localPreset === 'custom' ? t('customTemplate') : t('url')}
+            {isRemote ? t('sshHost') : localPreset === 'custom' ? t('customTemplate') : t('url')}
           </p>
           <p className="text-sm text-muted-foreground">
-            {localPreset === 'custom' ? t('customTemplateDescription') : t('urlDescription')}
+            {isRemote ? t('sshHostDescription') : localPreset === 'custom' ? t('customTemplateDescription') : t('urlDescription')}
           </p>
           <Input
-            placeholder={localPreset === 'custom' ? 'myeditor://open?path={folderEncoded}' : 'https://example.com:8080'}
+            placeholder={isRemote ? 'my-server' : localPreset === 'custom' ? 'myeditor://open?path={folderEncoded}' : 'https://example.com:8080'}
             value={localEditorUrl}
             onChange={(e) => setLocalEditorUrl(e.target.value)}
             onKeyDown={(e) => {

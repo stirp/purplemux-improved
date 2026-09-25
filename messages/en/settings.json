@@ -56,11 +56,15 @@
     }
   },
   "editor": {
+    "sshHost": "SSH host",
+    "sshHostDescription": "Enter the SSH Host alias or user@host configured on the computer running VS Code. Install Remote - SSH there. This host must contain the same workspace paths as Purplemux.",
+    "errorSshHost": "Enter a valid SSH host alias or user@host, without a URL scheme, path, or port. Configure custom ports in SSH config.",
     "preset": "Editor",
     "presetDescription": "Choose which editor to open when clicking the EDITOR button in the header.",
     "presets": {
       "code-server": "Code Server (Web)",
       "vscode": "VS Code",
+      "vscode-remote": "VS Code Remote SSH",
       "vscode-insiders": "VS Code Insiders",
       "cursor": "Cursor",
       "windsurf": "Windsurf",

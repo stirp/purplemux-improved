@@ -56,11 +56,15 @@
     }
   },
   "editor": {
+    "sshHost": "SSH sunucusu",
+    "sshHostDescription": "VS Code çalıştıran bilgisayarda yapılandırılmış SSH Host takma adını veya user@host girin ve Remote - SSH kurun. Çalışma yolları Purplemux ile aynı olmalıdır.",
+    "errorSshHost": "URL şeması, yol veya port içermeyen geçerli bir SSH takma adı ya da user@host girin. Portları SSH yapılandırmasında belirtin.",
     "preset": "Editör",
     "presetDescription": "Başlıktaki EDİTÖR düğmesine tıklandığında açılacak editörü seçin.",
     "presets": {
       "code-server": "Code Server (Web)",
       "vscode": "VS Code",
+      "vscode-remote": "VS Code Remote SSH",
       "vscode-insiders": "VS Code Insiders",
       "cursor": "Cursor",
       "windsurf": "Windsurf",

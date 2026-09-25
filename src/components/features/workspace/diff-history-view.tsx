@@ -10,6 +10,7 @@ import DiffFileList from '@/components/features/workspace/diff-file-list';
 type TViewMode = 'split' | 'unified';
 
 interface IDiffHistoryViewProps {
+  repoRoot: string;
   sessionName: string;
   refreshToken: number;
   viewMode: TViewMode;
@@ -39,7 +40,7 @@ interface ICommitDetail {
 
 const PAGE_SIZE = 50;
 
-const DiffHistoryView = ({ sessionName, refreshToken, viewMode }: IDiffHistoryViewProps) => {
+const DiffHistoryView = ({ sessionName, refreshToken, viewMode, repoRoot }: IDiffHistoryViewProps) => {
   const t = useTranslations('diff');
 
   const [commits, setCommits] = useState<ICommitLogEntry[]>([]);
@@ -204,6 +205,7 @@ const DiffHistoryView = ({ sessionName, refreshToken, viewMode }: IDiffHistoryVi
             ) : detail ? (
               detail.diff ? (
                 <DiffFileList
+                  repoRoot={repoRoot}
                   diff={detail.diff}
                   viewMode={viewMode}
                   sessionName={sessionName}

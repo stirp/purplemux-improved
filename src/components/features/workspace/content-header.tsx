@@ -14,7 +14,8 @@ import useShortcutHints from '@/hooks/use-shortcut-hints';
 import ShortcutKey from '@/components/shortcut-key';
 import isElectron from '@/hooks/use-is-electron';
 import SystemResources from '@/components/layout/system-resources';
-import { buildEditorUrl, isSafeEditorTarget, isWebEditorUrl } from '@/lib/editor-url';
+import { buildEditorUrl, isSafeEditorTarget, canOpenEditorTarget } from '@/lib/editor-url';
+import { openEditorTarget } from '@/lib/open-editor';
 import { EditorIcon } from '@/components/icons/editor-icons';
 import useGitStatusStore, {
   formatGitStatusSummary,
@@ -22,9 +23,6 @@ import useGitStatusStore, {
 } from '@/hooks/use-git-status-store';
 import type { TGitStatusIndicatorTone } from '@/hooks/use-git-status-store';
 
-const LOCAL_HOSTNAMES = new Set(['localhost', '127.0.0.1', '::1']);
-const isLocalAccess = typeof window !== 'undefined'
-  && LOCAL_HOSTNAMES.has(window.location.hostname);
 const GIT_STATUS_REFRESH_MS = 15_000;
 
 const EqualizeIcon = ({ className }: { className?: string }) => (
@@ -119,12 +117,12 @@ const ContentHeader = ({
   const editorPreset = useConfigStore((state) => state.editorPreset);
 
   const editorTarget = useMemo(
-    () => buildEditorUrl(editorPreset, editorUrl, activeTabCwd || '/'),
-    [editorPreset, editorUrl, activeTabCwd],
+    () => buildEditorUrl(editorPreset, editorUrl, activeTabCwd || activeTab?.cwd || '/'),
+    [editorPreset, editorUrl, activeTabCwd, activeTab?.cwd],
   );
   const editorTargetIsSafe = !!editorTarget && isSafeEditorTarget(editorTarget);
-  const editorTargetIsWeb = !!editorTarget && isWebEditorUrl(editorTarget);
-  const remoteNotSupported = editorTargetIsSafe && !editorTargetIsWeb && !isLocalAccess;
+  const remoteNotSupported = !!editorTarget && editorTargetIsSafe && typeof window !== 'undefined'
+    && !canOpenEditorTarget(editorPreset, editorTarget, window.location.hostname);
   const editorTooltipLabel = remoteNotSupported ? t('editorRemoteNotSupported') : t('openEditor');
   const paneId = focusedPane?.id;
 
@@ -162,20 +160,7 @@ const ContentHeader = ({
                   toast.error(t('editorUrlNotSet'));
                   return;
                 }
-                if (editorTargetIsWeb) {
-                  window.open(editorTarget, '_blank', 'noopener,noreferrer');
-                  return;
-                }
-                const api = (window as unknown as { electronAPI?: { openExternal: (url: string) => void } }).electronAPI;
-                if (api?.openExternal) {
-                  api.openExternal(editorTarget);
-                  return;
-                }
-                const iframe = document.createElement('iframe');
-                iframe.style.display = 'none';
-                iframe.src = editorTarget;
-                document.body.appendChild(iframe);
-                setTimeout(() => iframe.remove(), 1000);
+                openEditorTarget(editorTarget);
               }}
               aria-label={t('openEditor')}
             >

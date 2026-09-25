@@ -56,11 +56,15 @@
     }
   },
   "editor": {
+    "sshHost": "SSH-хост",
+    "sshHostDescription": "Укажите псевдоним SSH Host или user@host на компьютере с VS Code и установите Remote - SSH. Пути рабочих каталогов должны совпадать с Purplemux.",
+    "errorSshHost": "Укажите корректный SSH-псевдоним или user@host без схемы URL, пути и порта. Порт задаётся в конфигурации SSH.",
     "preset": "Редактор",
     "presetDescription": "Выберите, какой редактор открывать при нажатии кнопки EDITOR в заголовке.",
     "presets": {
       "code-server": "Code Server (Web)",
       "vscode": "VS Code",
+      "vscode-remote": "VS Code Remote SSH",
       "vscode-insiders": "VS Code Insiders",
       "cursor": "Cursor",
       "windsurf": "Windsurf",

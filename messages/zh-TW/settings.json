@@ -56,11 +56,15 @@
     }
   },
   "editor": {
+    "sshHost": "SSH 主機",
+    "sshHostDescription": "填寫本機 VS Code 使用的 SSH Host 別名或 user@host，並在本機安裝 Remote - SSH 擴充功能。該主機上的工作區路徑須與 Purplemux 一致。",
+    "errorSshHost": "請輸入有效的 SSH 主機別名或 user@host，不要包含協定、路徑或連接埠；自訂連接埠請在 SSH 設定中指定。",
     "preset": "編輯器",
     "presetDescription": "選擇點擊標題列 EDITOR 按鈕時要開啟的編輯器。",
     "presets": {
       "code-server": "Code Server (Web)",
       "vscode": "VS Code",
+      "vscode-remote": "VS Code Remote SSH",
       "vscode-insiders": "VS Code Insiders",
       "cursor": "Cursor",
       "windsurf": "Windsurf",

@@ -56,11 +56,15 @@
     }
   },
   "editor": {
+    "sshHost": "SSH ホスト",
+    "sshHostDescription": "VS Code を実行する端末の SSH Host エイリアスまたは user@host を入力し、Remote - SSH をインストールしてください。接続先の作業パスは Purplemux と一致する必要があります。",
+    "errorSshHost": "有効な SSH ホスト名または user@host を入力してください。ポートは SSH 設定で指定し、URL やパスは含めないでください。",
     "preset": "エディタ",
     "presetDescription": "ヘッダーのEDITORボタンをクリックしたときに開くエディタを選択します。",
     "presets": {
       "code-server": "Code Server (Web)",
       "vscode": "VS Code",
+      "vscode-remote": "VS Code Remote SSH",
       "vscode-insiders": "VS Code Insiders",
       "cursor": "Cursor",
       "windsurf": "Windsurf",

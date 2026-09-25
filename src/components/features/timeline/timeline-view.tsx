@@ -1,3 +1,5 @@
+import { EditorCwdContext } from '@/components/features/timeline/editor-file-link';
+import useTabMetadataStore from '@/hooks/use-tab-metadata-store';
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 import { Terminal, RefreshCw, OctagonX, LogOut, ChevronsUp, MessageSquareMore } from 'lucide-react';
@@ -45,6 +47,7 @@ interface ITimelineViewProps {
   sessionId: string | null;
   sessionName?: string;
   tabId?: string;
+  cwd?: string;
   initMeta?: IInitMeta;
   sessionStats?: ISessionStats | null;
   cliState: TCliState;
@@ -549,6 +552,7 @@ const TimelineView = ({
   sessionId,
   sessionName,
   tabId,
+  cwd,
   initMeta,
   sessionStats,
   cliState,
@@ -562,6 +566,7 @@ const TimelineView = ({
   scrollToBottomRef,
 }: ITimelineViewProps) => {
   const t = useTranslations('timeline');
+  const editorCwd = useTabMetadataStore((state) => tabId ? state.metadata[tabId]?.cwd : undefined);
   const needsInput = cliState === 'needs-input';
   const isCompacting = compactingSince != null && Date.now() - compactingSince < 60_000;
   const anchorElRef = useRef<HTMLDivElement | null>(null);
@@ -905,19 +910,21 @@ const TimelineView = ({
           {tasks.length > 0 && (
             <TaskChecklist tasks={tasks} cliState={cliState} />
           )}
-          {groupedItems.map((item) => (
-            <div
-              key={item.id}
-              ref={item.id === anchorUserId ? anchorElRef : undefined}
-              className="px-4 py-1.5"
-            >
-              {item.type === 'tool-group' ? (
-                <ToolGroupItem toolCalls={item.toolCalls} toolResults={item.toolResults} />
-              ) : (
-                <TimelineEntryRenderer entry={item.entry} sessionName={sessionName} tabId={tabId} sessionId={sessionId} />
-              )}
-            </div>
-          ))}
+          <EditorCwdContext.Provider value={editorCwd || cwd}>
+            {groupedItems.map((item) => (
+              <div
+                key={item.id}
+                ref={item.id === anchorUserId ? anchorElRef : undefined}
+                className="px-4 py-1.5"
+              >
+                {item.type === 'tool-group' ? (
+                  <ToolGroupItem toolCalls={item.toolCalls} toolResults={item.toolResults} />
+                ) : (
+                  <TimelineEntryRenderer entry={item.entry} sessionName={sessionName} tabId={tabId} sessionId={sessionId} />
+                )}
+              </div>
+            ))}
+          </EditorCwdContext.Provider>
           {(shouldProbeResumeDialog || needsInput) && sessionName && (
             <div className="px-4 py-1.5">
               <PermissionPromptItem
