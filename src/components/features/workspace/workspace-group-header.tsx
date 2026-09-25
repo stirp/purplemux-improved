@@ -61,7 +61,7 @@ const WorkspaceGroupHeader = ({
   return (
     <ContextMenu>
       <ContextMenuTrigger
-        className="group relative flex h-7 cursor-grab items-center gap-1 px-2 text-[11px] font-medium tracking-wide text-muted-foreground hover:bg-sidebar-accent/50 active:cursor-grabbing"
+        className="group relative flex h-7 cursor-grab items-center gap-1 px-2 text-sm font-medium tracking-wide text-muted-foreground hover:bg-sidebar-accent/50 active:cursor-grabbing"
         onClick={handleToggle}
         draggable={!isEditing}
         onDragStart={(event) => {
@@ -78,7 +78,7 @@ const WorkspaceGroupHeader = ({
         {isEditing ? (
           <input
             ref={inputRef}
-            className="min-w-0 flex-1 bg-transparent p-0 text-[11px] font-medium tracking-wide text-foreground outline-none"
+            className="min-w-0 flex-1 bg-transparent p-0 text-sm font-medium tracking-wide text-foreground outline-none"
             value={draft}
             onChange={(e) => setDraft(e.target.value)}
             onKeyDown={handleKeyDown}

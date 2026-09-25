@@ -4,6 +4,7 @@ import os from 'os';
 import path from 'path';
 import { promisify } from 'util';
 import { getShellPath } from '@/lib/preflight';
+import { buildShellEnv, defaultShell } from '@/lib/shell-env';
 import { parseSemanticVersion } from '@/lib/process-utils';
 import type { IAgentPreflight } from '@/lib/providers/types';
 
@@ -45,7 +46,22 @@ export const runClaudePreflight = async (): Promise<IAgentPreflight> => {
     installed = true;
     version = parseSemanticVersion(stdout);
   } catch {
-    installed = false;
+    try {
+      const shell = defaultShell();
+      const { stdout } = await execFile(shell, ['-ilc', 'claude --version'], {
+        timeout: CMD_TIMEOUT,
+        env: {
+          ...buildShellEnv(),
+          SHELL: shell,
+          DISABLE_AUTO_UPDATE: 'true',
+          ZSH_TMUX_AUTOSTARTED: 'true',
+        },
+      });
+      installed = true;
+      version = parseSemanticVersion(stdout);
+    } catch {
+      installed = false;
+    }
   }
 
   const binaryPath = installed ? null : await findClaudeBinary();
