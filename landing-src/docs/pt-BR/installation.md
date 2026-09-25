@@ -6,7 +6,7 @@ permalink: /pt-BR/docs/installation/index.html
 ---
 {% from "docs/callouts.njk" import callout %}
 
-Se você rodou `npx purplemux@latest` no [Início rápido](/purplemux/pt-BR/docs/quickstart/) e isso já bastou, está tudo certo. Esta página é para quem quer uma instalação persistente, um app de desktop ou rodar a partir do código-fonte.
+Se você rodou `npx purplemux-improved@latest` no [Início rápido](/purplemux-improved/pt-BR/docs/quickstart/) e isso já bastou, está tudo certo. Esta página é para quem quer uma instalação persistente, um app de desktop ou rodar a partir do código-fonte.
 
 ## Requisitos
 
@@ -19,27 +19,27 @@ Se você rodou `npx purplemux@latest` no [Início rápido](/purplemux/pt-BR/docs
 ### npx (sem instalar)
 
 ```bash
-npx purplemux@latest
+npx purplemux-improved@latest
 ```
 
-Baixa o purplemux na primeira execução e armazena em cache em `~/.npm/_npx/`. Ideal para experimentar ou rodar pontualmente em uma máquina remota. Cada execução usa a versão publicada mais recente.
+Baixa o purplemux-improved na primeira execução e armazena em cache em `~/.npm/_npx/`. Ideal para experimentar ou rodar pontualmente em uma máquina remota. Cada execução usa a versão publicada mais recente.
 
 ### Instalação global
 
 ```bash
-npm install -g purplemux
-purplemux
+npm install -g purplemux-improved
+purplemux-improved
 ```
 
-pnpm e yarn funcionam do mesmo jeito (`pnpm add -g purplemux` / `yarn global add purplemux`). As execuções seguintes ficam mais rápidas porque nada precisa ser resolvido. Atualize com `npm update -g purplemux`.
+pnpm e yarn funcionam do mesmo jeito (`pnpm add -g purplemux-improved` / `yarn global add purplemux-improved`). As execuções seguintes ficam mais rápidas porque nada precisa ser resolvido. Atualize com `npm update -g purplemux-improved`.
 
 O binário também está disponível como `pmux`, para encurtar.
 
 ### App nativo do macOS
 
-Baixe o `.dmg` mais recente em [Releases](https://github.com/subicura/purplemux/releases/latest) — temos builds para Apple Silicon e Intel. Auto-update incluído.
+Baixe o `.dmg` mais recente em [Releases](https://github.com/stirp/purplemux-improved/releases/latest) — temos builds para Apple Silicon e Intel. Auto-update incluído.
 
-O app empacota Node, tmux e o servidor purplemux, e ainda adiciona:
+O app empacota Node, tmux e o servidor purplemux-improved, e ainda adiciona:
 
 - Um ícone na barra de menu mostrando o status do servidor
 - Notificações nativas (separadas das Web Push)
@@ -48,8 +48,8 @@ O app empacota Node, tmux e o servidor purplemux, e ainda adiciona:
 ### Rodando direto do código-fonte
 
 ```bash
-git clone https://github.com/subicura/purplemux.git
-cd purplemux
+git clone https://github.com/stirp/purplemux-improved.git
+cd purplemux-improved
 pnpm install
 pnpm start
 ```
@@ -62,25 +62,25 @@ pnpm dev
 
 ## Porta e variáveis de ambiente
 
-O purplemux escuta na porta **8022** (web + ssh, brincadeira nossa). Sobrescreva com `PORT`:
+O purplemux-improved escuta na porta **8022** (web + ssh, brincadeira nossa). Sobrescreva com `PORT`:
 
 ```bash
-PORT=9000 purplemux
+PORT=9000 purplemux-improved
 ```
 
 O log é controlado por `LOG_LEVEL` (padrão `info`) e `LOG_LEVELS` para overrides por módulo:
 
 ```bash
-LOG_LEVEL=debug purplemux
+LOG_LEVEL=debug purplemux-improved
 # debug apenas no módulo de hooks do Claude
-LOG_LEVELS=hooks=debug purplemux
+LOG_LEVELS=hooks=debug purplemux-improved
 # vários módulos de uma vez
-LOG_LEVELS=hooks=debug,status=warn purplemux
+LOG_LEVELS=hooks=debug,status=warn purplemux-improved
 ```
 
 Níveis disponíveis: `trace` · `debug` · `info` · `warn` · `error` · `fatal`. Módulos não listados em `LOG_LEVELS` caem em `LOG_LEVEL`.
 
-Veja [Portas e variáveis de ambiente](/purplemux/pt-BR/docs/ports-env-vars/) para a lista completa.
+Veja [Portas e variáveis de ambiente](/purplemux-improved/pt-BR/docs/ports-env-vars/) para a lista completa.
 
 ## Iniciar no boot
 
@@ -91,12 +91,12 @@ Se você usa o app de macOS, ative **Configurações → Geral → Iniciar no lo
 Para uma instalação via CLI, embrulhe num launchd (macOS) ou systemd (Linux). Uma unit mínima do systemd fica assim:
 
 ```ini
-# ~/.config/systemd/user/purplemux.service
+# ~/.config/systemd/user/purplemux-improved.service
 [Unit]
-Description=purplemux
+Description=purplemux-improved
 
 [Service]
-ExecStart=/usr/local/bin/purplemux
+ExecStart=/usr/local/bin/purplemux-improved
 Restart=on-failure
 
 [Install]
@@ -104,7 +104,7 @@ WantedBy=default.target
 ```
 
 ```bash
-systemctl --user enable --now purplemux
+systemctl --user enable --now purplemux-improved
 ```
 
 ## Atualizando
@@ -112,15 +112,15 @@ systemctl --user enable --now purplemux
 | Método | Comando |
 |---|---|
 | npx | automático (sempre a versão mais recente) |
-| npm global | `npm update -g purplemux` |
+| npm global | `npm update -g purplemux-improved` |
 | App de macOS | automático (atualiza ao iniciar) |
 | Código-fonte | `git pull && pnpm install && pnpm start` |
 
 ## Desinstalar
 
 ```bash
-npm uninstall -g purplemux          # ou pnpm remove -g / yarn global remove
+npm uninstall -g purplemux-improved          # ou pnpm remove -g / yarn global remove
 rm -rf ~/.purplemux                 # apaga configurações e dados de sessão
 ```
 
-O app nativo é arrastado para a Lixeira normalmente. Veja [Diretório de dados](/purplemux/pt-BR/docs/data-directory/) para saber exatamente o que fica em `~/.purplemux/`.
+O app nativo é arrastado para a Lixeira normalmente. Veja [Diretório de dados](/purplemux-improved/pt-BR/docs/data-directory/) para saber exatamente o que fica em `~/.purplemux/`.

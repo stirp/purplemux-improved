@@ -31,7 +31,7 @@ permalink: /ru/docs/sidebar-options/index.html
 Кликните Сохранить, и строка появится внизу списка. Перетащите её куда нужно.
 
 {% call callout('note', 'Встроенные можно скрыть, нельзя удалить') %}
-У встроенных элементов (тех, что purplemux поставляет) есть только переключатель и ручка — без редактирования и удаления. Они всегда на месте на случай, если передумаете. У кастомных полный набор.
+У встроенных элементов (тех, что purplemux-improved поставляет) есть только переключатель и ручка — без редактирования и удаления. Они всегда на месте на случай, если передумаете. У кастомных полный набор.
 {% endcall %}
 
 ## Быстрые промпты
@@ -49,13 +49,13 @@ permalink: /ru/docs/sidebar-options/index.html
 
 ## Опции Claude CLI
 
-Настройки → вкладка **Claude**. Эти флаги влияют на *как purplemux запускает Claude CLI* в новых вкладках — поведение уже работающей сессии они не меняют.
+Настройки → вкладка **Claude**. Эти флаги влияют на *как purplemux-improved запускает Claude CLI* в новых вкладках — поведение уже работающей сессии они не меняют.
 
 ### Skip Permission Checks
 
 Добавляет `--dangerously-skip-permissions` к команде `claude`. Claude будет запускать инструменты и редактировать файлы, не спрашивая каждый раз одобрения.
 
-Это тот же флаг, который выставляет официальный CLI — purplemux ничего не ослабляет сверху. Прочитайте [документацию Anthropic](https://docs.anthropic.com/en/docs/claude-code/cli-reference) перед включением. Включайте только для доверенных рабочих пространств.
+Это тот же флаг, который выставляет официальный CLI — purplemux-improved ничего не ослабляет сверху. Прочитайте [документацию Anthropic](https://docs.anthropic.com/en/docs/claude-code/cli-reference) перед включением. Включайте только для доверенных рабочих пространств.
 
 ### Show Terminal with Claude
 
@@ -67,6 +67,6 @@ permalink: /ru/docs/sidebar-options/index.html
 
 ## Что дальше
 
-- **[Темы и шрифты](/purplemux/ru/docs/themes-fonts/)** — light, dark, system; пресеты размера шрифта.
-- **[Интеграция с редактором](/purplemux/ru/docs/editor-integration/)** — подключите VS Code, Cursor, code-server.
-- **[Первая сессия](/purplemux/ru/docs/first-session/)** — освежите раскладку панели.
+- **[Темы и шрифты](/purplemux-improved/ru/docs/themes-fonts/)** — light, dark, system; пресеты размера шрифта.
+- **[Интеграция с редактором](/purplemux-improved/ru/docs/editor-integration/)** — подключите VS Code, Cursor, code-server.
+- **[Первая сессия](/purplemux-improved/ru/docs/first-session/)** — освежите раскладку панели.

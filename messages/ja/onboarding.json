@@ -31,7 +31,7 @@
   "appearanceDescription": "アプリ全体の表示テーマを選択します。",
   "skipPermissions": "権限チェックをスキップ",
   "skipPermissionsDescription": "Skips permission prompts when running Claude and Codex agents.",
-  "networkDescription": "どのネットワークから purplemux にアクセスできるかを選択します。設定 > システムで後から変更できます。",
+  "networkDescription": "どのネットワークから purplemux-improved にアクセスできるかを選択します。設定 > システムで後から変更できます。",
   "networkFootnote": "リバースプロキシ、トンネル、Tailscale Serve を経由する場合は「Localhost のみ」で十分です。",
   "networkOptions": {
     "localhost": {

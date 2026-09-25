@@ -31,7 +31,7 @@ permalink: /ja/docs/sidebar-options/index.html
 Save を押すとリスト下部に行が現れます。好きな位置にドラッグしてください。
 
 {% call callout('note', 'ビルトインは隠せても削除できない') %}
-ビルトイン項目 (purplemux に同梱されているもの) はスイッチとグリップだけがあります — 編集や削除はできません。気が変わったときのために常にそこにあります。カスタム項目はフルセットの操作が可能です。
+ビルトイン項目 (purplemux-improved に同梱されているもの) はスイッチとグリップだけがあります — 編集や削除はできません。気が変わったときのために常にそこにあります。カスタム項目はフルセットの操作が可能です。
 {% endcall %}
 
 ## クイックプロンプト
@@ -49,13 +49,13 @@ Save を押すとリスト下部に行が現れます。好きな位置にドラ
 
 ## Claude CLI オプション
 
-設定 → **Claude** タブ。これらのフラグは *purplemux が新しいタブで Claude CLI を起動する方法* に影響します — 既に動作中のセッションの動作は変わりません。
+設定 → **Claude** タブ。これらのフラグは *purplemux-improved が新しいタブで Claude CLI を起動する方法* に影響します — 既に動作中のセッションの動作は変わりません。
 
 ### Skip Permission Checks
 
 `claude` コマンドに `--dangerously-skip-permissions` を追加します。Claude が毎回承認を求めずにツールを実行しファイルを編集するようになります。
 
-これは公式 CLI が公開しているのと同じフラグで、purplemux はその上に追加の安全性を緩めることはしていません。有効化する前に [Anthropic のドキュメント](https://docs.anthropic.com/en/docs/claude-code/cli-reference) を読んでください。信頼できるワークスペースに限って使うものとして扱ってください。
+これは公式 CLI が公開しているのと同じフラグで、purplemux-improved はその上に追加の安全性を緩めることはしていません。有効化する前に [Anthropic のドキュメント](https://docs.anthropic.com/en/docs/claude-code/cli-reference) を読んでください。信頼できるワークスペースに限って使うものとして扱ってください。
 
 ### Show Terminal with Claude
 
@@ -67,6 +67,6 @@ Save を押すとリスト下部に行が現れます。好きな位置にドラ
 
 ## 次のステップ
 
-- **[テーマとフォント](/purplemux/ja/docs/themes-fonts/)** — ライト、ダーク、システム; フォントサイズプリセット。
-- **[エディタ連携](/purplemux/ja/docs/editor-integration/)** — VS Code、Cursor、code-server を接続。
-- **[最初のセッション](/purplemux/ja/docs/first-session/)** — ダッシュボードレイアウトを再確認。
+- **[テーマとフォント](/purplemux-improved/ja/docs/themes-fonts/)** — ライト、ダーク、システム; フォントサイズプリセット。
+- **[エディタ連携](/purplemux-improved/ja/docs/editor-integration/)** — VS Code、Cursor、code-server を接続。
+- **[最初のセッション](/purplemux-improved/ja/docs/first-session/)** — ダッシュボードレイアウトを再確認。

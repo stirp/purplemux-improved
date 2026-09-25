@@ -1,38 +1,38 @@
 ---
 title: CLI reference
-description: Каждая подкоманда и флаг бинарей purplemux и pmux.
+description: Каждая подкоманда и флаг бинарей purplemux-improved и pmux.
 eyebrow: Справочник
 permalink: /ru/docs/cli-reference/index.html
 ---
 {% from "docs/callouts.njk" import callout %}
 
-`purplemux` поставляется с двумя способами использования бинаря: как стартер сервера (`purplemux` / `purplemux start`) и как обёртка над HTTP API (`purplemux <subcommand>`), которая разговаривает с работающим сервером. Короткий алиас `pmux` идентичен.
+`purplemux-improved` поставляется с двумя способами использования бинаря: как стартер сервера (`purplemux-improved` / `purplemux-improved start`) и как обёртка над HTTP API (`purplemux-improved <subcommand>`), которая разговаривает с работающим сервером. Короткий алиас `pmux` идентичен.
 
 ## Две роли, один бинарь
 
 | Форма | Что делает |
 |---|---|
-| `purplemux` | Запускает сервер. То же, что `purplemux start`. |
-| `purplemux <subcommand>` | Разговаривает с CLI HTTP API работающего сервера. |
-| `pmux ...` | Алиас для `purplemux ...`. |
+| `purplemux-improved` | Запускает сервер. То же, что `purplemux-improved start`. |
+| `purplemux-improved <subcommand>` | Разговаривает с CLI HTTP API работающего сервера. |
+| `pmux ...` | Алиас для `purplemux-improved ...`. |
 
 Диспетчер в `bin/purplemux.js` отделяет первый аргумент: известные подкоманды идут в `bin/cli.js`, всё остальное (или ничего) запускает сервер.
 
 ## Запуск сервера
 
 ```bash
-purplemux              # по умолчанию
-purplemux start        # то же, явно
-PORT=9000 purplemux    # кастомный порт
-HOST=all purplemux     # привязка везде
+purplemux-improved              # по умолчанию
+purplemux-improved start        # то же, явно
+PORT=9000 purplemux-improved    # кастомный порт
+HOST=all purplemux-improved     # привязка везде
 ```
 
-Полный набор env — в [Порты и переменные окружения](/purplemux/ru/docs/ports-env-vars/).
+Полный набор env — в [Порты и переменные окружения](/purplemux-improved/ru/docs/ports-env-vars/).
 
 Сервер печатает свои привязанные URL, режим и статус аутентификации:
 
 ```
-  ⚡ purplemux  v0.x.x
+  ⚡ purplemux-improved  v0.x.x
   ➜  Available on:
        http://127.0.0.1:8022
        http://192.168.1.42:8022
@@ -48,16 +48,16 @@ HOST=all purplemux     # привязка везде
 
 | Команда | Назначение |
 |---|---|
-| `purplemux workspaces` | Список рабочих пространств |
-| `purplemux tab list [-w WS]` | Список вкладок (опционально в рамках рабочего пространства) |
-| `purplemux tab create -w WS [-n NAME] [-t TYPE]` | Создать новую вкладку |
-| `purplemux tab send -w WS TAB_ID CONTENT...` | Отправить ввод во вкладку |
-| `purplemux tab status -w WS TAB_ID` | Посмотреть статус вкладки |
-| `purplemux tab result -w WS TAB_ID` | Снять текущее содержимое панели вкладки |
-| `purplemux tab close -w WS TAB_ID` | Закрыть вкладку |
-| `purplemux tab browser ...` | Управлять вкладкой `web-browser` (только в Electron) |
-| `purplemux api-guide` | Распечатать полный HTTP API |
-| `purplemux help` | Показать использование |
+| `purplemux-improved workspaces` | Список рабочих пространств |
+| `purplemux-improved tab list [-w WS]` | Список вкладок (опционально в рамках рабочего пространства) |
+| `purplemux-improved tab create -w WS [-n NAME] [-t TYPE]` | Создать новую вкладку |
+| `purplemux-improved tab send -w WS TAB_ID CONTENT...` | Отправить ввод во вкладку |
+| `purplemux-improved tab status -w WS TAB_ID` | Посмотреть статус вкладки |
+| `purplemux-improved tab result -w WS TAB_ID` | Снять текущее содержимое панели вкладки |
+| `purplemux-improved tab close -w WS TAB_ID` | Закрыть вкладку |
+| `purplemux-improved tab browser ...` | Управлять вкладкой `web-browser` (только в Electron) |
+| `purplemux-improved api-guide` | Распечатать полный HTTP API |
+| `purplemux-improved help` | Показать использование |
 
 Вывод — JSON, если не указано иное. `--workspace` и `-w` взаимозаменяемы.
 
@@ -80,32 +80,32 @@ HOST=all purplemux     # привязка везде
 
 | Подкоманда | Что возвращает |
 |---|---|
-| `purplemux tab browser url -w WS TAB_ID` | Текущий URL + заголовок страницы |
-| `purplemux tab browser screenshot -w WS TAB_ID [-o FILE] [--full]` | PNG. С `-o` сохраняет на диск; без — возвращает base64. `--full` снимает всю страницу. |
-| `purplemux tab browser console -w WS TAB_ID [--since MS] [--level LEVEL]` | Недавние записи консоли (кольцевой буфер, 500 записей) |
-| `purplemux tab browser network -w WS TAB_ID [--since MS] [--method M] [--url SUBSTR] [--status CODE] [--request ID]` | Недавние сетевые записи; `--request ID` достаёт одно тело |
-| `purplemux tab browser eval -w WS TAB_ID EXPR` | Вычислить JS-выражение и сериализовать результат |
+| `purplemux-improved tab browser url -w WS TAB_ID` | Текущий URL + заголовок страницы |
+| `purplemux-improved tab browser screenshot -w WS TAB_ID [-o FILE] [--full]` | PNG. С `-o` сохраняет на диск; без — возвращает base64. `--full` снимает всю страницу. |
+| `purplemux-improved tab browser console -w WS TAB_ID [--since MS] [--level LEVEL]` | Недавние записи консоли (кольцевой буфер, 500 записей) |
+| `purplemux-improved tab browser network -w WS TAB_ID [--since MS] [--method M] [--url SUBSTR] [--status CODE] [--request ID]` | Недавние сетевые записи; `--request ID` достаёт одно тело |
+| `purplemux-improved tab browser eval -w WS TAB_ID EXPR` | Вычислить JS-выражение и сериализовать результат |
 
 ## Примеры
 
 ```bash
 # Найти своё рабочее пространство
-purplemux workspaces
+purplemux-improved workspaces
 
 # Создать вкладку Claude в рабочем пространстве ws-MMKl07
-purplemux tab create -w ws-MMKl07 -t claude-code -n "refactor auth"
+purplemux-improved tab create -w ws-MMKl07 -t claude-code -n "refactor auth"
 
 # Отправить в неё промпт (TAB_ID берётся из `tab list`)
-purplemux tab send -w ws-MMKl07 tb-abc "Refactor src/lib/auth.ts to remove the cookie path"
+purplemux-improved tab send -w ws-MMKl07 tb-abc "Refactor src/lib/auth.ts to remove the cookie path"
 
 # Смотреть состояние
-purplemux tab status -w ws-MMKl07 tb-abc
+purplemux-improved tab status -w ws-MMKl07 tb-abc
 
 # Снимок панели
-purplemux tab result -w ws-MMKl07 tb-abc
+purplemux-improved tab result -w ws-MMKl07 tb-abc
 
 # Скриншот вкладки веб-браузера полной страницей
-purplemux tab browser screenshot -w ws-MMKl07 tb-xyz -o page.png --full
+purplemux-improved tab browser screenshot -w ws-MMKl07 tb-xyz -o page.png --full
 ```
 
 ## Аутентификация
@@ -120,7 +120,7 @@ purplemux tab browser screenshot -w ws-MMKl07 tb-xyz -o page.png --full
 | `PMUX_TOKEN` | содержимое `~/.purplemux/cli-token` | Bearer-токен, отправляемый как `x-pmux-token` |
 
 ```bash
-PMUX_PORT=8022 PMUX_TOKEN=$(cat ~/.purplemux/cli-token) purplemux workspaces
+PMUX_PORT=8022 PMUX_TOKEN=$(cat ~/.purplemux/cli-token) purplemux-improved workspaces
 ```
 
 {% call callout('warning') %}
@@ -129,14 +129,14 @@ CLI-токен даёт полный доступ к серверу. Обращ�
 
 ## update-notifier
 
-`purplemux` проверяет npm на новую версию при каждом запуске (через `update-notifier`) и печатает баннер, если есть. Отключается через `NO_UPDATE_NOTIFIER=1` или любым из [стандартных opt-out'ов update-notifier](https://github.com/yeoman/update-notifier#user-settings).
+`purplemux-improved` проверяет npm на новую версию при каждом запуске (через `update-notifier`) и печатает баннер, если есть. Отключается через `NO_UPDATE_NOTIFIER=1` или любым из [стандартных opt-out'ов update-notifier](https://github.com/yeoman/update-notifier#user-settings).
 
 ## Полный HTTP API
 
-`purplemux api-guide` печатает полный HTTP API для каждого эндпоинта `/api/cli/*`, включая тела запросов и формы ответов — пригодится, когда хочется управлять purplemux напрямую через `curl` или другой рантайм.
+`purplemux-improved api-guide` печатает полный HTTP API для каждого эндпоинта `/api/cli/*`, включая тела запросов и формы ответов — пригодится, когда хочется управлять purplemux-improved напрямую через `curl` или другой рантайм.
 
 ## Что дальше
 
-- **[Порты и переменные окружения](/purplemux/ru/docs/ports-env-vars/)** — `PMUX_PORT` / `PMUX_TOKEN` в более широком контексте env.
-- **[Архитектура](/purplemux/ru/docs/architecture/)** — что именно слушает CLI.
-- **[Поиск проблем](/purplemux/ru/docs/troubleshooting/)** — когда CLI говорит «is the server running?».
+- **[Порты и переменные окружения](/purplemux-improved/ru/docs/ports-env-vars/)** — `PMUX_PORT` / `PMUX_TOKEN` в более широком контексте env.
+- **[Архитектура](/purplemux-improved/ru/docs/architecture/)** — что именно слушает CLI.
+- **[Поиск проблем](/purplemux-improved/ru/docs/troubleshooting/)** — когда CLI говорит «is the server running?».

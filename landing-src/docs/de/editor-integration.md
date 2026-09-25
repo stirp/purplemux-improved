@@ -34,7 +34,7 @@ Es gibt einen wichtigen Unterschied, wie jedes Preset einen Ordner öffnet:
 - **code-server** läuft im Browser. Die URL zeigt auf den Server, den du hostest (deinen, im Netzwerk oder hinter Tailscale). Klick den EDITOR-Button, und ein neuer Tab lädt den Ordner.
 - **Lokale IDEs** (VS Code, Cursor, Windsurf, Zed) verlangen, dass die IDE auf der *Maschine, auf der der Browser läuft*, installiert ist. Der Link wird ans OS übergeben, das den registrierten Handler startet.
 
-Wenn du purplemux auf dem Handy nutzt, funktioniert nur das code-server-Preset — Handys können `vscode://`-URLs nicht in eine Desktop-App öffnen.
+Wenn du purplemux-improved auf dem Handy nutzt, funktioniert nur das code-server-Preset — Handys können `vscode://`-URLs nicht in eine Desktop-App öffnen.
 
 ## code-server-Setup
 
@@ -51,10 +51,10 @@ code-server --port 8080
 tailscale serve --bg --https=8443 http://localhost:8080
 ```
 
-Dann im Editor-Tab die URL auf die Adresse setzen, unter der code-server erreichbar ist — `http://localhost:8080` lokal oder `https://<machine>.<tailnet>.ts.net:8443`, falls du es hinter Tailscale Serve gepackt hast. purplemux validiert, dass die URL mit `http://` oder `https://` beginnt, und hängt automatisch `?folder=<absoluter Pfad>` an.
+Dann im Editor-Tab die URL auf die Adresse setzen, unter der code-server erreichbar ist — `http://localhost:8080` lokal oder `https://<machine>.<tailnet>.ts.net:8443`, falls du es hinter Tailscale Serve gepackt hast. purplemux-improved validiert, dass die URL mit `http://` oder `https://` beginnt, und hängt automatisch `?folder=<absoluter Pfad>` an.
 
 {% call callout('note', 'Wähl einen Port, der nicht 8022 ist') %}
-purplemux lebt schon auf `8022`. Lass code-server auf einem anderen Port laufen (das Beispiel nutzt `8080`), damit sie sich nicht streiten.
+purplemux-improved lebt schon auf `8022`. Lass code-server auf einem anderen Port laufen (das Beispiel nutzt `8080`), damit sie sich nicht streiten.
 {% endcall %}
 
 ## Custom-URL-Template
@@ -69,7 +69,7 @@ myeditor://open?path={folderEncoded}
 https://my.coder.example/workspace?dir={folderEncoded}
 ```
 
-purplemux validiert das Template beim Speichern und weigert sich bei einem ohne Platzhalter.
+purplemux-improved validiert das Template beim Speichern und weigert sich bei einem ohne Platzhalter.
 
 ## Den Button deaktivieren
 
@@ -77,6 +77,6 @@ Wähl **Deaktiviert**. Der Button verschwindet aus dem Workspace-Header.
 
 ## Wie es weitergeht
 
-- **[Seitenleiste & Claude-Optionen](/purplemux/de/docs/sidebar-options/)** — Sidebar-Items umsortieren, Claude-Flags umschalten.
-- **[Custom CSS](/purplemux/de/docs/custom-css/)** — weiteres visuelles Tuning.
-- **[Tailscale](/purplemux/de/docs/tailscale/)** — sicherer externer Zugriff auch für code-server.
+- **[Seitenleiste & Claude-Optionen](/purplemux-improved/de/docs/sidebar-options/)** — Sidebar-Items umsortieren, Claude-Flags umschalten.
+- **[Custom CSS](/purplemux-improved/de/docs/custom-css/)** — weiteres visuelles Tuning.
+- **[Tailscale](/purplemux-improved/de/docs/tailscale/)** — sicherer externer Zugriff auch für code-server.

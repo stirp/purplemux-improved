@@ -108,16 +108,24 @@ const ToolCallItem = ({ entry, result }: IToolCallItemProps) => {
           {renderToolIcon(entry.toolName, 12)}
         </span>
         <div className="min-w-0 flex-1">
-          <span className="text-xs font-mono break-all block">{entry.summary}</span>
-          {result && result.summary && !(hasDiff && !result.isError) && (
-            <p
+          {entry.input ? (
+            <>
+              <span className="text-xs font-mono break-all block">{entry.toolName}</span>
+              <pre className="mt-1 max-h-80 overflow-auto rounded border border-border/40 bg-muted/40 p-2 text-xs font-mono whitespace-pre-wrap break-words">{entry.input}</pre>
+            </>
+          ) : (
+            <span className="text-xs font-mono break-all block">{entry.summary}</span>
+          )}
+          {result && (result.output || result.summary) && !(hasDiff && !result.isError) && (
+            <pre
               className={cn(
                 'mt-0.5 text-xs whitespace-pre-wrap break-words font-mono',
+                result.output && 'max-h-80 overflow-auto rounded border border-border/40 bg-muted/40 p-2',
                 result.isError ? 'text-negative/70' : 'text-muted-foreground/60',
               )}
             >
-              {result.summary}
-            </p>
+              {result.output || result.summary}
+            </pre>
           )}
         </div>
       </div>

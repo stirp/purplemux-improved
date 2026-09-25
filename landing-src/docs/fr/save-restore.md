@@ -6,7 +6,7 @@ permalink: /fr/docs/save-restore/index.html
 ---
 {% from "docs/callouts.njk" import callout %}
 
-purplemux est conçu autour de l'idée que fermer un onglet dans votre navigateur ne devrait pas mettre fin à une session. Deux pièces travaillent de concert : tmux maintient les shells en vie, et `~/.purplemux/workspaces.json` se souvient de la mise en page.
+purplemux-improved est conçu autour de l'idée que fermer un onglet dans votre navigateur ne devrait pas mettre fin à une session. Deux pièces travaillent de concert : tmux maintient les shells en vie, et `~/.purplemux/workspaces.json` se souvient de la mise en page.
 
 ## Ce qui est persisté
 
@@ -18,7 +18,7 @@ Tout ce qui est visible dans un espace de travail :
 - Répertoire de travail de chaque shell
 - Groupes d'espaces, noms et ordre
 
-`workspaces.json` est mis à jour de manière transactionnelle à chaque changement de mise en page, le fichier reflète donc toujours l'état courant. Voir [Répertoire de données](/purplemux/fr/docs/data-directory/) pour la cartographie sur disque.
+`workspaces.json` est mis à jour de manière transactionnelle à chaque changement de mise en page, le fichier reflète donc toujours l'état courant. Voir [Répertoire de données](/purplemux-improved/fr/docs/data-directory/) pour la cartographie sur disque.
 
 ## Fermer le navigateur
 
@@ -34,7 +34,7 @@ Idem sur le téléphone. Fermez la PWA, verrouillez l'appareil, revenez le lende
 
 ## Récupérer après un redémarrage du serveur
 
-Un redémarrage tue bien les processus tmux — ce sont juste des processus OS. purplemux gère ça au démarrage suivant :
+Un redémarrage tue bien les processus tmux — ce sont juste des processus OS. purplemux-improved gère ça au démarrage suivant :
 
 1. **Lecture de la mise en page** — `workspaces.json` décrit chaque espace, volet et onglet.
 2. **Recréation des sessions en parallèle** — pour chaque onglet, une nouvelle session tmux est créée dans son répertoire de travail sauvegardé.
@@ -58,12 +58,12 @@ Vous n'avez normalement pas besoin d'y toucher, mais pour les curieux :
 
 - Le socket tmux s'appelle `purple`. Inspectez avec `tmux -L purple ls`.
 - Les sessions sont nommées `pt-{workspaceId}-{paneId}-{tabId}`.
-- Éditer `workspaces.json` pendant que purplemux tourne n'est pas sûr — le serveur le tient ouvert et écrit dedans.
+- Éditer `workspaces.json` pendant que purplemux-improved tourne n'est pas sûr — le serveur le tient ouvert et écrit dedans.
 
-Pour aller plus loin (protocole binaire, backpressure, surveillance JSONL), voir [Comment ça marche](/purplemux/#how) sur la page d'accueil.
+Pour aller plus loin (protocole binaire, backpressure, surveillance JSONL), voir [Comment ça marche](/purplemux-improved/#how) sur la page d'accueil.
 
 ## Pour aller plus loin
 
-- **[Espaces de travail & groupes](/purplemux/fr/docs/workspaces-groups/)** — ce qui est sauvegardé par espace.
-- **[Onglets & volets](/purplemux/fr/docs/tabs-panes/)** — ce qui est sauvegardé par onglet.
-- **[Compatibilité navigateur](/purplemux/fr/docs/browser-support/)** — particularités connues sur les onglets en arrière-plan mobile et les reconnexions.
+- **[Espaces de travail & groupes](/purplemux-improved/fr/docs/workspaces-groups/)** — ce qui est sauvegardé par espace.
+- **[Onglets & volets](/purplemux-improved/fr/docs/tabs-panes/)** — ce qui est sauvegardé par onglet.
+- **[Compatibilité navigateur](/purplemux-improved/fr/docs/browser-support/)** — particularités connues sur les onglets en arrière-plan mobile et les reconnexions.

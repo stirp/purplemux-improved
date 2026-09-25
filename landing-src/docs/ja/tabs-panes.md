@@ -74,10 +74,10 @@ permalink: /ja/docs/tabs-panes/index.html
 
 タブを閉じると、その tmux セッションが kill されます。*ブラウザ* を閉じる、リフレッシュする、ネットワークを失う — どれもタブを kill しません。すべてのタブはサーバ上で動作し続けます。再オープンすると同じペイン、分割、タブが戻ってきます。
 
-サーバ再起動を含む復元の話は [レイアウトの保存と復元](/purplemux/ja/docs/save-restore/) を参照してください。
+サーバ再起動を含む復元の話は [レイアウトの保存と復元](/purplemux-improved/ja/docs/save-restore/) を参照してください。
 
 ## 次のステップ
 
-- **[レイアウトの保存と復元](/purplemux/ja/docs/save-restore/)** — このレイアウトが残り続ける仕組み。
-- **[キーボードショートカット](/purplemux/ja/docs/keyboard-shortcuts/)** — すべてのバインディングを 1 つの表で。
-- **[Git ワークフローパネル](/purplemux/ja/docs/git-workflow/)** — 分割に入れると便利な、もう 1 つのタブタイプ。
+- **[レイアウトの保存と復元](/purplemux-improved/ja/docs/save-restore/)** — このレイアウトが残り続ける仕組み。
+- **[キーボードショートカット](/purplemux-improved/ja/docs/keyboard-shortcuts/)** — すべてのバインディングを 1 つの表で。
+- **[Git ワークフローパネル](/purplemux-improved/ja/docs/git-workflow/)** — 分割に入れると便利な、もう 1 つのタブタイプ。

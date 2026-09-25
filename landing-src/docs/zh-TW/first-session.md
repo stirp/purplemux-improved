@@ -6,7 +6,7 @@ permalink: /zh-TW/docs/first-session/index.html
 ---
 {% from "docs/callouts.njk" import callout %}
 
-purplemux 已經在執行（如果還沒，請參考 [快速開始](/purplemux/zh-TW/docs/quickstart/)）。本頁介紹 UI 各部分的實際功能，讓最初幾分鐘不再那麼抽象。
+purplemux-improved 已經在執行（如果還沒，請參考 [快速開始](/purplemux-improved/zh-TW/docs/quickstart/)）。本頁介紹 UI 各部分的實際功能，讓最初幾分鐘不再那麼抽象。
 
 ## 儀表板
 
@@ -40,7 +40,7 @@ purplemux 已經在執行（如果還沒，請參考 [快速開始](/purplemux/z
 - **Claude** — 啟動後 shell 中已執行 `claude`。
 
 {% call callout('tip', '範本只是捷徑') %}
-本質上每個分頁都是普通 shell。Claude 範本不過是「打開終端機並執行 `claude`」。如果你之後在 Terminal 分頁中手動執行 `claude`，purplemux 也會偵測到並以同樣的方式顯示其狀態。
+本質上每個分頁都是普通 shell。Claude 範本不過是「打開終端機並執行 `claude`」。如果你之後在 Terminal 分頁中手動執行 `claude`，purplemux-improved 也會偵測到並以同樣的方式顯示其狀態。
 {% endcall %}
 
 ## 解讀工作階段狀態
@@ -54,17 +54,17 @@ purplemux 已經在執行（如果還沒，請參考 [快速開始](/purplemux/z
 | **需要輸入**（琥珀色） | Claude 遇到權限提示或詢問了問題。 |
 | **待檢視**（藍色） | 工作完成，Claude 已停止；有東西要你檢查。 |
 
-狀態切換幾乎是即時的。詳情請見 [工作階段狀態](/purplemux/zh-TW/docs/session-status/) 解釋偵測機制。
+狀態切換幾乎是即時的。詳情請見 [工作階段狀態](/purplemux-improved/zh-TW/docs/session-status/) 解釋偵測機制。
 
 ## 回應權限提示
 
-當 Claude 要求執行工具或編輯檔案時，purplemux 會 **攔截提示** 並在工作階段檢視中內嵌顯示。你可以：
+當 Claude 要求執行工具或編輯檔案時，purplemux-improved 會 **攔截提示** 並在工作階段檢視中內嵌顯示。你可以：
 
 - 點選 **1 · 是** / **2 · 是，永遠允許** / **3 · 否**，或
 - 按下對應的數字鍵，或
 - 不予理會，改用手機回應 — 行動 Web Push 會發出相同的通知。
 
-Claude CLI 並不會真的卡在攔截到的提示上；purplemux 會把你的回答原封不動傳回去。
+Claude CLI 並不會真的卡在攔截到的提示上；purplemux-improved 會把你的回答原封不動傳回去。
 
 ## 分割與切換
 
@@ -75,13 +75,13 @@ Claude CLI 並不會真的卡在攔截到的提示上；purplemux 會把你的�
 - <kbd>⌘⌥←/→/↑/↓</kbd> — 在分割之間移動焦點
 - <kbd>⌘⇧[</kbd> / <kbd>⌘⇧]</kbd> — 上一個 / 下一個分頁
 
-完整列表請見 [鍵盤快速鍵](/purplemux/zh-TW/docs/keyboard-shortcuts/)。
+完整列表請見 [鍵盤快速鍵](/purplemux-improved/zh-TW/docs/keyboard-shortcuts/)。
 
 ## 儲存與還原
 
-關閉瀏覽器，分頁不會消失 — tmux 在伺服器上保留它們。一小時後（或一週後）重新整理，purplemux 會還原完整版面，包含分割比例與工作目錄。
+關閉瀏覽器，分頁不會消失 — tmux 在伺服器上保留它們。一小時後（或一週後）重新整理，purplemux-improved 會還原完整版面，包含分割比例與工作目錄。
 
-即使伺服器重啟也能還原：重啟時，purplemux 會從 `~/.purplemux/workspaces.json` 讀取儲存的版面、在正確目錄重新啟動 shell，並儘可能重新接上 Claude 工作階段。
+即使伺服器重啟也能還原：重啟時，purplemux-improved 會從 `~/.purplemux/workspaces.json` 讀取儲存的版面、在正確目錄重新啟動 shell，並儘可能重新接上 Claude 工作階段。
 
 ## 從手機連線
 
@@ -93,10 +93,10 @@ tailscale serve --bg 8022
 
 在手機上打開 `https://<machine>.<tailnet>.ts.net`，點選 **分享 → 加入主畫面**，並授予通知權限。即使分頁已關閉，也能在 **需要輸入** 與 **待檢視** 狀態下收到推播通知。
 
-完整教學：[PWA 設定](/purplemux/zh-TW/docs/pwa-setup/) · [Web Push](/purplemux/zh-TW/docs/web-push/) · [Tailscale](/purplemux/zh-TW/docs/tailscale/)。
+完整教學：[PWA 設定](/purplemux-improved/zh-TW/docs/pwa-setup/) · [Web Push](/purplemux-improved/zh-TW/docs/web-push/) · [Tailscale](/purplemux-improved/zh-TW/docs/tailscale/)。
 
 ## 下一步
 
-- **[鍵盤快速鍵](/purplemux/zh-TW/docs/keyboard-shortcuts/)** — 所有繫結一覽表。
-- **[瀏覽器支援](/purplemux/zh-TW/docs/browser-support/)** — 相容性表格，特別是 iOS Safari 16.4+。
+- **[鍵盤快速鍵](/purplemux-improved/zh-TW/docs/keyboard-shortcuts/)** — 所有繫結一覽表。
+- **[瀏覽器支援](/purplemux-improved/zh-TW/docs/browser-support/)** — 相容性表格，特別是 iOS Safari 16.4+。
 - 探索側邊欄：**筆記**（<kbd>⌘⇧E</kbd>）的 AI 每日報告、**統計**（<kbd>⌘⇧U</kbd>）的用量分析。

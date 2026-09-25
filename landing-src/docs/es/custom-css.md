@@ -6,7 +6,7 @@ permalink: /es/docs/custom-css/index.html
 ---
 {% from "docs/callouts.njk" import callout %}
 
-purplemux está construido sobre un sistema de variables CSS. Puedes cambiar casi cualquier cosa visual sin tocar el código fuente — pega reglas en la pestaña **Apariencia**, haz clic en Aplicar, y surten efecto inmediatamente en cada cliente conectado.
+purplemux-improved está construido sobre un sistema de variables CSS. Puedes cambiar casi cualquier cosa visual sin tocar el código fuente — pega reglas en la pestaña **Apariencia**, haz clic en Aplicar, y surten efecto inmediatamente en cada cliente conectado.
 
 ## Dónde ponerlo
 
@@ -24,7 +24,7 @@ El CSS personalizado vive en la configuración del servidor y te sigue a cada na
 
 ## Cómo funciona
 
-La mayoría de colores, superficies y acentos en purplemux se exponen como variables CSS bajo `:root` (claro) y `.dark`. Sobrescribir la variable propaga el cambio a todas partes donde se usa — barra lateral, diálogos, gráficos, insignias de estado.
+La mayoría de colores, superficies y acentos en purplemux-improved se exponen como variables CSS bajo `:root` (claro) y `.dark`. Sobrescribir la variable propaga el cambio a todas partes donde se usa — barra lateral, diálogos, gráficos, insignias de estado.
 
 Cambiar una sola variable casi siempre es mejor que sobrescribir selectores de componente directamente. Las clases de los componentes no son una API estable; las variables sí.
 
@@ -65,7 +65,7 @@ El panel Apariencia expone la lista completa bajo **Variables disponibles**. Los
 - **Palette** — `--ui-blue`, `--ui-teal`, `--ui-coral`, `--ui-amber`, `--ui-purple`, `--ui-pink`, `--ui-green`, `--ui-gray`, `--ui-red`
 - **Semantic** — `--positive`, `--negative`, `--accent-color`, `--brand`, `--focus-indicator`, `--claude-active`
 
-Para la lista completa de tokens con valores oklch por defecto y la justificación de diseño, consulta [`docs/STYLE.md`](https://github.com/subicura/purplemux/blob/main/docs/STYLE.md) en el repo. Ese documento es la fuente de verdad.
+Para la lista completa de tokens con valores oklch por defecto y la justificación de diseño, consulta [`docs/STYLE.md`](https://github.com/stirp/purplemux-improved/blob/main/docs/STYLE.md) en el repo. Ese documento es la fuente de verdad.
 
 ## Apuntar solo a un modo
 
@@ -85,10 +85,10 @@ Si solo necesitas cambiar un modo, deja el otro intacto.
 
 ## ¿Y la terminal?
 
-La terminal xterm.js usa su propia paleta, elegida de una lista curada — no la dirigen estas variables CSS. Cámbiala en la pestaña **Terminal**. Consulta [Temas de terminal](/purplemux/es/docs/terminal-themes/).
+La terminal xterm.js usa su propia paleta, elegida de una lista curada — no la dirigen estas variables CSS. Cámbiala en la pestaña **Terminal**. Consulta [Temas de terminal](/purplemux-improved/es/docs/terminal-themes/).
 
 ## Siguientes pasos
 
-- **[Temas y fuentes](/purplemux/es/docs/themes-fonts/)** — claro, oscuro, sistema; presets de tamaño de fuente.
-- **[Temas de terminal](/purplemux/es/docs/terminal-themes/)** — paleta separada para el área de terminal.
-- **[Barra lateral y opciones de Claude](/purplemux/es/docs/sidebar-options/)** — reordena elementos, alterna flags de Claude.
+- **[Temas y fuentes](/purplemux-improved/es/docs/themes-fonts/)** — claro, oscuro, sistema; presets de tamaño de fuente.
+- **[Temas de terminal](/purplemux-improved/es/docs/terminal-themes/)** — paleta separada para el área de terminal.
+- **[Barra lateral y opciones de Claude](/purplemux-improved/es/docs/sidebar-options/)** — reordena elementos, alterna flags de Claude.

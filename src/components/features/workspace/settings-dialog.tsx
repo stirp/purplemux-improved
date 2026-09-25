@@ -275,7 +275,7 @@ const GeneralTab = () => {
       </div>
 
       <a
-        href="https://github.com/subicura/purplemux/releases"
+        href="https://github.com/stirp/purplemux-improved/releases"
         target="_blank"
         rel="noopener noreferrer"
         className="text-xs text-muted-foreground/50 hover:text-muted-foreground hover:underline w-fit"

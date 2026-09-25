@@ -6,7 +6,7 @@ permalink: /tr/docs/architecture/index.html
 ---
 {% from "docs/callouts.njk" import callout %}
 
-purplemux birbirine dikilmiş üç katmandır: bir tarayıcı ön ucu, `:8022`'de bir Node.js sunucusu ve host üzerindeki tmux + Claude CLI. Aralarındaki her şey ya bir ikili WebSocket ya da küçük bir HTTP POST'tur.
+purplemux-improved birbirine dikilmiş üç katmandır: bir tarayıcı ön ucu, `:8022`'de bir Node.js sunucusu ve host üzerindeki tmux + Claude CLI. Aralarındaki her şey ya bir ikili WebSocket ya da küçük bir HTTP POST'tur.
 
 ## Üç katman
 
@@ -71,11 +71,11 @@ Geri basınç: WS `bufferedAmount > 1 MB` olduğunda `pty.pause`, `256 KB` altı
 
 `src/lib/status-manager.ts`, `cliState` için tek doğruluk kaynağıdır. Hook olayları `/api/status/hook` (token-doğrulanmış POST) üzerinden akar, sıralanır (sekme başına `eventSeq`) ve `deriveStateFromEvent` tarafından `idle` / `busy` / `needs-input` / `ready-for-review` / `unknown` durumlarına indirgenir. JSONL izleyici, tek bir sentetik `interrupt` olayı dışında yalnızca metadata günceller.
 
-Tam durum makinesi için [Oturum durumu (STATUS.md)](https://github.com/subicura/purplemux/blob/main/docs/STATUS.md) sayfasına bakın.
+Tam durum makinesi için [Oturum durumu (STATUS.md)](https://github.com/stirp/purplemux-improved/blob/main/docs/STATUS.md) sayfasına bakın.
 
 ## tmux katmanı
 
-purplemux, kendi yapılandırmasını `src/config/tmux.conf`'ta kullanan özel bir sokette (`-L purple`) yalıtılmış bir tmux çalıştırır. Sizin `~/.tmux.conf`'unuz hiç okunmaz.
+purplemux-improved, kendi yapılandırmasını `src/config/tmux.conf`'ta kullanan özel bir sokette (`-L purple`) yalıtılmış bir tmux çalıştırır. Sizin `~/.tmux.conf`'unuz hiç okunmaz.
 
 Oturumlar `pt-{workspaceId}-{paneId}-{tabId}` olarak adlandırılır. Tarayıcıdaki bir terminal paneli, `node-pty` ile bağlanan bir tmux oturumuna eşlenir.
 
@@ -88,16 +88,16 @@ tmux socket: purple
 
 `prefix` devre dışıdır, durum çubuğu kapalıdır (kromu xterm.js çizer), `set-titles` açıktır ve `mouse on` tekerleği copy-mode'a koyar. tmux, oturumların kapalı bir tarayıcı, Wi-Fi düşmesi veya sunucu yeniden başlatmasından sağ çıkmasının sebebidir.
 
-Tam tmux kurulumu, komut sarmalayıcı ve süreç tespit detayları için [tmux & süreç tespiti (TMUX.md)](https://github.com/subicura/purplemux/blob/main/docs/TMUX.md) sayfasına bakın.
+Tam tmux kurulumu, komut sarmalayıcı ve süreç tespit detayları için [tmux & süreç tespiti (TMUX.md)](https://github.com/stirp/purplemux-improved/blob/main/docs/TMUX.md) sayfasına bakın.
 
 ## Claude CLI entegrasyonu
 
-purplemux Claude'u fork etmez veya sarmalamaz — `claude` ikili dosyası kurduğunuz her ne ise odur. İki şey eklenir:
+purplemux-improved Claude'u fork etmez veya sarmalamaz — `claude` ikili dosyası kurduğunuz her ne ise odur. İki şey eklenir:
 
 1. **Hook ayarları** — Başlangıçta `ensureHookSettings()` `~/.purplemux/hooks.json`, `status-hook.sh` ve `statusline.sh`'i yazar. Her Claude sekmesi `--settings ~/.purplemux/hooks.json` ile başlar, böylece `SessionStart`, `UserPromptSubmit`, `Notification`, `Stop`, `PreCompact`, `PostCompact` hepsi sunucuya geri POST eder.
 2. **JSONL okumaları** — `~/.claude/projects/**/*.jsonl`, canlı konuşma görünümü için `timeline-server.ts` tarafından ayrıştırılır ve `~/.claude/sessions/`'taki PID dosyaları aracılığıyla çalışan bir Claude sürecini tespit etmek için `session-detection.ts` tarafından izlenir.
 
-Hook betikleri `~/.purplemux/port` ve `~/.purplemux/cli-token`'ı okur ve `x-pmux-token` ile POST eder. Sunucu kapalıysa sessizce başarısız olurlar, böylece Claude çalışırken purplemux'ı kapatmak hiçbir şeyi çökertmez.
+Hook betikleri `~/.purplemux/port` ve `~/.purplemux/cli-token`'ı okur ve `x-pmux-token` ile POST eder. Sunucu kapalıysa sessizce başarısız olurlar, böylece Claude çalışırken purplemux-improved'ı kapatmak hiçbir şeyi çökertmez.
 
 ## Başlangıç sırası
 
@@ -126,12 +126,12 @@ Dış custom server (`server.ts`) ve Next.js (sayfalar + API rotaları) bir Node
 
 ## Daha fazla okuma
 
-- [`docs/TMUX.md`](https://github.com/subicura/purplemux/blob/main/docs/TMUX.md) — tmux yapılandırma, komut sarmalayıcı, süreç ağacı yürüme, terminal ikili protokol.
-- [`docs/STATUS.md`](https://github.com/subicura/purplemux/blob/main/docs/STATUS.md) — Claude CLI durum makinesi, hook akışı, sentetik kesinti olayı, JSONL izleyici.
-- [`docs/DATA-DIR.md`](https://github.com/subicura/purplemux/blob/main/docs/DATA-DIR.md) — purplemux'ın yazdığı her dosya.
+- [`docs/TMUX.md`](https://github.com/stirp/purplemux-improved/blob/main/docs/TMUX.md) — tmux yapılandırma, komut sarmalayıcı, süreç ağacı yürüme, terminal ikili protokol.
+- [`docs/STATUS.md`](https://github.com/stirp/purplemux-improved/blob/main/docs/STATUS.md) — Claude CLI durum makinesi, hook akışı, sentetik kesinti olayı, JSONL izleyici.
+- [`docs/DATA-DIR.md`](https://github.com/stirp/purplemux-improved/blob/main/docs/DATA-DIR.md) — purplemux-improved'ın yazdığı her dosya.
 
 ## Sıradaki adımlar
 
-- **[Veri dizini](/purplemux/tr/docs/data-directory/)** — yukarıdaki mimarinin dokunduğu her dosya.
-- **[CLI referansı](/purplemux/tr/docs/cli-reference/)** — sunucuyla tarayıcı dışından konuşmak.
-- **[Sorun giderme](/purplemux/tr/docs/troubleshooting/)** — buradaki bir şey kötü davrandığında teşhis.
+- **[Veri dizini](/purplemux-improved/tr/docs/data-directory/)** — yukarıdaki mimarinin dokunduğu her dosya.
+- **[CLI referansı](/purplemux-improved/tr/docs/cli-reference/)** — sunucuyla tarayıcı dışından konuşmak.
+- **[Sorun giderme](/purplemux-improved/tr/docs/troubleshooting/)** — buradaki bir şey kötü davrandığında teşhis.

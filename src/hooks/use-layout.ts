@@ -457,6 +457,10 @@ const useLayoutStore = create<ILayoutState>((set, get) => ({
       if (panelType !== 'web-browser' && activeTab) {
         cwd = useTabMetadataStore.getState().metadata[activeTab.id]?.cwd;
       }
+      if (panelType !== 'web-browser' && !cwd) {
+        cwd = activeTab?.cwd ?? useWorkspaceStore.getState().workspaces
+          .find((workspace) => workspace.id === workspaceId)?.directories[0];
+      }
 
       const res = await fetch(wsQuery(`/api/layout/pane/${paneId}/tabs`, workspaceId), {
         method: 'POST',

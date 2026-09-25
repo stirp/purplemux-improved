@@ -320,7 +320,10 @@ export const createWorkspace = async (directory: string, name?: string, layoutOp
     const wsId = `ws-${nanoid(6)}`;
     const wsName = name?.trim() || nextWorkspaceName(data.workspaces);
 
-    const layout = await createDefaultLayout(wsId, directory, layoutOptions);
+    const layout = await createDefaultLayout(wsId, directory, {
+      ...layoutOptions,
+      empty: layoutOptions?.empty ?? !layoutOptions?.panelType,
+    });
     await fs.mkdir(resolveLayoutDir(wsId), { recursive: true });
     await writeLayoutFile(layout, resolveLayoutFile(wsId));
 

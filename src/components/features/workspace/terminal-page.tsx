@@ -16,7 +16,6 @@ import PaneLayout from '@/components/features/workspace/pane-layout';
 import ContentHeader from '@/components/features/workspace/content-header';
 import GitSidePanel from '@/components/features/workspace/git-side-panel';
 import useSidebarActions from '@/hooks/use-sidebar-actions';
-import { useAutoDeleteEmptyWorkspace } from '@/hooks/use-auto-delete-empty-workspace';
 import type { TGitAskProvider } from '@/hooks/use-config-store';
 
 const DEFAULT_GIT_PANEL_SIZE = 36;
@@ -67,12 +66,7 @@ const TerminalPage = () => {
     onFetchError: handleFetchError,
   });
 
-  const allTabsEmpty = !!(
-    layout.layout &&
-    !layout.isLoading &&
-    collectPanes(layout.layout.root).every((p) => p.tabs.length === 0)
-  );
-  const hasActiveLayout = !!(layout.layout && !layout.isLoading && !allTabsEmpty);
+  const hasActiveLayout = !!(layout.layout && !layout.isLoading);
 
   const focusedPane = useMemo(() => {
     if (!layout.layout?.activePaneId) return null;
@@ -186,7 +180,6 @@ const TerminalPage = () => {
     useTabMetadataStore.getState().retainOnly(allTabIds);
   }, [layout.layout]);
 
-  useAutoDeleteEmptyWorkspace(allTabsEmpty, layout.clearLayout);
 
   const handleSelectWorkspace = useCallback(
     (workspaceId: string) => {
@@ -247,7 +240,7 @@ const TerminalPage = () => {
 
   return (
     <div className="relative flex h-full w-full flex-col overflow-hidden bg-background">
-      {layout.layout && !layout.isLoading && !allTabsEmpty && (
+      {layout.layout && !layout.isLoading && (
         <ContentHeader
           activePaneId={layout.layout.activePaneId}
           root={layout.layout.root}
@@ -279,7 +272,7 @@ const TerminalPage = () => {
           </div>
         )}
 
-        {layout.layout && !layout.isLoading && !allTabsEmpty && (
+        {layout.layout && !layout.isLoading && (
           <div
             key={activeWorkspaceId}
             className="h-full"

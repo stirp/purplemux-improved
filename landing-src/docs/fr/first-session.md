@@ -6,7 +6,7 @@ permalink: /fr/docs/first-session/index.html
 ---
 {% from "docs/callouts.njk" import callout %}
 
-purplemux tourne déjà (sinon, voir le [Démarrage rapide](/purplemux/fr/docs/quickstart/)). Cette page explique ce que fait réellement l'interface, pour que les premières minutes paraissent moins abstraites.
+purplemux-improved tourne déjà (sinon, voir le [Démarrage rapide](/purplemux-improved/fr/docs/quickstart/)). Cette page explique ce que fait réellement l'interface, pour que les premières minutes paraissent moins abstraites.
 
 ## Le tableau de bord
 
@@ -40,7 +40,7 @@ Choisissez un **modèle** :
 - **Claude** — démarre avec `claude` déjà en cours d'exécution dans le shell.
 
 {% call callout('tip', 'Les modèles ne sont que des raccourcis') %}
-En coulisses, chaque onglet est un shell standard. Le modèle Claude consiste juste à « ouvrir un terminal et exécuter `claude` ». Si vous lancez `claude` manuellement plus tard dans un onglet Terminal, purplemux le remarque et commence à afficher son statut de la même façon.
+En coulisses, chaque onglet est un shell standard. Le modèle Claude consiste juste à « ouvrir un terminal et exécuter `claude` ». Si vous lancez `claude` manuellement plus tard dans un onglet Terminal, purplemux-improved le remarque et commence à afficher son statut de la même façon.
 {% endcall %}
 
 ## Lire le statut de session
@@ -54,17 +54,17 @@ Regardez la **ligne de session de la barre latérale** pour votre onglet. Vous y
 | **Saisie requise** (orange) | Claude attend une autorisation ou a posé une question. |
 | **À examiner** (bleu) | Travail terminé, Claude s'est arrêté ; il y a quelque chose à vérifier. |
 
-Les transitions sont quasi instantanées. Voir [Statut de session](/purplemux/fr/docs/session-status/) pour le détail de la détection.
+Les transitions sont quasi instantanées. Voir [Statut de session](/purplemux-improved/fr/docs/session-status/) pour le détail de la détection.
 
 ## Répondre à une demande de permission
 
-Quand Claude veut exécuter un outil ou modifier un fichier, purplemux **intercepte l'invite** et l'affiche en ligne dans la vue de session. Vous pouvez :
+Quand Claude veut exécuter un outil ou modifier un fichier, purplemux-improved **intercepte l'invite** et l'affiche en ligne dans la vue de session. Vous pouvez :
 
 - Cliquer sur **1 · Oui** / **2 · Oui, toujours** / **3 · Non**, ou
 - Appuyer sur les touches numériques de votre clavier, ou
 - L'ignorer et répondre depuis votre téléphone — la même alerte arrive en Web Push mobile.
 
-La CLI Claude n'est jamais réellement bloquée par l'invite interceptée ; purplemux renvoie votre réponse en sous-main.
+La CLI Claude n'est jamais réellement bloquée par l'invite interceptée ; purplemux-improved renvoie votre réponse en sous-main.
 
 ## Diviser et naviguer
 
@@ -75,13 +75,13 @@ Une fois un onglet en cours, essayez :
 - <kbd>⌘⌥←/→/↑/↓</kbd> — déplacer le focus entre les divisions
 - <kbd>⌘⇧[</kbd> / <kbd>⌘⇧]</kbd> — onglet précédent / suivant
 
-Liste complète sur la page [Raccourcis clavier](/purplemux/fr/docs/keyboard-shortcuts/).
+Liste complète sur la page [Raccourcis clavier](/purplemux-improved/fr/docs/keyboard-shortcuts/).
 
 ## Sauvegarde et restauration
 
-Fermez le navigateur. Vos onglets ne disparaissent pas — tmux les maintient ouverts sur le serveur. Revenez une heure plus tard (ou une semaine) et purplemux restaure exactement la même mise en page, y compris les ratios de division et les répertoires de travail.
+Fermez le navigateur. Vos onglets ne disparaissent pas — tmux les maintient ouverts sur le serveur. Revenez une heure plus tard (ou une semaine) et purplemux-improved restaure exactement la même mise en page, y compris les ratios de division et les répertoires de travail.
 
-Même un redémarrage du serveur est récupérable : au démarrage, purplemux lit la mise en page sauvegardée dans `~/.purplemux/workspaces.json`, relance les shells dans les bons répertoires et rattache les sessions Claude quand c'est possible.
+Même un redémarrage du serveur est récupérable : au démarrage, purplemux-improved lit la mise en page sauvegardée dans `~/.purplemux/workspaces.json`, relance les shells dans les bons répertoires et rattache les sessions Claude quand c'est possible.
 
 ## Y accéder depuis votre téléphone
 
@@ -93,10 +93,10 @@ tailscale serve --bg 8022
 
 Sur votre téléphone, ouvrez `https://<machine>.<tailnet>.ts.net`, touchez **Partager → Sur l'écran d'accueil**, et accordez la permission de notifications. Vous recevez désormais des alertes push pour les états **saisie requise** et **à examiner** même quand l'onglet est fermé.
 
-Pas-à-pas complet : [Configuration PWA](/purplemux/fr/docs/pwa-setup/) · [Web Push](/purplemux/fr/docs/web-push/) · [Tailscale](/purplemux/fr/docs/tailscale/).
+Pas-à-pas complet : [Configuration PWA](/purplemux-improved/fr/docs/pwa-setup/) · [Web Push](/purplemux-improved/fr/docs/web-push/) · [Tailscale](/purplemux-improved/fr/docs/tailscale/).
 
 ## Pour aller plus loin
 
-- **[Raccourcis clavier](/purplemux/fr/docs/keyboard-shortcuts/)** — tous les raccourcis dans un seul tableau.
-- **[Compatibilité navigateur](/purplemux/fr/docs/browser-support/)** — matrice de compatibilité, en particulier iOS Safari 16.4+.
+- **[Raccourcis clavier](/purplemux-improved/fr/docs/keyboard-shortcuts/)** — tous les raccourcis dans un seul tableau.
+- **[Compatibilité navigateur](/purplemux-improved/fr/docs/browser-support/)** — matrice de compatibilité, en particulier iOS Safari 16.4+.
 - Explorez la barre latérale : **Notes** (<kbd>⌘⇧E</kbd>) pour le rapport quotidien IA, **Stats** (<kbd>⌘⇧U</kbd>) pour les analyses d'usage.

@@ -6,7 +6,7 @@ permalink: /zh-TW/docs/live-session-view/index.html
 ---
 {% from "docs/callouts.njk" import callout %}
 
-當分頁正在執行 Claude Code 時，purplemux 會以結構化的時間軸取代純終端機檢視。一樣的工作階段、一樣的 JSONL 紀錄 — 但被排成可掃視、可滾動、可連結的離散事件。
+當分頁正在執行 Claude Code 時，purplemux-improved 會以結構化的時間軸取代純終端機檢視。一樣的工作階段、一樣的 JSONL 紀錄 — 但被排成可掃視、可滾動、可連結的離散事件。
 
 ## 為何時間軸勝過卷軸
 
@@ -62,7 +62,7 @@ Claude CLI 是互動式的。要查看十五分鐘前它做了什麼，意味著
 
 ## 行內權限提示
 
-當 Claude 要求執行工具或編輯檔案時，提示會出現在時間軸的行內，而非以 modal 顯示。你可以點選選項、按下對應數字鍵，或不予理會、改從手機透過 Web Push 回應。完整流程請見 [權限提示](/purplemux/zh-TW/docs/permission-prompts/)。
+當 Claude 要求執行工具或編輯檔案時，提示會出現在時間軸的行內，而非以 modal 顯示。你可以點選選項、按下對應數字鍵，或不予理會、改從手機透過 Web Push 回應。完整流程請見 [權限提示](/purplemux-improved/zh-TW/docs/permission-prompts/)。
 
 ## 單一分頁中的多種模式
 
@@ -78,6 +78,6 @@ Claude CLI 是互動式的。要查看十五分鐘前它做了什麼，意味著
 
 ## 下一步
 
-- **[權限提示](/purplemux/zh-TW/docs/permission-prompts/)** — 行內核可流程。
-- **[工作階段狀態](/purplemux/zh-TW/docs/session-status/)** — 驅動時間軸指示的徽章。
-- **[快速 prompts 與附件](/purplemux/zh-TW/docs/quick-prompts-attachments/)** — 底部輸入列能做什麼。
+- **[權限提示](/purplemux-improved/zh-TW/docs/permission-prompts/)** — 行內核可流程。
+- **[工作階段狀態](/purplemux-improved/zh-TW/docs/session-status/)** — 驅動時間軸指示的徽章。
+- **[快速 prompts 與附件](/purplemux-improved/zh-TW/docs/quick-prompts-attachments/)** — 底部輸入列能做什麼。

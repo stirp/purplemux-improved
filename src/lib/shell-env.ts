@@ -17,6 +17,14 @@ const INHERITED_KEYS = new Set([
   'WAYLAND_DISPLAY',
   'XDG_RUNTIME_DIR',
   'TZ',
+  'HTTP_PROXY',
+  'HTTPS_PROXY',
+  'ALL_PROXY',
+  'NO_PROXY',
+  'http_proxy',
+  'https_proxy',
+  'all_proxy',
+  'no_proxy',
 ]);
 
 const INHERITED_PREFIXES = ['LC_'];

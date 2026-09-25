@@ -6,7 +6,7 @@ permalink: /docs/save-restore/index.html
 ---
 {% from "docs/callouts.njk" import callout %}
 
-purplemux is built around the idea that closing a tab in your browser shouldn't end a session. Two pieces work together: tmux keeps the shells running, and `~/.purplemux/workspaces.json` remembers the layout.
+purplemux-improved is built around the idea that closing a tab in your browser shouldn't end a session. Two pieces work together: tmux keeps the shells running, and `~/.purplemux/workspaces.json` remembers the layout.
 
 ## What gets persisted
 
@@ -18,7 +18,7 @@ Anything you can see in a workspace:
 - Working directory of every shell
 - Workspace groups, names, and order
 
-`workspaces.json` is updated transactionally on every layout change, so the file always reflects the current state. See [Data directory](/purplemux/docs/data-directory/) for the on-disk file map.
+`workspaces.json` is updated transactionally on every layout change, so the file always reflects the current state. See [Data directory](/purplemux-improved/docs/data-directory/) for the on-disk file map.
 
 ## Closing the browser
 
@@ -34,7 +34,7 @@ The same applies on your phone. Close the PWA, lock the device, come back tomorr
 
 ## Recovering after a server reboot
 
-A reboot does kill the tmux processes — they're just OS processes. purplemux handles this on next start:
+A reboot does kill the tmux processes — they're just OS processes. purplemux-improved handles this on next start:
 
 1. **Read the layout** — `workspaces.json` describes every workspace, pane, and tab.
 2. **Recreate sessions in parallel** — for each tab, a new tmux session is spawned in its saved working directory.
@@ -58,12 +58,12 @@ You don't normally need to touch this, but for the curious:
 
 - The tmux socket is named `purple`. Inspect with `tmux -L purple ls`.
 - Sessions are named `pt-{workspaceId}-{paneId}-{tabId}`.
-- Editing `workspaces.json` while purplemux is running is unsafe — the server holds it open and writes through.
+- Editing `workspaces.json` while purplemux-improved is running is unsafe — the server holds it open and writes through.
 
-For the deeper story (binary protocol, backpressure, JSONL watching) see [How it works](/purplemux/#how) on the landing page.
+For the deeper story (binary protocol, backpressure, JSONL watching) see [How it works](/purplemux-improved/#how) on the landing page.
 
 ## What's next
 
-- **[Workspaces & groups](/purplemux/docs/workspaces-groups/)** — what gets saved per workspace.
-- **[Tabs & panes](/purplemux/docs/tabs-panes/)** — what gets saved per tab.
-- **[Browser support](/purplemux/docs/browser-support/)** — known quirks around mobile background tabs and reconnects.
+- **[Workspaces & groups](/purplemux-improved/docs/workspaces-groups/)** — what gets saved per workspace.
+- **[Tabs & panes](/purplemux-improved/docs/tabs-panes/)** — what gets saved per tab.
+- **[Browser support](/purplemux-improved/docs/browser-support/)** — known quirks around mobile background tabs and reconnects.

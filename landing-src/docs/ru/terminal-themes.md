@@ -6,7 +6,7 @@ permalink: /ru/docs/terminal-themes/index.html
 ---
 {% from "docs/callouts.njk" import callout %}
 
-Панель терминала использует xterm.js со своей палитрой, независимой от остального UI. Вы выбираете тёмную тему и светлую тему; purplemux переключается между ними при смене темы приложения.
+Панель терминала использует xterm.js со своей палитрой, независимой от остального UI. Вы выбираете тёмную тему и светлую тему; purplemux-improved переключается между ними при смене темы приложения.
 
 ## Откройте picker
 
@@ -68,6 +68,6 @@ permalink: /ru/docs/terminal-themes/index.html
 
 ## Что дальше
 
-- **[Темы и шрифты](/purplemux/ru/docs/themes-fonts/)** — тема приложения и размер шрифта.
-- **[Custom CSS](/purplemux/ru/docs/custom-css/)** — переопределить остальной UI.
-- **[Интеграция с редактором](/purplemux/ru/docs/editor-integration/)** — открывать файлы во внешнем редакторе.
+- **[Темы и шрифты](/purplemux-improved/ru/docs/themes-fonts/)** — тема приложения и размер шрифта.
+- **[Custom CSS](/purplemux-improved/ru/docs/custom-css/)** — переопределить остальной UI.
+- **[Интеграция с редактором](/purplemux-improved/ru/docs/editor-integration/)** — открывать файлы во внешнем редакторе.

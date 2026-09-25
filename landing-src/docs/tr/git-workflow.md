@@ -61,6 +61,6 @@ Bu, panelin temel bahsi: yaygın durum için aletler, uzun kuyruk için bir LLM.
 
 ## Sıradaki adımlar
 
-- **[Sekmeler & paneller](/purplemux/tr/docs/tabs-panes/)** — diff panelini Claude oturumunun yanına bölme.
-- **[İlk oturum](/purplemux/tr/docs/first-session/)** — Claude izin istemlerinin panelde nasıl yüzeye çıktığı.
-- **[Web tarayıcı paneli](/purplemux/tr/docs/web-browser-panel/)** — terminalle yan yana çalıştırılmaya değer diğer panel türü.
+- **[Sekmeler & paneller](/purplemux-improved/tr/docs/tabs-panes/)** — diff panelini Claude oturumunun yanına bölme.
+- **[İlk oturum](/purplemux-improved/tr/docs/first-session/)** — Claude izin istemlerinin panelde nasıl yüzeye çıktığı.
+- **[Web tarayıcı paneli](/purplemux-improved/tr/docs/web-browser-panel/)** — terminalle yan yana çalıştırılmaya değer diğer panel türü.

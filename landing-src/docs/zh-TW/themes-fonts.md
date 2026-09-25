@@ -6,7 +6,7 @@ permalink: /zh-TW/docs/themes-fonts/index.html
 ---
 {% from "docs/callouts.njk" import callout %}
 
-purplemux 提供一套一致的視覺風格，加上一小組切換：應用程式主題、字級，以及獨立的終端機調色盤。本頁涵蓋前兩者 — 終端機色彩在另一頁說明。
+purplemux-improved 提供一套一致的視覺風格，加上一小組切換：應用程式主題、字級，以及獨立的終端機調色盤。本頁涵蓋前兩者 — 終端機色彩在另一頁說明。
 
 ## 開啟設定
 
@@ -48,7 +48,7 @@ purplemux 提供一套一致的視覺風格，加上一小組切換：應用程�
 - 間距 — 比例保留
 - 程式碼區塊語法樣式
 
-如果你想微調個別元素（例如只調整終端機，或只調整側邊欄），請見 [自訂 CSS](/purplemux/zh-TW/docs/custom-css/)。
+如果你想微調個別元素（例如只調整終端機，或只調整側邊欄），請見 [自訂 CSS](/purplemux-improved/zh-TW/docs/custom-css/)。
 
 ## 跨裝置共用，非每瀏覽器獨立
 
@@ -58,6 +58,6 @@ purplemux 提供一套一致的視覺風格，加上一小組切換：應用程�
 
 ## 下一步
 
-- **[自訂 CSS](/purplemux/zh-TW/docs/custom-css/)** — 覆寫個別色彩與間距。
-- **[終端機主題](/purplemux/zh-TW/docs/terminal-themes/)** — xterm.js 獨立的調色盤。
-- **[鍵盤快速鍵](/purplemux/zh-TW/docs/keyboard-shortcuts/)** — 所有繫結一覽表。
+- **[自訂 CSS](/purplemux-improved/zh-TW/docs/custom-css/)** — 覆寫個別色彩與間距。
+- **[終端機主題](/purplemux-improved/zh-TW/docs/terminal-themes/)** — xterm.js 獨立的調色盤。
+- **[鍵盤快速鍵](/purplemux-improved/zh-TW/docs/keyboard-shortcuts/)** — 所有繫結一覽表。

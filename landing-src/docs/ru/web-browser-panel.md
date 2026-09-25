@@ -1,18 +1,18 @@
 ---
 title: Панель веб-браузера
-description: Встроенная вкладка-браузер для проверки результатов разработки, управляемая из CLI purplemux, с эмулятором устройств для мобильных вьюпортов.
+description: Встроенная вкладка-браузер для проверки результатов разработки, управляемая из CLI purplemux-improved, с эмулятором устройств для мобильных вьюпортов.
 eyebrow: Рабочие пространства и терминал
 permalink: /ru/docs/web-browser-panel/index.html
 ---
 {% from "docs/callouts.njk" import callout %}
 
-Поставьте вкладку веб-браузера рядом с терминалом и сессией Claude. Она показывает ваш локальный dev-сервер, staging-сайт, что угодно достижимое — и ею можно управлять из CLI `purplemux`, не покидая шелл.
+Поставьте вкладку веб-браузера рядом с терминалом и сессией Claude. Она показывает ваш локальный dev-сервер, staging-сайт, что угодно достижимое — и ею можно управлять из CLI `purplemux-improved`, не покидая шелл.
 
 ## Откройте вкладку браузера
 
 Добавьте новую вкладку и выберите тип панели **Web browser**. Введите URL в адресную строку — `localhost:3000`, IP или полный https URL. Адресная строка нормализует ввод: голые имена хостов и IP уходят в `http://`, всё остальное — в `https://`.
 
-Панель работает как настоящий webview Chromium, когда purplemux — это нативное приложение macOS (сборка Electron), и откатывается на iframe в обычном браузере. Путь через iframe покрывает большинство страниц, но не запустит сайты, отдающие `X-Frame-Options: deny`; путь через Electron этого ограничения не имеет.
+Панель работает как настоящий webview Chromium, когда purplemux-improved — это нативное приложение macOS (сборка Electron), и откатывается на iframe в обычном браузере. Путь через iframe покрывает большинство страниц, но не запустит сайты, отдающие `X-Frame-Options: deny`; путь через Electron этого ограничения не имеет.
 
 {% call callout('note', 'Лучше всего работает в нативном приложении') %}
 Эмуляция устройств, скриншоты из CLI и захват консоли / сети работают только в сборке Electron. Запасной вариант с вкладкой браузера даёт адресную строку, кнопки назад / вперёд и перезагрузку, но более глубокая интеграция требует webview.
@@ -20,30 +20,30 @@ permalink: /ru/docs/web-browser-panel/index.html
 
 ## Управление через CLI
 
-Панель открывает небольшой HTTP API, который оборачивает встроенный CLI `purplemux`. Из любого терминала — включая тот, что стоит рядом с панелью — можно:
+Панель открывает небольшой HTTP API, который оборачивает встроенный CLI `purplemux-improved`. Из любого терминала — включая тот, что стоит рядом с панелью — можно:
 
 ```bash
 # показать вкладки и узнать ID вкладки веб-браузера
-purplemux tab list -w <workspace-id>
+purplemux-improved tab list -w <workspace-id>
 
 # прочитать текущий URL и заголовок
-purplemux tab browser url -w <ws> <tabId>
+purplemux-improved tab browser url -w <ws> <tabId>
 
 # сохранить скриншот в файл (или всю страницу через --full)
-purplemux tab browser screenshot -w <ws> <tabId> -o shot.png --full
+purplemux-improved tab browser screenshot -w <ws> <tabId> -o shot.png --full
 
 # вытащить недавние записи консоли (кольцевой буфер на 500 записей)
-purplemux tab browser console -w <ws> <tabId> --since 60000 --level error
+purplemux-improved tab browser console -w <ws> <tabId> --since 60000 --level error
 
 # инспектировать сетевой трафик; опционально вытянуть тело одного ответа
-purplemux tab browser network -w <ws> <tabId> --method POST --status 500
-purplemux tab browser network -w <ws> <tabId> --request <id>
+purplemux-improved tab browser network -w <ws> <tabId> --method POST --status 500
+purplemux-improved tab browser network -w <ws> <tabId> --request <id>
 
 # выполнить JavaScript внутри вкладки и получить сериализованный результат
-purplemux tab browser eval -w <ws> <tabId> "document.title"
+purplemux-improved tab browser eval -w <ws> <tabId> "document.title"
 ```
 
-CLI авторизуется через токен в `~/.purplemux/cli-token` и читает порт из `~/.purplemux/port`. На той же машине флаги не нужны. Запустите `purplemux help` для полного списка команд или `purplemux api-guide` — для нижележащих HTTP-эндпоинтов.
+CLI авторизуется через токен в `~/.purplemux/cli-token` и читает порт из `~/.purplemux/port`. На той же машине флаги не нужны. Запустите `purplemux-improved help` для полного списка команд или `purplemux-improved api-guide` — для нижележащих HTTP-эндпоинтов.
 
 Это и делает панель полезной для Claude: попросите Claude сделать скриншот, посмотреть в консоль на ошибку или запустить проверочный скрипт — и у Claude тот же CLI, что у вас.
 
@@ -59,6 +59,6 @@ CLI авторизуется через токен в `~/.purplemux/cli-token` �
 
 ## Что дальше
 
-- **[Вкладки и панели](/purplemux/ru/docs/tabs-panes/)** — как поставить браузер в split рядом с Claude.
-- **[Панель Git workflow](/purplemux/ru/docs/git-workflow/)** — другая специализированная панель.
-- **[Установка](/purplemux/ru/docs/installation/)** — нативное macOS-приложение, где живёт полная интеграция webview.
+- **[Вкладки и панели](/purplemux-improved/ru/docs/tabs-panes/)** — как поставить браузер в split рядом с Claude.
+- **[Панель Git workflow](/purplemux-improved/ru/docs/git-workflow/)** — другая специализированная панель.
+- **[Установка](/purplemux-improved/ru/docs/installation/)** — нативное macOS-приложение, где живёт полная интеграция webview.

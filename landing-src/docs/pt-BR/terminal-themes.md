@@ -6,7 +6,7 @@ permalink: /pt-BR/docs/terminal-themes/index.html
 ---
 {% from "docs/callouts.njk" import callout %}
 
-O painel de terminal usa xterm.js com a sua própria paleta, independente do resto da UI. Você escolhe um tema escuro e um tema claro; o purplemux alterna entre eles conforme o tema do app alterna.
+O painel de terminal usa xterm.js com a sua própria paleta, independente do resto da UI. Você escolhe um tema escuro e um tema claro; o purplemux-improved alterna entre eles conforme o tema do app alterna.
 
 ## Abrindo o seletor
 
@@ -68,6 +68,6 @@ Entradas de tema customizadas não fazem parte da UI atualmente. A lista embutid
 
 ## Próximos passos
 
-- **[Temas e fontes](/purplemux/pt-BR/docs/themes-fonts/)** — tema do app e tamanho de fonte.
-- **[CSS personalizado](/purplemux/pt-BR/docs/custom-css/)** — sobrescreva o resto da UI.
-- **[Integração com editor](/purplemux/pt-BR/docs/editor-integration/)** — abra arquivos em um editor externo.
+- **[Temas e fontes](/purplemux-improved/pt-BR/docs/themes-fonts/)** — tema do app e tamanho de fonte.
+- **[CSS personalizado](/purplemux-improved/pt-BR/docs/custom-css/)** — sobrescreva o resto da UI.
+- **[Integração com editor](/purplemux-improved/pt-BR/docs/editor-integration/)** — abra arquivos em um editor externo.

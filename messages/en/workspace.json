@@ -1,4 +1,13 @@
 {
+  "parentDirectory": "Parent directory",
+  "openDirectory": "Open",
+  "showHiddenDirectories": "Show hidden directories",
+  "directoryReadFailed": "Cannot read this directory. Check the path and permissions.",
+  "noSubdirectories": "No subdirectories",
+  "directorySelectionHint": "Open folders to browse. Select folders to create one workspace per folder.",
+  "selectedDirectories": "Selected folders",
+  "useCurrentDirectory": "Use current directory",
+  "createSelectedWorkspaces": "Create selected workspaces",
   "add": "Add Workspace",
   "editTitle": "Edit Workspace",
   "namePlaceholder": "Enter workspace name",

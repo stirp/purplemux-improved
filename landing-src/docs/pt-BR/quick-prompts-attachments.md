@@ -31,7 +31,7 @@ Quick prompts funcionam bem como gatilhos de um clique para slash commands do Cl
 
 ## Drag and drop de imagens
 
-Solte um arquivo de imagem (PNG, JPG, WebP, etc.) em qualquer lugar da barra de input para anexar. O purplemux faz upload do arquivo para um caminho temporário no servidor e insere uma referência no seu prompt automaticamente.
+Solte um arquivo de imagem (PNG, JPG, WebP, etc.) em qualquer lugar da barra de input para anexar. O purplemux-improved faz upload do arquivo para um caminho temporário no servidor e insere uma referência no seu prompt automaticamente.
 
 Você também pode:
 
@@ -43,7 +43,7 @@ Uma faixa de thumbnails aparece acima do input enquanto há anexos pendentes. Ca
 
 ## Outros tipos de anexo
 
-O mesmo clipe vale para arquivos não-imagem — markdown, JSON, CSV, código-fonte, qualquer coisa. O purplemux os coloca em um diretório temporário e insere o caminho, para que o Claude possa `read` como parte da requisição.
+O mesmo clipe vale para arquivos não-imagem — markdown, JSON, CSV, código-fonte, qualquer coisa. O purplemux-improved os coloca em um diretório temporário e insere o caminho, para que o Claude possa `read` como parte da requisição.
 
 Esse é o jeito mais fácil de compartilhar algo que o Claude não alcança sozinho, como um stack trace colado de outra máquina ou um arquivo de configuração de outro projeto.
 
@@ -74,6 +74,6 @@ Entradas antigas podem ser apagadas pelo seletor. O histórico é salvo junto ao
 
 ## Próximos passos
 
-- **[Visualização de sessão ao vivo](/purplemux/pt-BR/docs/live-session-view/)** — onde seus prompts e as respostas do Claude aparecem.
-- **[Atalhos de teclado](/purplemux/pt-BR/docs/keyboard-shortcuts/)** — a tabela completa.
-- **[Prompts de permissão](/purplemux/pt-BR/docs/permission-prompts/)** — o que acontece depois de enviar uma requisição que precisa de aprovação.
+- **[Visualização de sessão ao vivo](/purplemux-improved/pt-BR/docs/live-session-view/)** — onde seus prompts e as respostas do Claude aparecem.
+- **[Atalhos de teclado](/purplemux-improved/pt-BR/docs/keyboard-shortcuts/)** — a tabela completa.
+- **[Prompts de permissão](/purplemux-improved/pt-BR/docs/permission-prompts/)** — o que acontece depois de enviar uma requisição que precisa de aprovação.

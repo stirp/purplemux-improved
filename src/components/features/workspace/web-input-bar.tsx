@@ -12,6 +12,7 @@ import InterruptDialog from '@/components/features/workspace/interrupt-dialog';
 import MessageHistoryPicker from '@/components/features/workspace/message-history-picker';
 import { isImageFile, uploadImage } from '@/lib/upload-image-client';
 import { uploadFile } from '@/lib/upload-file-client';
+import { loadAttachmentDraft, saveAttachmentDraft } from '@/lib/attachment-draft';
 import { countImageRefs, waitForImageAttachments } from '@/lib/image-attach-detector';
 import type { TCliState } from '@/types/timeline';
 
@@ -108,10 +109,34 @@ const WebInputBar = ({
   const [isUploading, setIsUploading] = useState(false);
   const [isDispatching, setIsDispatching] = useState(false);
   const [isDraggingOver, setIsDraggingOver] = useState(false);
-  const [attachments, setAttachments] = useState<IAttachment[]>([]);
+  const [attachments, updateAttachments] = useState<IAttachment[]>([]);
   const containerRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const attachmentsRef = useRef<IAttachment[]>([]);
+
+  const setAttachments = useCallback((value: IAttachment[] | ((prev: IAttachment[]) => IAttachment[])) => {
+    const next = typeof value === 'function' ? value(attachmentsRef.current) : value;
+    attachmentsRef.current = next;
+    saveAttachmentDraft(tabId, next);
+    updateAttachments(next);
+  }, [tabId]);
+
+  useEffect(() => {
+    const restored = loadAttachmentDraft(tabId);
+    attachmentsRef.current = restored;
+    updateAttachments(restored);
+  }, [tabId]);
+
+  useEffect(() => {
+    const handler = (event: Event) => {
+      const detail = (event as CustomEvent<{ sessionName: string; text: string }>).detail;
+      if (detail.sessionName !== sessionName) return;
+      setValue(value ? `${value}\n${detail.text}` : detail.text);
+      focusInput();
+    };
+    window.addEventListener('compose-question-answer', handler);
+    return () => window.removeEventListener('compose-question-answer', handler);
+  }, [sessionName, value, setValue, focusInput]);
 
   useEffect(() => {
     attachmentsRef.current = attachments;
@@ -123,14 +148,6 @@ const WebInputBar = ({
     };
   }, []);
 
-  useEffect(() => {
-    if (!visible) {
-      setAttachments((prev) => {
-        prev.forEach((a) => URL.revokeObjectURL(a.thumbnail));
-        return [];
-      });
-    }
-  }, [visible]);
 
   useEffect(() => {
     focusInputRef.current = focusInput;
@@ -255,7 +272,7 @@ const WebInputBar = ({
     } finally {
       setIsDispatching(false);
     }
-  }, [canSend, isDispatching, value, attachments, send, sendStdin, setValue, onSend, agentSessionId, sessionName, tabId, addHistory, onAddPendingMessage, onRemovePendingMessage, t, submitDelayMs, isCodex]);
+  }, [canSend, isDispatching, value, attachments, send, sendStdin, setValue, onSend, agentSessionId, sessionName, tabId, addHistory, onAddPendingMessage, onRemovePendingMessage, t, submitDelayMs, isCodex, setAttachments]);
 
   const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.nativeEvent.isComposing || e.keyCode === 229) return;
@@ -312,7 +329,7 @@ const WebInputBar = ({
       if (removed) URL.revokeObjectURL(removed.thumbnail);
       return prev.filter((a) => a.id !== id);
     });
-  }, []);
+  }, [setAttachments]);
 
   const insertAtCursor = useCallback((text: string) => {
     const textarea = textareaRef.current;
@@ -355,10 +372,10 @@ const WebInputBar = ({
       id: typeof crypto.randomUUID === 'function' ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`,
       path: result.path,
       filename: file.name || 'image',
-      thumbnail: URL.createObjectURL(file),
+      thumbnail: result.url || URL.createObjectURL(file),
     }));
     setAttachments((prev) => [...prev, ...next]);
-  }, [wsId, tabId, t]);
+  }, [wsId, tabId, t, setAttachments]);
 
   const uploadFilesAsPaths = useCallback(async (files: File[]): Promise<void> => {
     if (files.length === 0) return;

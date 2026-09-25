@@ -34,7 +34,7 @@ Her ön ayarın bir klasörü nasıl açtığında anlamlı bir fark vardır:
 - **code-server** tarayıcının içinde çalışır. URL, host ettiğiniz sunucuya işaret eder (sizinkine, ağınızda veya Tailscale arkasında). EDITOR düğmesine tıklayın ve yeni bir sekme klasörü yükler.
 - **Yerel IDE'ler** (VS Code, Cursor, Windsurf, Zed) IDE'nin *tarayıcıyı çalıştıran makinede* yüklü olmasını gerektirir. Bağlantı OS'a verilir, OS kayıtlı işleyiciyi başlatır.
 
-purplemux'ı telefonunuzda kullanıyorsanız, yalnızca code-server ön ayarı çalışır — telefonlar `vscode://` URL'lerini bir masaüstü uygulamasına açamaz.
+purplemux-improved'ı telefonunuzda kullanıyorsanız, yalnızca code-server ön ayarı çalışır — telefonlar `vscode://` URL'lerini bir masaüstü uygulamasına açamaz.
 
 ## code-server kurulumu
 
@@ -51,10 +51,10 @@ code-server --port 8080
 tailscale serve --bg --https=8443 http://localhost:8080
 ```
 
-Sonra Editor sekmesinde URL'yi code-server'ın erişilebilir olduğu adrese ayarlayın — yerel için `http://localhost:8080` veya Tailscale Serve arkasına koyduysanız `https://<machine>.<tailnet>.ts.net:8443`. purplemux URL'nin `http://` veya `https://` ile başladığını doğrular ve `?folder=<absolute path>`'i otomatik ekler.
+Sonra Editor sekmesinde URL'yi code-server'ın erişilebilir olduğu adrese ayarlayın — yerel için `http://localhost:8080` veya Tailscale Serve arkasına koyduysanız `https://<machine>.<tailnet>.ts.net:8443`. purplemux-improved URL'nin `http://` veya `https://` ile başladığını doğrular ve `?folder=<absolute path>`'i otomatik ekler.
 
 {% call callout('note', '8022 olmayan bir port seçin') %}
-purplemux zaten `8022`'de yaşıyor. code-server'ı farklı bir portta çalıştırın (örnekte `8080`), böylece kavga etmesinler.
+purplemux-improved zaten `8022`'de yaşıyor. code-server'ı farklı bir portta çalıştırın (örnekte `8080`), böylece kavga etmesinler.
 {% endcall %}
 
 ## Özel URL şablonu
@@ -69,7 +69,7 @@ myeditor://open?path={folderEncoded}
 https://my.coder.example/workspace?dir={folderEncoded}
 ```
 
-purplemux şablonu kayıt zamanında doğrular ve yer tutucusu olmayan bir tanesini reddeder.
+purplemux-improved şablonu kayıt zamanında doğrular ve yer tutucusu olmayan bir tanesini reddeder.
 
 ## Düğmeyi devre dışı bırakma
 
@@ -77,6 +77,6 @@ purplemux şablonu kayıt zamanında doğrular ve yer tutucusu olmayan bir tanes
 
 ## Sıradaki adımlar
 
-- **[Kenar çubuğu & Claude seçenekleri](/purplemux/tr/docs/sidebar-options/)** — kenar çubuğu öğelerini yeniden sıralayın, Claude bayraklarını açıp kapatın.
-- **[Özel CSS](/purplemux/tr/docs/custom-css/)** — daha fazla görsel ayar.
-- **[Tailscale](/purplemux/tr/docs/tailscale/)** — code-server için de güvenli dış erişim.
+- **[Kenar çubuğu & Claude seçenekleri](/purplemux-improved/tr/docs/sidebar-options/)** — kenar çubuğu öğelerini yeniden sıralayın, Claude bayraklarını açıp kapatın.
+- **[Özel CSS](/purplemux-improved/tr/docs/custom-css/)** — daha fazla görsel ayar.
+- **[Tailscale](/purplemux-improved/tr/docs/tailscale/)** — code-server için de güvenli dış erişim.

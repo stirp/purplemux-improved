@@ -31,7 +31,7 @@ Quick prompts work nicely as one-click triggers for Claude Code slash commands. 
 
 ## Drag and drop images
 
-Drop an image file (PNG, JPG, WebP, etc.) anywhere on the input bar to attach it. purplemux uploads the file to a temp path on the server and inserts a reference into your prompt automatically.
+Drop an image file (PNG, JPG, WebP, etc.) anywhere on the input bar to attach it. purplemux-improved uploads the file to a temp path on the server and inserts a reference into your prompt automatically.
 
 You can also:
 
@@ -43,7 +43,7 @@ A thumbnail strip appears above the input while attachments are pending. Each th
 
 ## Other file attachments
 
-The same paperclip works for non-image files too — markdown, JSON, CSV, source files, anything. purplemux puts them in a temp directory and inserts the path so Claude can `read` them as part of the request.
+The same paperclip works for non-image files too — markdown, JSON, CSV, source files, anything. purplemux-improved puts them in a temp directory and inserts the path so Claude can `read` them as part of the request.
 
 This is the easiest way to share something Claude can't reach by itself, like a stack trace pasted from another machine or a config file from a different project.
 
@@ -74,6 +74,6 @@ Old entries can be deleted from the picker. History is stored alongside other wo
 
 ## What's next
 
-- **[Live session view](/purplemux/docs/live-session-view/)** — where your prompts and Claude's replies show up.
-- **[Keyboard shortcuts](/purplemux/docs/keyboard-shortcuts/)** — the full binding table.
-- **[Permission prompts](/purplemux/docs/permission-prompts/)** — what happens after you send a request that needs approval.
+- **[Live session view](/purplemux-improved/docs/live-session-view/)** — where your prompts and Claude's replies show up.
+- **[Keyboard shortcuts](/purplemux-improved/docs/keyboard-shortcuts/)** — the full binding table.
+- **[Permission prompts](/purplemux-improved/docs/permission-prompts/)** — what happens after you send a request that needs approval.

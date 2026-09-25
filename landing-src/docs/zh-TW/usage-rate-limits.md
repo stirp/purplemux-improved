@@ -6,7 +6,7 @@ permalink: /zh-TW/docs/usage-rate-limits/index.html
 ---
 {% from "docs/callouts.njk" import callout %}
 
-在工作中途撞到用量上限是最糟糕的中斷。purplemux 把 Claude Code 的用量數字拉到側邊欄，並提供統計儀表板，讓你一眼掌握自己的使用節奏。
+在工作中途撞到用量上限是最糟糕的中斷。purplemux-improved 把 Claude Code 的用量數字拉到側邊欄，並提供統計儀表板，讓你一眼掌握自己的使用節奏。
 
 ## 側邊欄小工具
 
@@ -18,7 +18,7 @@ permalink: /zh-TW/docs/usage-rate-limits/index.html
 
 把游標停在任一條上即可看到完整明細 — 已使用百分比、預測百分比，以及以相對時間表示的重設時間。
 
-數字來自 Claude Code 自己的 statusline JSON。purplemux 會安裝一支精簡的 `~/.purplemux/statusline.sh` 指令稿，每次 Claude 重新整理 statusline 時都會 POST 資料給本機伺服器；`fs.watch` 維持 UI 同步。
+數字來自 Claude Code 自己的 statusline JSON。purplemux-improved 會安裝一支精簡的 `~/.purplemux/statusline.sh` 指令稿，每次 Claude 重新整理 statusline 時都會 POST 資料給本機伺服器；`fs.watch` 維持 UI 同步。
 
 ## 顏色閾值
 
@@ -71,14 +71,14 @@ permalink: /zh-TW/docs/usage-rate-limits/index.html
 
 ## 資料從哪來
 
-儀表板上的所有東西都是從 `~/.claude/projects/` 下 Claude Code 自己的工作階段 JSONL 在本地計算出來的。purplemux 讀取它們，把解析後的計數快取在 `~/.purplemux/stats/`，永遠不會送出任何位元組到機外。切換語言或重建快取都不會對外連線。
+儀表板上的所有東西都是從 `~/.claude/projects/` 下 Claude Code 自己的工作階段 JSONL 在本地計算出來的。purplemux-improved 讀取它們，把解析後的計數快取在 `~/.purplemux/stats/`，永遠不會送出任何位元組到機外。切換語言或重建快取都不會對外連線。
 
 ## 重設行為
 
-5 小時與 7 天視窗是滾動的，並與你的 Claude Code 帳號繫結。當視窗重設時，條會掉到 0 %，百分比與剩餘時間會從下個重設時間戳重新計算。如果 purplemux 錯過了重設（伺服器當時已關閉），下一個 statusline tick 時小工具會自我更正。
+5 小時與 7 天視窗是滾動的，並與你的 Claude Code 帳號繫結。當視窗重設時，條會掉到 0 %，百分比與剩餘時間會從下個重設時間戳重新計算。如果 purplemux-improved 錯過了重設（伺服器當時已關閉），下一個 statusline tick 時小工具會自我更正。
 
 ## 下一步
 
-- **[筆記（AI 每日報告）](/purplemux/zh-TW/docs/notes-daily-report/)** — 同樣的資料，寫成每日簡報。
-- **[工作階段狀態](/purplemux/zh-TW/docs/session-status/)** — 側邊欄按分頁追蹤的另一件事。
-- **[鍵盤快速鍵](/purplemux/zh-TW/docs/keyboard-shortcuts/)** — 包含開啟統計的 <kbd>⌘⇧U</kbd>。
+- **[筆記（AI 每日報告）](/purplemux-improved/zh-TW/docs/notes-daily-report/)** — 同樣的資料，寫成每日簡報。
+- **[工作階段狀態](/purplemux-improved/zh-TW/docs/session-status/)** — 側邊欄按分頁追蹤的另一件事。
+- **[鍵盤快速鍵](/purplemux-improved/zh-TW/docs/keyboard-shortcuts/)** — 包含開啟統計的 <kbd>⌘⇧U</kbd>。

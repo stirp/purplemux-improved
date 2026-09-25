@@ -16,7 +16,7 @@ Cada workspace tem o seu próprio:
 - **Abas e painéis** — terminais, sessões Claude, painéis de diff, painéis de navegador web.
 - **Layout** — proporções de divisão, foco, a aba ativa em cada painel.
 
-Tudo isso é persistido em `~/.purplemux/workspaces.json`, então o workspace é a unidade que o purplemux salva e restaura. Fechar o navegador não desfaz um workspace; o tmux mantém os shells abertos e o layout permanece.
+Tudo isso é persistido em `~/.purplemux/workspaces.json`, então o workspace é a unidade que o purplemux-improved salva e restaura. Fechar o navegador não desfaz um workspace; o tmux mantém os shells abertos e o layout permanece.
 
 ## Crie um workspace
 
@@ -61,10 +61,10 @@ Grupos são organização visual. Eles não mudam como as abas persistem nem com
 
 ## Onde fica em disco
 
-Toda mudança grava em `~/.purplemux/workspaces.json`. Você pode inspecionar ou fazer backup — veja [Diretório de dados](/purplemux/pt-BR/docs/data-directory/) para a estrutura completa do arquivo. Se você apagá-lo com o servidor rodando, o purplemux cai de volta para um workspace vazio e recomeça.
+Toda mudança grava em `~/.purplemux/workspaces.json`. Você pode inspecionar ou fazer backup — veja [Diretório de dados](/purplemux-improved/pt-BR/docs/data-directory/) para a estrutura completa do arquivo. Se você apagá-lo com o servidor rodando, o purplemux-improved cai de volta para um workspace vazio e recomeça.
 
 ## Próximos passos
 
-- **[Abas e painéis](/purplemux/pt-BR/docs/tabs-panes/)** — dividir, reordenar e focar dentro de um workspace.
-- **[Salvar e restaurar layouts](/purplemux/pt-BR/docs/save-restore/)** — como os workspaces sobrevivem ao fechamento do navegador e ao reboot do servidor.
-- **[Atalhos de teclado](/purplemux/pt-BR/docs/keyboard-shortcuts/)** — a tabela completa de bindings.
+- **[Abas e painéis](/purplemux-improved/pt-BR/docs/tabs-panes/)** — dividir, reordenar e focar dentro de um workspace.
+- **[Salvar e restaurar layouts](/purplemux-improved/pt-BR/docs/save-restore/)** — como os workspaces sobrevivem ao fechamento do navegador e ao reboot do servidor.
+- **[Atalhos de teclado](/purplemux-improved/pt-BR/docs/keyboard-shortcuts/)** — a tabela completa de bindings.

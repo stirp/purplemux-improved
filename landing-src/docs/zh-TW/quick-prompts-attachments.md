@@ -31,7 +31,7 @@ permalink: /zh-TW/docs/quick-prompts-attachments/index.html
 
 ## 拖放圖片
 
-把圖片檔案（PNG、JPG、WebP 等）拖曳到輸入列上的任何位置即可附加。purplemux 會把檔案上傳到伺服器上的暫存路徑，並自動在你的 prompt 中插入引用。
+把圖片檔案（PNG、JPG、WebP 等）拖曳到輸入列上的任何位置即可附加。purplemux-improved 會把檔案上傳到伺服器上的暫存路徑，並自動在你的 prompt 中插入引用。
 
 你也可以：
 
@@ -43,7 +43,7 @@ permalink: /zh-TW/docs/quick-prompts-attachments/index.html
 
 ## 其他檔案附件
 
-同一個迴紋針也能用於非圖片檔案 — markdown、JSON、CSV、原始碼，什麼都行。purplemux 會把它們放在暫存目錄並插入路徑，讓 Claude 可以把它們當成請求的一部分 `read`。
+同一個迴紋針也能用於非圖片檔案 — markdown、JSON、CSV、原始碼，什麼都行。purplemux-improved 會把它們放在暫存目錄並插入路徑，讓 Claude 可以把它們當成請求的一部分 `read`。
 
 這是分享 Claude 自己拿不到的東西最簡單的方法，例如從另一台機器貼來的 stack trace，或來自其他專案的設定檔。
 
@@ -74,6 +74,6 @@ permalink: /zh-TW/docs/quick-prompts-attachments/index.html
 
 ## 下一步
 
-- **[即時工作階段檢視](/purplemux/zh-TW/docs/live-session-view/)** — 你的 prompts 與 Claude 回覆呈現的位置。
-- **[鍵盤快速鍵](/purplemux/zh-TW/docs/keyboard-shortcuts/)** — 完整繫結表。
-- **[權限提示](/purplemux/zh-TW/docs/permission-prompts/)** — 在送出需要核可的請求後會發生什麼事。
+- **[即時工作階段檢視](/purplemux-improved/zh-TW/docs/live-session-view/)** — 你的 prompts 與 Claude 回覆呈現的位置。
+- **[鍵盤快速鍵](/purplemux-improved/zh-TW/docs/keyboard-shortcuts/)** — 完整繫結表。
+- **[權限提示](/purplemux-improved/zh-TW/docs/permission-prompts/)** — 在送出需要核可的請求後會發生什麼事。

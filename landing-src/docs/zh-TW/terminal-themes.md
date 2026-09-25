@@ -6,7 +6,7 @@ permalink: /zh-TW/docs/terminal-themes/index.html
 ---
 {% from "docs/callouts.njk" import callout %}
 
-終端機窗格使用 xterm.js，並有自己的調色盤，與其他 UI 部分獨立。你選一個深色主題與一個淺色主題；purplemux 會在應用程式主題切換時跟著切換。
+終端機窗格使用 xterm.js，並有自己的調色盤，與其他 UI 部分獨立。你選一個深色主題與一個淺色主題；purplemux-improved 會在應用程式主題切換時跟著切換。
 
 ## 開啟選擇器
 
@@ -68,6 +68,6 @@ permalink: /zh-TW/docs/terminal-themes/index.html
 
 ## 下一步
 
-- **[主題與字型](/purplemux/zh-TW/docs/themes-fonts/)** — 應用程式主題與字級。
-- **[自訂 CSS](/purplemux/zh-TW/docs/custom-css/)** — 覆寫 UI 其餘部分。
-- **[編輯器整合](/purplemux/zh-TW/docs/editor-integration/)** — 在外部編輯器中打開檔案。
+- **[主題與字型](/purplemux-improved/zh-TW/docs/themes-fonts/)** — 應用程式主題與字級。
+- **[自訂 CSS](/purplemux-improved/zh-TW/docs/custom-css/)** — 覆寫 UI 其餘部分。
+- **[編輯器整合](/purplemux-improved/zh-TW/docs/editor-integration/)** — 在外部編輯器中打開檔案。

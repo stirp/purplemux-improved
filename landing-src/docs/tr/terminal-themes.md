@@ -6,7 +6,7 @@ permalink: /tr/docs/terminal-themes/index.html
 ---
 {% from "docs/callouts.njk" import callout %}
 
-Terminal paneli, UI'nın geri kalanından bağımsız kendi paletiyle xterm.js kullanır. Bir koyu tema ve bir açık tema seçersiniz; uygulama teması değiştikçe purplemux aralarında geçiş yapar.
+Terminal paneli, UI'nın geri kalanından bağımsız kendi paletiyle xterm.js kullanır. Bir koyu tema ve bir açık tema seçersiniz; uygulama teması değiştikçe purplemux-improved aralarında geçiş yapar.
 
 ## Seçiciyi açın
 
@@ -68,6 +68,6 @@ Seçim küreseldir. Her terminal paneli ve her Claude oturumu aynı aktif temay�
 
 ## Sıradaki adımlar
 
-- **[Temalar & fontlar](/purplemux/tr/docs/themes-fonts/)** — uygulama teması ve font boyutu.
-- **[Özel CSS](/purplemux/tr/docs/custom-css/)** — UI'nın geri kalanını geçersiz kılın.
-- **[Editör entegrasyonu](/purplemux/tr/docs/editor-integration/)** — dosyaları harici bir editörde açın.
+- **[Temalar & fontlar](/purplemux-improved/tr/docs/themes-fonts/)** — uygulama teması ve font boyutu.
+- **[Özel CSS](/purplemux-improved/tr/docs/custom-css/)** — UI'nın geri kalanını geçersiz kılın.
+- **[Editör entegrasyonu](/purplemux-improved/tr/docs/editor-integration/)** — dosyaları harici bir editörde açın.

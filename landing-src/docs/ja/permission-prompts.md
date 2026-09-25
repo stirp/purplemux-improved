@@ -1,16 +1,16 @@
 ---
 title: 権限プロンプト
-description: purplemux が Claude Code の「これを実行してもよいですか?」ダイアログをインターセプトし、ダッシュボード・キーボード・スマートフォンから承認できるようにする方法。
+description: purplemux-improved が Claude Code の「これを実行してもよいですか?」ダイアログをインターセプトし、ダッシュボード・キーボード・スマートフォンから承認できるようにする方法。
 eyebrow: Claude Code
 permalink: /ja/docs/permission-prompts/index.html
 ---
 {% from "docs/callouts.njk" import callout %}
 
-Claude Code はデフォルトで権限ダイアログ — ツール呼び出し、ファイル書き込みなど — でブロックします。purplemux はそれが現れた瞬間にダイアログを捕まえ、あなたが今そばにいるデバイスに届けます。
+Claude Code はデフォルトで権限ダイアログ — ツール呼び出し、ファイル書き込みなど — でブロックします。purplemux-improved はそれが現れた瞬間にダイアログを捕まえ、あなたが今そばにいるデバイスに届けます。
 
 ## インターセプトされるもの
 
-Claude Code はいくつかの理由で `Notification` フックを発火します。purplemux は次の 2 種類の通知タイプだけを権限プロンプトとして扱います:
+Claude Code はいくつかの理由で `Notification` フックを発火します。purplemux-improved は次の 2 種類の通知タイプだけを権限プロンプトとして扱います:
 
 - `permission_prompt` — 標準の「このツールを実行しますか?」ダイアログ
 - `worker_permission_prompt` — サブエージェントから来る同じもの
@@ -24,7 +24,7 @@ Claude Code はいくつかの理由で `Notification` フックを発火しま�
 3. ダッシュボードはプロンプトを **タイムラインのインライン** にレンダリングし、Claude が提供したのと同じオプションを表示します — モーダルもコンテキストスイッチもありません。
 4. 通知許可を与えていれば、`needs-input` で Web Push やデスクトップ通知が発火します。
 
-Claude CLI 自体は依然として stdin で待機しています。purplemux は tmux からプロンプトのオプションを読み、あなたが選んだら回答を送り返します。
+Claude CLI 自体は依然として stdin で待機しています。purplemux-improved は tmux からプロンプトのオプションを読み、あなたが選んだら回答を送り返します。
 
 ## 応答方法
 
@@ -34,7 +34,7 @@ Claude CLI 自体は依然として stdin で待機しています。purplemux �
 - **数字キーを押す** — <kbd>1</kbd>、<kbd>2</kbd>、<kbd>3</kbd>。
 - スマートフォンで **プッシュをタップ** — プロンプトに直接ディープリンクするので、そこで選択できます。
 
-選択すると、purplemux が tmux に入力を送り、タブは **ビジー** に戻り、Claude はストリームの途中から再開します。他に確認すべきことはありません — クリック自体が確認になります。
+選択すると、purplemux-improved が tmux に入力を送り、タブは **ビジー** に戻り、Claude はストリームの途中から再開します。他に確認すべきことはありません — クリック自体が確認になります。
 
 {% call callout('tip', '連続するプロンプトは自動的に再取得') %}
 Claude が立て続けにいくつもの質問をすると、次の `Notification` が届くと同時にインラインプロンプトが新しいオプションで再描画されます。前のものを明示的に閉じる必要はありません。
@@ -45,14 +45,14 @@ Claude が立て続けにいくつもの質問をすると、次の `Notificatio
 PWA がインストールされていて通知が許可されていれば、ブラウザタブが開いていても、バックグラウンドでも、閉じていても Web Push が発火します:
 
 - 通知は「Input Required」と表示し、セッションを識別します。
-- タップすると、そのタブにフォーカスして purplemux が開きます。
+- タップすると、そのタブにフォーカスして purplemux-improved が開きます。
 - インラインプロンプトはすでに描画されているので、ワンタップで選べます。
 
-これが [Tailscale + PWA](/purplemux/ja/docs/quickstart/#reach-it-from-your-phone) のセットアップを推奨する一番の理由です — 承認をデスクから持ち出せます。
+これが [Tailscale + PWA](/purplemux-improved/ja/docs/quickstart/#reach-it-from-your-phone) のセットアップを推奨する一番の理由です — 承認をデスクから持ち出せます。
 
 ## オプションをパースできない場合
 
-まれに (purplemux が読み取る前にプロンプトが tmux のスクロールバックから流れてしまった場合)、オプションリストが空で返ってくることがあります。タイムラインには「プロンプトを読めませんでした」というカードが表示され、バックオフ付きで最大 4 回リトライします。それでも失敗したら、そのタブの **ターミナル** モードに切り替えて、生の CLI で答えてください — 内部の Claude プロセスはまだ待機しています。
+まれに (purplemux-improved が読み取る前にプロンプトが tmux のスクロールバックから流れてしまった場合)、オプションリストが空で返ってくることがあります。タイムラインには「プロンプトを読めませんでした」というカードが表示され、バックオフ付きで最大 4 回リトライします。それでも失敗したら、そのタブの **ターミナル** モードに切り替えて、生の CLI で答えてください — 内部の Claude プロセスはまだ待機しています。
 
 ## アイドル時のリマインダーは?
 
@@ -60,6 +60,6 @@ Claude の他の通知タイプ — 例えばアイドル時のリマインダ�
 
 ## 次のステップ
 
-- **[セッションステータス](/purplemux/ja/docs/session-status/)** — **入力待ち** 状態の意味と検出方法。
-- **[ライブセッションビュー](/purplemux/ja/docs/live-session-view/)** — インラインプロンプトがレンダリングされる場所。
-- **[ブラウザサポート](/purplemux/ja/docs/browser-support/)** — Web Push の要件 (特に iOS Safari 16.4+)。
+- **[セッションステータス](/purplemux-improved/ja/docs/session-status/)** — **入力待ち** 状態の意味と検出方法。
+- **[ライブセッションビュー](/purplemux-improved/ja/docs/live-session-view/)** — インラインプロンプトがレンダリングされる場所。
+- **[ブラウザサポート](/purplemux-improved/ja/docs/browser-support/)** — Web Push の要件 (特に iOS Safari 16.4+)。

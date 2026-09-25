@@ -61,6 +61,6 @@ Changes 标签按文件展示工作区改动。
 
 ## 下一步
 
-- **[标签页与窗格](/purplemux/zh-CN/docs/tabs-panes/)** — 把差异面板分割到 Claude 会话旁边。
-- **[第一个会话](/purplemux/zh-CN/docs/first-session/)** — Claude 权限提示如何在仪表盘呈现。
-- **[Web 浏览器面板](/purplemux/zh-CN/docs/web-browser-panel/)** — 另一种值得跟终端并排运行的面板类型。
+- **[标签页与窗格](/purplemux-improved/zh-CN/docs/tabs-panes/)** — 把差异面板分割到 Claude 会话旁边。
+- **[第一个会话](/purplemux-improved/zh-CN/docs/first-session/)** — Claude 权限提示如何在仪表盘呈现。
+- **[Web 浏览器面板](/purplemux-improved/zh-CN/docs/web-browser-panel/)** — 另一种值得跟终端并排运行的面板类型。

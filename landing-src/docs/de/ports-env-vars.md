@@ -1,24 +1,24 @@
 ---
 title: Ports & Umgebungsvariablen
-description: Jeder Port, den purplemux öffnet, und jede Umgebungsvariable, die beeinflusst, wie es läuft.
+description: Jeder Port, den purplemux-improved öffnet, und jede Umgebungsvariable, die beeinflusst, wie es läuft.
 eyebrow: Referenz
 permalink: /de/docs/ports-env-vars/index.html
 ---
 {% from "docs/callouts.njk" import callout %}
 
-purplemux soll eine Ein-Zeilen-Installation sein, aber die Runtime ist konfigurierbar. Diese Seite listet jeden Port, den es öffnet, und jede Umgebungsvariable, die der Server liest.
+purplemux-improved soll eine Ein-Zeilen-Installation sein, aber die Runtime ist konfigurierbar. Diese Seite listet jeden Port, den es öffnet, und jede Umgebungsvariable, die der Server liest.
 
 ## Ports
 
 | Port | Default | Override | Hinweise |
 |---|---|---|---|
-| HTTP + WebSocket | `8022` | `PORT=9000 purplemux` | Ist `8022` schon belegt, loggt der Server eine Warnung und bindet stattdessen auf einen zufälligen freien Port. |
-| Internes Next.js (Production) | zufällig | — | In `pnpm start` / `purplemux start` proxyt der Outer-Server an ein Next.js-Standalone, gebunden auf `127.0.0.1:<random>`. Nicht exponiert. |
+| HTTP + WebSocket | `8022` | `PORT=9000 purplemux-improved` | Ist `8022` schon belegt, loggt der Server eine Warnung und bindet stattdessen auf einen zufälligen freien Port. |
+| Internes Next.js (Production) | zufällig | — | In `pnpm start` / `purplemux-improved start` proxyt der Outer-Server an ein Next.js-Standalone, gebunden auf `127.0.0.1:<random>`. Nicht exponiert. |
 
 `8022` ist `web` + `ssh` zusammengeklebt. Die Wahl ist Humor, kein Protokoll.
 
 {% call callout('note', 'Gebundenes Interface folgt der Access-Policy') %}
-purplemux bindet nur dann auf `0.0.0.0`, wenn die Access-Policy externe Clients tatsächlich erlaubt. Reine Localhost-Setups binden auf `127.0.0.1`, sodass andere Maschinen im LAN nicht mal eine TCP-Verbindung öffnen können. Siehe `HOST` unten.
+purplemux-improved bindet nur dann auf `0.0.0.0`, wenn die Access-Policy externe Clients tatsächlich erlaubt. Reine Localhost-Setups binden auf `127.0.0.1`, sodass andere Maschinen im LAN nicht mal eine TCP-Verbindung öffnen können. Siehe `HOST` unten.
 {% endcall %}
 
 ## Server-Umgebungsvariablen
@@ -29,7 +29,7 @@ Gelesen von `server.ts` und den Modulen, die es beim Startup lädt.
 |---|---|---|
 | `PORT` | `8022` | HTTP/WS-Listen-Port. Fällt auf einen zufälligen Port bei `EADDRINUSE` zurück. |
 | `HOST` | nicht gesetzt | Komma-getrennte CIDR-/Keyword-Spec für erlaubte Clients. Keywords: `localhost`, `tailscale`, `lan`, `all` (oder `*` / `0.0.0.0`). Beispiele: `HOST=localhost`, `HOST=localhost,tailscale`, `HOST=10.0.0.0/8,localhost`. Wenn per Env gesetzt, ist die in-App-**Einstellungen → Netzwerk-Zugriff** gesperrt. |
-| `NODE_ENV` | `production` (in `purplemux start`), `development` (in `pnpm dev`) | Wählt zwischen Dev-Pipeline (`tsx watch`, Next dev) und Prod-Pipeline (`tsup`-Bundle, das an Next-Standalone proxyt). |
+| `NODE_ENV` | `production` (in `purplemux-improved start`), `development` (in `pnpm dev`) | Wählt zwischen Dev-Pipeline (`tsx watch`, Next dev) und Prod-Pipeline (`tsup`-Bundle, das an Next-Standalone proxyt). |
 | `__PMUX_APP_DIR` | `process.cwd()` | Override für das Verzeichnis, das `dist/server.js` und `.next/standalone/` hält. Wird automatisch von `bin/purplemux.js` gesetzt; normalerweise solltest du es nicht anfassen. |
 | `__PMUX_APP_DIR_UNPACKED` | nicht gesetzt | Variante von `__PMUX_APP_DIR` für den asar-unpacked-Pfad innerhalb der macOS-Electron-App. |
 | `__PMUX_ELECTRON` | nicht gesetzt | Wenn der Electron-Main-Prozess den Server in-process startet, setzt er das, sodass `server.ts` den auto-`start()`-Call überspringt und Electron den Lifecycle steuern lässt. |
@@ -50,13 +50,13 @@ Gelesen von `src/lib/logger.ts`.
 Levels in Reihenfolge: `trace` · `debug` · `info` · `warn` · `error` · `fatal`.
 
 ```bash
-LOG_LEVEL=debug purplemux
+LOG_LEVEL=debug purplemux-improved
 
 # nur das Claude-Hook-Modul debuggen
-LOG_LEVELS=hooks=debug purplemux
+LOG_LEVELS=hooks=debug purplemux-improved
 
 # mehrere Module gleichzeitig
-LOG_LEVELS=hooks=debug,status=warn,tmux=trace purplemux
+LOG_LEVELS=hooks=debug,status=warn,tmux=trace purplemux-improved
 ```
 
 Die nützlichsten Modul-Namen:
@@ -86,7 +86,7 @@ Die CLI akzeptiert sie auch via Env, was Vorrang hat:
 | `PMUX_PORT` | Inhalt von `~/.purplemux/port` | Port, mit dem die CLI redet. |
 | `PMUX_TOKEN` | Inhalt von `~/.purplemux/cli-token` | Bearer-Token, gesendet als `x-pmux-token`. |
 
-Siehe [CLI-Referenz](/purplemux/de/docs/cli-reference/) für die volle Oberfläche.
+Siehe [CLI-Referenz](/purplemux-improved/de/docs/cli-reference/) für die volle Oberfläche.
 
 ## Zusammen genommen
 
@@ -94,27 +94,27 @@ Ein paar gängige Kombinationen:
 
 ```bash
 # Default: nur localhost, Port 8022
-purplemux
+purplemux-improved
 
 # Überall binden (LAN + Tailscale + Remote)
-HOST=all purplemux
+HOST=all purplemux-improved
 
 # Nur Localhost + Tailscale
-HOST=localhost,tailscale purplemux
+HOST=localhost,tailscale purplemux-improved
 
 # Custom-Port + verbose Hook-Tracing
-PORT=9000 LOG_LEVELS=hooks=debug purplemux
+PORT=9000 LOG_LEVELS=hooks=debug purplemux-improved
 
 # Maximaler Debug-Mode
-PORT=9000 HOST=localhost LOG_LEVEL=debug LOG_LEVELS=tmux=trace purplemux
+PORT=9000 HOST=localhost LOG_LEVEL=debug LOG_LEVELS=tmux=trace purplemux-improved
 ```
 
 {% call callout('tip') %}
-Bei einer persistenten Installation setzt du diese im `Environment=`-Block deiner launchd-/systemd-Unit. Siehe [Installation](/purplemux/de/docs/installation/#beim-booten-starten) für eine Beispiel-Unit-Datei.
+Bei einer persistenten Installation setzt du diese im `Environment=`-Block deiner launchd-/systemd-Unit. Siehe [Installation](/purplemux-improved/de/docs/installation/#beim-booten-starten) für eine Beispiel-Unit-Datei.
 {% endcall %}
 
 ## Wie es weitergeht
 
-- **[Installation](/purplemux/de/docs/installation/)** — wo diese Variablen üblicherweise hingehören.
-- **[Daten-Verzeichnis](/purplemux/de/docs/data-directory/)** — wie `port` und `cli-token` mit Hook-Skripten interagieren.
-- **[CLI-Referenz](/purplemux/de/docs/cli-reference/)** — `PMUX_PORT` / `PMUX_TOKEN` im Kontext.
+- **[Installation](/purplemux-improved/de/docs/installation/)** — wo diese Variablen üblicherweise hingehören.
+- **[Daten-Verzeichnis](/purplemux-improved/de/docs/data-directory/)** — wie `port` und `cli-token` mit Hook-Skripten interagieren.
+- **[CLI-Referenz](/purplemux-improved/de/docs/cli-reference/)** — `PMUX_PORT` / `PMUX_TOKEN` im Kontext.

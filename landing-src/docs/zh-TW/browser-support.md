@@ -6,7 +6,7 @@ permalink: /zh-TW/docs/browser-support/index.html
 ---
 {% from "docs/callouts.njk" import callout %}
 
-purplemux 是網頁應用程式，使用體驗會取決於開啟它的瀏覽器。以下是我們實際測試的版本 — 較舊的瀏覽器可能也能運作，但不在支援範圍內。
+purplemux-improved 是網頁應用程式，使用體驗會取決於開啟它的瀏覽器。以下是我們實際測試的版本 — 較舊的瀏覽器可能也能運作，但不在支援範圍內。
 
 ## 桌面
 
@@ -33,12 +33,12 @@ Apple 直到 Safari 16.4（2023 年 3 月）才在 iOS 加入 Web Push。較舊�
 
 ## 功能需求
 
-purplemux 倚賴若干現代瀏覽器 API。如果缺少其中任何一項，App 會優雅降級，但會損失對應功能。
+purplemux-improved 倚賴若干現代瀏覽器 API。如果缺少其中任何一項，App 會優雅降級，但會損失對應功能。
 
 | API | 用途 | 降級行為 |
 |---|---|---|
 | WebSocket | 終端機 I/O、狀態同步、時間軸 | 硬性需求 — 無替代方案。 |
-| Clipboard API | `npx purplemux@latest` 複製、程式碼區塊複製 | 若不支援則隱藏按鈕。 |
+| Clipboard API | `npx purplemux-improved@latest` 複製、程式碼區塊複製 | 若不支援則隱藏按鈕。 |
 | Notifications API | 桌面 / 行動推播 | 略過 — 仍會在應用程式內看到狀態。 |
 | Service Workers | PWA + Web Push | 僅作為一般網頁應用程式提供。 |
 | IntersectionObserver | 即時工作階段時間軸、導覽顯示 | 元素呈現但無動畫。 |
@@ -47,7 +47,7 @@ purplemux 倚賴若干現代瀏覽器 API。如果缺少其中任何一項，App
 
 ## 我的瀏覽器可以嗎？
 
-purplemux 內建自我檢查，位於 **設定 → 瀏覽器檢查**。它會執行上述相同的測試，並對每個功能顯示綠 / 黃 / 紅徽章，無需閱讀規格書即可確認。
+purplemux-improved 內建自我檢查，位於 **設定 → 瀏覽器檢查**。它會執行上述相同的測試，並對每個功能顯示綠 / 黃 / 紅徽章，無需閱讀規格書即可確認。
 
 ## 已知差異
 
@@ -62,4 +62,4 @@ purplemux 內建自我檢查，位於 **設定 → 瀏覽器檢查**。它會執
 - **UC Browser、Opera Mini、Puffin** — 代理式瀏覽器會破壞 WebSocket，無法運作。
 - **任何超過 3 年未更新的瀏覽器** — 我們的 CSS 使用了需要 2023 年以後引擎的 OKLCH 色彩與 container queries。
 
-如果你使用了不尋常的設定且某些功能無法運作，請[提交 issue](https://github.com/subicura/purplemux/issues)，附上你的 user agent 與自我檢查的輸出。
+如果你使用了不尋常的設定且某些功能無法運作，請[提交 issue](https://github.com/stirp/purplemux-improved/issues)，附上你的 user agent 與自我檢查的輸出。

@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { saveImage, isValidMime, MAX_BYTES } from '@/lib/uploads-store';
+import { saveImage, isValidMime, MAX_BYTES, uploadPathToImageUrl } from '@/lib/uploads-store';
 import { createLogger } from '@/lib/logger';
 
 const log = createLogger('uploads');
@@ -71,7 +71,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       wsId,
       tabId,
     });
-    return res.status(200).json({ path: saved.path, filename: saved.filename });
+    return res.status(200).json({ path: saved.path, filename: saved.filename, url: uploadPathToImageUrl(saved.path) });
   } catch (err) {
     log.error(`upload-image failed: ${err instanceof Error ? err.message : err}`);
     return res.status(500).json({ error: 'Failed to save image' });

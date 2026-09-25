@@ -6,7 +6,7 @@ permalink: /es/docs/architecture/index.html
 ---
 {% from "docs/callouts.njk" import callout %}
 
-purplemux son tres capas cosidas: un front-end de navegador, un servidor Node.js en `:8022`, y tmux + el CLI de Claude en el host. Todo lo que pasa entre ellos es o un WebSocket binario o un pequeño POST HTTP.
+purplemux-improved son tres capas cosidas: un front-end de navegador, un servidor Node.js en `:8022`, y tmux + el CLI de Claude en el host. Todo lo que pasa entre ellos es o un WebSocket binario o un pequeño POST HTTP.
 
 ## Las tres capas
 
@@ -71,11 +71,11 @@ Backpressure: `pty.pause` cuando el `bufferedAmount` del WS > 1 MB, reanudar baj
 
 `src/lib/status-manager.ts` es la fuente única de verdad para `cliState`. Los eventos de hook fluyen por `/api/status/hook` (POST autenticado por token), se secuencian (`eventSeq` por pestaña) y se reducen a `idle` / `busy` / `needs-input` / `ready-for-review` / `unknown` por `deriveStateFromEvent`. El watcher JSONL solo actualiza metadatos excepto por un evento sintético `interrupt`.
 
-Para la máquina de estados completa consulta [Estado de la sesión (STATUS.md)](https://github.com/subicura/purplemux/blob/main/docs/STATUS.md).
+Para la máquina de estados completa consulta [Estado de la sesión (STATUS.md)](https://github.com/stirp/purplemux-improved/blob/main/docs/STATUS.md).
 
 ## Capa tmux
 
-purplemux ejecuta un tmux aislado sobre un socket dedicado — `-L purple` — usando su propia config en `src/config/tmux.conf`. Tu `~/.tmux.conf` nunca se lee.
+purplemux-improved ejecuta un tmux aislado sobre un socket dedicado — `-L purple` — usando su propia config en `src/config/tmux.conf`. Tu `~/.tmux.conf` nunca se lee.
 
 Las sesiones se llaman `pt-{workspaceId}-{paneId}-{tabId}`. Un panel de terminal en el navegador se mapea a una sesión tmux, anclada vía `node-pty`.
 
@@ -88,16 +88,16 @@ socket tmux: purple
 
 `prefix` está desactivado, la barra de estado off (xterm.js dibuja el chrome), `set-titles` on, y `mouse on` pone la rueda en modo copy. tmux es la razón por la que las sesiones sobreviven a un navegador cerrado, una caída de Wi-Fi o un reinicio del servidor.
 
-Para la configuración tmux completa, el wrapper de comandos y los detalles de detección de procesos consulta [tmux y detección de procesos (TMUX.md)](https://github.com/subicura/purplemux/blob/main/docs/TMUX.md).
+Para la configuración tmux completa, el wrapper de comandos y los detalles de detección de procesos consulta [tmux y detección de procesos (TMUX.md)](https://github.com/stirp/purplemux-improved/blob/main/docs/TMUX.md).
 
 ## Integración con el CLI de Claude
 
-purplemux no hace fork ni envuelve a Claude — el binario `claude` es el que tengas instalado. Se añaden dos cosas:
+purplemux-improved no hace fork ni envuelve a Claude — el binario `claude` es el que tengas instalado. Se añaden dos cosas:
 
 1. **Configuración de hook** — al arrancar, `ensureHookSettings()` escribe `~/.purplemux/hooks.json`, `status-hook.sh` y `statusline.sh`. Cada pestaña Claude se lanza con `--settings ~/.purplemux/hooks.json`, así `SessionStart`, `UserPromptSubmit`, `Notification`, `Stop`, `PreCompact`, `PostCompact` POSTean al servidor.
 2. **Lecturas de JSONL** — `~/.claude/projects/**/*.jsonl` lo parsea `timeline-server.ts` para la vista de conversación en directo, y lo observa `session-detection.ts` para detectar un proceso Claude en marcha vía los archivos PID en `~/.claude/sessions/`.
 
-Los scripts de hook leen `~/.purplemux/port` y `~/.purplemux/cli-token` y POSTean con `x-pmux-token`. Fallan en silencio si el servidor está caído, así que cerrar purplemux mientras Claude corre no rompe nada.
+Los scripts de hook leen `~/.purplemux/port` y `~/.purplemux/cli-token` y POSTean con `x-pmux-token`. Fallan en silencio si el servidor está caído, así que cerrar purplemux-improved mientras Claude corre no rompe nada.
 
 ## Secuencia de arranque
 
@@ -126,12 +126,12 @@ El servidor exterior personalizado (`server.ts`) y Next.js (pages + API routes) 
 
 ## Dónde leer más
 
-- [`docs/TMUX.md`](https://github.com/subicura/purplemux/blob/main/docs/TMUX.md) — config tmux, wrapper de comandos, recorrido del árbol de procesos, protocolo binario de terminal.
-- [`docs/STATUS.md`](https://github.com/subicura/purplemux/blob/main/docs/STATUS.md) — máquina de estados del CLI de Claude, flujo de hook, evento de interrupción sintético, watcher JSONL.
-- [`docs/DATA-DIR.md`](https://github.com/subicura/purplemux/blob/main/docs/DATA-DIR.md) — cada archivo que escribe purplemux.
+- [`docs/TMUX.md`](https://github.com/stirp/purplemux-improved/blob/main/docs/TMUX.md) — config tmux, wrapper de comandos, recorrido del árbol de procesos, protocolo binario de terminal.
+- [`docs/STATUS.md`](https://github.com/stirp/purplemux-improved/blob/main/docs/STATUS.md) — máquina de estados del CLI de Claude, flujo de hook, evento de interrupción sintético, watcher JSONL.
+- [`docs/DATA-DIR.md`](https://github.com/stirp/purplemux-improved/blob/main/docs/DATA-DIR.md) — cada archivo que escribe purplemux-improved.
 
 ## Siguientes pasos
 
-- **[Directorio de datos](/purplemux/es/docs/data-directory/)** — cada archivo que la arquitectura anterior toca.
-- **[Referencia del CLI](/purplemux/es/docs/cli-reference/)** — hablar con el servidor desde fuera del navegador.
-- **[Solución de problemas](/purplemux/es/docs/troubleshooting/)** — diagnosticar cuando algo aquí se porta mal.
+- **[Directorio de datos](/purplemux-improved/es/docs/data-directory/)** — cada archivo que la arquitectura anterior toca.
+- **[Referencia del CLI](/purplemux-improved/es/docs/cli-reference/)** — hablar con el servidor desde fuera del navegador.
+- **[Solución de problemas](/purplemux-improved/es/docs/troubleshooting/)** — diagnosticar cuando algo aquí se porta mal.

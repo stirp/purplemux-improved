@@ -74,10 +74,10 @@ Equalizar é o jeito mais rápido de resetar um layout que tomou proporções ex
 
 Fechar uma aba mata a sua sessão tmux. Fechar o *navegador*, atualizar a página ou perder a rede não — toda aba continua rodando no servidor. Volte e os mesmos painéis, divisões e abas ressurgem.
 
-Para a história de recuperação após reboots do servidor, veja [Salvar e restaurar layouts](/purplemux/pt-BR/docs/save-restore/).
+Para a história de recuperação após reboots do servidor, veja [Salvar e restaurar layouts](/purplemux-improved/pt-BR/docs/save-restore/).
 
 ## Próximos passos
 
-- **[Salvar e restaurar layouts](/purplemux/pt-BR/docs/save-restore/)** — como esse layout fica preservado.
-- **[Atalhos de teclado](/purplemux/pt-BR/docs/keyboard-shortcuts/)** — todos os atalhos em uma tabela.
-- **[Painel de Git workflow](/purplemux/pt-BR/docs/git-workflow/)** — um tipo de aba útil para colocar em uma divisão.
+- **[Salvar e restaurar layouts](/purplemux-improved/pt-BR/docs/save-restore/)** — como esse layout fica preservado.
+- **[Atalhos de teclado](/purplemux-improved/pt-BR/docs/keyboard-shortcuts/)** — todos os atalhos em uma tabela.
+- **[Painel de Git workflow](/purplemux-improved/pt-BR/docs/git-workflow/)** — um tipo de aba útil para colocar em uma divisão.

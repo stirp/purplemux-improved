@@ -1,22 +1,22 @@
 ---
 title: Быстрый старт
-description: Запустите purplemux менее чем за минуту с Node.js и tmux.
+description: Запустите purplemux-improved менее чем за минуту с Node.js и tmux.
 eyebrow: Начало работы
 permalink: /ru/docs/quickstart/index.html
 ---
 {% from "docs/callouts.njk" import callout %}
 
-purplemux — это веб-нативный мультиплексор, который управляет всеми сессиями Claude Code на одной панели, опирается на `tmux` для устойчивости и одинаково удобен как с рабочего стола, так и со смартфона.
+purplemux-improved — это веб-нативный мультиплексор, который управляет всеми сессиями Claude Code на одной панели, опирается на `tmux` для устойчивости и одинаково удобен как с рабочего стола, так и со смартфона.
 
 ## Перед запуском
 
-На машине, где будет работать purplemux, нужно две вещи.
+На машине, где будет работать purplemux-improved, нужно две вещи.
 
 - **Node.js 20 или новее** — проверьте через `node -v`.
 - **tmux** — проверьте через `tmux -V`. Подходит любая версия 3.0+.
 
 {% call callout('note', 'Только macOS / Linux') %}
-Windows официально не поддерживается. purplemux опирается на `node-pty` и tmux, которые не работают нативно на Windows. WSL2 обычно работает, но в нашу матрицу тестов не входит.
+Windows официально не поддерживается. purplemux-improved опирается на `node-pty` и tmux, которые не работают нативно на Windows. WSL2 обычно работает, но в нашу матрицу тестов не входит.
 {% endcall %}
 
 ## Запуск
@@ -24,10 +24,10 @@ Windows официально не поддерживается. purplemux опи
 Одна команда. Глобальная установка не требуется.
 
 ```bash
-npx purplemux@latest
+npx purplemux-improved@latest
 ```
 
-purplemux запустится на порту `8022`. Откройте браузер:
+purplemux-improved запустится на порту `8022`. Откройте браузер:
 
 ```
 http://localhost:8022
@@ -36,7 +36,7 @@ http://localhost:8022
 При первом запуске вас проведут через создание пароля и первого рабочего пространства.
 
 {% call callout('tip') %}
-Хотите постоянную установку? `pnpm add -g purplemux && purplemux` работает так же. Обновление — одна команда `pnpm up -g purplemux`.
+Хотите постоянную установку? `pnpm add -g purplemux-improved && purplemux-improved` работает так же. Обновление — одна команда `pnpm up -g purplemux-improved`.
 {% endcall %}
 
 ## Откройте сессию Claude
@@ -45,25 +45,25 @@ http://localhost:8022
 
 1. Нажмите **Новая вкладка** в любом рабочем пространстве.
 2. Выберите шаблон **Claude** (или просто запустите `claude` в обычном терминале).
-3. purplemux обнаружит работающий Claude CLI и начнёт показывать статус, живую таймлайн и запросы разрешений.
+3. purplemux-improved обнаружит работающий Claude CLI и начнёт показывать статус, живую таймлайн и запросы разрешений.
 
 Сессия теперь сохраняется, даже если вы закроете браузер — tmux держит процесс живым на сервере.
 
 ## Доступ со смартфона
 
-По умолчанию purplemux слушает только `localhost`. Для безопасного внешнего доступа используйте Tailscale Serve (WireGuard + автоматический HTTPS, без проброса портов):
+По умолчанию purplemux-improved слушает только `localhost`. Для безопасного внешнего доступа используйте Tailscale Serve (WireGuard + автоматический HTTPS, без проброса портов):
 
 ```bash
 tailscale serve --bg 8022
 ```
 
-Откройте `https://<machine>.<tailnet>.ts.net` на смартфоне, нажмите **Поделиться → На экран «Домой»**, и purplemux станет PWA, получающей Web Push уведомления в фоне.
+Откройте `https://<machine>.<tailnet>.ts.net` на смартфоне, нажмите **Поделиться → На экран «Домой»**, и purplemux-improved станет PWA, получающей Web Push уведомления в фоне.
 
-Полная настройка — см. [Доступ через Tailscale](/purplemux/ru/docs/tailscale/), а специфика iOS и Android — в [Настройке PWA](/purplemux/ru/docs/pwa-setup/).
+Полная настройка — см. [Доступ через Tailscale](/purplemux-improved/ru/docs/tailscale/), а специфика iOS и Android — в [Настройке PWA](/purplemux-improved/ru/docs/pwa-setup/).
 
 ## Что дальше
 
-- **[Установка](/purplemux/ru/docs/installation/)** — детали по платформам, нативное приложение macOS, автозапуск.
-- **[Поддержка браузеров](/purplemux/ru/docs/browser-support/)** — матрица совместимости для десктопа и мобильных.
-- **[Первая сессия](/purplemux/ru/docs/first-session/)** — экскурсия по панели.
-- **[Клавиатурные сокращения](/purplemux/ru/docs/keyboard-shortcuts/)** — все биндинги в одной таблице.
+- **[Установка](/purplemux-improved/ru/docs/installation/)** — детали по платформам, нативное приложение macOS, автозапуск.
+- **[Поддержка браузеров](/purplemux-improved/ru/docs/browser-support/)** — матрица совместимости для десктопа и мобильных.
+- **[Первая сессия](/purplemux-improved/ru/docs/first-session/)** — экскурсия по панели.
+- **[Клавиатурные сокращения](/purplemux-improved/ru/docs/keyboard-shortcuts/)** — все биндинги в одной таблице.

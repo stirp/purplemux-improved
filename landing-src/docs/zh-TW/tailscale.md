@@ -1,25 +1,25 @@
 ---
 title: Tailscale 存取
-description: 透過 Tailscale Serve 從手機以 HTTPS 連到 purplemux — 不必設定連接埠轉送，也不必處理憑證。
+description: 透過 Tailscale Serve 從手機以 HTTPS 連到 purplemux-improved — 不必設定連接埠轉送，也不必處理憑證。
 eyebrow: 行動與遠端
 permalink: /zh-TW/docs/tailscale/index.html
 ---
 {% from "docs/callouts.njk" import callout %}
 
-預設情況下 purplemux 只在本地監聽。Tailscale Serve 是把它公開給其他裝置最乾淨的方式：WireGuard 加密、自動 Let's Encrypt 憑證、零防火牆變更。
+預設情況下 purplemux-improved 只在本地監聽。Tailscale Serve 是把它公開給其他裝置最乾淨的方式：WireGuard 加密、自動 Let's Encrypt 憑證、零防火牆變更。
 
 ## 為何選 Tailscale
 
 - **WireGuard** — 每條連線都是裝置對裝置加密。
 - **自動 HTTPS** — Tailscale 會為 `*.<tailnet>.ts.net` 配發真實憑證。
 - **不需連接埠轉送** — 你的機器永遠不會對公網開連接埠。
-- **iOS 必須使用 HTTPS** — 沒有它，PWA 安裝與 Web Push 都拒絕運作。請見 [PWA 設定](/purplemux/zh-TW/docs/pwa-setup/) 與 [Web Push](/purplemux/zh-TW/docs/web-push/)。
+- **iOS 必須使用 HTTPS** — 沒有它，PWA 安裝與 Web Push 都拒絕運作。請見 [PWA 設定](/purplemux-improved/zh-TW/docs/pwa-setup/) 與 [Web Push](/purplemux-improved/zh-TW/docs/web-push/)。
 
 ## 前置需求
 
-- 一個 Tailscale 帳號，並在執行 purplemux 的機器上安裝並登入 `tailscale` 守護程式。
+- 一個 Tailscale 帳號，並在執行 purplemux-improved 的機器上安裝並登入 `tailscale` 守護程式。
 - 在 tailnet 上啟用 HTTPS（管理主控台 → DNS → 啟用 HTTPS Certificates，若尚未啟用）。
-- purplemux 在預設連接埠 `8022` 上執行（或你設定的 `PORT`）。
+- purplemux-improved 在預設連接埠 `8022` 上執行（或你設定的 `PORT`）。
 
 ## 執行
 
@@ -45,17 +45,17 @@ tailscale serve --bg off 8022
 
 ## 設定完成後可以做什麼
 
-- 在手機上打開該 URL，點選 **分享 → 加入主畫面**，依照 [PWA 設定](/purplemux/zh-TW/docs/pwa-setup/)。
-- 從獨立的 PWA 視窗開啟推播：[Web Push](/purplemux/zh-TW/docs/web-push/)。
+- 在手機上打開該 URL，點選 **分享 → 加入主畫面**，依照 [PWA 設定](/purplemux-improved/zh-TW/docs/pwa-setup/)。
+- 從獨立的 PWA 視窗開啟推播：[Web Push](/purplemux-improved/zh-TW/docs/web-push/)。
 - 從平板、筆電或另一台桌機連到同一個儀表板 — 工作區狀態即時同步。
 
 {% call callout('tip', 'Funnel vs Serve') %}
-`tailscale serve` 把 purplemux 限定在你的 tailnet 內 — 這幾乎永遠是你想要的。`tailscale funnel` 會把它公開到公網，對個人 multiplexer 來說是過頭（且有風險）。
+`tailscale serve` 把 purplemux-improved 限定在你的 tailnet 內 — 這幾乎永遠是你想要的。`tailscale funnel` 會把它公開到公網，對個人 multiplexer 來說是過頭（且有風險）。
 {% endcall %}
 
 ## 反向代理回退方案
 
-如果 Tailscale 不是選項，任何具有真實 TLS 憑證的反向代理都可以。你必須設定對的一件事是 **WebSocket upgrades** — purplemux 使用它來處理終端機 I/O、狀態同步與即時時間軸。
+如果 Tailscale 不是選項，任何具有真實 TLS 憑證的反向代理都可以。你必須設定對的一件事是 **WebSocket upgrades** — purplemux-improved 使用它來處理終端機 I/O、狀態同步與即時時間軸。
 
 Nginx（草稿）：
 
@@ -83,6 +83,6 @@ Caddy 更簡單 — `reverse_proxy 127.0.0.1:8022` 會自動處理 upgrade heade
 
 ## 下一步
 
-- **[PWA 設定](/purplemux/zh-TW/docs/pwa-setup/)** — 既然有了 HTTPS，安裝到主畫面吧。
-- **[Web Push 通知](/purplemux/zh-TW/docs/web-push/)** — 開啟背景提醒。
-- **[安全與認證](/purplemux/zh-TW/docs/security-auth/)** — 密碼、雜湊，以及暴露於 tailnet 所代表的意義。
+- **[PWA 設定](/purplemux-improved/zh-TW/docs/pwa-setup/)** — 既然有了 HTTPS，安裝到主畫面吧。
+- **[Web Push 通知](/purplemux-improved/zh-TW/docs/web-push/)** — 開啟背景提醒。
+- **[安全與認證](/purplemux-improved/zh-TW/docs/security-auth/)** — 密碼、雜湊，以及暴露於 tailnet 所代表的意義。

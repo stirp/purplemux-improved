@@ -6,7 +6,7 @@ permalink: /pt-BR/docs/browser-support/index.html
 ---
 {% from "docs/callouts.njk" import callout %}
 
-O purplemux é um app web, então a experiência depende do navegador em que você abre. Estas são as versões que testamos ativamente — versões mais antigas podem funcionar, mas não são suportadas.
+O purplemux-improved é um app web, então a experiência depende do navegador em que você abre. Estas são as versões que testamos ativamente — versões mais antigas podem funcionar, mas não são suportadas.
 
 ## Desktop
 
@@ -33,12 +33,12 @@ A Apple só adicionou Web Push ao iOS no Safari 16.4 (março de 2023). Versões 
 
 ## Requisitos por recurso
 
-O purplemux se apoia em algumas APIs modernas de navegador. Se alguma estiver ausente, o app degrada graciosamente, mas perde o recurso correspondente.
+O purplemux-improved se apoia em algumas APIs modernas de navegador. Se alguma estiver ausente, o app degrada graciosamente, mas perde o recurso correspondente.
 
 | API | Usada para | Fallback |
 |---|---|---|
 | WebSocket | I/O de terminal, sync de status, timeline | Requisito obrigatório — sem fallback. |
-| Clipboard API | Copiar `npx purplemux@latest`, copiar blocos de código | O botão fica oculto se indisponível. |
+| Clipboard API | Copiar `npx purplemux-improved@latest`, copiar blocos de código | O botão fica oculto se indisponível. |
 | Notifications API | Push de desktop / mobile | Pulado — você ainda vê o status no app. |
 | Service Workers | PWA + Web Push | Servido apenas como app web normal. |
 | IntersectionObserver | Timeline de sessão ao vivo, reveal de navegação | Elementos renderizam sem animação. |
@@ -47,7 +47,7 @@ O purplemux se apoia em algumas APIs modernas de navegador. Se alguma estiver au
 
 ## Meu navegador funciona?
 
-O purplemux traz um auto-teste embutido em **Configurações → Verificação de navegador**. Ele roda as mesmas verificações listadas acima e mostra um selo verde / âmbar / vermelho por recurso, para você confirmar sem precisar ler especificações.
+O purplemux-improved traz um auto-teste embutido em **Configurações → Verificação de navegador**. Ele roda as mesmas verificações listadas acima e mostra um selo verde / âmbar / vermelho por recurso, para você confirmar sem precisar ler especificações.
 
 ## Peculiaridades conhecidas
 
@@ -62,4 +62,4 @@ O purplemux traz um auto-teste embutido em **Configurações → Verificação d
 - **UC Browser, Opera Mini, Puffin** — navegadores baseados em proxy quebram WebSocket. Não funcionam.
 - **Qualquer navegador com mais de 3 anos** — nosso CSS usa cores OKLCH e container queries, que precisam de uma engine de 2023 ou mais nova.
 
-Se você está em uma configuração incomum e algo não funciona, por favor [abra uma issue](https://github.com/subicura/purplemux/issues) com seu user agent e o resultado do auto-teste.
+Se você está em uma configuração incomum e algo não funciona, por favor [abra uma issue](https://github.com/stirp/purplemux-improved/issues) com seu user agent e o resultado do auto-teste.

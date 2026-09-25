@@ -1,16 +1,16 @@
 {
-  "name": "purplemux",
+  "name": "purplemux-improved",
   "version": "0.4.5",
   "description": "Manage multiple Claude Code sessions from your browser",
   "license": "MIT",
   "author": "subicura",
   "repository": {
     "type": "git",
-    "url": "https://github.com/subicura/purplemux.git"
+    "url": "https://github.com/stirp/purplemux-improved.git"
   },
-  "homepage": "https://github.com/subicura/purplemux",
+  "homepage": "https://github.com/stirp/purplemux-improved",
   "bugs": {
-    "url": "https://github.com/subicura/purplemux/issues"
+    "url": "https://github.com/stirp/purplemux-improved/issues"
   },
   "keywords": [
     "claude",
@@ -25,6 +25,7 @@
   "packageManager": "pnpm@11.5.2",
   "main": "dist-electron/main.js",
   "bin": {
+    "purplemux-improved": "./bin/purplemux.js",
     "purplemux": "./bin/purplemux.js",
     "pmux": "./bin/purplemux.js"
   },

@@ -6,7 +6,7 @@ permalink: /de/docs/notes-daily-report/index.html
 ---
 {% from "docs/callouts.njk" import callout %}
 
-Wenn der Tag vorbei ist, kann purplemux die Session-Logs des Tages lesen und dir ein einzeiliges Briefing plus eine pro-Projekt-Markdown-Zusammenfassung schreiben. Das Ganze lebt in der Seitenleiste als **Notizen** und existiert, damit Retros, Standups und 1:1s nicht mit „Was hab ich gestern gemacht?" anfangen.
+Wenn der Tag vorbei ist, kann purplemux-improved die Session-Logs des Tages lesen und dir ein einzeiliges Briefing plus eine pro-Projekt-Markdown-Zusammenfassung schreiben. Das Ganze lebt in der Seitenleiste als **Notizen** und existiert, damit Retros, Standups und 1:1s nicht mit „Was hab ich gestern gemacht?" anfangen.
 
 ## Was du pro Tag bekommst
 
@@ -17,7 +17,7 @@ Jeder Eintrag hat zwei Schichten:
 
 Das Briefing ist, was du scannst; die Detail-Ansicht ist, was du in ein Retro-Doc kopierst.
 
-Ein kleiner Header pro Tag zeigt die Session-Anzahl und Gesamtkosten — dieselben Zahlen wie das [Statistik-Dashboard](/purplemux/de/docs/usage-rate-limits/), in Kurzform.
+Ein kleiner Header pro Tag zeigt die Session-Anzahl und Gesamtkosten — dieselben Zahlen wie das [Statistik-Dashboard](/purplemux-improved/de/docs/usage-rate-limits/), in Kurzform.
 
 ## Bericht generieren
 
@@ -30,7 +30,7 @@ Berichte werden on-demand generiert, nicht automatisch. In der Notizen-Ansicht:
 Das LLM verarbeitet jede Session einzeln, bevor sie pro Projekt gemergt werden, sodass an langen Tagen mit vielen Tabs kein Kontext verloren geht.
 
 {% call callout('note', 'Locale folgt der App') %}
-Berichte werden in der Sprache geschrieben, auf die purplemux gesetzt ist. Sprache wechseln und neu generieren liefert denselben Inhalt in der neuen Locale.
+Berichte werden in der Sprache geschrieben, auf die purplemux-improved gesetzt ist. Sprache wechseln und neu generieren liefert denselben Inhalt in der neuen Locale.
 {% endcall %}
 
 ## Wo es lebt
@@ -48,7 +48,7 @@ Jeder Tag ist eine JSON-Datei mit Briefing, detailliertem Markdown, Locale und d
 In der Detail-Ansicht sieht ein typischer Tag so aus:
 
 ```markdown
-**purplemux**
+**purplemux-improved**
 
 ### Landing-Page-Entwurf
 - Acht-Sektionen-Struktur mit Hero-/Why-/Mobile-/Stats-Layouts entworfen
@@ -74,6 +74,6 @@ Der Text, der zum Bauen eines Berichts genutzt wird, sind dieselben JSONL-Transk
 
 ## Wie es weitergeht
 
-- **[Nutzung & Rate-Limits](/purplemux/de/docs/usage-rate-limits/)** — das Dashboard, aus dem die Session-Counts und -Kosten kommen.
-- **[Live-Session-Ansicht](/purplemux/de/docs/live-session-view/)** — die Quelldaten, in Echtzeit.
-- **[Tastenkürzel](/purplemux/de/docs/keyboard-shortcuts/)** — inklusive <kbd>⌘⇧E</kbd> für Notizen.
+- **[Nutzung & Rate-Limits](/purplemux-improved/de/docs/usage-rate-limits/)** — das Dashboard, aus dem die Session-Counts und -Kosten kommen.
+- **[Live-Session-Ansicht](/purplemux-improved/de/docs/live-session-view/)** — die Quelldaten, in Echtzeit.
+- **[Tastenkürzel](/purplemux-improved/de/docs/keyboard-shortcuts/)** — inklusive <kbd>⌘⇧E</kbd> für Notizen.

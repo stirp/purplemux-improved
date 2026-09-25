@@ -1,5 +1,5 @@
-appId: com.subicura.purplemux
-productName: purplemux
+appId: com.stirp.purplemux-improved
+productName: purplemux-improved
 directories:
   buildResources: build-resources
   output: release
@@ -24,8 +24,8 @@ mac:
 
 publish:
   provider: github
-  owner: subicura
-  repo: purplemux
+  owner: stirp
+  repo: purplemux-improved
 
 dmg:
   contents:

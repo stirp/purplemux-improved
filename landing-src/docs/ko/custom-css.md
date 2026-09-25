@@ -6,7 +6,7 @@ permalink: /ko/docs/custom-css/index.html
 ---
 {% from "docs/callouts.njk" import callout %}
 
-purplemux는 CSS 변수 시스템 위에 만들어져 있습니다. 소스를 건드리지 않고도 거의 모든 시각 요소를 바꿀 수 있습니다. **Appearance** 탭에 규칙을 붙여넣고 Apply를 누르면 연결된 모든 클라이언트에 즉시 반영됩니다.
+purplemux-improved는 CSS 변수 시스템 위에 만들어져 있습니다. 소스를 건드리지 않고도 거의 모든 시각 요소를 바꿀 수 있습니다. **Appearance** 탭에 규칙을 붙여넣고 Apply를 누르면 연결된 모든 클라이언트에 즉시 반영됩니다.
 
 ## 어디에 작성하나요
 
@@ -24,7 +24,7 @@ purplemux는 CSS 변수 시스템 위에 만들어져 있습니다. 소스를 �
 
 ## 동작 원리
 
-purplemux의 컬러·서피스·악센트는 대부분 `:root`(라이트)와 `.dark`(다크) 아래의 CSS 변수로 노출됩니다. 변수 하나만 덮어쓰면 그 변수를 참조하는 모든 컴포넌트(사이드바·다이얼로그·차트·상태 배지)가 한 번에 따라 바뀝니다.
+purplemux-improved의 컬러·서피스·악센트는 대부분 `:root`(라이트)와 `.dark`(다크) 아래의 CSS 변수로 노출됩니다. 변수 하나만 덮어쓰면 그 변수를 참조하는 모든 컴포넌트(사이드바·다이얼로그·차트·상태 배지)가 한 번에 따라 바뀝니다.
 
 컴포넌트 셀렉터를 직접 오버라이드하는 것보다 변수를 바꾸는 편이 거의 항상 낫습니다. 컴포넌트 클래스는 안정적인 API가 아니지만 변수는 그렇습니다.
 
@@ -65,7 +65,7 @@ Appearance 패널의 **Available Variables** 섹션을 펼치면 전체 목록�
 - **Palette** — `--ui-blue`, `--ui-teal`, `--ui-coral`, `--ui-amber`, `--ui-purple`, `--ui-pink`, `--ui-green`, `--ui-gray`, `--ui-red`
 - **Semantic** — `--positive`, `--negative`, `--accent-color`, `--brand`, `--focus-indicator`, `--claude-active`
 
-전체 토큰 목록과 기본 oklch 값, 디자인 의도는 저장소의 [`docs/STYLE.md`](https://github.com/subicura/purplemux/blob/main/docs/STYLE.md)에 정리되어 있습니다. 이 문서가 단일 소스입니다.
+전체 토큰 목록과 기본 oklch 값, 디자인 의도는 저장소의 [`docs/STYLE.md`](https://github.com/stirp/purplemux-improved/blob/main/docs/STYLE.md)에 정리되어 있습니다. 이 문서가 단일 소스입니다.
 
 ## 모드별로만 적용하기
 
@@ -85,10 +85,10 @@ Appearance 패널의 **Available Variables** 섹션을 펼치면 전체 목록�
 
 ## 터미널은요?
 
-xterm.js 터미널은 위 CSS 변수가 아니라 별도의 큐레이션된 팔레트를 씁니다. **Terminal** 탭에서 전환하세요. [터미널 테마](/purplemux/ko/docs/terminal-themes/) 참고.
+xterm.js 터미널은 위 CSS 변수가 아니라 별도의 큐레이션된 팔레트를 씁니다. **Terminal** 탭에서 전환하세요. [터미널 테마](/purplemux-improved/ko/docs/terminal-themes/) 참고.
 
 ## 다음으로
 
-- **[테마 & 폰트](/purplemux/ko/docs/themes-fonts/)** — 라이트/다크/시스템, 폰트 크기 프리셋
-- **[터미널 테마](/purplemux/ko/docs/terminal-themes/)** — 터미널 영역 전용 팔레트
-- **[사이드바 & Claude 옵션](/purplemux/ko/docs/sidebar-options/)** — 항목 정렬, Claude 플래그 토글
+- **[테마 & 폰트](/purplemux-improved/ko/docs/themes-fonts/)** — 라이트/다크/시스템, 폰트 크기 프리셋
+- **[터미널 테마](/purplemux-improved/ko/docs/terminal-themes/)** — 터미널 영역 전용 팔레트
+- **[사이드바 & Claude 옵션](/purplemux-improved/ko/docs/sidebar-options/)** — 항목 정렬, Claude 플래그 토글

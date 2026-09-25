@@ -6,13 +6,13 @@ permalink: /fr/docs/troubleshooting/index.html
 ---
 {% from "docs/callouts.njk" import callout %}
 
-Si quelque chose ici ne correspond pas à ce que vous voyez, [ouvrez une issue](https://github.com/subicura/purplemux/issues) en y joignant votre plateforme, votre navigateur et le fichier de log pertinent depuis `~/.purplemux/logs/`.
+Si quelque chose ici ne correspond pas à ce que vous voyez, [ouvrez une issue](https://github.com/stirp/purplemux-improved/issues) en y joignant votre plateforme, votre navigateur et le fichier de log pertinent depuis `~/.purplemux/logs/`.
 
 ## Installation & démarrage
 
 ### `tmux: command not found`
 
-purplemux a besoin de tmux 3.0+ sur l'hôte. Installez-le :
+purplemux-improved a besoin de tmux 3.0+ sur l'hôte. Installez-le :
 
 ```bash
 # macOS (Homebrew)
@@ -31,13 +31,13 @@ Vérifiez avec `tmux -V`. tmux 2.9+ passe techniquement le check de préflight, 
 
 Installez Node 20 LTS ou plus récent. Vérifiez avec `node -v`. L'app native macOS embarque son propre Node, donc ça ne s'applique qu'aux chemins `npx` / `npm install -g`.
 
-### « purplemux is already running (pid=…, port=…) »
+### « purplemux-improved is already running (pid=…, port=…) »
 
-Une autre instance purplemux est vivante et répond sur `/api/health`. Soit utilisez celle-là (ouvrez l'URL affichée), soit arrêtez-la d'abord :
+Une autre instance purplemux-improved est vivante et répond sur `/api/health`. Soit utilisez celle-là (ouvrez l'URL affichée), soit arrêtez-la d'abord :
 
 ```bash
 # la trouver
-ps aux | grep purplemux
+ps aux | grep purplemux-improved
 
 # ou la tuer via le fichier de lock
 kill $(jq -r .pid ~/.purplemux/pmux.lock)
@@ -51,21 +51,21 @@ kill $(jq -r .pid ~/.purplemux/pmux.lock)
 rm ~/.purplemux/pmux.lock
 ```
 
-Si vous avez déjà lancé purplemux avec `sudo`, le fichier peut appartenir à root — `sudo rm` une fois.
+Si vous avez déjà lancé purplemux-improved avec `sudo`, le fichier peut appartenir à root — `sudo rm` une fois.
 
 ### `Port 8022 is in use, finding an available port...`
 
 Un autre processus possède `8022`. Le serveur retombe sur un port libre aléatoire et affiche la nouvelle URL. Pour choisir le port vous-même :
 
 ```bash
-PORT=9000 purplemux
+PORT=9000 purplemux-improved
 ```
 
 Trouvez ce qui tient `8022` avec `lsof -iTCP:8022 -sTCP:LISTEN -n -P`.
 
 ### Ça marche sur Windows ?
 
-**Pas officiellement.** purplemux dépend de `node-pty` et de tmux, qui ne tournent pas nativement sur Windows. WSL2 marche en général (vous êtes effectivement sur Linux à ce moment-là) mais c'est hors de notre matrice de tests.
+**Pas officiellement.** purplemux-improved dépend de `node-pty` et de tmux, qui ne tournent pas nativement sur Windows. WSL2 marche en général (vous êtes effectivement sur Linux à ce moment-là) mais c'est hors de notre matrice de tests.
 
 ## Sessions & restauration
 
@@ -77,7 +77,7 @@ Trouvez ce qui tient `8022` avec `lsof -iTCP:8022 -sTCP:LISTEN -n -P`.
 2. Vérifiez que les sessions tmux existent : `tmux -L purple ls`.
 3. Regardez `~/.purplemux/logs/purplemux.YYYY-MM-DD.N.log` pour des erreurs pendant `autoResumeOnStartup`.
 
-Si tmux dit « no server running », l'hôte a redémarré ou quelque chose a tué tmux. Les sessions sont parties, mais la mise en page (espaces, onglets, répertoires de travail) est préservée dans `~/.purplemux/workspaces/{wsId}/layout.json` et est relancée au prochain démarrage purplemux.
+Si tmux dit « no server running », l'hôte a redémarré ou quelque chose a tué tmux. Les sessions sont parties, mais la mise en page (espaces, onglets, répertoires de travail) est préservée dans `~/.purplemux/workspaces/{wsId}/layout.json` et est relancée au prochain démarrage purplemux-improved.
 
 ### Une session Claude ne reprend pas
 
@@ -85,7 +85,7 @@ Si tmux dit « no server running », l'hôte a redémarré ou quelque chose a tu
 
 ### Mes onglets affichent tous « unknown »
 
-`unknown` signifie qu'un onglet était `busy` avant un redémarrage du serveur et que la récupération est en cours. `resolveUnknown` tourne en arrière-plan et confirme `idle` (Claude a quitté) ou `ready-for-review` (message assistant final présent). Si un onglet reste coincé en `unknown` plus de dix minutes, le **filet de sécurité busy stuck** le bascule silencieusement en `idle`. Voir [STATUS.md](https://github.com/subicura/purplemux/blob/main/docs/STATUS.md) pour la machine d'état complète.
+`unknown` signifie qu'un onglet était `busy` avant un redémarrage du serveur et que la récupération est en cours. `resolveUnknown` tourne en arrière-plan et confirme `idle` (Claude a quitté) ou `ready-for-review` (message assistant final présent). Si un onglet reste coincé en `unknown` plus de dix minutes, le **filet de sécurité busy stuck** le bascule silencieusement en `idle`. Voir [STATUS.md](https://github.com/stirp/purplemux-improved/blob/main/docs/STATUS.md) pour la machine d'état complète.
 
 ## Navigateur & UI
 
@@ -96,10 +96,10 @@ Parcourez cette checklist :
 1. **iOS Safari ≥ 16.4 uniquement.** iOS plus ancien n'a pas Web Push du tout.
 2. **Doit être une PWA sur iOS.** Touchez **Partager → Sur l'écran d'accueil** d'abord ; la push ne se déclenche pas depuis un onglet Safari classique.
 3. **HTTPS requis.** Les certs auto-signés ne marchent pas — Web Push refuse silencieusement de s'enregistrer. Utilisez Tailscale Serve (Let's Encrypt gratuit) ou un vrai domaine derrière Nginx / Caddy.
-4. **Permission de notification accordée.** **Paramètres → Notification → On** dans purplemux *et* la permission au niveau navigateur doivent toutes deux être autorisées.
+4. **Permission de notification accordée.** **Paramètres → Notification → On** dans purplemux-improved *et* la permission au niveau navigateur doivent toutes deux être autorisées.
 5. **Souscriptions présentes.** `~/.purplemux/push-subscriptions.json` doit avoir une entrée pour l'appareil. Si vide, ré-accordez la permission.
 
-Voir [Compatibilité navigateur](/purplemux/fr/docs/browser-support/) pour la matrice de compatibilité complète.
+Voir [Compatibilité navigateur](/purplemux-improved/fr/docs/browser-support/) pour la matrice de compatibilité complète.
 
 ### iOS Safari 16.4+ mais toujours pas de notifications
 
@@ -111,7 +111,7 @@ IndexedDB est désactivé dans les fenêtres privées Safari 17+, donc le cache 
 
 ### Le terminal mobile disparaît après mise en arrière-plan
 
-iOS Safari démolit le WebSocket après environ 30 s en arrière-plan. tmux maintient la session réelle en vie — quand vous revenez à l'onglet, purplemux se reconnecte et redessine. C'est iOS, pas nous.
+iOS Safari démolit le WebSocket après environ 30 s en arrière-plan. tmux maintient la session réelle en vie — quand vous revenez à l'onglet, purplemux-improved se reconnecte et redessine. C'est iOS, pas nous.
 
 ### Firefox + Tailscale serve = avertissement de certificat
 
@@ -119,11 +119,11 @@ Si votre tailnet utilise un domaine personnalisé qui n'est pas `*.ts.net`, Fire
 
 ### « Navigateur trop ancien » ou fonctionnalités manquantes
 
-Lancez **Paramètres → Vérification du navigateur** pour un rapport API par API. Tout en dessous des minimums dans [Compatibilité navigateur](/purplemux/fr/docs/browser-support/) perd les fonctionnalités gracieusement mais n'est pas pris en charge.
+Lancez **Paramètres → Vérification du navigateur** pour un rapport API par API. Tout en dessous des minimums dans [Compatibilité navigateur](/purplemux-improved/fr/docs/browser-support/) perd les fonctionnalités gracieusement mais n'est pas pris en charge.
 
 ## Réseau & accès distant
 
-### Puis-je exposer purplemux à internet ?
+### Puis-je exposer purplemux-improved à internet ?
 
 Vous pouvez, mais toujours en HTTPS. Recommandé :
 
@@ -132,17 +132,17 @@ Vous pouvez, mais toujours en HTTPS. Recommandé :
 
 HTTP simple sur l'internet ouvert est une mauvaise idée — le cookie d'auth est signé HMAC mais les payloads WebSocket (octets de terminal !) ne sont pas chiffrés.
 
-### Les autres appareils de mon LAN ne peuvent pas atteindre purplemux
+### Les autres appareils de mon LAN ne peuvent pas atteindre purplemux-improved
 
-Par défaut, purplemux n'autorise que localhost. Ouvrez l'accès via env ou paramètres in-app :
+Par défaut, purplemux-improved n'autorise que localhost. Ouvrez l'accès via env ou paramètres in-app :
 
 ```bash
-HOST=lan,localhost purplemux       # LAN-friendly
-HOST=tailscale,localhost purplemux # tailnet-friendly
-HOST=all purplemux                 # tout
+HOST=lan,localhost purplemux-improved       # LAN-friendly
+HOST=tailscale,localhost purplemux-improved # tailnet-friendly
+HOST=all purplemux-improved                 # tout
 ```
 
-Ou **Paramètres → Accès réseau** dans l'app, qui écrit dans `~/.purplemux/config.json`. (Quand `HOST` est défini par env, ce champ est verrouillé.) Voir [Ports & variables d'environnement](/purplemux/fr/docs/ports-env-vars/) pour la syntaxe mots-clés et CIDR.
+Ou **Paramètres → Accès réseau** dans l'app, qui écrit dans `~/.purplemux/config.json`. (Quand `HOST` est défini par env, ce champ est verrouillé.) Voir [Ports & variables d'environnement](/purplemux-improved/fr/docs/ports-env-vars/) pour la syntaxe mots-clés et CIDR.
 
 ### Problèmes WebSocket reverse-proxy
 
@@ -164,7 +164,7 @@ Caddy : la transmission WebSocket est par défaut ; juste `reverse_proxy 127.0.0
 
 ### Où sont mes données ?
 
-Tout est local sous `~/.purplemux/`. Rien ne quitte votre machine. Le mot de passe de login est un hash scrypt dans `config.json`. Voir [Répertoire de données](/purplemux/fr/docs/data-directory/) pour la disposition complète.
+Tout est local sous `~/.purplemux/`. Rien ne quitte votre machine. Le mot de passe de login est un hash scrypt dans `config.json`. Voir [Répertoire de données](/purplemux-improved/fr/docs/data-directory/) pour la disposition complète.
 
 ### J'ai oublié mon mot de passe
 
@@ -176,24 +176,24 @@ Le `busy stuck safety net` bascule un onglet silencieusement à `idle` après di
 
 ### Ça entre en conflit avec ma config tmux existante ?
 
-Non. purplemux fait tourner un tmux isolé sur un socket dédié (`-L purple`) avec sa propre config (`src/config/tmux.conf`). Votre `~/.tmux.conf` et toutes vos sessions tmux existantes ne sont pas touchés.
+Non. purplemux-improved fait tourner un tmux isolé sur un socket dédié (`-L purple`) avec sa propre config (`src/config/tmux.conf`). Votre `~/.tmux.conf` et toutes vos sessions tmux existantes ne sont pas touchés.
 
 ## Coût & usage
 
-### Est-ce que purplemux me fait économiser de l'argent ?
+### Est-ce que purplemux-improved me fait économiser de l'argent ?
 
 Pas directement. Ce qu'il fait, c'est **rendre l'usage transparent** : coût aujourd'hui / mois / par projet, ventilations de tokens par modèle et décomptes de limites de débit 5 h / 7 j sont tous sur un seul écran pour que vous puissiez vous cadencer avant de heurter un mur.
 
-### purplemux lui-même est payant ?
+### purplemux-improved lui-même est payant ?
 
-Non. purplemux est open source sous licence MIT. L'usage de Claude Code est facturé séparément par Anthropic.
+Non. purplemux-improved est open source sous licence MIT. L'usage de Claude Code est facturé séparément par Anthropic.
 
 ### Mes données sont-elles envoyées quelque part ?
 
-Non. purplemux est entièrement auto-hébergé. Les seuls appels réseau qu'il fait sont à votre CLI Claude locale (qui parle à Anthropic de son côté) et la vérification de version via `update-notifier` au lancement. Désactivez la vérification de version avec `NO_UPDATE_NOTIFIER=1`.
+Non. purplemux-improved est entièrement auto-hébergé. Les seuls appels réseau qu'il fait sont à votre CLI Claude locale (qui parle à Anthropic de son côté) et la vérification de version via `update-notifier` au lancement. Désactivez la vérification de version avec `NO_UPDATE_NOTIFIER=1`.
 
 ## Pour aller plus loin
 
-- **[Compatibilité navigateur](/purplemux/fr/docs/browser-support/)** — matrice de compatibilité détaillée et particularités navigateur connues.
-- **[Répertoire de données](/purplemux/fr/docs/data-directory/)** — ce que fait chaque fichier et ce qui est sûr à supprimer.
-- **[Architecture](/purplemux/fr/docs/architecture/)** — comment les pièces s'emboîtent quand quelque chose demande à creuser plus profond.
+- **[Compatibilité navigateur](/purplemux-improved/fr/docs/browser-support/)** — matrice de compatibilité détaillée et particularités navigateur connues.
+- **[Répertoire de données](/purplemux-improved/fr/docs/data-directory/)** — ce que fait chaque fichier et ce qui est sûr à supprimer.
+- **[Architecture](/purplemux-improved/fr/docs/architecture/)** — comment les pièces s'emboîtent quand quelque chose demande à creuser plus profond.

@@ -6,7 +6,7 @@ permalink: /ko/docs/themes-fonts/index.html
 ---
 {% from "docs/callouts.njk" import callout %}
 
-purplemux는 하나의 통일된 디자인을 기본으로, 앱 테마·폰트 크기·터미널 팔레트라는 세 개의 스위치를 제공합니다. 이 페이지에서는 앞의 두 가지를 다룹니다. 터미널 컬러는 별도 페이지에 있습니다.
+purplemux-improved는 하나의 통일된 디자인을 기본으로, 앱 테마·폰트 크기·터미널 팔레트라는 세 개의 스위치를 제공합니다. 이 페이지에서는 앞의 두 가지를 다룹니다. 터미널 컬러는 별도 페이지에 있습니다.
 
 ## 설정 열기
 
@@ -48,7 +48,7 @@ UI 전체가 `rem` 단위로 짜여 있어, 프리셋을 바꾸면 사이드바�
 - 여백 비율
 - 코드 블록 신택스 스타일
 
-특정 영역(예: 터미널만, 사이드바만)을 따로 조정하려면 [커스텀 CSS](/purplemux/ko/docs/custom-css/)를 활용하세요.
+특정 영역(예: 터미널만, 사이드바만)을 따로 조정하려면 [커스텀 CSS](/purplemux-improved/ko/docs/custom-css/)를 활용하세요.
 
 ## 디바이스별이 아닌 서버 단위 설정
 
@@ -58,6 +58,6 @@ UI 전체가 `rem` 단위로 짜여 있어, 프리셋을 바꾸면 사이드바�
 
 ## 다음으로
 
-- **[커스텀 CSS](/purplemux/ko/docs/custom-css/)** — 개별 컬러·여백 오버라이드
-- **[터미널 테마](/purplemux/ko/docs/terminal-themes/)** — xterm.js 전용 팔레트
-- **[키보드 단축키](/purplemux/ko/docs/keyboard-shortcuts/)** — 전체 바인딩 한눈에
+- **[커스텀 CSS](/purplemux-improved/ko/docs/custom-css/)** — 개별 컬러·여백 오버라이드
+- **[터미널 테마](/purplemux-improved/ko/docs/terminal-themes/)** — xterm.js 전용 팔레트
+- **[키보드 단축키](/purplemux-improved/ko/docs/keyboard-shortcuts/)** — 전체 바인딩 한눈에

@@ -1,24 +1,24 @@
 ---
 title: 連接埠與環境變數
-description: purplemux 開的每個連接埠，以及影響其執行方式的每個環境變數。
+description: purplemux-improved 開的每個連接埠，以及影響其執行方式的每個環境變數。
 eyebrow: 參考資料
 permalink: /zh-TW/docs/ports-env-vars/index.html
 ---
 {% from "docs/callouts.njk" import callout %}
 
-purplemux 的目標是一行指令安裝，但 runtime 是可設定的。本頁列出它打開的每個連接埠，以及伺服器讀取的每個環境變數。
+purplemux-improved 的目標是一行指令安裝，但 runtime 是可設定的。本頁列出它打開的每個連接埠，以及伺服器讀取的每個環境變數。
 
 ## 連接埠
 
 | 連接埠 | 預設 | 覆寫 | 備註 |
 |---|---|---|---|
-| HTTP + WebSocket | `8022` | `PORT=9000 purplemux` | 若 `8022` 已被使用，伺服器會記錄警告並改綁一個隨機可用連接埠。 |
-| 內部 Next.js（生產） | random | — | 在 `pnpm start` / `purplemux start` 時，外層伺服器會 proxy 到綁在 `127.0.0.1:<random>` 的 Next.js standalone。不對外公開。 |
+| HTTP + WebSocket | `8022` | `PORT=9000 purplemux-improved` | 若 `8022` 已被使用，伺服器會記錄警告並改綁一個隨機可用連接埠。 |
+| 內部 Next.js（生產） | random | — | 在 `pnpm start` / `purplemux-improved start` 時，外層伺服器會 proxy 到綁在 `127.0.0.1:<random>` 的 Next.js standalone。不對外公開。 |
 
 `8022` 是 `web` + `ssh` 拼湊出來的。選擇純屬玩笑，與協定無關。
 
 {% call callout('note', '綁定介面跟著存取政策') %}
-purplemux 只在存取政策允許外部客戶端時才綁定到 `0.0.0.0`。純 localhost 設定會綁到 `127.0.0.1`，所以 LAN 上的其他機器連 TCP 連線都打不通。請見下方的 `HOST`。
+purplemux-improved 只在存取政策允許外部客戶端時才綁定到 `0.0.0.0`。純 localhost 設定會綁到 `127.0.0.1`，所以 LAN 上的其他機器連 TCP 連線都打不通。請見下方的 `HOST`。
 {% endcall %}
 
 ## 伺服器環境變數
@@ -29,7 +29,7 @@ purplemux 只在存取政策允許外部客戶端時才綁定到 `0.0.0.0`。純
 |---|---|---|
 | `PORT` | `8022` | HTTP/WS 監聽連接埠。在 `EADDRINUSE` 時回退為隨機連接埠。 |
 | `HOST` | 未設定 | 以逗號分隔的 CIDR/關鍵字規格，指定允許哪些客戶端。關鍵字：`localhost`、`tailscale`、`lan`、`all`（或 `*` / `0.0.0.0`）。範例：`HOST=localhost`、`HOST=localhost,tailscale`、`HOST=10.0.0.0/8,localhost`。透過 env 設定時，App 內 **設定 → 網路存取** 會被鎖定。 |
-| `NODE_ENV` | 在 `purplemux start` 為 `production`，在 `pnpm dev` 為 `development` | 在 dev 流程（`tsx watch`、Next dev）與 prod 流程（`tsup` bundle proxy 到 Next standalone）之間切換。 |
+| `NODE_ENV` | 在 `purplemux-improved start` 為 `production`，在 `pnpm dev` 為 `development` | 在 dev 流程（`tsx watch`、Next dev）與 prod 流程（`tsup` bundle proxy 到 Next standalone）之間切換。 |
 | `__PMUX_APP_DIR` | `process.cwd()` | 覆寫存放 `dist/server.js` 與 `.next/standalone/` 的目錄。由 `bin/purplemux.js` 自動設定，通常你不需要動。 |
 | `__PMUX_APP_DIR_UNPACKED` | 未設定 | `__PMUX_APP_DIR` 的變體，用於 macOS Electron App 內 asar-unpacked 的路徑。 |
 | `__PMUX_ELECTRON` | 未設定 | 當 Electron 主程序在程序內啟動伺服器時會設定此值，使 `server.ts` 略過自動 `start()` 呼叫，讓 Electron 接管生命週期。 |
@@ -50,13 +50,13 @@ purplemux 只在存取政策允許外部客戶端時才綁定到 `0.0.0.0`。純
 等級由低到高：`trace` · `debug` · `info` · `warn` · `error` · `fatal`。
 
 ```bash
-LOG_LEVEL=debug purplemux
+LOG_LEVEL=debug purplemux-improved
 
 # 只對 Claude hook 模組除錯
-LOG_LEVELS=hooks=debug purplemux
+LOG_LEVELS=hooks=debug purplemux-improved
 
 # 一次調整多個模組
-LOG_LEVELS=hooks=debug,status=warn,tmux=trace purplemux
+LOG_LEVELS=hooks=debug,status=warn,tmux=trace purplemux-improved
 ```
 
 最常用的模組名稱：
@@ -86,7 +86,7 @@ CLI 也接受透過 env 設定，且優先：
 | `PMUX_PORT` | `~/.purplemux/port` 內容 | CLI 對話的連接埠。 |
 | `PMUX_TOKEN` | `~/.purplemux/cli-token` 內容 | 以 `x-pmux-token` 送出的 bearer token。 |
 
-完整面向請見 [CLI 參考](/purplemux/zh-TW/docs/cli-reference/)。
+完整面向請見 [CLI 參考](/purplemux-improved/zh-TW/docs/cli-reference/)。
 
 ## 組合起來
 
@@ -94,27 +94,27 @@ CLI 也接受透過 env 設定，且優先：
 
 ```bash
 # 預設：純 localhost、連接埠 8022
-purplemux
+purplemux-improved
 
 # 全部繫結（LAN + Tailscale + 遠端）
-HOST=all purplemux
+HOST=all purplemux-improved
 
 # 只允許 localhost + Tailscale
-HOST=localhost,tailscale purplemux
+HOST=localhost,tailscale purplemux-improved
 
 # 自訂連接埠 + 詳細的 hook tracing
-PORT=9000 LOG_LEVELS=hooks=debug purplemux
+PORT=9000 LOG_LEVELS=hooks=debug purplemux-improved
 
 # 除錯時的全配
-PORT=9000 HOST=localhost LOG_LEVEL=debug LOG_LEVELS=tmux=trace purplemux
+PORT=9000 HOST=localhost LOG_LEVEL=debug LOG_LEVELS=tmux=trace purplemux-improved
 ```
 
 {% call callout('tip') %}
-若要永久安裝，把它們設定在你的 launchd / systemd unit 的 `Environment=` 區塊。範例 unit 檔請見 [安裝](/purplemux/zh-TW/docs/installation/#開機自動啟動)。
+若要永久安裝，把它們設定在你的 launchd / systemd unit 的 `Environment=` 區塊。範例 unit 檔請見 [安裝](/purplemux-improved/zh-TW/docs/installation/#開機自動啟動)。
 {% endcall %}
 
 ## 下一步
 
-- **[安裝](/purplemux/zh-TW/docs/installation/)** — 這些變數通常放哪裡。
-- **[資料目錄](/purplemux/zh-TW/docs/data-directory/)** — `port` 與 `cli-token` 如何與 hook 指令稿互動。
-- **[CLI 參考](/purplemux/zh-TW/docs/cli-reference/)** — `PMUX_PORT` / `PMUX_TOKEN` 的脈絡。
+- **[安裝](/purplemux-improved/zh-TW/docs/installation/)** — 這些變數通常放哪裡。
+- **[資料目錄](/purplemux-improved/zh-TW/docs/data-directory/)** — `port` 與 `cli-token` 如何與 hook 指令稿互動。
+- **[CLI 參考](/purplemux-improved/zh-TW/docs/cli-reference/)** — `PMUX_PORT` / `PMUX_TOKEN` 的脈絡。

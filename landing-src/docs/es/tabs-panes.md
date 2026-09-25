@@ -74,10 +74,10 @@ Igualar es la forma más rápida de reiniciar una disposición que se ha desplaz
 
 Cerrar una pestaña mata su sesión de tmux. Cerrar el *navegador*, refrescar o perder la red, no — todas las pestañas siguen corriendo en el servidor. Vuelve a abrir y los mismos paneles, divisiones y pestañas regresan.
 
-Para la historia de recuperación tras un reinicio del servidor, consulta [Guardar y restaurar disposiciones](/purplemux/es/docs/save-restore/).
+Para la historia de recuperación tras un reinicio del servidor, consulta [Guardar y restaurar disposiciones](/purplemux-improved/es/docs/save-restore/).
 
 ## Siguientes pasos
 
-- **[Guardar y restaurar disposiciones](/purplemux/es/docs/save-restore/)** — cómo se mantiene esta disposición.
-- **[Atajos de teclado](/purplemux/es/docs/keyboard-shortcuts/)** — todos los atajos en una sola tabla.
-- **[Panel de flujo de Git](/purplemux/es/docs/git-workflow/)** — un tipo de pestaña útil para colocar en una división.
+- **[Guardar y restaurar disposiciones](/purplemux-improved/es/docs/save-restore/)** — cómo se mantiene esta disposición.
+- **[Atajos de teclado](/purplemux-improved/es/docs/keyboard-shortcuts/)** — todos los atajos en una sola tabla.
+- **[Panel de flujo de Git](/purplemux-improved/es/docs/git-workflow/)** — un tipo de pestaña útil para colocar en una división.

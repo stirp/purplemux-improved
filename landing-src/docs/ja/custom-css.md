@@ -6,7 +6,7 @@ permalink: /ja/docs/custom-css/index.html
 ---
 {% from "docs/callouts.njk" import callout %}
 
-purplemux は CSS 変数システムの上に構築されています。ソースを触らずに視覚的なほぼすべてを変更できます — **外観** タブにルールを貼り付けて Apply をクリックすれば、すべての接続済みクライアントに即座に反映されます。
+purplemux-improved は CSS 変数システムの上に構築されています。ソースを触らずに視覚的なほぼすべてを変更できます — **外観** タブにルールを貼り付けて Apply をクリックすれば、すべての接続済みクライアントに即座に反映されます。
 
 ## どこに書くか
 
@@ -24,7 +24,7 @@ CSS はサーバの `~/.purplemux/config.json` の `customCSS` に保存され�
 
 ## 仕組み
 
-purplemux のほとんどの色、サーフェス、アクセントは `:root` (ライト) と `.dark` の下に CSS 変数として公開されています。変数を上書きすると、その変数が使われている場所すべて — サイドバー、ダイアログ、チャート、ステータスバッジ — に変更が波及します。
+purplemux-improved のほとんどの色、サーフェス、アクセントは `:root` (ライト) と `.dark` の下に CSS 変数として公開されています。変数を上書きすると、その変数が使われている場所すべて — サイドバー、ダイアログ、チャート、ステータスバッジ — に変更が波及します。
 
 1 つの変数を変えるのは、コンポーネントセレクタを直接上書きするより常にほぼ良い選択です。コンポーネントクラスは安定 API ではなく、変数こそが API です。
 
@@ -65,7 +65,7 @@ purplemux のほとんどの色、サーフェス、アクセントは `:root` (
 - **Palette** — `--ui-blue`、`--ui-teal`、`--ui-coral`、`--ui-amber`、`--ui-purple`、`--ui-pink`、`--ui-green`、`--ui-gray`、`--ui-red`
 - **Semantic** — `--positive`、`--negative`、`--accent-color`、`--brand`、`--focus-indicator`、`--claude-active`
 
-デフォルトの oklch 値とデザイン根拠を含む完全なトークンリストは、リポジトリの [`docs/STYLE.md`](https://github.com/subicura/purplemux/blob/main/docs/STYLE.md) を参照してください。それがソース・オブ・トゥルースです。
+デフォルトの oklch 値とデザイン根拠を含む完全なトークンリストは、リポジトリの [`docs/STYLE.md`](https://github.com/stirp/purplemux-improved/blob/main/docs/STYLE.md) を参照してください。それがソース・オブ・トゥルースです。
 
 ## 1 つのモードだけをターゲットにする
 
@@ -85,10 +85,10 @@ purplemux のほとんどの色、サーフェス、アクセントは `:root` (
 
 ## ターミナルは?
 
-xterm.js ターミナルは、こちらの CSS 変数では駆動されない独自のキュレートされたパレットを使います。**ターミナル** タブで切り替えてください。[ターミナルテーマ](/purplemux/ja/docs/terminal-themes/) を参照。
+xterm.js ターミナルは、こちらの CSS 変数では駆動されない独自のキュレートされたパレットを使います。**ターミナル** タブで切り替えてください。[ターミナルテーマ](/purplemux-improved/ja/docs/terminal-themes/) を参照。
 
 ## 次のステップ
 
-- **[テーマとフォント](/purplemux/ja/docs/themes-fonts/)** — ライト、ダーク、システム; フォントサイズプリセット。
-- **[ターミナルテーマ](/purplemux/ja/docs/terminal-themes/)** — ターミナル領域用の独立パレット。
-- **[サイドバーと Claude オプション](/purplemux/ja/docs/sidebar-options/)** — 項目並び替え、Claude フラグの切り替え。
+- **[テーマとフォント](/purplemux-improved/ja/docs/themes-fonts/)** — ライト、ダーク、システム; フォントサイズプリセット。
+- **[ターミナルテーマ](/purplemux-improved/ja/docs/terminal-themes/)** — ターミナル領域用の独立パレット。
+- **[サイドバーと Claude オプション](/purplemux-improved/ja/docs/sidebar-options/)** — 項目並び替え、Claude フラグの切り替え。

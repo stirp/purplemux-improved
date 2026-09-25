@@ -6,7 +6,7 @@ permalink: /ko/docs/data-directory/index.html
 ---
 {% from "docs/callouts.njk" import callout %}
 
-purplemux가 유지하는 모든 영구 상태 — 설정, 레이아웃, 세션 히스토리, 캐시 — 는 `~/.purplemux/` 한 곳에만 저장됩니다. `localStorage`, 시스템 키체인, 외부 서비스 모두 사용하지 않습니다.
+purplemux-improved가 유지하는 모든 영구 상태 — 설정, 레이아웃, 세션 히스토리, 캐시 — 는 `~/.purplemux/` 한 곳에만 저장됩니다. `localStorage`, 시스템 키체인, 외부 서비스 모두 사용하지 않습니다.
 
 ## 한눈에 보는 구조
 
@@ -51,12 +51,12 @@ purplemux가 유지하는 모든 영구 상태 — 설정, 레이아웃, 세션 
 | `quick-prompts.json`, `sidebar-items.json` | 빌트인 위에 얹는 `{ custom: […], disabledBuiltinIds: […], order: […] }` 오버레이 | 가능 — 기본값으로 복원 |
 | `vapid-keys.json` | 첫 실행 시 생성되는 Web Push VAPID 키페어 | 권장 안 함 — 함께 `push-subscriptions.json`도 지워야 함 (기존 구독 깨짐) |
 | `push-subscriptions.json` | 브라우저별 푸시 엔드포인트 | 가능 — 각 디바이스에서 다시 구독 필요 |
-| `cli-token` | `purplemux` CLI와 훅 스크립트가 사용하는 32바이트 hex 토큰 (`x-pmux-token` 헤더) | 가능 — 다음 시작 시 재생성. 이미 만들어진 훅 스크립트는 서버가 덮어쓸 때까지 옛 토큰 사용 |
+| `cli-token` | `purplemux-improved` CLI와 훅 스크립트가 사용하는 32바이트 hex 토큰 (`x-pmux-token` 헤더) | 가능 — 다음 시작 시 재생성. 이미 만들어진 훅 스크립트는 서버가 덮어쓸 때까지 옛 토큰 사용 |
 | `port` | 평문 현재 포트, 훅 스크립트와 CLI가 읽음 | 가능 — 다음 시작 시 재생성 |
-| `pmux.lock` | 단일 인스턴스 가드 `{ pid, port, startedAt }` | purplemux 프로세스가 살아있지 않을 때만 |
+| `pmux.lock` | 단일 인스턴스 가드 `{ pid, port, startedAt }` | purplemux-improved 프로세스가 살아있지 않을 때만 |
 
 {% call callout('warning', '락 파일 주의사항') %}
-purplemux가 "already running"이라며 시작을 거부하지만 실제 프로세스가 없다면 `pmux.lock`이 stale 상태입니다. `rm ~/.purplemux/pmux.lock` 후 다시 시도하세요. 과거에 `sudo`로 실행한 적이 있다면 락 파일 소유자가 root일 수 있으니 `sudo rm`로 한 번 정리합니다.
+purplemux-improved가 "already running"이라며 시작을 거부하지만 실제 프로세스가 없다면 `pmux.lock`이 stale 상태입니다. `rm ~/.purplemux/pmux.lock` 후 다시 시도하세요. 과거에 `sudo`로 실행한 적이 있다면 락 파일 소유자가 root일 수 있으니 `sudo rm`로 한 번 정리합니다.
 {% endcall %}
 
 ## 워크스페이스별 디렉토리 (`workspaces/{wsId}/`)
@@ -79,7 +79,7 @@ pino-roll 출력. UTC 기준 하루에 한 파일, 크기 한도를 넘으면 �
 logs/purplemux.2026-04-19.1.log
 ```
 
-기본 레벨은 `info`. `LOG_LEVEL`로 전체를, `LOG_LEVELS`로 모듈별로 조정합니다 — 자세한 내용은 [포트 & 환경변수](/purplemux/ko/docs/ports-env-vars/) 참고.
+기본 레벨은 `info`. `LOG_LEVEL`로 전체를, `LOG_LEVELS`로 모듈별로 조정합니다 — 자세한 내용은 [포트 & 환경변수](/purplemux-improved/ko/docs/ports-env-vars/) 참고.
 
 로그는 7일 분량까지 자동 로테이트됩니다. 언제든 지워도 괜찮습니다.
 
@@ -98,7 +98,7 @@ uploads/{wsId}/{tabId}/{timestamp}-{rand}-{name}.{ext}
 
 ## `stats/`
 
-순수 캐시. `~/.claude/projects/**/*.jsonl`을 기반으로 계산하며, purplemux는 해당 디렉토리를 읽기만 합니다.
+순수 캐시. `~/.claude/projects/**/*.jsonl`을 기반으로 계산하며, purplemux-improved는 해당 디렉토리를 읽기만 합니다.
 
 | 파일 | 내용 |
 |---|---|
@@ -130,7 +130,7 @@ uploads/{wsId}/{tabId}/{timestamp}-{rand}-{name}.{ext}
 tar czf purplemux-backup.tgz -C ~ .purplemux
 ```
 
-새 머신에서 복원하려면 untar 후 purplemux를 시작합니다. 훅 스크립트는 새 서버 포트로 재작성되고, 워크스페이스·히스토리·설정은 그대로 옮겨집니다.
+새 머신에서 복원하려면 untar 후 purplemux-improved를 시작합니다. 훅 스크립트는 새 서버 포트로 재작성되고, 워크스페이스·히스토리·설정은 그대로 옮겨집니다.
 
 {% call callout('warning') %}
 `pmux.lock`은 복원하지 마세요 — 특정 PID에 묶여 있어서 시작을 막습니다. `--exclude pmux.lock`으로 제외하세요.
@@ -142,10 +142,10 @@ tar czf purplemux-backup.tgz -C ~ .purplemux
 rm -rf ~/.purplemux
 ```
 
-먼저 purplemux가 실행 중이지 않은지 확인하세요. 다음 실행은 첫 실행 경험으로 다시 시작됩니다.
+먼저 purplemux-improved가 실행 중이지 않은지 확인하세요. 다음 실행은 첫 실행 경험으로 다시 시작됩니다.
 
 ## 다음으로
 
-- **[포트 & 환경변수](/purplemux/ko/docs/ports-env-vars/)** — 이 디렉토리에 영향을 주는 모든 변수
-- **[아키텍처](/purplemux/ko/docs/architecture/)** — 파일들이 실행 중인 서버와 어떻게 연결되는지
-- **[문제 해결](/purplemux/ko/docs/troubleshooting/)** — 자주 마주치는 이슈와 해결법
+- **[포트 & 환경변수](/purplemux-improved/ko/docs/ports-env-vars/)** — 이 디렉토리에 영향을 주는 모든 변수
+- **[아키텍처](/purplemux-improved/ko/docs/architecture/)** — 파일들이 실행 중인 서버와 어떻게 연결되는지
+- **[문제 해결](/purplemux-improved/ko/docs/troubleshooting/)** — 자주 마주치는 이슈와 해결법

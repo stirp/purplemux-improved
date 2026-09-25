@@ -103,6 +103,7 @@ export interface ITimelineToolCall {
   toolUseId: string;
   toolName: TToolName;
   summary: string;
+  input?: string;
   filePath?: string;
   diff?: ITimelineDiff;
   status: TToolStatus;
@@ -115,6 +116,7 @@ export interface ITimelineToolResult {
   toolUseId: string;
   isError: boolean;
   summary: string;
+  output?: string;
 }
 
 export interface ITimelineAgentGroup {
@@ -190,6 +192,7 @@ export interface ITimelineAskUserQuestion {
   questions: IAskUserQuestionItem[];
   status: TToolStatus;
   answer?: string;
+  answerMode?: 'compose';
 }
 
 export interface ITimelineInterrupt {

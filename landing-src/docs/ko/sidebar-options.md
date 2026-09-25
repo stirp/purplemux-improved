@@ -31,7 +31,7 @@ permalink: /ko/docs/sidebar-options/index.html
 저장하면 목록 맨 아래에 추가됩니다. 원하는 위치로 드래그해서 옮기세요.
 
 {% call callout('note', '빌트인은 숨김만 됩니다') %}
-purplemux가 기본 제공하는 빌트인 항목에는 스위치와 그립만 있고 편집·삭제는 없습니다. 마음이 바뀌었을 때를 대비해 항상 자리를 지킵니다. 커스텀 항목은 모든 동작이 가능합니다.
+purplemux-improved가 기본 제공하는 빌트인 항목에는 스위치와 그립만 있고 편집·삭제는 없습니다. 마음이 바뀌었을 때를 대비해 항상 자리를 지킵니다. 커스텀 항목은 모든 동작이 가능합니다.
 {% endcall %}
 
 ## 퀵 프롬프트
@@ -49,13 +49,13 @@ purplemux가 기본 제공하는 빌트인 항목에는 스위치와 그립만 �
 
 ## Claude CLI 옵션
 
-설정 → **Claude** 탭. 이 토글들은 *purplemux가 새 탭에서 Claude CLI를 실행하는 방식*에 영향을 줍니다. 이미 실행 중인 세션에는 적용되지 않습니다.
+설정 → **Claude** 탭. 이 토글들은 *purplemux-improved가 새 탭에서 Claude CLI를 실행하는 방식*에 영향을 줍니다. 이미 실행 중인 세션에는 적용되지 않습니다.
 
 ### Skip Permission Checks
 
 `claude` 실행 명령에 `--dangerously-skip-permissions`를 추가합니다. Claude가 도구 실행과 파일 편집 시마다 승인 프롬프트를 띄우지 않고 바로 진행합니다.
 
-이는 공식 CLI가 제공하는 동일한 플래그이며, purplemux가 안전 장치를 추가로 약화시키지는 않습니다. 켜기 전에 [Anthropic 공식 문서](https://docs.anthropic.com/en/docs/claude-code/cli-reference)를 확인하세요. 신뢰할 수 있는 워크스페이스에서만 사용하는 것을 권장합니다.
+이는 공식 CLI가 제공하는 동일한 플래그이며, purplemux-improved가 안전 장치를 추가로 약화시키지는 않습니다. 켜기 전에 [Anthropic 공식 문서](https://docs.anthropic.com/en/docs/claude-code/cli-reference)를 확인하세요. 신뢰할 수 있는 워크스페이스에서만 사용하는 것을 권장합니다.
 
 ### Show Terminal with Claude
 
@@ -67,6 +67,6 @@ purplemux가 기본 제공하는 빌트인 항목에는 스위치와 그립만 �
 
 ## 다음으로
 
-- **[테마 & 폰트](/purplemux/ko/docs/themes-fonts/)** — 라이트/다크/시스템, 폰트 크기 프리셋
-- **[에디터 연동](/purplemux/ko/docs/editor-integration/)** — VS Code · Cursor · code-server 연결
-- **[첫 세션](/purplemux/ko/docs/first-session/)** — 대시보드 레이아웃 복습
+- **[테마 & 폰트](/purplemux-improved/ko/docs/themes-fonts/)** — 라이트/다크/시스템, 폰트 크기 프리셋
+- **[에디터 연동](/purplemux-improved/ko/docs/editor-integration/)** — VS Code · Cursor · code-server 연결
+- **[첫 세션](/purplemux-improved/ko/docs/first-session/)** — 대시보드 레이아웃 복습

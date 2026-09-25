@@ -15,6 +15,150 @@ const codexUserLine = (idx: number) => JSON.stringify({
 });
 
 describe('parseCodexContent', () => {
+  it('renders asynchronous questions without treating acceptance as an answer', () => {
+    const entries = parseCodexContent([
+      { type: 'response_item', payload: { type: 'function_call', name: 'request_user_input_async', call_id: 'question-1',
+        arguments: JSON.stringify({ questions: [{ title: '选择目录？', options: ['当前目录', '多个目录'] }, { title: '补充说明' }] }) } },
+      { type: 'response_item', payload: { type: 'function_call_output', call_id: 'question-1', output: '{"accepted":true}' } },
+    ].map((line) => JSON.stringify(line)).join('\n'));
+    expect(entries).toHaveLength(1);
+    expect(entries[0]).toMatchObject({ type: 'ask-user-question', status: 'pending', answerMode: 'compose',
+      questions: [{ question: '选择目录？', options: [{ label: '当前目录' }, { label: '多个目录' }] }, { question: '补充说明', options: [] }] });
+  });
+  it('reads completed user text and uploaded images without duplicating response records', () => {
+    const imagePath = path.join(UPLOADS_DIR, 'ws-1', 'tab-1', 'image.png');
+    const lines = [
+      { type: 'response_item', payload: { type: 'message', role: 'user', content: [{ type: 'input_text', text: '查看结果' }] } },
+      { type: 'event_msg', payload: { type: 'item_completed', item: {
+        type: 'UserMessage', content: [
+          { type: 'local_image', path: imagePath },
+          { type: 'local_image', path: '/tmp/outside.png' },
+          { type: 'text', text: '查看结果' },
+        ],
+      } } },
+    ];
+    const entries = parseCodexContent(lines.map((line) => JSON.stringify(line)).join('\n'));
+    expect(entries).toHaveLength(1);
+    expect(entries[0]).toMatchObject({
+      type: 'user-message', text: '查看结果', images: ['/api/uploads/ws-1/tab-1/image.png'],
+    });
+  });
+
+  it('keeps image-only user messages', () => {
+    const entries = parseCodexContent(JSON.stringify({ type: 'event_msg', payload: {
+      type: 'item_completed', item: { type: 'UserMessage', content: [
+        { type: 'local_image', path: path.join(UPLOADS_DIR, 'ws-1', 'tab-1', 'image.png') },
+      ] },
+    } }));
+    expect(entries[0]).toMatchObject({ type: 'user-message', text: '', images: ['/api/uploads/ws-1/tab-1/image.png'] });
+  });
+
+  it('preserves a modern user, command, result and assistant sequence across incremental reads', async () => {
+    const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'purplemux-codex-modern-'));
+    const jsonlPath = path.join(dir, 'session.jsonl');
+    const record = (type: string, payload: unknown) => JSON.stringify({ type, payload }) + '\n';
+    try {
+      await fs.writeFile(jsonlPath, record('event_msg', {
+        type: 'item_completed', item: { type: 'UserMessage', content: [{ type: 'text', text: '运行命令' }] },
+      }) + record('response_item', { type: 'custom_tool_call', call_id: 'c1', name: 'exec', input: 'text("ok")' }));
+      const parser = new CodexParser(jsonlPath);
+      const initial = await parser.parseTail(20);
+      expect(initial.summary).toBe('运行命令');
+      expect(initial.entries.map((entry) => entry.type)).toEqual(['user-message', 'tool-call']);
+      await fs.appendFile(jsonlPath,
+        record('response_item', { type: 'custom_tool_call_output', call_id: 'c1', output: [{ type: 'input_text', text: 'ok\n完成' }] }) +
+        record('event_msg', { type: 'item_completed', item: { type: 'AgentMessage', content: [{ type: 'Text', text: '已完成' }] } }),
+      );
+      const update = await parser.parseIncremental();
+      expect(update.newEntries.map((entry) => entry.type)).toEqual(['tool-result', 'assistant-message']);
+      expect(update.newEntries[0]).toMatchObject({ toolUseId: 'c1', summary: '2 lines', output: 'ok\n完成' });
+    } finally {
+      await fs.rm(dir, { recursive: true, force: true });
+    }
+  });
+
+  it.each(['function_call_output', 'custom_tool_call_output'])('preserves complete string output for %s', (type) => {
+    const output = 'first\n' + 'x'.repeat(500) + '\nlast';
+    const entries = parseCodexContent(JSON.stringify({ type: 'response_item', payload: { type, call_id: 'c1', output } }));
+    expect(entries[0]).toMatchObject({ type: 'tool-result', summary: '3 lines', output });
+  });
+
+  it('preserves free-form exec input and reads text-block output', () => {
+    const input = 'const result = await tools.exec_command({cmd: "pwd\\nls -la"});\ntext(result);';
+    const lines = [
+      { type: 'response_item', payload: {
+        type: 'custom_tool_call', call_id: 'exec-code-1', name: 'exec', input,
+      } },
+      { type: 'response_item', payload: {
+        type: 'custom_tool_call_output', call_id: 'exec-code-1',
+        output: [{ type: 'input_text', text: 'Command completed' }],
+      } },
+    ];
+    const entries = parseCodexContent(lines.map((line) => JSON.stringify(line)).join('\n'));
+    expect(entries).toHaveLength(2);
+    expect(entries[0]).toMatchObject({
+      type: 'tool-call', toolName: 'exec', input, status: 'success',
+      summary: expect.stringContaining('tools.exec_command'),
+    });
+    expect(entries[1]).toMatchObject({ type: 'tool-result', summary: 'Command completed' });
+  });
+
+  it.each(['function_call_output', 'custom_tool_call_output'])('handles mixed content in %s', (type) => {
+    const entries = parseCodexContent(JSON.stringify({ type: 'response_item', payload: {
+      type, call_id: 'call-1', output: [
+        null, { type: 'image', data: 'ignored' },
+        { type: 'input_text', text: 'first' }, { type: 'text', text: 'second' },
+      ],
+    } }));
+    expect(entries[0]).toMatchObject({ type: 'tool-result', summary: '2 lines' });
+  });
+
+  it.each(['commentary', 'final_answer'])('reads completed AgentMessage %s without duplicating response records', (phase) => {
+    const lines = [
+      {
+        type: 'event_msg',
+        payload: {
+          type: 'item_completed',
+          item: {
+            type: 'AgentMessage', id: 'msg-1', phase,
+            content: [{ type: 'Text', text: '你好！' }, { type: 'Text', text: '\n**已完成**' }],
+          },
+        },
+      },
+      {
+        type: 'response_item',
+        payload: {
+          type: 'message', id: 'msg-1', role: 'assistant', phase,
+          content: [{ type: 'output_text', text: '你好！\n**已完成**' }],
+        },
+      },
+      { type: 'event_msg', payload: { type: 'task_complete', last_agent_message: '你好！\n**已完成**' } },
+    ];
+    const entries = parseCodexContent(lines.map((line) => JSON.stringify(line)).join('\n'));
+    expect(entries).toHaveLength(2);
+    expect(entries[0]).toMatchObject({ type: 'assistant-message', markdown: '你好！\n**已完成**' });
+    expect(entries[1]).toMatchObject({ type: 'turn-end' });
+  });
+
+  it('still reads legacy agent_message events', () => {
+    const entries = parseCodexContent(JSON.stringify({
+      type: 'event_msg', payload: { type: 'agent_message', message: 'Legacy reply' },
+    }));
+    expect(entries).toHaveLength(1);
+    expect(entries[0]).toMatchObject({ type: 'assistant-message', markdown: 'Legacy reply' });
+  });
+
+  it.each([
+    undefined, null, 'invalid', {},
+    { type: 'UserMessage', content: [{ type: 'Text', text: 'user' }] },
+    { type: 'AgentMessage', content: null },
+    { type: 'AgentMessage', content: [null, 'invalid', { type: 'Image' }, { type: 'Text', text: 123 }] },
+  ])('ignores completed items without assistant text: %j', (item) => {
+    expect(parseCodexContent(JSON.stringify({
+      type: 'event_msg', payload: { type: 'item_completed', item },
+    }))).toEqual([]);
+  });
+
   it('maps Codex local_images under uploads to served image URLs', () => {
     const imagePath = path.join(UPLOADS_DIR, 'ws-1', 'tab-1', 'image.png');
     const line = {

@@ -6,7 +6,7 @@ permalink: /pt-BR/docs/save-restore/index.html
 ---
 {% from "docs/callouts.njk" import callout %}
 
-O purplemux foi construído em torno da ideia de que fechar uma aba do navegador não deveria encerrar uma sessão. Duas peças trabalham juntas: o tmux mantém os shells rodando, e `~/.purplemux/workspaces.json` lembra do layout.
+O purplemux-improved foi construído em torno da ideia de que fechar uma aba do navegador não deveria encerrar uma sessão. Duas peças trabalham juntas: o tmux mantém os shells rodando, e `~/.purplemux/workspaces.json` lembra do layout.
 
 ## O que é persistido
 
@@ -18,7 +18,7 @@ Tudo que você consegue ver em um workspace:
 - Diretório de trabalho de cada shell
 - Grupos, nomes e ordem dos workspaces
 
-`workspaces.json` é atualizado de forma transacional a cada mudança de layout, então o arquivo sempre reflete o estado atual. Veja [Diretório de dados](/purplemux/pt-BR/docs/data-directory/) para o mapa completo dos arquivos em disco.
+`workspaces.json` é atualizado de forma transacional a cada mudança de layout, então o arquivo sempre reflete o estado atual. Veja [Diretório de dados](/purplemux-improved/pt-BR/docs/data-directory/) para o mapa completo dos arquivos em disco.
 
 ## Fechando o navegador
 
@@ -34,7 +34,7 @@ A mesma coisa vale no celular. Feche o PWA, bloqueie o aparelho, volte amanhã �
 
 ## Recuperando após um reboot do servidor
 
-Um reboot mata os processos tmux — eles são apenas processos do SO. O purplemux trata isso na próxima inicialização:
+Um reboot mata os processos tmux — eles são apenas processos do SO. O purplemux-improved trata isso na próxima inicialização:
 
 1. **Lê o layout** — `workspaces.json` descreve cada workspace, painel e aba.
 2. **Recria sessões em paralelo** — para cada aba, uma nova sessão tmux é criada no diretório de trabalho salvo.
@@ -58,12 +58,12 @@ Você normalmente não precisa mexer nisso, mas para os curiosos:
 
 - O socket do tmux se chama `purple`. Inspecione com `tmux -L purple ls`.
 - As sessões são nomeadas `pt-{workspaceId}-{paneId}-{tabId}`.
-- Editar `workspaces.json` enquanto o purplemux está rodando é inseguro — o servidor o mantém aberto e grava por cima.
+- Editar `workspaces.json` enquanto o purplemux-improved está rodando é inseguro — o servidor o mantém aberto e grava por cima.
 
-Para a história mais profunda (protocolo binário, backpressure, observação de JSONL) veja [Como funciona](/purplemux/#how) na landing page.
+Para a história mais profunda (protocolo binário, backpressure, observação de JSONL) veja [Como funciona](/purplemux-improved/#how) na landing page.
 
 ## Próximos passos
 
-- **[Workspaces e grupos](/purplemux/pt-BR/docs/workspaces-groups/)** — o que é salvo por workspace.
-- **[Abas e painéis](/purplemux/pt-BR/docs/tabs-panes/)** — o que é salvo por aba.
-- **[Suporte a navegadores](/purplemux/pt-BR/docs/browser-support/)** — peculiaridades conhecidas em torno de abas em background no mobile e reconexões.
+- **[Workspaces e grupos](/purplemux-improved/pt-BR/docs/workspaces-groups/)** — o que é salvo por workspace.
+- **[Abas e painéis](/purplemux-improved/pt-BR/docs/tabs-panes/)** — o que é salvo por aba.
+- **[Suporte a navegadores](/purplemux-improved/pt-BR/docs/browser-support/)** — peculiaridades conhecidas em torno de abas em background no mobile e reconexões.

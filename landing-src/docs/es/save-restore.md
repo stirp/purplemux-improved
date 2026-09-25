@@ -6,7 +6,7 @@ permalink: /es/docs/save-restore/index.html
 ---
 {% from "docs/callouts.njk" import callout %}
 
-purplemux se construye sobre la idea de que cerrar una pestaña en el navegador no debería terminar una sesión. Dos piezas trabajan juntas: tmux mantiene los shells en marcha, y `~/.purplemux/workspaces.json` recuerda la disposición.
+purplemux-improved se construye sobre la idea de que cerrar una pestaña en el navegador no debería terminar una sesión. Dos piezas trabajan juntas: tmux mantiene los shells en marcha, y `~/.purplemux/workspaces.json` recuerda la disposición.
 
 ## Qué se persiste
 
@@ -18,7 +18,7 @@ Cualquier cosa visible en un espacio de trabajo:
 - El directorio de trabajo de cada shell
 - Los grupos, nombres y orden de espacios de trabajo
 
-`workspaces.json` se actualiza transaccionalmente en cada cambio de disposición, así que el archivo siempre refleja el estado actual. Consulta [Directorio de datos](/purplemux/es/docs/data-directory/) para el mapa de archivos en disco.
+`workspaces.json` se actualiza transaccionalmente en cada cambio de disposición, así que el archivo siempre refleja el estado actual. Consulta [Directorio de datos](/purplemux-improved/es/docs/data-directory/) para el mapa de archivos en disco.
 
 ## Cerrar el navegador
 
@@ -34,7 +34,7 @@ Lo mismo aplica en el móvil. Cierra la PWA, bloquea el dispositivo, vuelve mañ
 
 ## Recuperarse tras reiniciar el servidor
 
-Un reinicio sí mata los procesos de tmux — son procesos del sistema operativo. purplemux gestiona esto en el siguiente arranque:
+Un reinicio sí mata los procesos de tmux — son procesos del sistema operativo. purplemux-improved gestiona esto en el siguiente arranque:
 
 1. **Lee la disposición** — `workspaces.json` describe cada espacio, panel y pestaña.
 2. **Recrea sesiones en paralelo** — para cada pestaña se lanza una nueva sesión de tmux en su directorio de trabajo guardado.
@@ -58,12 +58,12 @@ Normalmente no necesitas tocar esto, pero por si acaso:
 
 - El socket de tmux se llama `purple`. Inspecciónalo con `tmux -L purple ls`.
 - Las sesiones se llaman `pt-{workspaceId}-{paneId}-{tabId}`.
-- Editar `workspaces.json` mientras purplemux corre no es seguro — el servidor lo tiene abierto y escribe a través de él.
+- Editar `workspaces.json` mientras purplemux-improved corre no es seguro — el servidor lo tiene abierto y escribe a través de él.
 
-Para la historia más profunda (protocolo binario, backpressure, vigilancia de JSONL) consulta [Cómo funciona](/purplemux/#how) en la página principal.
+Para la historia más profunda (protocolo binario, backpressure, vigilancia de JSONL) consulta [Cómo funciona](/purplemux-improved/#how) en la página principal.
 
 ## Siguientes pasos
 
-- **[Espacios de trabajo y grupos](/purplemux/es/docs/workspaces-groups/)** — qué se guarda por espacio.
-- **[Pestañas y paneles](/purplemux/es/docs/tabs-panes/)** — qué se guarda por pestaña.
-- **[Compatibilidad de navegadores](/purplemux/es/docs/browser-support/)** — particularidades conocidas con pestañas móviles en segundo plano y reconexiones.
+- **[Espacios de trabajo y grupos](/purplemux-improved/es/docs/workspaces-groups/)** — qué se guarda por espacio.
+- **[Pestañas y paneles](/purplemux-improved/es/docs/tabs-panes/)** — qué se guarda por pestaña.
+- **[Compatibilidad de navegadores](/purplemux-improved/es/docs/browser-support/)** — particularidades conocidas con pestañas móviles en segundo plano y reconexiones.

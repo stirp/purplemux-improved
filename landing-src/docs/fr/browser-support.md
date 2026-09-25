@@ -6,7 +6,7 @@ permalink: /fr/docs/browser-support/index.html
 ---
 {% from "docs/callouts.njk" import callout %}
 
-purplemux est une application web : l'expérience dépend donc du navigateur dans lequel vous l'ouvrez. Voici les versions sur lesquelles nous testons activement — les navigateurs plus anciens peuvent fonctionner mais ne sont pas pris en charge.
+purplemux-improved est une application web : l'expérience dépend donc du navigateur dans lequel vous l'ouvrez. Voici les versions sur lesquelles nous testons activement — les navigateurs plus anciens peuvent fonctionner mais ne sont pas pris en charge.
 
 ## Desktop
 
@@ -33,12 +33,12 @@ Apple n'a ajouté Web Push à iOS qu'avec Safari 16.4 (mars 2023). Les versions 
 
 ## Exigences fonctionnelles
 
-purplemux s'appuie sur quelques API navigateur modernes. Si l'une d'elles manque, l'application bascule en mode dégradé mais perd la fonctionnalité correspondante.
+purplemux-improved s'appuie sur quelques API navigateur modernes. Si l'une d'elles manque, l'application bascule en mode dégradé mais perd la fonctionnalité correspondante.
 
 | API | Utilisée pour | Repli |
 |---|---|---|
 | WebSocket | E/S terminal, sync de statut, timeline | Requis — pas de repli. |
-| Clipboard API | Copie de `npx purplemux@latest`, copie de blocs de code | Bouton masqué si indisponible. |
+| Clipboard API | Copie de `npx purplemux-improved@latest`, copie de blocs de code | Bouton masqué si indisponible. |
 | Notifications API | Push desktop / mobile | Ignoré — le statut intégré reste affiché. |
 | Service Workers | PWA + Web Push | Servi uniquement comme app web classique. |
 | IntersectionObserver | Timeline en direct, apparition de la nav | Éléments rendus sans animation. |
@@ -47,7 +47,7 @@ purplemux s'appuie sur quelques API navigateur modernes. Si l'une d'elles manque
 
 ## Mon navigateur convient-il ?
 
-purplemux embarque un auto-diagnostic dans **Paramètres → Vérification du navigateur**. Il exécute les mêmes sondes que celles listées ci-dessus et affiche un badge vert / orange / rouge par fonctionnalité, sans avoir à lire de fiche technique.
+purplemux-improved embarque un auto-diagnostic dans **Paramètres → Vérification du navigateur**. Il exécute les mêmes sondes que celles listées ci-dessus et affiche un badge vert / orange / rouge par fonctionnalité, sans avoir à lire de fiche technique.
 
 ## Particularités connues
 
@@ -62,4 +62,4 @@ purplemux embarque un auto-diagnostic dans **Paramètres → Vérification du na
 - **UC Browser, Opera Mini, Puffin** — les navigateurs basés sur un proxy cassent les WebSockets. Ne fonctionnent pas.
 - **Tout navigateur de plus de 3 ans** — notre CSS utilise les couleurs OKLCH et les container queries, qui nécessitent un moteur de l'ère 2023.
 
-Si vous êtes dans une configuration inhabituelle et que quelque chose ne fonctionne pas, [ouvrez une issue](https://github.com/subicura/purplemux/issues) en y joignant votre user agent et le résultat de l'auto-diagnostic.
+Si vous êtes dans une configuration inhabituelle et que quelque chose ne fonctionne pas, [ouvrez une issue](https://github.com/stirp/purplemux-improved/issues) en y joignant votre user agent et le résultat de l'auto-diagnostic.

@@ -6,7 +6,7 @@ permalink: /ko/docs/live-session-view/index.html
 ---
 {% from "docs/callouts.njk" import callout %}
 
-탭에서 Claude Code가 실행 중일 때, purplemux는 raw 터미널 뷰 대신 구조화된 타임라인을 보여줍니다. 같은 세션, 같은 JSONL 트랜스크립트지만 — 스캔하고 스크롤하고 링크할 수 있는 개별 이벤트로 펼쳐서 보여줍니다.
+탭에서 Claude Code가 실행 중일 때, purplemux-improved는 raw 터미널 뷰 대신 구조화된 타임라인을 보여줍니다. 같은 세션, 같은 JSONL 트랜스크립트지만 — 스캔하고 스크롤하고 링크할 수 있는 개별 이벤트로 펼쳐서 보여줍니다.
 
 ## 왜 타임라인이 스크롤백보다 나은가
 
@@ -62,7 +62,7 @@ Claude가 `busy`인 동안에는 이런 것도 함께 보입니다:
 
 ## 인라인 권한 프롬프트
 
-Claude가 툴 실행이나 파일 편집 권한을 요청하면, 모달이 아니라 타임라인 인라인으로 프롬프트가 나타납니다. 옵션을 클릭하거나, 매칭되는 숫자 키를 누르거나, 무시하고 휴대폰의 Web Push로 응답할 수 있습니다. 전체 흐름은 [권한 프롬프트](/purplemux/ko/docs/permission-prompts/) 참고.
+Claude가 툴 실행이나 파일 편집 권한을 요청하면, 모달이 아니라 타임라인 인라인으로 프롬프트가 나타납니다. 옵션을 클릭하거나, 매칭되는 숫자 키를 누르거나, 무시하고 휴대폰의 Web Push로 응답할 수 있습니다. 전체 흐름은 [권한 프롬프트](/purplemux-improved/ko/docs/permission-prompts/) 참고.
 
 ## 한 탭의 여러 모드
 
@@ -78,6 +78,6 @@ Claude가 툴 실행이나 파일 편집 권한을 요청하면, 모달이 아�
 
 ## 다음으로
 
-- **[권한 프롬프트](/purplemux/ko/docs/permission-prompts/)** — 인라인 승인 흐름
-- **[세션 상태](/purplemux/ko/docs/session-status/)** — 타임라인 인디케이터를 구동하는 배지들
-- **[퀵 프롬프트 & 첨부](/purplemux/ko/docs/quick-prompts-attachments/)** — 하단 입력 바가 할 수 있는 일들
+- **[권한 프롬프트](/purplemux-improved/ko/docs/permission-prompts/)** — 인라인 승인 흐름
+- **[세션 상태](/purplemux-improved/ko/docs/session-status/)** — 타임라인 인디케이터를 구동하는 배지들
+- **[퀵 프롬프트 & 첨부](/purplemux-improved/ko/docs/quick-prompts-attachments/)** — 하단 입력 바가 할 수 있는 일들

@@ -74,10 +74,10 @@ Eşitleme, kullanılamaz uçlara doğru kaymış bir düzeni sıfırlamanın en 
 
 Bir sekmeyi kapatmak tmux oturumunu sonlandırır. *Tarayıcıyı* kapatmak, yenilemek veya ağı kaybetmek bunu yapmaz — her sekme sunucuda çalışmaya devam eder. Yeniden açın, aynı paneller, bölmeler ve sekmeler geri gelir.
 
-Sunucu yeniden başlatmaları arasındaki kurtarma hikayesi için [Düzenleri kaydet & geri yükle](/purplemux/tr/docs/save-restore/) sayfasına bakın.
+Sunucu yeniden başlatmaları arasındaki kurtarma hikayesi için [Düzenleri kaydet & geri yükle](/purplemux-improved/tr/docs/save-restore/) sayfasına bakın.
 
 ## Sıradaki adımlar
 
-- **[Düzenleri kaydet & geri yükle](/purplemux/tr/docs/save-restore/)** — bu düzen nasıl kalıcı kalır.
-- **[Klavye kısayolları](/purplemux/tr/docs/keyboard-shortcuts/)** — tüm bağlamalar tek tabloda.
-- **[Git workflow paneli](/purplemux/tr/docs/git-workflow/)** — bir bölmeye atılacak kullanışlı bir sekme türü.
+- **[Düzenleri kaydet & geri yükle](/purplemux-improved/tr/docs/save-restore/)** — bu düzen nasıl kalıcı kalır.
+- **[Klavye kısayolları](/purplemux-improved/tr/docs/keyboard-shortcuts/)** — tüm bağlamalar tek tabloda.
+- **[Git workflow paneli](/purplemux-improved/tr/docs/git-workflow/)** — bir bölmeye atılacak kullanışlı bir sekme türü.

@@ -6,7 +6,7 @@ permalink: /ja/docs/themes-fonts/index.html
 ---
 {% from "docs/callouts.njk" import callout %}
 
-purplemux は 1 つのまとまった見た目と、少数のスイッチを備えています: アプリのテーマ、フォントサイズ、ターミナル専用のパレット。このページは最初の 2 つを扱います — ターミナル色は別ページにあります。
+purplemux-improved は 1 つのまとまった見た目と、少数のスイッチを備えています: アプリのテーマ、フォントサイズ、ターミナル専用のパレット。このページは最初の 2 つを扱います — ターミナル色は別ページにあります。
 
 ## 設定を開く
 
@@ -48,7 +48,7 @@ UI 全体が `rem` でサイズされているため、プリセットを切り�
 - スペーシング — プロポーションは維持されます
 - コードブロックのシンタックスハイライト
 
-個別の要素 (例: ターミナルだけ、サイドバーだけ) を調整したい場合は [カスタム CSS](/purplemux/ja/docs/custom-css/) を参照してください。
+個別の要素 (例: ターミナルだけ、サイドバーだけ) を調整したい場合は [カスタム CSS](/purplemux-improved/ja/docs/custom-css/) を参照してください。
 
 ## デバイス単位ではなく、サーバ単位
 
@@ -58,6 +58,6 @@ UI 全体が `rem` でサイズされているため、プリセットを切り�
 
 ## 次のステップ
 
-- **[カスタム CSS](/purplemux/ja/docs/custom-css/)** — 個別の色やスペーシングを上書き。
-- **[ターミナルテーマ](/purplemux/ja/docs/terminal-themes/)** — xterm.js 用の独立パレット。
-- **[キーボードショートカット](/purplemux/ja/docs/keyboard-shortcuts/)** — すべてのバインディングを 1 つの表で。
+- **[カスタム CSS](/purplemux-improved/ja/docs/custom-css/)** — 個別の色やスペーシングを上書き。
+- **[ターミナルテーマ](/purplemux-improved/ja/docs/terminal-themes/)** — xterm.js 用の独立パレット。
+- **[キーボードショートカット](/purplemux-improved/ja/docs/keyboard-shortcuts/)** — すべてのバインディングを 1 つの表で。

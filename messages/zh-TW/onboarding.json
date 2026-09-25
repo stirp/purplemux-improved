@@ -31,7 +31,7 @@
   "appearanceDescription": "選擇應用程式的顯示主題。",
   "skipPermissions": "跳過權限檢查",
   "skipPermissionsDescription": "Skips permission prompts when running Claude and Codex agents.",
-  "networkDescription": "選擇哪些網路可以存取 purplemux。稍後可在設定 > 系統中變更。",
+  "networkDescription": "選擇哪些網路可以存取 purplemux-improved。稍後可在設定 > 系統中變更。",
   "networkFootnote": "透過反向代理、通道或 Tailscale Serve 存取時，選擇「僅 Localhost」即可。",
   "networkOptions": {
     "localhost": {

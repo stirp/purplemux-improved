@@ -27,7 +27,7 @@ const WebviewPage = () => {
   return (
     <>
       <Head>
-        <title>{hostname} - purplemux</title>
+        <title>{hostname} - purplemux-improved</title>
       </Head>
       <div className="flex min-h-0 flex-1" />
     </>

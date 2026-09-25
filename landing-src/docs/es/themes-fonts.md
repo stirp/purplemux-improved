@@ -6,7 +6,7 @@ permalink: /es/docs/themes-fonts/index.html
 ---
 {% from "docs/callouts.njk" import callout %}
 
-purplemux trae un look único y coherente y un pequeño grupo de interruptores: tema de la app, tamaño de fuente y una paleta separada para la terminal. Esta página cubre los dos primeros — los colores de terminal viven en su propia página.
+purplemux-improved trae un look único y coherente y un pequeño grupo de interruptores: tema de la app, tamaño de fuente y una paleta separada para la terminal. Esta página cubre los dos primeros — los colores de terminal viven en su propia página.
 
 ## Abrir Configuración
 
@@ -48,7 +48,7 @@ El tamaño de fuente escala el **chrome de la UI y el texto de terminal**. No ca
 - El espaciado — las proporciones se preservan
 - El estilo de sintaxis de los bloques de código
 
-Si quieres ajustar elementos individuales (p. ej. solo la terminal, o solo la barra lateral), consulta [CSS personalizado](/purplemux/es/docs/custom-css/).
+Si quieres ajustar elementos individuales (p. ej. solo la terminal, o solo la barra lateral), consulta [CSS personalizado](/purplemux-improved/es/docs/custom-css/).
 
 ## Por dispositivo, no por navegador
 
@@ -58,6 +58,6 @@ Si prefieres mantener móvil y escritorio diferentes, eso no está soportado act
 
 ## Siguientes pasos
 
-- **[CSS personalizado](/purplemux/es/docs/custom-css/)** — sobrescribe colores y espaciado individuales.
-- **[Temas de terminal](/purplemux/es/docs/terminal-themes/)** — paleta separada para xterm.js.
-- **[Atajos de teclado](/purplemux/es/docs/keyboard-shortcuts/)** — todos los atajos en una tabla.
+- **[CSS personalizado](/purplemux-improved/es/docs/custom-css/)** — sobrescribe colores y espaciado individuales.
+- **[Temas de terminal](/purplemux-improved/es/docs/terminal-themes/)** — paleta separada para xterm.js.
+- **[Atajos de teclado](/purplemux-improved/es/docs/keyboard-shortcuts/)** — todos los atajos en una tabla.

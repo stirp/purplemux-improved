@@ -1,38 +1,38 @@
 ---
 title: CLI 參考
-description: purplemux 與 pmux 二進位的所有子指令與旗標。
+description: purplemux-improved 與 pmux 二進位的所有子指令與旗標。
 eyebrow: 參考資料
 permalink: /zh-TW/docs/cli-reference/index.html
 ---
 {% from "docs/callouts.njk" import callout %}
 
-`purplemux` 提供兩種使用方式：作為伺服器啟動器（`purplemux` / `purplemux start`），以及作為 HTTP API 包裝器（`purplemux <subcommand>`）來與執行中的伺服器對話。短別名 `pmux` 完全等價。
+`purplemux-improved` 提供兩種使用方式：作為伺服器啟動器（`purplemux-improved` / `purplemux-improved start`），以及作為 HTTP API 包裝器（`purplemux-improved <subcommand>`）來與執行中的伺服器對話。短別名 `pmux` 完全等價。
 
 ## 一個二進位、兩種角色
 
 | 形式 | 作用 |
 |---|---|
-| `purplemux` | 啟動伺服器。等同於 `purplemux start`。 |
-| `purplemux <subcommand>` | 與執行中的伺服器的 CLI HTTP API 對話。 |
-| `pmux ...` | `purplemux ...` 的別名。 |
+| `purplemux-improved` | 啟動伺服器。等同於 `purplemux-improved start`。 |
+| `purplemux-improved <subcommand>` | 與執行中的伺服器的 CLI HTTP API 對話。 |
+| `pmux ...` | `purplemux-improved ...` 的別名。 |
 
 `bin/purplemux.js` 中的派發器會剝離第一個參數：已知的子指令會路由到 `bin/cli.js`，其餘（或沒有參數）則啟動伺服器。
 
 ## 啟動伺服器
 
 ```bash
-purplemux              # 預設
-purplemux start        # 同義，明確指定
-PORT=9000 purplemux    # 自訂連接埠
-HOST=all purplemux     # 全部繫結
+purplemux-improved              # 預設
+purplemux-improved start        # 同義，明確指定
+PORT=9000 purplemux-improved    # 自訂連接埠
+HOST=all purplemux-improved     # 全部繫結
 ```
 
-完整 env 面向請見 [連接埠與環境變數](/purplemux/zh-TW/docs/ports-env-vars/)。
+完整 env 面向請見 [連接埠與環境變數](/purplemux-improved/zh-TW/docs/ports-env-vars/)。
 
 伺服器會印出綁定的 URL、模式與認證狀態：
 
 ```
-  ⚡ purplemux  v0.x.x
+  ⚡ purplemux-improved  v0.x.x
   ➜  Available on:
        http://127.0.0.1:8022
        http://192.168.1.42:8022
@@ -48,16 +48,16 @@ HOST=all purplemux     # 全部繫結
 
 | 指令 | 用途 |
 |---|---|
-| `purplemux workspaces` | 列出工作區 |
-| `purplemux tab list [-w WS]` | 列出分頁（可選擇限定到工作區） |
-| `purplemux tab create -w WS [-n NAME] [-t TYPE]` | 建立新分頁 |
-| `purplemux tab send -w WS TAB_ID CONTENT...` | 對分頁送出輸入 |
-| `purplemux tab status -w WS TAB_ID` | 檢視分頁狀態 |
-| `purplemux tab result -w WS TAB_ID` | 擷取分頁窗格目前內容 |
-| `purplemux tab close -w WS TAB_ID` | 關閉分頁 |
-| `purplemux tab browser ...` | 操控 `web-browser` 分頁（僅 Electron） |
-| `purplemux api-guide` | 印出完整 HTTP API 參考 |
-| `purplemux help` | 顯示用法 |
+| `purplemux-improved workspaces` | 列出工作區 |
+| `purplemux-improved tab list [-w WS]` | 列出分頁（可選擇限定到工作區） |
+| `purplemux-improved tab create -w WS [-n NAME] [-t TYPE]` | 建立新分頁 |
+| `purplemux-improved tab send -w WS TAB_ID CONTENT...` | 對分頁送出輸入 |
+| `purplemux-improved tab status -w WS TAB_ID` | 檢視分頁狀態 |
+| `purplemux-improved tab result -w WS TAB_ID` | 擷取分頁窗格目前內容 |
+| `purplemux-improved tab close -w WS TAB_ID` | 關閉分頁 |
+| `purplemux-improved tab browser ...` | 操控 `web-browser` 分頁（僅 Electron） |
+| `purplemux-improved api-guide` | 印出完整 HTTP API 參考 |
+| `purplemux-improved help` | 顯示用法 |
 
 除非另外註明，輸出皆為 JSON。`--workspace` 與 `-w` 可互換。
 
@@ -80,32 +80,32 @@ HOST=all purplemux     # 全部繫結
 
 | 子指令 | 回傳什麼 |
 |---|---|
-| `purplemux tab browser url -w WS TAB_ID` | 目前 URL + 頁面標題 |
-| `purplemux tab browser screenshot -w WS TAB_ID [-o FILE] [--full]` | PNG。指定 `-o` 會存到磁碟；不指定則回傳 base64。`--full` 擷取整頁。 |
-| `purplemux tab browser console -w WS TAB_ID [--since MS] [--level LEVEL]` | 最近的 console 條目（ring buffer，500 筆） |
-| `purplemux tab browser network -w WS TAB_ID [--since MS] [--method M] [--url SUBSTR] [--status CODE] [--request ID]` | 最近的網路條目；`--request ID` 會擷取單一 body |
-| `purplemux tab browser eval -w WS TAB_ID EXPR` | 執行 JS 表達式並序列化結果 |
+| `purplemux-improved tab browser url -w WS TAB_ID` | 目前 URL + 頁面標題 |
+| `purplemux-improved tab browser screenshot -w WS TAB_ID [-o FILE] [--full]` | PNG。指定 `-o` 會存到磁碟；不指定則回傳 base64。`--full` 擷取整頁。 |
+| `purplemux-improved tab browser console -w WS TAB_ID [--since MS] [--level LEVEL]` | 最近的 console 條目（ring buffer，500 筆） |
+| `purplemux-improved tab browser network -w WS TAB_ID [--since MS] [--method M] [--url SUBSTR] [--status CODE] [--request ID]` | 最近的網路條目；`--request ID` 會擷取單一 body |
+| `purplemux-improved tab browser eval -w WS TAB_ID EXPR` | 執行 JS 表達式並序列化結果 |
 
 ## 範例
 
 ```bash
 # 找你的工作區
-purplemux workspaces
+purplemux-improved workspaces
 
 # 在工作區 ws-MMKl07 建立 Claude 分頁
-purplemux tab create -w ws-MMKl07 -t claude-code -n "refactor auth"
+purplemux-improved tab create -w ws-MMKl07 -t claude-code -n "refactor auth"
 
 # 對它送出 prompt（TAB_ID 來自 `tab list`）
-purplemux tab send -w ws-MMKl07 tb-abc "Refactor src/lib/auth.ts to remove the cookie path"
+purplemux-improved tab send -w ws-MMKl07 tb-abc "Refactor src/lib/auth.ts to remove the cookie path"
 
 # 觀察其狀態
-purplemux tab status -w ws-MMKl07 tb-abc
+purplemux-improved tab status -w ws-MMKl07 tb-abc
 
 # 擷取窗格快照
-purplemux tab result -w ws-MMKl07 tb-abc
+purplemux-improved tab result -w ws-MMKl07 tb-abc
 
 # 對 web-browser 分頁整頁截圖
-purplemux tab browser screenshot -w ws-MMKl07 tb-xyz -o page.png --full
+purplemux-improved tab browser screenshot -w ws-MMKl07 tb-xyz -o page.png --full
 ```
 
 ## 認證
@@ -120,7 +120,7 @@ purplemux tab browser screenshot -w ws-MMKl07 tb-xyz -o page.png --full
 | `PMUX_TOKEN` | `~/.purplemux/cli-token` 的內容 | 以 `x-pmux-token` 送出的 bearer token |
 
 ```bash
-PMUX_PORT=8022 PMUX_TOKEN=$(cat ~/.purplemux/cli-token) purplemux workspaces
+PMUX_PORT=8022 PMUX_TOKEN=$(cat ~/.purplemux/cli-token) purplemux-improved workspaces
 ```
 
 {% call callout('warning') %}
@@ -129,14 +129,14 @@ CLI 權杖授予完整伺服器存取權。請當作密碼對待。不要貼到�
 
 ## update-notifier
 
-`purplemux` 在每次啟動時都會透過 `update-notifier` 檢查 npm 上是否有新版本，若有則印出橫幅。可用 `NO_UPDATE_NOTIFIER=1` 或任何[標準 `update-notifier` 退出方式](https://github.com/yeoman/update-notifier#user-settings)停用。
+`purplemux-improved` 在每次啟動時都會透過 `update-notifier` 檢查 npm 上是否有新版本，若有則印出橫幅。可用 `NO_UPDATE_NOTIFIER=1` 或任何[標準 `update-notifier` 退出方式](https://github.com/yeoman/update-notifier#user-settings)停用。
 
 ## 完整 HTTP API
 
-`purplemux api-guide` 會印出每個 `/api/cli/*` endpoint 的完整 HTTP API 參考，包含 request body 與 response shape — 適合在你想直接從 `curl` 或其他 runtime 操控 purplemux 時使用。
+`purplemux-improved api-guide` 會印出每個 `/api/cli/*` endpoint 的完整 HTTP API 參考，包含 request body 與 response shape — 適合在你想直接從 `curl` 或其他 runtime 操控 purplemux-improved 時使用。
 
 ## 下一步
 
-- **[連接埠與環境變數](/purplemux/zh-TW/docs/ports-env-vars/)** — `PMUX_PORT` / `PMUX_TOKEN` 在更廣的 env 面向。
-- **[架構](/purplemux/zh-TW/docs/architecture/)** — CLI 實際在跟誰對話。
-- **[疑難排解](/purplemux/zh-TW/docs/troubleshooting/)** — 當 CLI 說「伺服器有在跑嗎？」的時候。
+- **[連接埠與環境變數](/purplemux-improved/zh-TW/docs/ports-env-vars/)** — `PMUX_PORT` / `PMUX_TOKEN` 在更廣的 env 面向。
+- **[架構](/purplemux-improved/zh-TW/docs/architecture/)** — CLI 實際在跟誰對話。
+- **[疑難排解](/purplemux-improved/zh-TW/docs/troubleshooting/)** — 當 CLI 說「伺服器有在跑嗎？」的時候。

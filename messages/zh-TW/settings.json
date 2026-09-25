@@ -147,7 +147,7 @@
   },
   "system": {
     "networkAccess": "網路存取",
-    "networkAccessDescription": "控制哪些網路可以存取 purplemux。伺服器重新啟動後生效。",
+    "networkAccessDescription": "控制哪些網路可以存取 purplemux-improved。伺服器重新啟動後生效。",
     "networkAccessLocked": "由 HOST 環境變數控制。",
     "restartRequired": "變更需要重新啟動伺服器後才會生效。",
     "networkAccessOptions": {
@@ -167,7 +167,7 @@
     "showResources": "顯示系統資源",
     "showResourcesDescription": "在標題列顯示 CPU、記憶體和 tmux 工作階段使用狀況。",
     "startServerAtLogin": "登入時啟動伺服器",
-    "startServerAtLoginDescription": "在背景啟動 purplemux 伺服器，不開啟桌面應用程式或 Dock 圖示。",
+    "startServerAtLoginDescription": "在背景啟動 purplemux-improved 伺服器，不開啟桌面應用程式或 Dock 圖示。",
     "startServerAtLoginUnsupported": "將封裝後的 macOS 應用程式安裝到 Mac 後即可使用。",
     "startupEnabled": "伺服器將在登入時啟動",
     "startupDisabled": "已停用伺服器自動啟動",

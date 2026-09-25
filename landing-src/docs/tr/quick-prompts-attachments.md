@@ -31,7 +31,7 @@ Hızlı promptlar Claude Code slash komutları için tek tıklamalı tetikleyici
 
 ## Görüntüleri sürükle-bırak
 
-Bir görüntü dosyasını (PNG, JPG, WebP, vb.) girdi çubuğunun herhangi bir yerine bırakarak ekleyin. purplemux dosyayı sunucuda geçici bir yola yükler ve prompt'unuza otomatik bir referans ekler.
+Bir görüntü dosyasını (PNG, JPG, WebP, vb.) girdi çubuğunun herhangi bir yerine bırakarak ekleyin. purplemux-improved dosyayı sunucuda geçici bir yola yükler ve prompt'unuza otomatik bir referans ekler.
 
 Ayrıca şunları yapabilirsiniz:
 
@@ -43,7 +43,7 @@ Ekler beklerken girdinin üstünde bir küçük resim şeridi belirir. Her küç
 
 ## Diğer dosya ekleri
 
-Aynı ataş, görüntü olmayan dosyalar için de çalışır — markdown, JSON, CSV, kaynak dosyalar, her şey. purplemux onları geçici bir dizine koyar ve Claude'un istek kapsamında `read` edebilmesi için yolu ekler.
+Aynı ataş, görüntü olmayan dosyalar için de çalışır — markdown, JSON, CSV, kaynak dosyalar, her şey. purplemux-improved onları geçici bir dizine koyar ve Claude'un istek kapsamında `read` edebilmesi için yolu ekler.
 
 Bu, başka bir makineden yapıştırılan bir yığın izi veya farklı bir projeden bir yapılandırma dosyası gibi Claude'un kendisi ulaşamadığı şeyleri paylaşmanın en kolay yoludur.
 
@@ -74,6 +74,6 @@ Eski girdiler seçiciden silinebilir. Geçmiş diğer çalışma alanı verileri
 
 ## Sıradaki adımlar
 
-- **[Canlı oturum görünümü](/purplemux/tr/docs/live-session-view/)** — promptlarınızın ve Claude'un yanıtlarının göründüğü yer.
-- **[Klavye kısayolları](/purplemux/tr/docs/keyboard-shortcuts/)** — tam bağlama tablosu.
-- **[İzin istemleri](/purplemux/tr/docs/permission-prompts/)** — onay gerektiren bir istek gönderdikten sonra olanlar.
+- **[Canlı oturum görünümü](/purplemux-improved/tr/docs/live-session-view/)** — promptlarınızın ve Claude'un yanıtlarının göründüğü yer.
+- **[Klavye kısayolları](/purplemux-improved/tr/docs/keyboard-shortcuts/)** — tam bağlama tablosu.
+- **[İzin istemleri](/purplemux-improved/tr/docs/permission-prompts/)** — onay gerektiren bir istek gönderdikten sonra olanlar.

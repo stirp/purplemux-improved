@@ -6,7 +6,7 @@ permalink: /ja/docs/usage-rate-limits/index.html
 ---
 {% from "docs/callouts.njk" import callout %}
 
-作業の途中でレート制限に当たるのは最悪の中断です。purplemux は Claude Code のクォータ数値をサイドバーに引き込み、利用リズムを一目で把握できる統計ダッシュボードを追加します。
+作業の途中でレート制限に当たるのは最悪の中断です。purplemux-improved は Claude Code のクォータ数値をサイドバーに引き込み、利用リズムを一目で把握できる統計ダッシュボードを追加します。
 
 ## サイドバーウィジェット
 
@@ -18,7 +18,7 @@ permalink: /ja/docs/usage-rate-limits/index.html
 
 任意のバーにホバーすると完全な内訳が見られます — 使用済みパーセンテージ、予測パーセンテージ、リセット時刻 (相対時間)。
 
-数値は Claude Code 自身のステータスライン JSON から来ます。purplemux は小さな `~/.purplemux/statusline.sh` スクリプトをインストールし、Claude がステータスラインを更新するたびにデータをローカルサーバに POST します。`fs.watch` が UI を同期させ続けます。
+数値は Claude Code 自身のステータスライン JSON から来ます。purplemux-improved は小さな `~/.purplemux/statusline.sh` スクリプトをインストールし、Claude がステータスラインを更新するたびにデータをローカルサーバに POST します。`fs.watch` が UI を同期させ続けます。
 
 ## 色のしきい値
 
@@ -71,14 +71,14 @@ permalink: /ja/docs/usage-rate-limits/index.html
 
 ## データの出どころ
 
-ダッシュボードのすべては `~/.claude/projects/` の Claude Code 自身のセッション JSONL からローカルで計算されます。purplemux はそれを読み、解析済みカウントを `~/.purplemux/stats/` にキャッシュし、1 バイトもマシン外に送りません。言語切替やキャッシュ再生成でもどこにも問い合わせません。
+ダッシュボードのすべては `~/.claude/projects/` の Claude Code 自身のセッション JSONL からローカルで計算されます。purplemux-improved はそれを読み、解析済みカウントを `~/.purplemux/stats/` にキャッシュし、1 バイトもマシン外に送りません。言語切替やキャッシュ再生成でもどこにも問い合わせません。
 
 ## リセットの挙動
 
-5 時間と 7 日のウィンドウはローリングで、Claude Code アカウントに紐付いています。ウィンドウがリセットされると、バーは 0 % に落ち、次のリセットタイムスタンプから割合と残り時間が再計算されます。purplemux がリセットを取り逃した場合 (サーバが停止していたなど) も、次のステータスラインのティックでウィジェットが自己修正します。
+5 時間と 7 日のウィンドウはローリングで、Claude Code アカウントに紐付いています。ウィンドウがリセットされると、バーは 0 % に落ち、次のリセットタイムスタンプから割合と残り時間が再計算されます。purplemux-improved がリセットを取り逃した場合 (サーバが停止していたなど) も、次のステータスラインのティックでウィジェットが自己修正します。
 
 ## 次のステップ
 
-- **[ノート (AI 日次レポート)](/purplemux/ja/docs/notes-daily-report/)** — 同じデータを日次のブリーフとして書き起こしたもの。
-- **[セッションステータス](/purplemux/ja/docs/session-status/)** — サイドバーがタブ単位で追跡しているもう 1 つのもの。
-- **[キーボードショートカット](/purplemux/ja/docs/keyboard-shortcuts/)** — 統計の <kbd>⌘⇧U</kbd> も含む。
+- **[ノート (AI 日次レポート)](/purplemux-improved/ja/docs/notes-daily-report/)** — 同じデータを日次のブリーフとして書き起こしたもの。
+- **[セッションステータス](/purplemux-improved/ja/docs/session-status/)** — サイドバーがタブ単位で追跡しているもう 1 つのもの。
+- **[キーボードショートカット](/purplemux-improved/ja/docs/keyboard-shortcuts/)** — 統計の <kbd>⌘⇧U</kbd> も含む。

@@ -31,7 +31,7 @@
   "appearanceDescription": "Выберите тему оформления приложения.",
   "skipPermissions": "Пропустить проверку прав доступа",
   "skipPermissionsDescription": "Skips permission prompts when running Claude and Codex agents.",
-  "networkDescription": "Выберите, из каких сетей можно обращаться к purplemux. Изменить можно позже в Настройках > Система.",
+  "networkDescription": "Выберите, из каких сетей можно обращаться к purplemux-improved. Изменить можно позже в Настройках > Система.",
   "networkFootnote": "Если используется обратный прокси, туннель или Tailscale Serve, достаточно варианта «Только Localhost».",
   "networkOptions": {
     "localhost": {

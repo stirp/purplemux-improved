@@ -31,7 +31,7 @@ Les prompts rapides marchent très bien comme déclencheurs en un clic pour les 
 
 ## Glisser-déposer d'images
 
-Déposez un fichier image (PNG, JPG, WebP, etc.) n'importe où sur la barre de saisie pour l'attacher. purplemux upload le fichier dans un chemin temporaire sur le serveur et insère automatiquement une référence dans votre prompt.
+Déposez un fichier image (PNG, JPG, WebP, etc.) n'importe où sur la barre de saisie pour l'attacher. purplemux-improved upload le fichier dans un chemin temporaire sur le serveur et insère automatiquement une référence dans votre prompt.
 
 Vous pouvez aussi :
 
@@ -43,7 +43,7 @@ Une bande de miniatures apparaît au-dessus de la saisie pendant que les pièces
 
 ## Autres pièces jointes
 
-Le même trombone marche pour les fichiers non-image — markdown, JSON, CSV, fichiers source, n'importe quoi. purplemux les met dans un répertoire temporaire et insère le chemin pour que Claude puisse les `read` dans la requête.
+Le même trombone marche pour les fichiers non-image — markdown, JSON, CSV, fichiers source, n'importe quoi. purplemux-improved les met dans un répertoire temporaire et insère le chemin pour que Claude puisse les `read` dans la requête.
 
 C'est le moyen le plus simple de partager quelque chose que Claude ne peut pas atteindre seul, comme une stack trace collée depuis une autre machine ou un fichier de config d'un autre projet.
 
@@ -74,6 +74,6 @@ Les vieilles entrées peuvent être supprimées depuis le sélecteur. L'historiq
 
 ## Pour aller plus loin
 
-- **[Vue de session en direct](/purplemux/fr/docs/live-session-view/)** — où vos prompts et les réponses de Claude apparaissent.
-- **[Raccourcis clavier](/purplemux/fr/docs/keyboard-shortcuts/)** — le tableau complet.
-- **[Invites de permission](/purplemux/fr/docs/permission-prompts/)** — ce qui se passe après l'envoi d'une requête nécessitant approbation.
+- **[Vue de session en direct](/purplemux-improved/fr/docs/live-session-view/)** — où vos prompts et les réponses de Claude apparaissent.
+- **[Raccourcis clavier](/purplemux-improved/fr/docs/keyboard-shortcuts/)** — le tableau complet.
+- **[Invites de permission](/purplemux-improved/fr/docs/permission-prompts/)** — ce qui se passe après l'envoi d'une requête nécessitant approbation.

@@ -34,7 +34,7 @@ Há uma distinção significativa em como cada preset abre uma pasta:
 - **code-server** roda dentro do navegador. A URL aponta para o servidor que você está hospedando (seu, na sua rede ou por trás de Tailscale). Clique no botão EDITOR e uma nova aba carrega a pasta.
 - **IDEs locais** (VS Code, Cursor, Windsurf, Zed) exigem que a IDE esteja instalada na *máquina que está rodando o navegador*. O link é entregue ao SO, que abre o handler registrado.
 
-Se você está usando o purplemux pelo celular, só o preset code-server funciona — celulares não conseguem abrir URLs `vscode://` em um app de desktop.
+Se você está usando o purplemux-improved pelo celular, só o preset code-server funciona — celulares não conseguem abrir URLs `vscode://` em um app de desktop.
 
 ## Configurando o code-server
 
@@ -51,10 +51,10 @@ code-server --port 8080
 tailscale serve --bg --https=8443 http://localhost:8080
 ```
 
-Depois, na aba Editor, configure a URL para o endereço onde o code-server está acessível — `http://localhost:8080` para local, ou `https://<máquina>.<tailnet>.ts.net:8443` se você o colocou atrás do Tailscale Serve. O purplemux valida que a URL começa com `http://` ou `https://` e adiciona `?folder=<caminho absoluto>` automaticamente.
+Depois, na aba Editor, configure a URL para o endereço onde o code-server está acessível — `http://localhost:8080` para local, ou `https://<máquina>.<tailnet>.ts.net:8443` se você o colocou atrás do Tailscale Serve. O purplemux-improved valida que a URL começa com `http://` ou `https://` e adiciona `?folder=<caminho absoluto>` automaticamente.
 
 {% call callout('note', 'Escolha uma porta que não seja 8022') %}
-O purplemux já vive em `8022`. Rode o code-server em uma porta diferente (o exemplo usa `8080`) para que não briguem.
+O purplemux-improved já vive em `8022`. Rode o code-server em uma porta diferente (o exemplo usa `8080`) para que não briguem.
 {% endcall %}
 
 ## Template de URL personalizada
@@ -69,7 +69,7 @@ myeditor://open?path={folderEncoded}
 https://my.coder.example/workspace?dir={folderEncoded}
 ```
 
-O purplemux valida o template no momento de salvar e recusa qualquer um sem placeholder.
+O purplemux-improved valida o template no momento de salvar e recusa qualquer um sem placeholder.
 
 ## Desabilitando o botão
 
@@ -77,6 +77,6 @@ Escolha **Desabilitado**. O botão some do cabeçalho do workspace.
 
 ## Próximos passos
 
-- **[Barra lateral e opções do Claude](/purplemux/pt-BR/docs/sidebar-options/)** — reordene itens da barra lateral, alterne flags do Claude.
-- **[CSS personalizado](/purplemux/pt-BR/docs/custom-css/)** — ajustes visuais adicionais.
-- **[Tailscale](/purplemux/pt-BR/docs/tailscale/)** — acesso externo seguro também para o code-server.
+- **[Barra lateral e opções do Claude](/purplemux-improved/pt-BR/docs/sidebar-options/)** — reordene itens da barra lateral, alterne flags do Claude.
+- **[CSS personalizado](/purplemux-improved/pt-BR/docs/custom-css/)** — ajustes visuais adicionais.
+- **[Tailscale](/purplemux-improved/pt-BR/docs/tailscale/)** — acesso externo seguro também para o code-server.

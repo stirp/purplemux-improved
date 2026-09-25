@@ -6,7 +6,7 @@ permalink: /zh-TW/docs/custom-css/index.html
 ---
 {% from "docs/callouts.njk" import callout %}
 
-purplemux 建立在 CSS 變數系統之上。你可以在不碰原始碼的情況下改變幾乎所有視覺元素 — 在 **外觀** 分頁貼上規則、按下套用，所有連線中的客戶端都會立即生效。
+purplemux-improved 建立在 CSS 變數系統之上。你可以在不碰原始碼的情況下改變幾乎所有視覺元素 — 在 **外觀** 分頁貼上規則、按下套用，所有連線中的客戶端都會立即生效。
 
 ## 寫在哪裡
 
@@ -24,7 +24,7 @@ CSS 儲存在伺服器的 `~/.purplemux/config.json`（`customCSS`），所以�
 
 ## 它如何運作
 
-purplemux 中大部分的色彩、表面與裝飾色都以 CSS 變數的形式公開於 `:root`（淺色）與 `.dark`。覆寫變數會把變更層疊到任何使用該變數的地方 — 側邊欄、對話框、圖表、狀態徽章。
+purplemux-improved 中大部分的色彩、表面與裝飾色都以 CSS 變數的形式公開於 `:root`（淺色）與 `.dark`。覆寫變數會把變更層疊到任何使用該變數的地方 — 側邊欄、對話框、圖表、狀態徽章。
 
 更動單一變數幾乎總是比直接覆寫元件選擇器更好。元件 class 不是穩定的 API；變數才是。
 
@@ -65,7 +65,7 @@ purplemux 中大部分的色彩、表面與裝飾色都以 CSS 變數的形式�
 - **Palette** — `--ui-blue`、`--ui-teal`、`--ui-coral`、`--ui-amber`、`--ui-purple`、`--ui-pink`、`--ui-green`、`--ui-gray`、`--ui-red`
 - **Semantic** — `--positive`、`--negative`、`--accent-color`、`--brand`、`--focus-indicator`、`--claude-active`
 
-完整 token 清單、預設 oklch 值與設計理念，請見 repo 中的 [`docs/STYLE.md`](https://github.com/subicura/purplemux/blob/main/docs/STYLE.md)。該文件是真實來源。
+完整 token 清單、預設 oklch 值與設計理念，請見 repo 中的 [`docs/STYLE.md`](https://github.com/stirp/purplemux-improved/blob/main/docs/STYLE.md)。該文件是真實來源。
 
 ## 只針對單一模式
 
@@ -85,10 +85,10 @@ purplemux 中大部分的色彩、表面與裝飾色都以 CSS 變數的形式�
 
 ## 那終端機呢？
 
-xterm.js 終端機使用自己的調色盤，從一份精選清單中挑選 — 它不是由這些 CSS 變數驅動。請在 **Terminal** 分頁切換。請見 [終端機主題](/purplemux/zh-TW/docs/terminal-themes/)。
+xterm.js 終端機使用自己的調色盤，從一份精選清單中挑選 — 它不是由這些 CSS 變數驅動。請在 **Terminal** 分頁切換。請見 [終端機主題](/purplemux-improved/zh-TW/docs/terminal-themes/)。
 
 ## 下一步
 
-- **[主題與字型](/purplemux/zh-TW/docs/themes-fonts/)** — 淺色、深色、跟隨系統；字級預設。
-- **[終端機主題](/purplemux/zh-TW/docs/terminal-themes/)** — 終端機區獨立的調色盤。
-- **[側邊欄與 Claude 選項](/purplemux/zh-TW/docs/sidebar-options/)** — 重新排序項目、切換 Claude 旗標。
+- **[主題與字型](/purplemux-improved/zh-TW/docs/themes-fonts/)** — 淺色、深色、跟隨系統；字級預設。
+- **[終端機主題](/purplemux-improved/zh-TW/docs/terminal-themes/)** — 終端機區獨立的調色盤。
+- **[側邊欄與 Claude 選項](/purplemux-improved/zh-TW/docs/sidebar-options/)** — 重新排序項目、切換 Claude 旗標。

@@ -1,4 +1,6 @@
-# purplemux
+# purplemux-improved
+
+基于 [subicura/purplemux-improved](https://github.com/subicura/purplemux-improved) 的改进分支。保留 `purplemux` / `pmux` 命令别名和 `~/.purplemux` 数据目录以兼容现有配置。npm 安装命令需待本分支发布后使用；发布前请从源码运行。
 
 **Claude Code 与 Codex,多任务同时进行。更快。**
 
@@ -6,23 +8,23 @@
 
 简体中文 | <a href="README.md">English</a> | <a href="README.ko.md">한국어</a> | <a href="README.ja.md">日本語</a> | <a href="README.zh-TW.md">繁體中文</a> | <a href="README.de.md">Deutsch</a> | <a href="README.es.md">Español</a> | <a href="README.fr.md">Français</a> | <a href="README.ru.md">Русский</a> | <a href="README.pt-BR.md">Português (Brasil)</a> | <a href="README.tr.md">Türkçe</a>
 
-![purplemux](docs/images/screenshot.png)
+![purplemux-improved](docs/images/screenshot.png)
 
-![purplemux mobile](docs/images/screenshot-mobile.png)
+![purplemux-improved mobile](docs/images/screenshot-mobile.png)
 
 ## 安装
 
 ```bash
-npx purplemux@latest
+npx purplemux-improved@latest
 ```
 
 在浏览器中打开 [http://localhost:8022](http://localhost:8022)。完成。
 
 > 需要 Node.js 20+ 和 tmux。macOS 或 Linux。
 
-想用原生应用?可从[最新发布](https://github.com/subicura/purplemux/releases/latest)下载 macOS Electron 版(适用于 Apple Silicon 与 Intel 的 `.dmg`)。
+想用原生应用?可从[最新发布](https://github.com/stirp/purplemux-improved/releases/latest)下载 macOS Electron 版(适用于 Apple Silicon 与 Intel 的 `.dmg`)。
 
-## 为什么选择 purplemux
+## 为什么选择 purplemux-improved
 
 - **多会话仪表盘** — 一眼掌握所有 Claude Code 与 Codex 会话的「运行中 / 等待输入」状态
 - **速率限制监控** — 显示 5 小时 / 7 天剩余额度及重置倒计时
@@ -38,7 +40,7 @@ npx purplemux@latest
 
 ## 与官方 Remote Control 的区别
 
-> 官方 Remote Control 专注于单一会话的远程控制。当你需要多会话管理、推送通知与会话持久化时,请使用 purplemux。
+> 官方 Remote Control 专注于单一会话的远程控制。当你需要多会话管理、推送通知与会话持久化时,请使用 purplemux-improved。
 
 ## 功能
 
@@ -50,7 +52,7 @@ npx purplemux@latest
 - **终端主题** — 深色 / 浅色模式,多种配色主题
 - **工作区 & 分组** — 以工作区为单位保存 / 恢复面板布局、标签与工作目录。通过拖拽将工作区组织为分组进行管理
 - **Git 工作流** — 支持 Side-by-side / Line-by-line 切换与语法高亮,以及行内 hunk 展开、分页历史标签。可从面板直接 fetch / pull / push (含 ahead/behind 指示) — 同步失败时 (dirty worktree、冲突) 一键 Ask Claude 或 Codex
-- **内置浏览器面板** — 在终端旁嵌入浏览器查看开发结果 (Electron)。可通过 `purplemux` CLI 控制,并内置设备模拟器切换视口
+- **内置浏览器面板** — 在终端旁嵌入浏览器查看开发结果 (Electron)。可通过 `purplemux-improved` CLI 控制,并内置设备模拟器切换视口
 - **智能体标签** — 从新建标签菜单启动 Claude、Codex 或统一会话列表
 
 ### Claude Code 与 Codex 集成
@@ -112,28 +114,28 @@ brew install --cask codex
 ### npx (最快)
 
 ```bash
-npx purplemux@latest
+npx purplemux-improved@latest
 ```
 
 ### 全局安装
 
 ```bash
-npm install -g purplemux
-purplemux
+npm install -g purplemux-improved
+purplemux-improved
 ```
 
 ### CLI 示例
 
 ```bash
-purplemux tab create -w WS -t codex-cli -n "fix auth"
-purplemux tab create -w WS -t agent-sessions
+purplemux-improved tab create -w WS -t codex-cli -n "fix auth"
+purplemux-improved tab create -w WS -t agent-sessions
 ```
 
 ### 从源码运行
 
 ```bash
-git clone https://github.com/subicura/purplemux.git
-cd purplemux
+git clone https://github.com/stirp/purplemux-improved.git
+cd purplemux-improved
 pnpm install
 pnpm start
 ```

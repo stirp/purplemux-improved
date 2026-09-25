@@ -6,7 +6,7 @@ permalink: /ko/docs/notes-daily-report/index.html
 ---
 {% from "docs/callouts.njk" import callout %}
 
-하루가 끝나면 purplemux가 그날의 세션 로그를 읽어서, 한 줄짜리 브리프와 프로젝트별 Markdown 요약을 작성해줍니다. 사이드바의 **노트**에 살고 있고, 회고·스탠드업·1:1이 더 이상 "어제 뭐 했지?"로 시작하지 않게 만들기 위한 기능입니다.
+하루가 끝나면 purplemux-improved가 그날의 세션 로그를 읽어서, 한 줄짜리 브리프와 프로젝트별 Markdown 요약을 작성해줍니다. 사이드바의 **노트**에 살고 있고, 회고·스탠드업·1:1이 더 이상 "어제 뭐 했지?"로 시작하지 않게 만들기 위한 기능입니다.
 
 ## 하루치에 들어가는 것
 
@@ -17,7 +17,7 @@ permalink: /ko/docs/notes-daily-report/index.html
 
 브리프는 스캔용, 상세 뷰는 회고 문서에 붙여넣는 용도입니다.
 
-각 날짜의 작은 헤더는 세션 수와 총 비용을 보여줍니다 — [통계 대시보드](/purplemux/ko/docs/usage-rate-limits/)와 같은 수치를 요약 형태로.
+각 날짜의 작은 헤더는 세션 수와 총 비용을 보여줍니다 — [통계 대시보드](/purplemux-improved/ko/docs/usage-rate-limits/)와 같은 수치를 요약 형태로.
 
 ## 리포트 생성
 
@@ -30,7 +30,7 @@ permalink: /ko/docs/notes-daily-report/index.html
 LLM은 각 세션을 개별적으로 처리한 뒤 프로젝트별로 병합하므로, 탭이 많은 긴 하루에도 컨텍스트가 사라지지 않습니다.
 
 {% call callout('note', '로케일은 앱을 따라감') %}
-리포트는 purplemux에 설정된 언어로 작성됩니다. 앱 언어를 바꾸고 regenerate하면 같은 내용을 새 로케일로 받을 수 있습니다.
+리포트는 purplemux-improved에 설정된 언어로 작성됩니다. 앱 언어를 바꾸고 regenerate하면 같은 내용을 새 로케일로 받을 수 있습니다.
 {% endcall %}
 
 ## 어디에 있는가
@@ -48,7 +48,7 @@ LLM은 각 세션을 개별적으로 처리한 뒤 프로젝트별로 병합하�
 상세 뷰 안에서 일반적인 하루는 이런 모양입니다:
 
 ```markdown
-**purplemux**
+**purplemux-improved**
 
 ### 랜딩 페이지 초안
 - Hero / Why / Mobile / Stats 레이아웃의 8섹션 구조 설계
@@ -74,6 +74,6 @@ Claude 세션이 없는 날은 항목이 만들어지지 않습니다. 작은 �
 
 ## 다음으로
 
-- **[사용량 & 요금 제한](/purplemux/ko/docs/usage-rate-limits/)** — 세션 수와 비용이 오는 대시보드
-- **[라이브 세션 뷰](/purplemux/ko/docs/live-session-view/)** — 원본 데이터, 실시간으로
-- **[키보드 단축키](/purplemux/ko/docs/keyboard-shortcuts/)** — 노트용 <kbd>⌘⇧E</kbd> 포함
+- **[사용량 & 요금 제한](/purplemux-improved/ko/docs/usage-rate-limits/)** — 세션 수와 비용이 오는 대시보드
+- **[라이브 세션 뷰](/purplemux-improved/ko/docs/live-session-view/)** — 원본 데이터, 실시간으로
+- **[키보드 단축키](/purplemux-improved/ko/docs/keyboard-shortcuts/)** — 노트용 <kbd>⌘⇧E</kbd> 포함

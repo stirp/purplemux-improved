@@ -6,7 +6,7 @@ permalink: /zh-CN/docs/data-directory/index.html
 ---
 {% from "docs/callouts.njk" import callout %}
 
-purplemux 的所有持久状态 — 设置、布局、会话历史、缓存 — 都放在 `~/.purplemux/` 下。仅此而已。没有 `localStorage`,没有系统钥匙串,没有外部服务。
+purplemux-improved 的所有持久状态 — 设置、布局、会话历史、缓存 — 都放在 `~/.purplemux/` 下。仅此而已。没有 `localStorage`,没有系统钥匙串,没有外部服务。
 
 ## 整体结构
 
@@ -51,12 +51,12 @@ purplemux 的所有持久状态 — 设置、布局、会话历史、缓存 — 
 | `quick-prompts.json`、`sidebar-items.json` | 在内置列表上的覆盖:`{ custom: […], disabledBuiltinIds: […], order: […] }` | 可以 — 恢复默认 |
 | `vapid-keys.json` | 首次运行生成的 Web Push VAPID 密钥对 | 不要单独删 — 除非也删 `push-subscriptions.json`(否则现有订阅会失效) |
 | `push-subscriptions.json` | 每浏览器的推送 endpoint | 可以 — 每个设备需重新订阅 |
-| `cli-token` | 32 字节 hex token,供 `purplemux` CLI 和 hook 脚本使用(`x-pmux-token` header) | 可以 — 下次启动时重生成,但已生成的 hook 脚本仍持有旧 token,直到服务覆盖它 |
+| `cli-token` | 32 字节 hex token,供 `purplemux-improved` CLI 和 hook 脚本使用(`x-pmux-token` header) | 可以 — 下次启动时重生成,但已生成的 hook 脚本仍持有旧 token,直到服务覆盖它 |
 | `port` | 当前端口的纯文本,被 hook 脚本和 CLI 读取 | 可以 — 下次启动时重生成 |
-| `pmux.lock` | 单实例守卫 `{ pid, port, startedAt }` | 仅当没有 purplemux 进程存活时 |
+| `pmux.lock` | 单实例守卫 `{ pid, port, startedAt }` | 仅当没有 purplemux-improved 进程存活时 |
 
 {% call callout('warning', '锁文件相关的坑') %}
-如果 purplemux 拒绝启动并提示 "已经在运行" 但其实没有进程存活,说明 `pmux.lock` 是陈旧的。`rm ~/.purplemux/pmux.lock` 再试一次。如果你曾经用 `sudo` 跑过 purplemux,锁文件可能属于 root — 一次 `sudo rm` 即可。
+如果 purplemux-improved 拒绝启动并提示 "已经在运行" 但其实没有进程存活,说明 `pmux.lock` 是陈旧的。`rm ~/.purplemux/pmux.lock` 再试一次。如果你曾经用 `sudo` 跑过 purplemux-improved,锁文件可能属于 root — 一次 `sudo rm` 即可。
 {% endcall %}
 
 ## 每个工作区目录(`workspaces/{wsId}/`)
@@ -79,7 +79,7 @@ Pino-roll 输出,每个 UTC 日一个文件,文件大小超限时带数字后缀
 logs/purplemux.2026-04-19.1.log
 ```
 
-默认级别 `info`。用 `LOG_LEVEL` 覆盖,或用 `LOG_LEVELS` 按模块覆盖 — 见 [端口与环境变量](/purplemux/zh-CN/docs/ports-env-vars/)。
+默认级别 `info`。用 `LOG_LEVEL` 覆盖,或用 `LOG_LEVELS` 按模块覆盖 — 见 [端口与环境变量](/purplemux-improved/zh-CN/docs/ports-env-vars/)。
 
 日志按周轮转(7 文件上限)。可随时安全删除。
 
@@ -98,7 +98,7 @@ uploads/{wsId}/{tabId}/{timestamp}-{rand}-{name}.{ext}
 
 ## `stats/`
 
-纯缓存。从 `~/.claude/projects/**/*.jsonl` 派生 — purplemux 只读取该目录。
+纯缓存。从 `~/.claude/projects/**/*.jsonl` 派生 — purplemux-improved 只读取该目录。
 
 | 文件 | 内容 |
 |---|---|
@@ -130,7 +130,7 @@ uploads/{wsId}/{tabId}/{timestamp}-{rand}-{name}.{ext}
 tar czf purplemux-backup.tgz -C ~ .purplemux
 ```
 
-在新机器上恢复时,解包并启动 purplemux。Hook 脚本会用新服务的端口重写;其余(工作区、历史、设置)原样迁过去。
+在新机器上恢复时,解包并启动 purplemux-improved。Hook 脚本会用新服务的端口重写;其余(工作区、历史、设置)原样迁过去。
 
 {% call callout('warning') %}
 不要恢复 `pmux.lock` — 它绑定到特定 PID 会阻塞启动。排除它:`--exclude pmux.lock`。
@@ -142,10 +142,10 @@ tar czf purplemux-backup.tgz -C ~ .purplemux
 rm -rf ~/.purplemux
 ```
 
-确保没有 purplemux 在运行。下次启动会再次进入首次运行体验。
+确保没有 purplemux-improved 在运行。下次启动会再次进入首次运行体验。
 
 ## 下一步
 
-- **[端口与环境变量](/purplemux/zh-CN/docs/ports-env-vars/)** — 影响该目录的所有变量。
-- **[架构](/purplemux/zh-CN/docs/architecture/)** — 这些文件如何与运行中的服务相连。
-- **[故障排查](/purplemux/zh-CN/docs/troubleshooting/)** — 常见问题与修复方法。
+- **[端口与环境变量](/purplemux-improved/zh-CN/docs/ports-env-vars/)** — 影响该目录的所有变量。
+- **[架构](/purplemux-improved/zh-CN/docs/architecture/)** — 这些文件如何与运行中的服务相连。
+- **[故障排查](/purplemux-improved/zh-CN/docs/troubleshooting/)** — 常见问题与修复方法。

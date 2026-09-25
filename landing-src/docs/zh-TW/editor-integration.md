@@ -34,7 +34,7 @@ permalink: /zh-TW/docs/editor-integration/index.html
 - **code-server** 在瀏覽器內執行。URL 指向你託管的伺服器（自己的、區網上的，或經由 Tailscale 對外）。點選 EDITOR 按鈕，新分頁就會載入該資料夾。
 - **本機 IDE**（VS Code、Cursor、Windsurf、Zed）需要在 *執行瀏覽器的機器* 上安裝該 IDE。連結會交給 OS，由註冊的處理常式啟動。
 
-如果你在手機上用 purplemux，只有 code-server 預設可用 — 手機沒辦法把 `vscode://` URL 打開到桌面 App。
+如果你在手機上用 purplemux-improved，只有 code-server 預設可用 — 手機沒辦法把 `vscode://` URL 打開到桌面 App。
 
 ## code-server 設定
 
@@ -51,10 +51,10 @@ code-server --port 8080
 tailscale serve --bg --https=8443 http://localhost:8080
 ```
 
-接著在編輯器分頁，把 URL 設為 code-server 可達的位址 — 本機是 `http://localhost:8080`，若你已用 Tailscale Serve 包過則是 `https://<machine>.<tailnet>.ts.net:8443`。purplemux 會驗證 URL 必須以 `http://` 或 `https://` 開頭，並自動附加 `?folder=<absolute path>`。
+接著在編輯器分頁，把 URL 設為 code-server 可達的位址 — 本機是 `http://localhost:8080`，若你已用 Tailscale Serve 包過則是 `https://<machine>.<tailnet>.ts.net:8443`。purplemux-improved 會驗證 URL 必須以 `http://` 或 `https://` 開頭，並自動附加 `?folder=<absolute path>`。
 
 {% call callout('note', '挑一個非 8022 的連接埠') %}
-purplemux 已經住在 `8022`。讓 code-server 跑在不同連接埠（範例使用 `8080`），它們才不會互搶。
+purplemux-improved 已經住在 `8022`。讓 code-server 跑在不同連接埠（範例使用 `8080`），它們才不會互搶。
 {% endcall %}
 
 ## 自訂 URL 模板
@@ -69,7 +69,7 @@ myeditor://open?path={folderEncoded}
 https://my.coder.example/workspace?dir={folderEncoded}
 ```
 
-purplemux 會在儲存時驗證模板，沒有佔位符的會被拒絕。
+purplemux-improved 會在儲存時驗證模板，沒有佔位符的會被拒絕。
 
 ## 停用按鈕
 
@@ -77,6 +77,6 @@ purplemux 會在儲存時驗證模板，沒有佔位符的會被拒絕。
 
 ## 下一步
 
-- **[側邊欄與 Claude 選項](/purplemux/zh-TW/docs/sidebar-options/)** — 重新排序側邊欄項目、切換 Claude 旗標。
-- **[自訂 CSS](/purplemux/zh-TW/docs/custom-css/)** — 進一步視覺調整。
-- **[Tailscale](/purplemux/zh-TW/docs/tailscale/)** — 也用安全的對外存取連到 code-server。
+- **[側邊欄與 Claude 選項](/purplemux-improved/zh-TW/docs/sidebar-options/)** — 重新排序側邊欄項目、切換 Claude 旗標。
+- **[自訂 CSS](/purplemux-improved/zh-TW/docs/custom-css/)** — 進一步視覺調整。
+- **[Tailscale](/purplemux-improved/zh-TW/docs/tailscale/)** — 也用安全的對外存取連到 code-server。

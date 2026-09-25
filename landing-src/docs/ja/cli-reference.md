@@ -1,38 +1,38 @@
 ---
 title: CLI リファレンス
-description: purplemux と pmux バイナリのすべてのサブコマンドとフラグ。
+description: purplemux-improved と pmux バイナリのすべてのサブコマンドとフラグ。
 eyebrow: リファレンス
 permalink: /ja/docs/cli-reference/index.html
 ---
 {% from "docs/callouts.njk" import callout %}
 
-`purplemux` バイナリには 2 つの使い方があります: サーバスタータ (`purplemux` / `purplemux start`) として、そして実行中のサーバと話す HTTP API ラッパー (`purplemux <subcommand>`) として。短いエイリアス `pmux` は同一のものです。
+`purplemux-improved` バイナリには 2 つの使い方があります: サーバスタータ (`purplemux-improved` / `purplemux-improved start`) として、そして実行中のサーバと話す HTTP API ラッパー (`purplemux-improved <subcommand>`) として。短いエイリアス `pmux` は同一のものです。
 
 ## 1 つのバイナリ、2 つの役割
 
 | 形式 | 動作 |
 |---|---|
-| `purplemux` | サーバを起動。`purplemux start` と同じ。 |
-| `purplemux <subcommand>` | 実行中のサーバの CLI HTTP API と話す。 |
-| `pmux ...` | `purplemux ...` のエイリアス。 |
+| `purplemux-improved` | サーバを起動。`purplemux-improved start` と同じ。 |
+| `purplemux-improved <subcommand>` | 実行中のサーバの CLI HTTP API と話す。 |
+| `pmux ...` | `purplemux-improved ...` のエイリアス。 |
 
 `bin/purplemux.js` のディスパッチャは最初の引数を取り出します: 既知のサブコマンドは `bin/cli.js` にルーティング、それ以外 (または引数なし) はサーバを起動します。
 
 ## サーバを起動する
 
 ```bash
-purplemux              # デフォルト
-purplemux start        # 同じ、明示的に
-PORT=9000 purplemux    # カスタムポート
-HOST=all purplemux     # どこからでもバインド
+purplemux-improved              # デフォルト
+purplemux-improved start        # 同じ、明示的に
+PORT=9000 purplemux-improved    # カスタムポート
+HOST=all purplemux-improved     # どこからでもバインド
 ```
 
-完全な env サーフェスは [ポート & 環境変数](/purplemux/ja/docs/ports-env-vars/) を参照。
+完全な env サーフェスは [ポート & 環境変数](/purplemux-improved/ja/docs/ports-env-vars/) を参照。
 
 サーバはバインドした URL、モード、認証ステータスを表示します:
 
 ```
-  ⚡ purplemux  v0.x.x
+  ⚡ purplemux-improved  v0.x.x
   ➜  Available on:
        http://127.0.0.1:8022
        http://192.168.1.42:8022
@@ -48,16 +48,16 @@ HOST=all purplemux     # どこからでもバインド
 
 | コマンド | 目的 |
 |---|---|
-| `purplemux workspaces` | ワークスペース一覧 |
-| `purplemux tab list [-w WS]` | タブ一覧 (任意でワークスペーススコープ) |
-| `purplemux tab create -w WS [-n NAME] [-t TYPE]` | 新しいタブを作成 |
-| `purplemux tab send -w WS TAB_ID CONTENT...` | タブに入力を送る |
-| `purplemux tab status -w WS TAB_ID` | タブのステータスを確認 |
-| `purplemux tab result -w WS TAB_ID` | タブペインの現在の内容をキャプチャ |
-| `purplemux tab close -w WS TAB_ID` | タブを閉じる |
-| `purplemux tab browser ...` | `web-browser` タブを操作 (Electron のみ) |
-| `purplemux api-guide` | 完全な HTTP API リファレンスを表示 |
-| `purplemux help` | 使い方を表示 |
+| `purplemux-improved workspaces` | ワークスペース一覧 |
+| `purplemux-improved tab list [-w WS]` | タブ一覧 (任意でワークスペーススコープ) |
+| `purplemux-improved tab create -w WS [-n NAME] [-t TYPE]` | 新しいタブを作成 |
+| `purplemux-improved tab send -w WS TAB_ID CONTENT...` | タブに入力を送る |
+| `purplemux-improved tab status -w WS TAB_ID` | タブのステータスを確認 |
+| `purplemux-improved tab result -w WS TAB_ID` | タブペインの現在の内容をキャプチャ |
+| `purplemux-improved tab close -w WS TAB_ID` | タブを閉じる |
+| `purplemux-improved tab browser ...` | `web-browser` タブを操作 (Electron のみ) |
+| `purplemux-improved api-guide` | 完全な HTTP API リファレンスを表示 |
+| `purplemux-improved help` | 使い方を表示 |
 
 特に明記がなければ出力は JSON です。`--workspace` と `-w` は同義です。
 
@@ -80,32 +80,32 @@ HOST=all purplemux     # どこからでもバインド
 
 | サブコマンド | 返り値 |
 |---|---|
-| `purplemux tab browser url -w WS TAB_ID` | 現在の URL + ページタイトル |
-| `purplemux tab browser screenshot -w WS TAB_ID [-o FILE] [--full]` | PNG。`-o` でディスクに保存、なしなら base64 を返す。`--full` でフルページキャプチャ。 |
-| `purplemux tab browser console -w WS TAB_ID [--since MS] [--level LEVEL]` | 直近のコンソールエントリ (リングバッファ、500 件) |
-| `purplemux tab browser network -w WS TAB_ID [--since MS] [--method M] [--url SUBSTR] [--status CODE] [--request ID]` | 直近のネットワークエントリ。`--request ID` で 1 つのボディを取得 |
-| `purplemux tab browser eval -w WS TAB_ID EXPR` | JS 式を評価し、結果をシリアライズ |
+| `purplemux-improved tab browser url -w WS TAB_ID` | 現在の URL + ページタイトル |
+| `purplemux-improved tab browser screenshot -w WS TAB_ID [-o FILE] [--full]` | PNG。`-o` でディスクに保存、なしなら base64 を返す。`--full` でフルページキャプチャ。 |
+| `purplemux-improved tab browser console -w WS TAB_ID [--since MS] [--level LEVEL]` | 直近のコンソールエントリ (リングバッファ、500 件) |
+| `purplemux-improved tab browser network -w WS TAB_ID [--since MS] [--method M] [--url SUBSTR] [--status CODE] [--request ID]` | 直近のネットワークエントリ。`--request ID` で 1 つのボディを取得 |
+| `purplemux-improved tab browser eval -w WS TAB_ID EXPR` | JS 式を評価し、結果をシリアライズ |
 
 ## 例
 
 ```bash
 # ワークスペースを見つける
-purplemux workspaces
+purplemux-improved workspaces
 
 # ワークスペース ws-MMKl07 に Claude タブを作成
-purplemux tab create -w ws-MMKl07 -t claude-code -n "refactor auth"
+purplemux-improved tab create -w ws-MMKl07 -t claude-code -n "refactor auth"
 
 # プロンプトを送る (TAB_ID は `tab list` から)
-purplemux tab send -w ws-MMKl07 tb-abc "Refactor src/lib/auth.ts to remove the cookie path"
+purplemux-improved tab send -w ws-MMKl07 tb-abc "Refactor src/lib/auth.ts to remove the cookie path"
 
 # 状態を確認
-purplemux tab status -w ws-MMKl07 tb-abc
+purplemux-improved tab status -w ws-MMKl07 tb-abc
 
 # ペインのスナップショット
-purplemux tab result -w ws-MMKl07 tb-abc
+purplemux-improved tab result -w ws-MMKl07 tb-abc
 
 # web-browser タブのフルページスクリーンショット
-purplemux tab browser screenshot -w ws-MMKl07 tb-xyz -o page.png --full
+purplemux-improved tab browser screenshot -w ws-MMKl07 tb-xyz -o page.png --full
 ```
 
 ## 認証
@@ -120,7 +120,7 @@ purplemux tab browser screenshot -w ws-MMKl07 tb-xyz -o page.png --full
 | `PMUX_TOKEN` | `~/.purplemux/cli-token` の内容 | `x-pmux-token` として送られる Bearer トークン |
 
 ```bash
-PMUX_PORT=8022 PMUX_TOKEN=$(cat ~/.purplemux/cli-token) purplemux workspaces
+PMUX_PORT=8022 PMUX_TOKEN=$(cat ~/.purplemux/cli-token) purplemux-improved workspaces
 ```
 
 {% call callout('warning') %}
@@ -129,14 +129,14 @@ CLI トークンはサーバへの完全なアクセスを与えます。パス�
 
 ## update-notifier
 
-`purplemux` は (起動のたびに) `update-notifier` で npm に新しいバージョンがないか確認し、あればバナーを表示します。`NO_UPDATE_NOTIFIER=1` または [標準的な `update-notifier` のオプトアウト](https://github.com/yeoman/update-notifier#user-settings) で無効化できます。
+`purplemux-improved` は (起動のたびに) `update-notifier` で npm に新しいバージョンがないか確認し、あればバナーを表示します。`NO_UPDATE_NOTIFIER=1` または [標準的な `update-notifier` のオプトアウト](https://github.com/yeoman/update-notifier#user-settings) で無効化できます。
 
 ## 完全な HTTP API
 
-`purplemux api-guide` はすべての `/api/cli/*` エンドポイントの完全な HTTP API リファレンスを (リクエストボディとレスポンスシェイプを含めて) 出力します。`curl` や別のランタイムから直接 purplemux を駆動したいときに便利です。
+`purplemux-improved api-guide` はすべての `/api/cli/*` エンドポイントの完全な HTTP API リファレンスを (リクエストボディとレスポンスシェイプを含めて) 出力します。`curl` や別のランタイムから直接 purplemux-improved を駆動したいときに便利です。
 
 ## 次のステップ
 
-- **[ポート & 環境変数](/purplemux/ja/docs/ports-env-vars/)** — 広い env サーフェスでの `PMUX_PORT` / `PMUX_TOKEN`。
-- **[アーキテクチャ](/purplemux/ja/docs/architecture/)** — CLI が実際に話している相手。
-- **[トラブルシューティング](/purplemux/ja/docs/troubleshooting/)** — CLI が「サーバは起動していますか?」と言うとき。
+- **[ポート & 環境変数](/purplemux-improved/ja/docs/ports-env-vars/)** — 広い env サーフェスでの `PMUX_PORT` / `PMUX_TOKEN`。
+- **[アーキテクチャ](/purplemux-improved/ja/docs/architecture/)** — CLI が実際に話している相手。
+- **[トラブルシューティング](/purplemux-improved/ja/docs/troubleshooting/)** — CLI が「サーバは起動していますか?」と言うとき。

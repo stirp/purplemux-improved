@@ -6,7 +6,7 @@ permalink: /docs/custom-css/index.html
 ---
 {% from "docs/callouts.njk" import callout %}
 
-purplemux is built on a CSS variable system. You can change almost anything visual without touching the source — paste rules into the **Appearance** tab, click Apply, and they take effect immediately on every connected client.
+purplemux-improved is built on a CSS variable system. You can change almost anything visual without touching the source — paste rules into the **Appearance** tab, click Apply, and they take effect immediately on every connected client.
 
 ## Where to put it
 
@@ -24,7 +24,7 @@ Custom CSS lives in the server config and follows you to every browser. If you w
 
 ## How it works
 
-Most colors, surfaces, and accents in purplemux are exposed as CSS variables under `:root` (light) and `.dark`. Overriding the variable cascades the change everywhere that variable is used — sidebar, dialogs, charts, status badges.
+Most colors, surfaces, and accents in purplemux-improved are exposed as CSS variables under `:root` (light) and `.dark`. Overriding the variable cascades the change everywhere that variable is used — sidebar, dialogs, charts, status badges.
 
 Changing a single variable is almost always better than overriding component selectors directly. Component classes are not a stable API; variables are.
 
@@ -65,7 +65,7 @@ The Appearance panel exposes the full list under **Available Variables**. The ma
 - **Palette** — `--ui-blue`, `--ui-teal`, `--ui-coral`, `--ui-amber`, `--ui-purple`, `--ui-pink`, `--ui-green`, `--ui-gray`, `--ui-red`
 - **Semantic** — `--positive`, `--negative`, `--accent-color`, `--brand`, `--focus-indicator`, `--claude-active`
 
-For the full token list with default oklch values and the design rationale, see [`docs/STYLE.md`](https://github.com/subicura/purplemux/blob/main/docs/STYLE.md) in the repo. That document is the source of truth.
+For the full token list with default oklch values and the design rationale, see [`docs/STYLE.md`](https://github.com/stirp/purplemux-improved/blob/main/docs/STYLE.md) in the repo. That document is the source of truth.
 
 ## Targeting only one mode
 
@@ -85,10 +85,10 @@ If you only need to change one mode, leave the other untouched.
 
 ## What about the terminal?
 
-The xterm.js terminal uses its own palette, picked from a curated list — it's not driven by these CSS variables. Switch it on the **Terminal** tab. See [Terminal themes](/purplemux/docs/terminal-themes/).
+The xterm.js terminal uses its own palette, picked from a curated list — it's not driven by these CSS variables. Switch it on the **Terminal** tab. See [Terminal themes](/purplemux-improved/docs/terminal-themes/).
 
 ## What's next
 
-- **[Themes & fonts](/purplemux/docs/themes-fonts/)** — light, dark, system; font-size presets.
-- **[Terminal themes](/purplemux/docs/terminal-themes/)** — separate palette for the terminal area.
-- **[Sidebar & Claude options](/purplemux/docs/sidebar-options/)** — reorder items, toggle Claude flags.
+- **[Themes & fonts](/purplemux-improved/docs/themes-fonts/)** — light, dark, system; font-size presets.
+- **[Terminal themes](/purplemux-improved/docs/terminal-themes/)** — separate palette for the terminal area.
+- **[Sidebar & Claude options](/purplemux-improved/docs/sidebar-options/)** — reorder items, toggle Claude flags.

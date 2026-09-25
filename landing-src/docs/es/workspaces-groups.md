@@ -16,7 +16,7 @@ Cada espacio de trabajo tiene su propio:
 - **Pestañas y paneles** — terminales, sesiones de Claude, paneles de diff, paneles de navegador web.
 - **Disposición** — proporciones de las divisiones, foco, pestaña activa de cada panel.
 
-Todo se persiste en `~/.purplemux/workspaces.json`, así que un espacio de trabajo es la unidad que purplemux guarda y restaura. Cerrar el navegador no disuelve un espacio; tmux mantiene los shells abiertos y la disposición intacta.
+Todo se persiste en `~/.purplemux/workspaces.json`, así que un espacio de trabajo es la unidad que purplemux-improved guarda y restaura. Cerrar el navegador no disuelve un espacio; tmux mantiene los shells abiertos y la disposición intacta.
 
 ## Crear un espacio de trabajo
 
@@ -61,10 +61,10 @@ Los grupos son organización visual. No cambian cómo se persisten las pestañas
 
 ## Dónde vive en disco
 
-Cada cambio se escribe en `~/.purplemux/workspaces.json`. Puedes inspeccionarlo o respaldarlo — consulta [Directorio de datos](/purplemux/es/docs/data-directory/) para la disposición completa de archivos. Si lo borras mientras el servidor está en marcha, purplemux vuelve a un espacio vacío y empieza de cero.
+Cada cambio se escribe en `~/.purplemux/workspaces.json`. Puedes inspeccionarlo o respaldarlo — consulta [Directorio de datos](/purplemux-improved/es/docs/data-directory/) para la disposición completa de archivos. Si lo borras mientras el servidor está en marcha, purplemux-improved vuelve a un espacio vacío y empieza de cero.
 
 ## Siguientes pasos
 
-- **[Pestañas y paneles](/purplemux/es/docs/tabs-panes/)** — divide, reordena y enfoca dentro de un espacio.
-- **[Guardar y restaurar disposiciones](/purplemux/es/docs/save-restore/)** — cómo sobreviven los espacios al cierre del navegador y al reinicio del servidor.
-- **[Atajos de teclado](/purplemux/es/docs/keyboard-shortcuts/)** — la tabla completa.
+- **[Pestañas y paneles](/purplemux-improved/es/docs/tabs-panes/)** — divide, reordena y enfoca dentro de un espacio.
+- **[Guardar y restaurar disposiciones](/purplemux-improved/es/docs/save-restore/)** — cómo sobreviven los espacios al cierre del navegador y al reinicio del servidor.
+- **[Atajos de teclado](/purplemux-improved/es/docs/keyboard-shortcuts/)** — la tabla completa.

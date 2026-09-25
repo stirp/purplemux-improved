@@ -6,7 +6,7 @@ permalink: /tr/docs/custom-css/index.html
 ---
 {% from "docs/callouts.njk" import callout %}
 
-purplemux bir CSS değişken sistemine kuruludur. Kaynağa dokunmadan görsel olarak neredeyse her şeyi değiştirebilirsiniz — kuralları **Görünüm** sekmesine yapıştırın, Uygula'ya tıklayın, bağlı her istemcide hemen etkili olsunlar.
+purplemux-improved bir CSS değişken sistemine kuruludur. Kaynağa dokunmadan görsel olarak neredeyse her şeyi değiştirebilirsiniz — kuralları **Görünüm** sekmesine yapıştırın, Uygula'ya tıklayın, bağlı her istemcide hemen etkili olsunlar.
 
 ## Nereye yazılır
 
@@ -24,7 +24,7 @@ CSS, sunucuda `~/.purplemux/config.json` (`customCSS`) içinde saklanır, böyle
 
 ## Nasıl çalışır
 
-purplemux'taki çoğu renk, yüzey ve aksan, `:root` (açık) ve `.dark` altında CSS değişkenleri olarak sunulur. Değişkeni geçersiz kılmak, o değişkenin kullanıldığı her yerde — kenar çubuğu, diyaloglar, grafikler, durum rozetleri — değişikliği zincirleme yayar.
+purplemux-improved'taki çoğu renk, yüzey ve aksan, `:root` (açık) ve `.dark` altında CSS değişkenleri olarak sunulur. Değişkeni geçersiz kılmak, o değişkenin kullanıldığı her yerde — kenar çubuğu, diyaloglar, grafikler, durum rozetleri — değişikliği zincirleme yayar.
 
 Tek bir değişkeni değiştirmek, bileşen seçicilerini doğrudan geçersiz kılmaktan neredeyse her zaman daha iyidir. Bileşen sınıfları kararlı bir API değildir; değişkenler kararlıdır.
 
@@ -65,7 +65,7 @@ Görünüm paneli tam listeyi **Available Variables** altında sunar. Ana kovala
 - **Palet** — `--ui-blue`, `--ui-teal`, `--ui-coral`, `--ui-amber`, `--ui-purple`, `--ui-pink`, `--ui-green`, `--ui-gray`, `--ui-red`
 - **Anlamsal** — `--positive`, `--negative`, `--accent-color`, `--brand`, `--focus-indicator`, `--claude-active`
 
-Varsayılan oklch değerleri ve tasarım gerekçeleriyle tam token listesi için repodaki [`docs/STYLE.md`](https://github.com/subicura/purplemux/blob/main/docs/STYLE.md) belgesine bakın. O belge doğruluk kaynağıdır.
+Varsayılan oklch değerleri ve tasarım gerekçeleriyle tam token listesi için repodaki [`docs/STYLE.md`](https://github.com/stirp/purplemux-improved/blob/main/docs/STYLE.md) belgesine bakın. O belge doğruluk kaynağıdır.
 
 ## Yalnızca bir modu hedefleme
 
@@ -85,10 +85,10 @@ Yalnızca bir modu değiştirmek istiyorsanız, diğerini dokunulmadan bırakın
 
 ## Peki ya terminal?
 
-xterm.js terminali, küratörlü bir listeden seçilen kendi paletini kullanır — bu CSS değişkenleri tarafından yönlendirilmez. **Terminal** sekmesinde değiştirin. [Terminal temaları](/purplemux/tr/docs/terminal-themes/) sayfasına bakın.
+xterm.js terminali, küratörlü bir listeden seçilen kendi paletini kullanır — bu CSS değişkenleri tarafından yönlendirilmez. **Terminal** sekmesinde değiştirin. [Terminal temaları](/purplemux-improved/tr/docs/terminal-themes/) sayfasına bakın.
 
 ## Sıradaki adımlar
 
-- **[Temalar & fontlar](/purplemux/tr/docs/themes-fonts/)** — açık, koyu, sistem; font boyutu ön ayarları.
-- **[Terminal temaları](/purplemux/tr/docs/terminal-themes/)** — terminal alanı için ayrı palet.
-- **[Kenar çubuğu & Claude seçenekleri](/purplemux/tr/docs/sidebar-options/)** — öğeleri yeniden sıralayın, Claude bayraklarını açıp kapatın.
+- **[Temalar & fontlar](/purplemux-improved/tr/docs/themes-fonts/)** — açık, koyu, sistem; font boyutu ön ayarları.
+- **[Terminal temaları](/purplemux-improved/tr/docs/terminal-themes/)** — terminal alanı için ayrı palet.
+- **[Kenar çubuğu & Claude seçenekleri](/purplemux-improved/tr/docs/sidebar-options/)** — öğeleri yeniden sıralayın, Claude bayraklarını açıp kapatın.

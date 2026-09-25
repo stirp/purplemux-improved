@@ -61,6 +61,6 @@ Essa é a aposta principal do painel: ferramentas para o caso comum, um LLM para
 
 ## Próximos passos
 
-- **[Abas e painéis](/purplemux/pt-BR/docs/tabs-panes/)** — dividindo o painel de diff ao lado de uma sessão Claude.
-- **[Primeira sessão](/purplemux/pt-BR/docs/first-session/)** — como os prompts de permissão do Claude aparecem no painel.
-- **[Painel de navegador web](/purplemux/pt-BR/docs/web-browser-panel/)** — o outro tipo de painel que vale rodar lado a lado com um terminal.
+- **[Abas e painéis](/purplemux-improved/pt-BR/docs/tabs-panes/)** — dividindo o painel de diff ao lado de uma sessão Claude.
+- **[Primeira sessão](/purplemux-improved/pt-BR/docs/first-session/)** — como os prompts de permissão do Claude aparecem no painel.
+- **[Painel de navegador web](/purplemux-improved/pt-BR/docs/web-browser-panel/)** — o outro tipo de painel que vale rodar lado a lado com um terminal.

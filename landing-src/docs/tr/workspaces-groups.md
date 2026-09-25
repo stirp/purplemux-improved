@@ -16,7 +16,7 @@ Her çalışma alanının kendine ait şunları vardır:
 - **Sekmeler ve paneller** — terminaller, Claude oturumları, diff panelleri, web tarayıcı panelleri.
 - **Düzen** — bölme oranları, odak, her panelde aktif sekme.
 
-Hepsi `~/.purplemux/workspaces.json`'a yazılır; çalışma alanı, purplemux'ın kaydedip geri yüklediği birimdir. Tarayıcıyı kapatmak çalışma alanını dağıtmaz; tmux shell'leri açık tutar ve düzen yerinde kalır.
+Hepsi `~/.purplemux/workspaces.json`'a yazılır; çalışma alanı, purplemux-improved'ın kaydedip geri yüklediği birimdir. Tarayıcıyı kapatmak çalışma alanını dağıtmaz; tmux shell'leri açık tutar ve düzen yerinde kalır.
 
 ## Çalışma alanı oluşturun
 
@@ -61,10 +61,10 @@ Gruplar görsel düzendir. Sekmelerin nasıl kaydedildiğini veya kısayolların
 
 ## Diskte nerede yaşar
 
-Her değişiklik `~/.purplemux/workspaces.json`'a yazılır. İnceleyebilir veya yedekleyebilirsiniz — tam dosya düzeni için [Veri dizini](/purplemux/tr/docs/data-directory/) sayfasına bakın. Sunucu çalışırken silerseniz, purplemux boş bir çalışma alanına düşer ve baştan başlar.
+Her değişiklik `~/.purplemux/workspaces.json`'a yazılır. İnceleyebilir veya yedekleyebilirsiniz — tam dosya düzeni için [Veri dizini](/purplemux-improved/tr/docs/data-directory/) sayfasına bakın. Sunucu çalışırken silerseniz, purplemux-improved boş bir çalışma alanına düşer ve baştan başlar.
 
 ## Sıradaki adımlar
 
-- **[Sekmeler & paneller](/purplemux/tr/docs/tabs-panes/)** — bir çalışma alanının içinde böl, yeniden sırala ve odakla.
-- **[Düzenleri kaydet & geri yükle](/purplemux/tr/docs/save-restore/)** — çalışma alanları tarayıcı kapanmasından ve sunucu yeniden başlatmasından nasıl sağ kalır.
-- **[Klavye kısayolları](/purplemux/tr/docs/keyboard-shortcuts/)** — tam bağlama tablosu.
+- **[Sekmeler & paneller](/purplemux-improved/tr/docs/tabs-panes/)** — bir çalışma alanının içinde böl, yeniden sırala ve odakla.
+- **[Düzenleri kaydet & geri yükle](/purplemux-improved/tr/docs/save-restore/)** — çalışma alanları tarayıcı kapanmasından ve sunucu yeniden başlatmasından nasıl sağ kalır.
+- **[Klavye kısayolları](/purplemux-improved/tr/docs/keyboard-shortcuts/)** — tam bağlama tablosu.

@@ -6,7 +6,7 @@ permalink: /ja/docs/notes-daily-report/index.html
 ---
 {% from "docs/callouts.njk" import callout %}
 
-1 日が終わると、purplemux はその日のセッションログを読み、1 行のブリーフとプロジェクト別の Markdown サマリを書いてくれます。サイドバーの **ノート** に置かれ、振り返り、スタンドアップ、1on1 が「昨日何やったっけ?」から始まらないようにするためのものです。
+1 日が終わると、purplemux-improved はその日のセッションログを読み、1 行のブリーフとプロジェクト別の Markdown サマリを書いてくれます。サイドバーの **ノート** に置かれ、振り返り、スタンドアップ、1on1 が「昨日何やったっけ?」から始まらないようにするためのものです。
 
 ## 1 日あたり得られるもの
 
@@ -17,7 +17,7 @@ permalink: /ja/docs/notes-daily-report/index.html
 
 ブリーフはざっと見るためのもの、詳細ビューは振り返りドキュメントに貼り付けるためのものです。
 
-各日の小さなヘッダにはセッション数と総コストが表示されます — [統計ダッシュボード](/purplemux/ja/docs/usage-rate-limits/) と同じ数値の要約版です。
+各日の小さなヘッダにはセッション数と総コストが表示されます — [統計ダッシュボード](/purplemux-improved/ja/docs/usage-rate-limits/) と同じ数値の要約版です。
 
 ## レポートを生成する
 
@@ -30,7 +30,7 @@ permalink: /ja/docs/notes-daily-report/index.html
 LLM は各セッションを個別に処理してからプロジェクト別にマージするので、タブが多い長い 1 日でもコンテキストが失われません。
 
 {% call callout('note', 'ロケールはアプリに従う') %}
-レポートは purplemux が設定されている言語で書かれます。アプリの言語を切り替えて再生成すると、新しいロケールで同じ内容が得られます。
+レポートは purplemux-improved が設定されている言語で書かれます。アプリの言語を切り替えて再生成すると、新しいロケールで同じ内容が得られます。
 {% endcall %}
 
 ## 配置場所
@@ -48,7 +48,7 @@ LLM は各セッションを個別に処理してからプロジェクト別に�
 詳細ビュー内で、典型的な 1 日はこのようになります:
 
 ```markdown
-**purplemux**
+**purplemux-improved**
 
 ### Landing page draft
 - Designed the eight-section structure with Hero / Why / Mobile / Stats layouts
@@ -74,6 +74,6 @@ Claude セッションがない日にはエントリは作られません。1 �
 
 ## 次のステップ
 
-- **[使用量とレート制限](/purplemux/ja/docs/usage-rate-limits/)** — このセッション数とコストが来るダッシュボード。
-- **[ライブセッションビュー](/purplemux/ja/docs/live-session-view/)** — ソースデータをリアルタイムで。
-- **[キーボードショートカット](/purplemux/ja/docs/keyboard-shortcuts/)** — ノートの <kbd>⌘⇧E</kbd> も含む。
+- **[使用量とレート制限](/purplemux-improved/ja/docs/usage-rate-limits/)** — このセッション数とコストが来るダッシュボード。
+- **[ライブセッションビュー](/purplemux-improved/ja/docs/live-session-view/)** — ソースデータをリアルタイムで。
+- **[キーボードショートカット](/purplemux-improved/ja/docs/keyboard-shortcuts/)** — ノートの <kbd>⌘⇧E</kbd> も含む。

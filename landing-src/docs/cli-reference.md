@@ -1,38 +1,38 @@
 ---
 title: CLI reference
-description: Every subcommand and flag of the purplemux and pmux binaries.
+description: Every subcommand and flag of the purplemux-improved and pmux binaries.
 eyebrow: Reference
 permalink: /docs/cli-reference/index.html
 ---
 {% from "docs/callouts.njk" import callout %}
 
-`purplemux` ships with two ways to use the binary: as a server starter (`purplemux` / `purplemux start`) and as an HTTP API wrapper (`purplemux <subcommand>`) that talks to a running server. The short alias `pmux` is identical.
+`purplemux-improved` ships with two ways to use the binary: as a server starter (`purplemux-improved` / `purplemux-improved start`) and as an HTTP API wrapper (`purplemux-improved <subcommand>`) that talks to a running server. The short alias `pmux` is identical.
 
 ## Two roles, one binary
 
 | Form | What it does |
 |---|---|
-| `purplemux` | Start the server. Same as `purplemux start`. |
-| `purplemux <subcommand>` | Talk to a running server's CLI HTTP API. |
-| `pmux ...` | Alias for `purplemux ...`. |
+| `purplemux-improved` | Start the server. Same as `purplemux-improved start`. |
+| `purplemux-improved <subcommand>` | Talk to a running server's CLI HTTP API. |
+| `pmux ...` | Alias for `purplemux-improved ...`. |
 
 The dispatcher in `bin/purplemux.js` peels off the first argument: known subcommands route to `bin/cli.js`, anything else (or no argument) launches the server.
 
 ## Starting the server
 
 ```bash
-purplemux              # default
-purplemux start        # same thing, explicit
-PORT=9000 purplemux    # custom port
-HOST=all purplemux     # bind everywhere
+purplemux-improved              # default
+purplemux-improved start        # same thing, explicit
+PORT=9000 purplemux-improved    # custom port
+HOST=all purplemux-improved     # bind everywhere
 ```
 
-See [Ports & env vars](/purplemux/docs/ports-env-vars/) for the full env surface.
+See [Ports & env vars](/purplemux-improved/docs/ports-env-vars/) for the full env surface.
 
 The server prints its bound URLs, mode, and auth status:
 
 ```
-  ⚡ purplemux  v0.x.x
+  ⚡ purplemux-improved  v0.x.x
   ➜  Available on:
        http://127.0.0.1:8022
        http://192.168.1.42:8022
@@ -48,16 +48,16 @@ All subcommands require a running server. They read the port from `~/.purplemux/
 
 | Command | Purpose |
 |---|---|
-| `purplemux workspaces` | List workspaces |
-| `purplemux tab list [-w WS]` | List tabs (optionally scoped to a workspace) |
-| `purplemux tab create -w WS [-n NAME] [-t TYPE]` | Create a new tab |
-| `purplemux tab send -w WS TAB_ID CONTENT...` | Send input to a tab |
-| `purplemux tab status -w WS TAB_ID` | Inspect a tab's status |
-| `purplemux tab result -w WS TAB_ID` | Capture the tab pane's current content |
-| `purplemux tab close -w WS TAB_ID` | Close a tab |
-| `purplemux tab browser ...` | Drive a `web-browser` tab (Electron only) |
-| `purplemux api-guide` | Print the full HTTP API reference |
-| `purplemux help` | Show usage |
+| `purplemux-improved workspaces` | List workspaces |
+| `purplemux-improved tab list [-w WS]` | List tabs (optionally scoped to a workspace) |
+| `purplemux-improved tab create -w WS [-n NAME] [-t TYPE]` | Create a new tab |
+| `purplemux-improved tab send -w WS TAB_ID CONTENT...` | Send input to a tab |
+| `purplemux-improved tab status -w WS TAB_ID` | Inspect a tab's status |
+| `purplemux-improved tab result -w WS TAB_ID` | Capture the tab pane's current content |
+| `purplemux-improved tab close -w WS TAB_ID` | Close a tab |
+| `purplemux-improved tab browser ...` | Drive a `web-browser` tab (Electron only) |
+| `purplemux-improved api-guide` | Print the full HTTP API reference |
+| `purplemux-improved help` | Show usage |
 
 Output is JSON unless noted. `--workspace` and `-w` are interchangeable.
 
@@ -80,32 +80,32 @@ These only work when the tab's panel type is `web-browser`, and only in the macO
 
 | Subcommand | What it returns |
 |---|---|
-| `purplemux tab browser url -w WS TAB_ID` | Current URL + page title |
-| `purplemux tab browser screenshot -w WS TAB_ID [-o FILE] [--full]` | PNG. With `-o` saves to disk; without, returns base64. `--full` captures the full page. |
-| `purplemux tab browser console -w WS TAB_ID [--since MS] [--level LEVEL]` | Recent console entries (ring buffer, 500 entries) |
-| `purplemux tab browser network -w WS TAB_ID [--since MS] [--method M] [--url SUBSTR] [--status CODE] [--request ID]` | Recent network entries; `--request ID` fetches one body |
-| `purplemux tab browser eval -w WS TAB_ID EXPR` | Evaluate a JS expression and serialize the result |
+| `purplemux-improved tab browser url -w WS TAB_ID` | Current URL + page title |
+| `purplemux-improved tab browser screenshot -w WS TAB_ID [-o FILE] [--full]` | PNG. With `-o` saves to disk; without, returns base64. `--full` captures the full page. |
+| `purplemux-improved tab browser console -w WS TAB_ID [--since MS] [--level LEVEL]` | Recent console entries (ring buffer, 500 entries) |
+| `purplemux-improved tab browser network -w WS TAB_ID [--since MS] [--method M] [--url SUBSTR] [--status CODE] [--request ID]` | Recent network entries; `--request ID` fetches one body |
+| `purplemux-improved tab browser eval -w WS TAB_ID EXPR` | Evaluate a JS expression and serialize the result |
 
 ## Examples
 
 ```bash
 # Find your workspace
-purplemux workspaces
+purplemux-improved workspaces
 
 # Create a Claude tab in workspace ws-MMKl07
-purplemux tab create -w ws-MMKl07 -t claude-code -n "refactor auth"
+purplemux-improved tab create -w ws-MMKl07 -t claude-code -n "refactor auth"
 
 # Send a prompt to it (TAB_ID comes from `tab list`)
-purplemux tab send -w ws-MMKl07 tb-abc "Refactor src/lib/auth.ts to remove the cookie path"
+purplemux-improved tab send -w ws-MMKl07 tb-abc "Refactor src/lib/auth.ts to remove the cookie path"
 
 # Watch its state
-purplemux tab status -w ws-MMKl07 tb-abc
+purplemux-improved tab status -w ws-MMKl07 tb-abc
 
 # Snapshot the pane
-purplemux tab result -w ws-MMKl07 tb-abc
+purplemux-improved tab result -w ws-MMKl07 tb-abc
 
 # Screenshot a web-browser tab full-page
-purplemux tab browser screenshot -w ws-MMKl07 tb-xyz -o page.png --full
+purplemux-improved tab browser screenshot -w ws-MMKl07 tb-xyz -o page.png --full
 ```
 
 ## Authentication
@@ -120,7 +120,7 @@ If you need to drive the CLI from another shell or a script that can't see `~/.p
 | `PMUX_TOKEN` | contents of `~/.purplemux/cli-token` | Bearer token sent as `x-pmux-token` |
 
 ```bash
-PMUX_PORT=8022 PMUX_TOKEN=$(cat ~/.purplemux/cli-token) purplemux workspaces
+PMUX_PORT=8022 PMUX_TOKEN=$(cat ~/.purplemux/cli-token) purplemux-improved workspaces
 ```
 
 {% call callout('warning') %}
@@ -129,14 +129,14 @@ The CLI token grants full server access. Treat it like a password. Don't paste i
 
 ## update-notifier
 
-`purplemux` checks npm for a newer version on every launch (via `update-notifier`) and prints a banner if one exists. Disable with `NO_UPDATE_NOTIFIER=1` or any of the [standard `update-notifier` opt-outs](https://github.com/yeoman/update-notifier#user-settings).
+`purplemux-improved` checks npm for a newer version on every launch (via `update-notifier`) and prints a banner if one exists. Disable with `NO_UPDATE_NOTIFIER=1` or any of the [standard `update-notifier` opt-outs](https://github.com/yeoman/update-notifier#user-settings).
 
 ## Full HTTP API
 
-`purplemux api-guide` prints the complete HTTP API reference for every `/api/cli/*` endpoint, including request bodies and response shapes — useful when you want to drive purplemux directly from `curl` or another runtime.
+`purplemux-improved api-guide` prints the complete HTTP API reference for every `/api/cli/*` endpoint, including request bodies and response shapes — useful when you want to drive purplemux-improved directly from `curl` or another runtime.
 
 ## What's next
 
-- **[Ports & env vars](/purplemux/docs/ports-env-vars/)** — `PMUX_PORT` / `PMUX_TOKEN` in the broader env surface.
-- **[Architecture](/purplemux/docs/architecture/)** — what the CLI is actually talking to.
-- **[Troubleshooting](/purplemux/docs/troubleshooting/)** — when the CLI says "is the server running?".
+- **[Ports & env vars](/purplemux-improved/docs/ports-env-vars/)** — `PMUX_PORT` / `PMUX_TOKEN` in the broader env surface.
+- **[Architecture](/purplemux-improved/docs/architecture/)** — what the CLI is actually talking to.
+- **[Troubleshooting](/purplemux-improved/docs/troubleshooting/)** — when the CLI says "is the server running?".

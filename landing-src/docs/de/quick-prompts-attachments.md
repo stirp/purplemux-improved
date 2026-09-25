@@ -31,7 +31,7 @@ Quick-Prompts funktionieren prima als Ein-Klick-Trigger für Claude-Code-Slash-C
 
 ## Bilder per Drag & Drop
 
-Drop eine Bilddatei (PNG, JPG, WebP usw.) irgendwo auf die Eingabeleiste, um sie anzuhängen. purplemux lädt die Datei in einen temporären Pfad auf dem Server hoch und fügt automatisch eine Referenz in deinen Prompt ein.
+Drop eine Bilddatei (PNG, JPG, WebP usw.) irgendwo auf die Eingabeleiste, um sie anzuhängen. purplemux-improved lädt die Datei in einen temporären Pfad auf dem Server hoch und fügt automatisch eine Referenz in deinen Prompt ein.
 
 Du kannst außerdem:
 
@@ -43,7 +43,7 @@ Eine Thumbnail-Leiste erscheint über der Eingabe, solange Anhänge anstehen. Je
 
 ## Andere Datei-Anhänge
 
-Dieselbe Büroklammer funktioniert auch für Nicht-Bilddateien — Markdown, JSON, CSV, Source-Files, alles. purplemux legt sie in ein Temp-Verzeichnis und fügt den Pfad ein, damit Claude sie als Teil der Anfrage `read`en kann.
+Dieselbe Büroklammer funktioniert auch für Nicht-Bilddateien — Markdown, JSON, CSV, Source-Files, alles. purplemux-improved legt sie in ein Temp-Verzeichnis und fügt den Pfad ein, damit Claude sie als Teil der Anfrage `read`en kann.
 
 Das ist der einfachste Weg, etwas zu teilen, das Claude nicht selbst erreichen kann — wie ein von einer anderen Maschine kopierter Stack-Trace oder eine Config-Datei aus einem anderen Projekt.
 
@@ -74,6 +74,6 @@ Alte Einträge können aus dem Picker gelöscht werden. History wird neben ander
 
 ## Wie es weitergeht
 
-- **[Live-Session-Ansicht](/purplemux/de/docs/live-session-view/)** — wo deine Prompts und Claudes Antworten erscheinen.
-- **[Tastenkürzel](/purplemux/de/docs/keyboard-shortcuts/)** — die vollständige Bindungstabelle.
-- **[Berechtigungs-Prompts](/purplemux/de/docs/permission-prompts/)** — was passiert, wenn du eine Anfrage sendest, die Approval braucht.
+- **[Live-Session-Ansicht](/purplemux-improved/de/docs/live-session-view/)** — wo deine Prompts und Claudes Antworten erscheinen.
+- **[Tastenkürzel](/purplemux-improved/de/docs/keyboard-shortcuts/)** — die vollständige Bindungstabelle.
+- **[Berechtigungs-Prompts](/purplemux-improved/de/docs/permission-prompts/)** — was passiert, wenn du eine Anfrage sendest, die Approval braucht.

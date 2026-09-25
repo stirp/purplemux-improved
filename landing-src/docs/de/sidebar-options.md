@@ -31,7 +31,7 @@ Klick **Item hinzufügen** unten. Du bekommst ein kleines Formular:
 Klick Speichern, und die Zeile erscheint unten in der Liste. Zieh sie dorthin, wo du sie haben willst.
 
 {% call callout('note', 'Built-ins können versteckt, aber nicht gelöscht werden') %}
-Built-in-Items (die, die purplemux mitbringt) haben nur einen Schalter und einen Greif-Anker — kein Bearbeiten oder Löschen. Sie sind immer da, falls du es dir anders überlegst. Custom-Items bekommen das volle Set.
+Built-in-Items (die, die purplemux-improved mitbringt) haben nur einen Schalter und einen Greif-Anker — kein Bearbeiten oder Löschen. Sie sind immer da, falls du es dir anders überlegst. Custom-Items bekommen das volle Set.
 {% endcall %}
 
 ## Quick-Prompts
@@ -49,13 +49,13 @@ Beim Hinzufügen eines Prompts werden ein **Name** (das Button-Label) und der **
 
 ## Claude-CLI-Optionen
 
-Einstellungen → Tab **Claude**. Diese Flags beeinflussen, *wie purplemux die Claude-CLI in neuen Tabs startet* — sie ändern nicht das Verhalten einer schon laufenden Session.
+Einstellungen → Tab **Claude**. Diese Flags beeinflussen, *wie purplemux-improved die Claude-CLI in neuen Tabs startet* — sie ändern nicht das Verhalten einer schon laufenden Session.
 
 ### Berechtigungs-Checks überspringen
 
 Fügt `--dangerously-skip-permissions` zum `claude`-Befehl hinzu. Claude führt Tools aus und editiert Dateien, ohne jedes Mal nach Approval zu fragen.
 
-Das ist dasselbe Flag, das die offizielle CLI exponiert — purplemux lockert keine Sicherheit darüber hinaus. Lies [Anthropics Doku](https://docs.anthropic.com/en/docs/claude-code/cli-reference), bevor du es einschaltest. Behandle es als Opt-in nur für vertrauenswürdige Workspaces.
+Das ist dasselbe Flag, das die offizielle CLI exponiert — purplemux-improved lockert keine Sicherheit darüber hinaus. Lies [Anthropics Doku](https://docs.anthropic.com/en/docs/claude-code/cli-reference), bevor du es einschaltest. Behandle es als Opt-in nur für vertrauenswürdige Workspaces.
 
 ### Terminal mit Claude anzeigen
 
@@ -67,6 +67,6 @@ Nutz die Aus-Einstellung, wenn du Claude meist über die Timeline-Ansicht bedien
 
 ## Wie es weitergeht
 
-- **[Themes & Schriften](/purplemux/de/docs/themes-fonts/)** — hell, dunkel, System; Schriftgrößen-Presets.
-- **[Editor-Integration](/purplemux/de/docs/editor-integration/)** — VS Code, Cursor, code-server verdrahten.
-- **[Erste Session](/purplemux/de/docs/first-session/)** — Auffrischer zum Dashboard-Layout.
+- **[Themes & Schriften](/purplemux-improved/de/docs/themes-fonts/)** — hell, dunkel, System; Schriftgrößen-Presets.
+- **[Editor-Integration](/purplemux-improved/de/docs/editor-integration/)** — VS Code, Cursor, code-server verdrahten.
+- **[Erste Session](/purplemux-improved/de/docs/first-session/)** — Auffrischer zum Dashboard-Layout.

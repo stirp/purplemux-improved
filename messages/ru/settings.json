@@ -147,7 +147,7 @@
   },
   "system": {
     "networkAccess": "Сетевой доступ",
-    "networkAccessDescription": "Определяет, из каких сетей можно обращаться к purplemux. Применяется после перезапуска сервера.",
+    "networkAccessDescription": "Определяет, из каких сетей можно обращаться к purplemux-improved. Применяется после перезапуска сервера.",
     "networkAccessLocked": "Управляется переменной окружения HOST.",
     "restartRequired": "Изменения применяются после перезапуска сервера.",
     "networkAccessOptions": {
@@ -167,7 +167,7 @@
     "showResources": "Показать системные ресурсы",
     "showResourcesDescription": "Отображать использование ЦП, памяти и сессий tmux в заголовке.",
     "startServerAtLogin": "Запускать сервер при входе",
-    "startServerAtLoginDescription": "Запускает сервер purplemux в фоновом режиме, не открывая настольное приложение и значок в Dock.",
+    "startServerAtLoginDescription": "Запускает сервер purplemux-improved в фоновом режиме, не открывая настольное приложение и значок в Dock.",
     "startServerAtLoginUnsupported": "Доступно после установки упакованного приложения macOS на ваш Mac.",
     "startupEnabled": "Сервер будет запускаться при входе",
     "startupDisabled": "Автозапуск сервера отключён",

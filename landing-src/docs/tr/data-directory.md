@@ -6,7 +6,7 @@ permalink: /tr/docs/data-directory/index.html
 ---
 {% from "docs/callouts.njk" import callout %}
 
-purplemux'ın tuttuğu her kalıcı durum parçası — ayarlar, düzenler, oturum geçmişi, önbellekler — `~/.purplemux/` altında yaşar. Başka hiçbir yerde değil. `localStorage` yok, sistem keychain'i yok, dış servis yok.
+purplemux-improved'ın tuttuğu her kalıcı durum parçası — ayarlar, düzenler, oturum geçmişi, önbellekler — `~/.purplemux/` altında yaşar. Başka hiçbir yerde değil. `localStorage` yok, sistem keychain'i yok, dış servis yok.
 
 ## Bir bakışta düzen
 
@@ -51,12 +51,12 @@ Sırlar içeren dosyalar (config, tokenler, düzenler, VAPID anahtarları, kilit
 | `quick-prompts.json`, `sidebar-items.json` | Yerleşik listeler üzerine `{ custom: […], disabledBuiltinIds: […], order: […] }` örtüleri | Evet — varsayılanları geri yükler |
 | `vapid-keys.json` | İlk çalıştırmada üretilen Web Push VAPID anahtar çifti | `push-subscriptions.json`'u da silmediyseniz hayır (mevcut abonelikler bozulur) |
 | `push-subscriptions.json` | Tarayıcı başına push uç noktaları | Evet — her cihazda yeniden abone olun |
-| `cli-token` | `purplemux` CLI ve hook betikleri için 32-baytlık hex token (`x-pmux-token` başlığı) | Evet — sonraki başlangıçta yeniden üretilir, ama zaten üretilmiş herhangi bir hook betiği sunucu üzerine yazana kadar eski tokeni saklar |
+| `cli-token` | `purplemux-improved` CLI ve hook betikleri için 32-baytlık hex token (`x-pmux-token` başlığı) | Evet — sonraki başlangıçta yeniden üretilir, ama zaten üretilmiş herhangi bir hook betiği sunucu üzerine yazana kadar eski tokeni saklar |
 | `port` | Hook betikleri ve CLI tarafından okunan düz metin geçerli port | Evet — sonraki başlangıçta yeniden üretilir |
-| `pmux.lock` | Tek-örnek koruyucu `{ pid, port, startedAt }` | Yalnızca canlı bir purplemux süreci yoksa |
+| `pmux.lock` | Tek-örnek koruyucu `{ pid, port, startedAt }` | Yalnızca canlı bir purplemux-improved süreci yoksa |
 
 {% call callout('warning', 'Kilit dosyası tuzakları') %}
-purplemux "zaten çalışıyor" diyerek başlamayı reddediyor ama hiçbir süreç canlı değilse, `pmux.lock` eskimiştir. `rm ~/.purplemux/pmux.lock` deneyin. purplemux'ı bir kez `sudo` ile çalıştırdıysanız, kilit dosyası root'a ait olabilir — `sudo rm` ile bir kez silin.
+purplemux-improved "zaten çalışıyor" diyerek başlamayı reddediyor ama hiçbir süreç canlı değilse, `pmux.lock` eskimiştir. `rm ~/.purplemux/pmux.lock` deneyin. purplemux-improved'ı bir kez `sudo` ile çalıştırdıysanız, kilit dosyası root'a ait olabilir — `sudo rm` ile bir kez silin.
 {% endcall %}
 
 ## Çalışma alanı başına dizin (`workspaces/{wsId}/`)
@@ -79,7 +79,7 @@ Pino-roll çıktısı, UTC günü başına bir dosya, boyut sınırları aşıld
 logs/purplemux.2026-04-19.1.log
 ```
 
-Varsayılan seviye `info`. `LOG_LEVEL` ile veya modül başına `LOG_LEVELS` ile geçersiz kılın — [Portlar & ortam değişkenleri](/purplemux/tr/docs/ports-env-vars/) sayfasına bakın.
+Varsayılan seviye `info`. `LOG_LEVEL` ile veya modül başına `LOG_LEVELS` ile geçersiz kılın — [Portlar & ortam değişkenleri](/purplemux-improved/tr/docs/ports-env-vars/) sayfasına bakın.
 
 Loglar haftalık döner (7-dosya sınırı). İstediğiniz zaman silebilirsiniz.
 
@@ -98,7 +98,7 @@ uploads/{wsId}/{tabId}/{timestamp}-{rand}-{name}.{ext}
 
 ## `stats/`
 
-Saf önbellek. `~/.claude/projects/**/*.jsonl`'den türetilir — purplemux yalnızca o dizini okur.
+Saf önbellek. `~/.claude/projects/**/*.jsonl`'den türetilir — purplemux-improved yalnızca o dizini okur.
 
 | Dosya | İçerik |
 |---|---|
@@ -130,7 +130,7 @@ Tüm dizin düz JSON ve birkaç shell betiğidir. Yedeklemek için:
 tar czf purplemux-backup.tgz -C ~ .purplemux
 ```
 
-Yeni bir makineye geri yüklemek için, çıkartın ve purplemux'ı başlatın. Hook betikleri yeni sunucunun portu ile yeniden yazılır; geri kalan her şey (çalışma alanları, geçmiş, ayarlar) olduğu gibi taşınır.
+Yeni bir makineye geri yüklemek için, çıkartın ve purplemux-improved'ı başlatın. Hook betikleri yeni sunucunun portu ile yeniden yazılır; geri kalan her şey (çalışma alanları, geçmiş, ayarlar) olduğu gibi taşınır.
 
 {% call callout('warning') %}
 `pmux.lock`'u geri yüklemeyin — belirli bir PID'ye bağlıdır ve başlangıcı engeller. Hariç tutun: `--exclude pmux.lock`.
@@ -142,10 +142,10 @@ Yeni bir makineye geri yüklemek için, çıkartın ve purplemux'ı başlatın. 
 rm -rf ~/.purplemux
 ```
 
-Önce purplemux'ın çalışmadığından emin olun. Sonraki başlatma yine ilk-çalıştırma deneyimi olacak.
+Önce purplemux-improved'ın çalışmadığından emin olun. Sonraki başlatma yine ilk-çalıştırma deneyimi olacak.
 
 ## Sıradaki adımlar
 
-- **[Portlar & ortam değişkenleri](/purplemux/tr/docs/ports-env-vars/)** — bu dizini etkileyen her değişken.
-- **[Mimari](/purplemux/tr/docs/architecture/)** — dosyaların çalışan sunucuya nasıl bağlandığı.
-- **[Sorun giderme](/purplemux/tr/docs/troubleshooting/)** — yaygın sorunlar ve çözümler.
+- **[Portlar & ortam değişkenleri](/purplemux-improved/tr/docs/ports-env-vars/)** — bu dizini etkileyen her değişken.
+- **[Mimari](/purplemux-improved/tr/docs/architecture/)** — dosyaların çalışan sunucuya nasıl bağlandığı.
+- **[Sorun giderme](/purplemux-improved/tr/docs/troubleshooting/)** — yaygın sorunlar ve çözümler.

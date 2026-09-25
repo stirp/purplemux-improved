@@ -6,7 +6,7 @@ permalink: /fr/docs/live-session-view/index.html
 ---
 {% from "docs/callouts.njk" import callout %}
 
-Quand un onglet fait tourner Claude Code, purplemux remplace la vue terminal brute par une timeline structurée. Même session, même transcript JSONL — mais disposé en événements discrets que vous pouvez parcourir, scroller et lier.
+Quand un onglet fait tourner Claude Code, purplemux-improved remplace la vue terminal brute par une timeline structurée. Même session, même transcript JSONL — mais disposé en événements discrets que vous pouvez parcourir, scroller et lier.
 
 ## Pourquoi une timeline bat le scrollback
 
@@ -62,7 +62,7 @@ Pressez <kbd>⌘I</kbd> depuis n'importe où dans la timeline pour focaliser la 
 
 ## Invites de permission en ligne
 
-Quand Claude veut exécuter un outil ou modifier un fichier, l'invite apparaît en ligne dans la timeline plutôt qu'en modale. Vous pouvez cliquer sur l'option, presser la touche numérique correspondante, ou l'ignorer et répondre depuis votre téléphone via Web Push. Voir [Invites de permission](/purplemux/fr/docs/permission-prompts/) pour le flux complet.
+Quand Claude veut exécuter un outil ou modifier un fichier, l'invite apparaît en ligne dans la timeline plutôt qu'en modale. Vous pouvez cliquer sur l'option, presser la touche numérique correspondante, ou l'ignorer et répondre depuis votre téléphone via Web Push. Voir [Invites de permission](/purplemux-improved/fr/docs/permission-prompts/) pour le flux complet.
 
 ## Modes sur un seul onglet
 
@@ -78,6 +78,6 @@ Raccourcis : <kbd>⌘⇧C</kbd> · <kbd>⌘⇧T</kbd> · <kbd>⌘⇧F</kbd>.
 
 ## Pour aller plus loin
 
-- **[Invites de permission](/purplemux/fr/docs/permission-prompts/)** — le flux d'approbation en ligne.
-- **[Statut de session](/purplemux/fr/docs/session-status/)** — les badges qui pilotent les indicateurs de la timeline.
-- **[Prompts rapides & pièces jointes](/purplemux/fr/docs/quick-prompts-attachments/)** — ce que la barre de saisie en bas peut faire.
+- **[Invites de permission](/purplemux-improved/fr/docs/permission-prompts/)** — le flux d'approbation en ligne.
+- **[Statut de session](/purplemux-improved/fr/docs/session-status/)** — les badges qui pilotent les indicateurs de la timeline.
+- **[Prompts rapides & pièces jointes](/purplemux-improved/fr/docs/quick-prompts-attachments/)** — ce que la barre de saisie en bas peut faire.

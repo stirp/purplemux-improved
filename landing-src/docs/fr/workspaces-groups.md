@@ -16,7 +16,7 @@ Chaque espace de travail a son propre :
 - **Onglets et volets** — terminaux, sessions Claude, panneaux de diff, panneaux de navigateur web.
 - **Mise en page** — ratios de division, focus, onglet actif dans chaque volet.
 
-Tout est persisté dans `~/.purplemux/workspaces.json`, donc l'espace de travail est l'unité que purplemux sauvegarde et restaure. Fermer le navigateur ne dissout pas un espace ; tmux maintient les shells ouverts et la mise en page reste en place.
+Tout est persisté dans `~/.purplemux/workspaces.json`, donc l'espace de travail est l'unité que purplemux-improved sauvegarde et restaure. Fermer le navigateur ne dissout pas un espace ; tmux maintient les shells ouverts et la mise en page reste en place.
 
 ## Créer un espace
 
@@ -61,10 +61,10 @@ Les groupes sont une organisation visuelle. Ils ne changent ni la persistance de
 
 ## Où c'est stocké sur le disque
 
-Chaque modification est écrite dans `~/.purplemux/workspaces.json`. Vous pouvez l'inspecter ou le sauvegarder — voir [Répertoire de données](/purplemux/fr/docs/data-directory/) pour la structure complète. Si vous l'effacez pendant que le serveur tourne, purplemux retombe sur un espace vide et repart de zéro.
+Chaque modification est écrite dans `~/.purplemux/workspaces.json`. Vous pouvez l'inspecter ou le sauvegarder — voir [Répertoire de données](/purplemux-improved/fr/docs/data-directory/) pour la structure complète. Si vous l'effacez pendant que le serveur tourne, purplemux-improved retombe sur un espace vide et repart de zéro.
 
 ## Pour aller plus loin
 
-- **[Onglets & volets](/purplemux/fr/docs/tabs-panes/)** — diviser, réordonner, focaliser à l'intérieur d'un espace.
-- **[Sauvegarder & restaurer les mises en page](/purplemux/fr/docs/save-restore/)** — comment les espaces survivent à la fermeture du navigateur et au redémarrage du serveur.
-- **[Raccourcis clavier](/purplemux/fr/docs/keyboard-shortcuts/)** — le tableau complet.
+- **[Onglets & volets](/purplemux-improved/fr/docs/tabs-panes/)** — diviser, réordonner, focaliser à l'intérieur d'un espace.
+- **[Sauvegarder & restaurer les mises en page](/purplemux-improved/fr/docs/save-restore/)** — comment les espaces survivent à la fermeture du navigateur et au redémarrage du serveur.
+- **[Raccourcis clavier](/purplemux-improved/fr/docs/keyboard-shortcuts/)** — le tableau complet.

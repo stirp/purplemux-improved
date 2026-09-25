@@ -61,6 +61,6 @@ Changes 分頁會以檔案為單位顯示工作目錄的變更。
 
 ## 下一步
 
-- **[分頁與窗格](/purplemux/zh-TW/docs/tabs-panes/)** — 把 diff 面板分割在 Claude 工作階段旁邊。
-- **[第一個工作階段](/purplemux/zh-TW/docs/first-session/)** — Claude 權限提示如何在儀表板上呈現。
-- **[網頁瀏覽器面板](/purplemux/zh-TW/docs/web-browser-panel/)** — 另一個值得與終端機並排執行的面板類型。
+- **[分頁與窗格](/purplemux-improved/zh-TW/docs/tabs-panes/)** — 把 diff 面板分割在 Claude 工作階段旁邊。
+- **[第一個工作階段](/purplemux-improved/zh-TW/docs/first-session/)** — Claude 權限提示如何在儀表板上呈現。
+- **[網頁瀏覽器面板](/purplemux-improved/zh-TW/docs/web-browser-panel/)** — 另一個值得與終端機並排執行的面板類型。

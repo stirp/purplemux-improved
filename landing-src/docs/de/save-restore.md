@@ -6,7 +6,7 @@ permalink: /de/docs/save-restore/index.html
 ---
 {% from "docs/callouts.njk" import callout %}
 
-purplemux ist um die Idee gebaut, dass das Schließen eines Browser-Tabs keine Session beendet. Zwei Bausteine arbeiten zusammen: tmux hält die Shells am Leben, und `~/.purplemux/workspaces.json` merkt sich das Layout.
+purplemux-improved ist um die Idee gebaut, dass das Schließen eines Browser-Tabs keine Session beendet. Zwei Bausteine arbeiten zusammen: tmux hält die Shells am Leben, und `~/.purplemux/workspaces.json` merkt sich das Layout.
 
 ## Was persistiert wird
 
@@ -18,7 +18,7 @@ Alles, was du in einem Workspace siehst:
 - Arbeitsverzeichnis jeder Shell
 - Workspace-Gruppen, Namen und Reihenfolge
 
-`workspaces.json` wird bei jeder Layout-Änderung transaktional aktualisiert, die Datei spiegelt also immer den aktuellen Zustand. Siehe [Daten-Verzeichnis](/purplemux/de/docs/data-directory/) für die On-Disk-Datei-Übersicht.
+`workspaces.json` wird bei jeder Layout-Änderung transaktional aktualisiert, die Datei spiegelt also immer den aktuellen Zustand. Siehe [Daten-Verzeichnis](/purplemux-improved/de/docs/data-directory/) für die On-Disk-Datei-Übersicht.
 
 ## Browser schließen
 
@@ -34,7 +34,7 @@ Dasselbe gilt für dein Handy. Schließ die PWA, sperr das Gerät, komm morgen z
 
 ## Recovery nach einem Server-Reboot
 
-Ein Reboot tötet die tmux-Prozesse — sie sind nur OS-Prozesse. purplemux behandelt das beim nächsten Start:
+Ein Reboot tötet die tmux-Prozesse — sie sind nur OS-Prozesse. purplemux-improved behandelt das beim nächsten Start:
 
 1. **Layout lesen** — `workspaces.json` beschreibt jeden Workspace, jedes Panel und jeden Tab.
 2. **Sessions parallel neu erstellen** — für jeden Tab wird eine neue tmux-Session in seinem gespeicherten Arbeitsverzeichnis gestartet.
@@ -58,12 +58,12 @@ Normalerweise musst du das nicht anfassen, aber für die Neugierigen:
 
 - Der tmux-Socket heißt `purple`. Inspizieren mit `tmux -L purple ls`.
 - Sessions heißen `pt-{workspaceId}-{paneId}-{tabId}`.
-- `workspaces.json` zu bearbeiten, während purplemux läuft, ist unsicher — der Server hält sie offen und schreibt durch.
+- `workspaces.json` zu bearbeiten, während purplemux-improved läuft, ist unsicher — der Server hält sie offen und schreibt durch.
 
-Für die tiefere Story (binäres Protokoll, Backpressure, JSONL-Watching) siehe [Wie es funktioniert](/purplemux/#how) auf der Landingpage.
+Für die tiefere Story (binäres Protokoll, Backpressure, JSONL-Watching) siehe [Wie es funktioniert](/purplemux-improved/#how) auf der Landingpage.
 
 ## Wie es weitergeht
 
-- **[Workspaces & Gruppen](/purplemux/de/docs/workspaces-groups/)** — was pro Workspace gespeichert wird.
-- **[Tabs & Panels](/purplemux/de/docs/tabs-panes/)** — was pro Tab gespeichert wird.
-- **[Browser-Unterstützung](/purplemux/de/docs/browser-support/)** — bekannte Eigenheiten rund um mobile Hintergrund-Tabs und Reconnects.
+- **[Workspaces & Gruppen](/purplemux-improved/de/docs/workspaces-groups/)** — was pro Workspace gespeichert wird.
+- **[Tabs & Panels](/purplemux-improved/de/docs/tabs-panes/)** — was pro Tab gespeichert wird.
+- **[Browser-Unterstützung](/purplemux-improved/de/docs/browser-support/)** — bekannte Eigenheiten rund um mobile Hintergrund-Tabs und Reconnects.

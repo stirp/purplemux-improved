@@ -31,7 +31,7 @@ Altta **Öğe Ekle**'ye tıklayın. Küçük bir form alırsınız:
 Save'e tıklayın ve satır listenin altında belirir. İstediğiniz yere sürükleyin.
 
 {% call callout('note', 'Yerleşikler gizlenebilir, silinemez') %}
-Yerleşik öğeler (purplemux'ın getirdiği) yalnızca bir anahtar ve bir tutamaç içerir — düzenleme veya silme yoktur. Fikriniz değişirse diye her zaman oradadırlar. Özel öğeler tam seti alır.
+Yerleşik öğeler (purplemux-improved'ın getirdiği) yalnızca bir anahtar ve bir tutamaç içerir — düzenleme veya silme yoktur. Fikriniz değişirse diye her zaman oradadırlar. Özel öğeler tam seti alır.
 {% endcall %}
 
 ## Hızlı promptlar
@@ -49,13 +49,13 @@ Bir prompt eklemek bir **ad** (düğme etiketi) ve **prompt**'un kendisini (çok
 
 ## Claude CLI seçenekleri
 
-Ayarlar → **Claude** sekmesi. Bu bayraklar *purplemux'ın yeni sekmelerde Claude CLI'sını nasıl başlattığını* etkiler — zaten çalışan bir oturumun davranışını değiştirmezler.
+Ayarlar → **Claude** sekmesi. Bu bayraklar *purplemux-improved'ın yeni sekmelerde Claude CLI'sını nasıl başlattığını* etkiler — zaten çalışan bir oturumun davranışını değiştirmezler.
 
 ### İzin Kontrollerini Atla
 
 `claude` komutuna `--dangerously-skip-permissions` ekler. Claude araçları çalıştırır ve dosyaları her seferinde onay istemeden düzenler.
 
-Bu, resmi CLI'nın sunduğu aynı bayraktır — purplemux üstüne hiçbir güvenlik gevşetmez. Açmadan önce [Anthropic'in dokümantasyonunu](https://docs.anthropic.com/en/docs/claude-code/cli-reference) okuyun. Yalnızca güvenilir çalışma alanları için seçmeli olarak değerlendirin.
+Bu, resmi CLI'nın sunduğu aynı bayraktır — purplemux-improved üstüne hiçbir güvenlik gevşetmez. Açmadan önce [Anthropic'in dokümantasyonunu](https://docs.anthropic.com/en/docs/claude-code/cli-reference) okuyun. Yalnızca güvenilir çalışma alanları için seçmeli olarak değerlendirin.
 
 ### Claude ile Terminali Göster
 
@@ -67,6 +67,6 @@ Claude'u çoğunlukla zaman tüneli görünümünden sürerseniz ve daha temiz b
 
 ## Sıradaki adımlar
 
-- **[Temalar & fontlar](/purplemux/tr/docs/themes-fonts/)** — açık, koyu, sistem; font boyutu ön ayarları.
-- **[Editör entegrasyonu](/purplemux/tr/docs/editor-integration/)** — VS Code, Cursor, code-server'ı bağlayın.
-- **[İlk oturum](/purplemux/tr/docs/first-session/)** — panel düzeni hatırlatıcı.
+- **[Temalar & fontlar](/purplemux-improved/tr/docs/themes-fonts/)** — açık, koyu, sistem; font boyutu ön ayarları.
+- **[Editör entegrasyonu](/purplemux-improved/tr/docs/editor-integration/)** — VS Code, Cursor, code-server'ı bağlayın.
+- **[İlk oturum](/purplemux-improved/tr/docs/first-session/)** — panel düzeni hatırlatıcı.

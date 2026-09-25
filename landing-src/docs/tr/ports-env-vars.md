@@ -1,24 +1,24 @@
 ---
 title: Portlar & ortam değişkenleri
-description: purplemux'ın açtığı her port ve nasıl çalıştığını etkileyen her ortam değişkeni.
+description: purplemux-improved'ın açtığı her port ve nasıl çalıştığını etkileyen her ortam değişkeni.
 eyebrow: Referans
 permalink: /tr/docs/ports-env-vars/index.html
 ---
 {% from "docs/callouts.njk" import callout %}
 
-purplemux tek satırlık bir kurulum olmak üzere tasarlandı, ama çalışma zamanı yapılandırılabilir. Bu sayfa açtığı her portu ve sunucunun okuduğu her ortam değişkenini listeler.
+purplemux-improved tek satırlık bir kurulum olmak üzere tasarlandı, ama çalışma zamanı yapılandırılabilir. Bu sayfa açtığı her portu ve sunucunun okuduğu her ortam değişkenini listeler.
 
 ## Portlar
 
 | Port | Varsayılan | Geçersiz kılma | Notlar |
 |---|---|---|---|
-| HTTP + WebSocket | `8022` | `PORT=9000 purplemux` | `8022` zaten kullanımdaysa sunucu uyarı loglar ve rastgele boş bir porta bağlanır. |
-| Dahili Next.js (production) | rastgele | — | `pnpm start` / `purplemux start`'ta dış sunucu, `127.0.0.1:<random>`'a bağlı bir Next.js standalone'a proxy yapar. Açık değildir. |
+| HTTP + WebSocket | `8022` | `PORT=9000 purplemux-improved` | `8022` zaten kullanımdaysa sunucu uyarı loglar ve rastgele boş bir porta bağlanır. |
+| Dahili Next.js (production) | rastgele | — | `pnpm start` / `purplemux-improved start`'ta dış sunucu, `127.0.0.1:<random>`'a bağlı bir Next.js standalone'a proxy yapar. Açık değildir. |
 
 `8022`, `web` + `ssh` birlikte yapıştırılmıştır. Seçim mizahtır, protokol değil.
 
 {% call callout('note', 'Bağlanan arayüz erişim politikasını takip eder') %}
-purplemux yalnızca erişim politikası gerçekten dış istemcilere izin veriyorsa `0.0.0.0`'a bağlanır. Yalnızca-localhost kurulumları `127.0.0.1`'a bağlanır, böylece LAN'daki diğer makineler bir TCP bağlantısı bile açamaz. Aşağıdaki `HOST`'a bakın.
+purplemux-improved yalnızca erişim politikası gerçekten dış istemcilere izin veriyorsa `0.0.0.0`'a bağlanır. Yalnızca-localhost kurulumları `127.0.0.1`'a bağlanır, böylece LAN'daki diğer makineler bir TCP bağlantısı bile açamaz. Aşağıdaki `HOST`'a bakın.
 {% endcall %}
 
 ## Sunucu ortam değişkenleri
@@ -29,7 +29,7 @@ purplemux yalnızca erişim politikası gerçekten dış istemcilere izin veriyo
 |---|---|---|
 | `PORT` | `8022` | HTTP/WS dinleme portu. `EADDRINUSE`'de rastgele porta düşer. |
 | `HOST` | ayarlanmamış | İzin verilen istemciler için virgülle ayrılmış CIDR/anahtar kelime spesifikasyonu. Anahtar kelimeler: `localhost`, `tailscale`, `lan`, `all` (veya `*` / `0.0.0.0`). Örnekler: `HOST=localhost`, `HOST=localhost,tailscale`, `HOST=10.0.0.0/8,localhost`. Env üzerinden ayarlandığında, uygulama içi **Ayarlar → Ağ erişimi** kilitlenir. |
-| `NODE_ENV` | `production` (`purplemux start`'ta), `development` (`pnpm dev`'de) | Dev pipeline (`tsx watch`, Next dev) ve prod pipeline (Next standalone'a proxy yapan `tsup` paketi) arasında seçim yapar. |
+| `NODE_ENV` | `production` (`purplemux-improved start`'ta), `development` (`pnpm dev`'de) | Dev pipeline (`tsx watch`, Next dev) ve prod pipeline (Next standalone'a proxy yapan `tsup` paketi) arasında seçim yapar. |
 | `__PMUX_APP_DIR` | `process.cwd()` | `dist/server.js` ve `.next/standalone/`'i tutan dizini geçersiz kılar. `bin/purplemux.js` tarafından otomatik ayarlanır; genellikle dokunmamalısınız. |
 | `__PMUX_APP_DIR_UNPACKED` | ayarlanmamış | macOS Electron uygulaması içindeki asar-unpacked yolu için `__PMUX_APP_DIR` varyantı. |
 | `__PMUX_ELECTRON` | ayarlanmamış | Electron ana süreci sunucuyu süreç-içinde başlattığında bunu ayarlar, böylece `server.ts` otomatik `start()` çağrısını atlar ve Electron yaşam döngüsünü sürmesine izin verir. |
@@ -50,13 +50,13 @@ purplemux yalnızca erişim politikası gerçekten dış istemcilere izin veriyo
 Seviyeler, sırasıyla: `trace` · `debug` · `info` · `warn` · `error` · `fatal`.
 
 ```bash
-LOG_LEVEL=debug purplemux
+LOG_LEVEL=debug purplemux-improved
 
 # yalnızca Claude hook modülünü debug et
-LOG_LEVELS=hooks=debug purplemux
+LOG_LEVELS=hooks=debug purplemux-improved
 
 # birden çok modülü aynı anda
-LOG_LEVELS=hooks=debug,status=warn,tmux=trace purplemux
+LOG_LEVELS=hooks=debug,status=warn,tmux=trace purplemux-improved
 ```
 
 En yararlı modül adları:
@@ -86,7 +86,7 @@ CLI bunları env üzerinden de kabul eder, env öncelikli olur:
 | `PMUX_PORT` | `~/.purplemux/port`'un içeriği | CLI'nın konuştuğu port. |
 | `PMUX_TOKEN` | `~/.purplemux/cli-token`'ın içeriği | `x-pmux-token` olarak gönderilen Bearer token. |
 
-Tam yüzey için [CLI referansı](/purplemux/tr/docs/cli-reference/) sayfasına bakın.
+Tam yüzey için [CLI referansı](/purplemux-improved/tr/docs/cli-reference/) sayfasına bakın.
 
 ## Birlikte koymak
 
@@ -94,27 +94,27 @@ Birkaç yaygın kombinasyon:
 
 ```bash
 # Varsayılan: yalnızca localhost, port 8022
-purplemux
+purplemux-improved
 
 # Her yere bağla (LAN + Tailscale + uzak)
-HOST=all purplemux
+HOST=all purplemux-improved
 
 # Yalnızca localhost + Tailscale
-HOST=localhost,tailscale purplemux
+HOST=localhost,tailscale purplemux-improved
 
 # Özel port + ayrıntılı hook izleme
-PORT=9000 LOG_LEVELS=hooks=debug purplemux
+PORT=9000 LOG_LEVELS=hooks=debug purplemux-improved
 
 # Hata ayıklama için her şey
-PORT=9000 HOST=localhost LOG_LEVEL=debug LOG_LEVELS=tmux=trace purplemux
+PORT=9000 HOST=localhost LOG_LEVEL=debug LOG_LEVELS=tmux=trace purplemux-improved
 ```
 
 {% call callout('tip') %}
-Kalıcı bir kurulum için bunları launchd / systemd biriminizin `Environment=` bloğuna koyun. Örnek bir birim dosyası için [Kurulum](/purplemux/tr/docs/installation/#açilişta-başlatma) sayfasına bakın.
+Kalıcı bir kurulum için bunları launchd / systemd biriminizin `Environment=` bloğuna koyun. Örnek bir birim dosyası için [Kurulum](/purplemux-improved/tr/docs/installation/#açilişta-başlatma) sayfasına bakın.
 {% endcall %}
 
 ## Sıradaki adımlar
 
-- **[Kurulum](/purplemux/tr/docs/installation/)** — bu değişkenlerin genellikle gittiği yer.
-- **[Veri dizini](/purplemux/tr/docs/data-directory/)** — `port` ve `cli-token`'ın hook betikleriyle nasıl etkileşimde bulunduğu.
-- **[CLI referansı](/purplemux/tr/docs/cli-reference/)** — `PMUX_PORT` / `PMUX_TOKEN` bağlam içinde.
+- **[Kurulum](/purplemux-improved/tr/docs/installation/)** — bu değişkenlerin genellikle gittiği yer.
+- **[Veri dizini](/purplemux-improved/tr/docs/data-directory/)** — `port` ve `cli-token`'ın hook betikleriyle nasıl etkileşimde bulunduğu.
+- **[CLI referansı](/purplemux-improved/tr/docs/cli-reference/)** — `PMUX_PORT` / `PMUX_TOKEN` bağlam içinde.

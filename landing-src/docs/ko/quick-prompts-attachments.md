@@ -31,7 +31,7 @@ permalink: /ko/docs/quick-prompts-attachments/index.html
 
 ## 이미지 드래그 앤 드롭
 
-이미지 파일(PNG, JPG, WebP 등)을 입력 바 어디에든 드롭하면 첨부됩니다. purplemux는 파일을 서버의 임시 경로에 업로드하고 프롬프트에 자동으로 reference를 삽입합니다.
+이미지 파일(PNG, JPG, WebP 등)을 입력 바 어디에든 드롭하면 첨부됩니다. purplemux-improved는 파일을 서버의 임시 경로에 업로드하고 프롬프트에 자동으로 reference를 삽입합니다.
 
 추가로:
 
@@ -43,7 +43,7 @@ permalink: /ko/docs/quick-prompts-attachments/index.html
 
 ## 그 외 파일 첨부
 
-같은 클립 아이콘은 이미지가 아닌 파일에도 동작합니다 — markdown, JSON, CSV, 소스 파일 등 무엇이든. purplemux가 임시 디렉토리에 두고 경로를 삽입해주면, Claude가 요청의 일부로 `read`할 수 있습니다.
+같은 클립 아이콘은 이미지가 아닌 파일에도 동작합니다 — markdown, JSON, CSV, 소스 파일 등 무엇이든. purplemux-improved가 임시 디렉토리에 두고 경로를 삽입해주면, Claude가 요청의 일부로 `read`할 수 있습니다.
 
 다른 머신에서 붙여넣은 스택 트레이스나 다른 프로젝트의 설정 파일처럼, Claude가 직접 닿을 수 없는 것을 공유하기에 가장 쉬운 방법입니다.
 
@@ -74,6 +74,6 @@ permalink: /ko/docs/quick-prompts-attachments/index.html
 
 ## 다음으로
 
-- **[라이브 세션 뷰](/purplemux/ko/docs/live-session-view/)** — 프롬프트와 Claude의 답변이 표시되는 곳
-- **[키보드 단축키](/purplemux/ko/docs/keyboard-shortcuts/)** — 전체 바인딩 표
-- **[권한 프롬프트](/purplemux/ko/docs/permission-prompts/)** — 승인이 필요한 요청을 보낸 뒤 일어나는 일
+- **[라이브 세션 뷰](/purplemux-improved/ko/docs/live-session-view/)** — 프롬프트와 Claude의 답변이 표시되는 곳
+- **[키보드 단축키](/purplemux-improved/ko/docs/keyboard-shortcuts/)** — 전체 바인딩 표
+- **[권한 프롬프트](/purplemux-improved/ko/docs/permission-prompts/)** — 승인이 필요한 요청을 보낸 뒤 일어나는 일

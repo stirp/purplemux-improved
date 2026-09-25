@@ -6,7 +6,7 @@ permalink: /zh-CN/docs/browser-support/index.html
 ---
 {% from "docs/callouts.njk" import callout %}
 
-purplemux 是个 Web 应用,使用体验取决于打开它的浏览器。下面这些是我们持续测试的版本 — 更早的浏览器或许能用,但不在支持范围内。
+purplemux-improved 是个 Web 应用,使用体验取决于打开它的浏览器。下面这些是我们持续测试的版本 — 更早的浏览器或许能用,但不在支持范围内。
 
 ## 桌面端
 
@@ -33,12 +33,12 @@ Apple 直到 Safari 16.4(2023 年 3 月)才在 iOS 上加入 Web Push。更早�
 
 ## 功能依赖
 
-purplemux 用到了一些现代浏览器 API。如果其中某个不可用,应用会优雅降级,只是丢掉对应的功能。
+purplemux-improved 用到了一些现代浏览器 API。如果其中某个不可用,应用会优雅降级,只是丢掉对应的功能。
 
 | API | 用途 | 降级行为 |
 |---|---|---|
 | WebSocket | 终端 I/O、状态同步、时间线 | 硬性要求,无降级。 |
-| Clipboard API | 复制 `npx purplemux@latest`、复制代码块 | 按钮在不可用时被隐藏。 |
+| Clipboard API | 复制 `npx purplemux-improved@latest`、复制代码块 | 按钮在不可用时被隐藏。 |
 | Notifications API | 桌面 / 移动端推送 | 跳过 — 你仍能在应用内看到状态。 |
 | Service Workers | PWA + Web Push | 仅作为普通 Web 应用提供。 |
 | IntersectionObserver | 实时会话时间线、导航出现 | 元素无动画地直接渲染。 |
@@ -47,7 +47,7 @@ purplemux 用到了一些现代浏览器 API。如果其中某个不可用,应�
 
 ## 我的浏览器是否符合要求?
 
-purplemux 内置了一个自检工具,在 **设置 → 浏览器检查** 中运行。它会执行上面列出的探测,并对每个特性给出绿 / 黄 / 红的状态徽章,无需自己对照规范表。
+purplemux-improved 内置了一个自检工具,在 **设置 → 浏览器检查** 中运行。它会执行上面列出的探测,并对每个特性给出绿 / 黄 / 红的状态徽章,无需自己对照规范表。
 
 ## 已知注意事项
 
@@ -62,4 +62,4 @@ purplemux 内置了一个自检工具,在 **设置 → 浏览器检查** 中运�
 - **UC 浏览器、Opera Mini、Puffin** — 这类基于代理的浏览器破坏 WebSocket。无法工作。
 - **任何超过 3 年的浏览器** — 我们的 CSS 用到了 OKLCH 颜色和容器查询,需要 2023 年代左右的引擎。
 
-如果你用的是某种特殊配置且某些功能无法工作,请提交 [issue](https://github.com/subicura/purplemux/issues),附上 user agent 和自检输出。
+如果你用的是某种特殊配置且某些功能无法工作,请提交 [issue](https://github.com/stirp/purplemux-improved/issues),附上 user agent 和自检输出。

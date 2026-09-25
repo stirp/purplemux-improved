@@ -30,6 +30,7 @@ import {
 import type { ITab, IWorkspace, IWorkspaceGroup } from '@/types/terminal';
 import useWorkspaceStore from '@/hooks/use-workspace-store';
 import WorkspaceItem from '@/components/features/workspace/workspace-item';
+import CreateWorkspaceDialog from '@/components/features/workspace/create-workspace-dialog';
 import WorkspaceGroupHeader from '@/components/features/workspace/workspace-group-header';
 import dynamic from 'next/dynamic';
 
@@ -111,7 +112,7 @@ const Sidebar = () => {
     return () => window.removeEventListener('open-settings', handler);
   }, [setSettingsOpen]);
 
-  const [isCreating, setIsCreating] = useState(false);
+  const [createWorkspaceOpen, setCreateWorkspaceOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<IWorkspace | null>(null);
   const [deletingIds, setDeletingIds] = useState<Set<string>>(new Set());
   const [fadingOutIds, setFadingOutIds] = useState<Set<string>>(new Set());
@@ -163,16 +164,13 @@ const Sidebar = () => {
     [width],
   );
 
-  const handleCreateWorkspace = useCallback(async () => {
-    setIsCreating(true);
-    try {
-      const ws = await useWorkspaceStore.getState().createWorkspace('');
-      if (ws) {
-        selectWorkspace(ws.id);
-      }
-    } finally {
-      setIsCreating(false);
+  const handleCreateWorkspace = useCallback(async (directory: string) => {
+    const name = directory.split('/').filter(Boolean).pop() || directory;
+    const ws = await useWorkspaceStore.getState().createWorkspace(directory, name);
+    if (ws) {
+      selectWorkspace(ws.id);
     }
+    return !!ws;
   }, [selectWorkspace]);
 
   const handleCreateGroup = useCallback(async () => {
@@ -599,8 +597,7 @@ const Sidebar = () => {
             <div className="relative flex h-9 items-stretch">
               <button
                 className="flex flex-1 items-center gap-2 px-3 text-sm text-muted-foreground transition-colors hover:bg-sidebar-accent disabled:opacity-50"
-                onClick={handleCreateWorkspace}
-                disabled={isCreating}
+                onClick={() => setCreateWorkspaceOpen(true)}
                 aria-label={t('addWorkspace')}
               >
                 <Plus className="h-3.5 w-3.5" />
@@ -765,6 +762,12 @@ const Sidebar = () => {
       )}
 
       {settingsOpen && <SettingsDialog open={settingsOpen} onOpenChange={setSettingsOpen} />}
+      {createWorkspaceOpen && <CreateWorkspaceDialog
+        open={createWorkspaceOpen}
+        onOpenChange={setCreateWorkspaceOpen}
+        onSubmit={handleCreateWorkspace}
+        initialDirectory={workspaces.find((workspace) => workspace.id === activeWorkspaceId)?.directories[0]}
+      />}
       <CheatSheetDialog />
 
       <AlertDialog

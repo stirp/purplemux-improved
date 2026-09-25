@@ -6,7 +6,7 @@ permalink: /tr/docs/live-session-view/index.html
 ---
 {% from "docs/callouts.njk" import callout %}
 
-Bir sekme Claude Code çalıştırırken purplemux ham terminal görünümünün yerine yapılandırılmış bir zaman tüneli koyar. Aynı oturum, aynı JSONL transkripti — ama tarayıp kaydırabileceğiniz ve bağlantı kurabileceğiniz ayrık olaylar olarak düzenlenmiş.
+Bir sekme Claude Code çalıştırırken purplemux-improved ham terminal görünümünün yerine yapılandırılmış bir zaman tüneli koyar. Aynı oturum, aynı JSONL transkripti — ama tarayıp kaydırabileceğiniz ve bağlantı kurabileceğiniz ayrık olaylar olarak düzenlenmiş.
 
 ## Neden zaman tüneli kaydırma tamponunu yener
 
@@ -62,7 +62,7 @@ Zaman tünelinin herhangi bir yerinden <kbd>⌘I</kbd> ile alttaki girdi çubuğ
 
 ## Satır içi izin istemleri
 
-Claude bir aracı çalıştırmak veya bir dosyayı düzenlemek istediğinde, istem zaman tüneli içinde modal yerine satır içi belirir. Seçeneğe tıklayabilir, eşleşen sayı tuşuna basabilir veya yok sayıp telefonunuzdan Web Push üzerinden yanıtlayabilirsiniz. Tam akış için [İzin istemleri](/purplemux/tr/docs/permission-prompts/) sayfasına bakın.
+Claude bir aracı çalıştırmak veya bir dosyayı düzenlemek istediğinde, istem zaman tüneli içinde modal yerine satır içi belirir. Seçeneğe tıklayabilir, eşleşen sayı tuşuna basabilir veya yok sayıp telefonunuzdan Web Push üzerinden yanıtlayabilirsiniz. Tam akış için [İzin istemleri](/purplemux-improved/tr/docs/permission-prompts/) sayfasına bakın.
 
 ## Tek bir sekmede modlar
 
@@ -78,6 +78,6 @@ Kısayollar: <kbd>⌘⇧C</kbd> · <kbd>⌘⇧T</kbd> · <kbd>⌘⇧F</kbd>.
 
 ## Sıradaki adımlar
 
-- **[İzin istemleri](/purplemux/tr/docs/permission-prompts/)** — satır içi onay akışı.
-- **[Oturum durumu](/purplemux/tr/docs/session-status/)** — zaman tüneli göstergelerini süren rozetler.
-- **[Hızlı promptlar & ekler](/purplemux/tr/docs/quick-prompts-attachments/)** — alttaki girdi çubuğunun yapabilecekleri.
+- **[İzin istemleri](/purplemux-improved/tr/docs/permission-prompts/)** — satır içi onay akışı.
+- **[Oturum durumu](/purplemux-improved/tr/docs/session-status/)** — zaman tüneli göstergelerini süren rozetler.
+- **[Hızlı promptlar & ekler](/purplemux-improved/tr/docs/quick-prompts-attachments/)** — alttaki girdi çubuğunun yapabilecekleri.

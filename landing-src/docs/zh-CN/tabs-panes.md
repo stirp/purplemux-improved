@@ -74,10 +74,10 @@ permalink: /zh-CN/docs/tabs-panes/index.html
 
 关闭标签页会终止其 tmux 会话。关闭 *浏览器*、刷新或断网都不会 — 每个标签页都在服务端继续运行。重新打开时,相同的窗格、分割和标签页都会回来。
 
-跨服务器重启的恢复方式见 [保存与恢复布局](/purplemux/zh-CN/docs/save-restore/)。
+跨服务器重启的恢复方式见 [保存与恢复布局](/purplemux-improved/zh-CN/docs/save-restore/)。
 
 ## 下一步
 
-- **[保存与恢复布局](/purplemux/zh-CN/docs/save-restore/)** — 这种布局是怎么持续存在的。
-- **[键盘快捷键](/purplemux/zh-CN/docs/keyboard-shortcuts/)** — 所有按键绑定一览。
-- **[Git 工作流面板](/purplemux/zh-CN/docs/git-workflow/)** — 一个适合扔进分割窗格的标签类型。
+- **[保存与恢复布局](/purplemux-improved/zh-CN/docs/save-restore/)** — 这种布局是怎么持续存在的。
+- **[键盘快捷键](/purplemux-improved/zh-CN/docs/keyboard-shortcuts/)** — 所有按键绑定一览。
+- **[Git 工作流面板](/purplemux-improved/zh-CN/docs/git-workflow/)** — 一个适合扔进分割窗格的标签类型。

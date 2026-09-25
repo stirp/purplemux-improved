@@ -6,7 +6,7 @@ permalink: /fr/docs/usage-rate-limits/index.html
 ---
 {% from "docs/callouts.njk" import callout %}
 
-Atteindre une limite de débit en plein milieu d'une tâche est la pire interruption qui soit. purplemux remonte les chiffres de quota de Claude Code dans la barre latérale et ajoute un tableau de bord stats pour voir votre rythme d'usage d'un coup d'œil.
+Atteindre une limite de débit en plein milieu d'une tâche est la pire interruption qui soit. purplemux-improved remonte les chiffres de quota de Claude Code dans la barre latérale et ajoute un tableau de bord stats pour voir votre rythme d'usage d'un coup d'œil.
 
 ## Le widget de la barre latérale
 
@@ -18,7 +18,7 @@ Deux fines barres en bas de la barre latérale : **5 h** et **7 j**. Chacune mon
 
 Survolez n'importe quelle barre pour la décomposition complète — pourcentage utilisé, pourcentage projeté et heure de reset en durée relative.
 
-Les chiffres viennent du JSON de statusline de Claude Code. purplemux installe un petit script `~/.purplemux/statusline.sh` qui poste les données au serveur local chaque fois que Claude rafraîchit sa statusline ; un `fs.watch` garde l'interface synchronisée.
+Les chiffres viennent du JSON de statusline de Claude Code. purplemux-improved installe un petit script `~/.purplemux/statusline.sh` qui poste les données au serveur local chaque fois que Claude rafraîchit sa statusline ; un `fs.watch` garde l'interface synchronisée.
 
 ## Seuils de couleur
 
@@ -71,14 +71,14 @@ Une grille jour × heure montrant quand vous avez réellement utilisé Claude la
 
 ## D'où viennent les données
 
-Tout dans le tableau de bord est calculé localement à partir des JSONL de session de Claude Code sous `~/.claude/projects/`. purplemux les lit, met en cache les comptes parsés dans `~/.purplemux/stats/`, et n'envoie jamais un octet hors machine. Changer de langue ou régénérer le cache n'appelle nulle part.
+Tout dans le tableau de bord est calculé localement à partir des JSONL de session de Claude Code sous `~/.claude/projects/`. purplemux-improved les lit, met en cache les comptes parsés dans `~/.purplemux/stats/`, et n'envoie jamais un octet hors machine. Changer de langue ou régénérer le cache n'appelle nulle part.
 
 ## Comportement du reset
 
-Les fenêtres 5 heures et 7 jours sont glissantes et liées à votre compte Claude Code. Quand une fenêtre se reset, la barre tombe à 0 % et le pourcentage et le temps restant se recalculent depuis l'horodatage de prochain reset. Si purplemux a manqué le reset (serveur éteint), le widget se corrige au prochain tick statusline.
+Les fenêtres 5 heures et 7 jours sont glissantes et liées à votre compte Claude Code. Quand une fenêtre se reset, la barre tombe à 0 % et le pourcentage et le temps restant se recalculent depuis l'horodatage de prochain reset. Si purplemux-improved a manqué le reset (serveur éteint), le widget se corrige au prochain tick statusline.
 
 ## Pour aller plus loin
 
-- **[Notes (rapport quotidien IA)](/purplemux/fr/docs/notes-daily-report/)** — mêmes données, rédigées en brief par jour.
-- **[Statut de session](/purplemux/fr/docs/session-status/)** — l'autre chose que la barre latérale suit par onglet.
-- **[Raccourcis clavier](/purplemux/fr/docs/keyboard-shortcuts/)** — y compris <kbd>⌘⇧U</kbd> pour les stats.
+- **[Notes (rapport quotidien IA)](/purplemux-improved/fr/docs/notes-daily-report/)** — mêmes données, rédigées en brief par jour.
+- **[Statut de session](/purplemux-improved/fr/docs/session-status/)** — l'autre chose que la barre latérale suit par onglet.
+- **[Raccourcis clavier](/purplemux-improved/fr/docs/keyboard-shortcuts/)** — y compris <kbd>⌘⇧U</kbd> pour les stats.

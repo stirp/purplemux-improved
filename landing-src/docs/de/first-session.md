@@ -6,7 +6,7 @@ permalink: /de/docs/first-session/index.html
 ---
 {% from "docs/callouts.njk" import callout %}
 
-purplemux läuft bereits (falls nicht, siehe [Schnellstart](/purplemux/de/docs/quickstart/)). Diese Seite erklärt, was die UI tatsächlich macht, damit sich die ersten Minuten weniger abstrakt anfühlen.
+purplemux-improved läuft bereits (falls nicht, siehe [Schnellstart](/purplemux-improved/de/docs/quickstart/)). Diese Seite erklärt, was die UI tatsächlich macht, damit sich die ersten Minuten weniger abstrakt anfühlen.
 
 ## Das Dashboard
 
@@ -40,7 +40,7 @@ Wähle ein **Template**:
 - **Claude** — startet mit bereits laufendem `claude` in der Shell.
 
 {% call callout('tip', 'Templates sind nur Shortcuts') %}
-Unter der Haube ist jeder Tab eine normale Shell. Das Claude-Template ist nichts anderes als „öffne ein Terminal und führe `claude` aus". Wenn du später `claude` manuell in einem Terminal-Tab startest, bemerkt purplemux das und beginnt genauso, den Status anzuzeigen.
+Unter der Haube ist jeder Tab eine normale Shell. Das Claude-Template ist nichts anderes als „öffne ein Terminal und führe `claude` aus". Wenn du später `claude` manuell in einem Terminal-Tab startest, bemerkt purplemux-improved das und beginnt genauso, den Status anzuzeigen.
 {% endcall %}
 
 ## Den Session-Status lesen
@@ -54,17 +54,17 @@ Schau auf die **Session-Zeile in der Seitenleiste** für deinen Tab. Du siehst e
 | **Eingabe nötig** (gelb) | Claude hat einen Berechtigungs-Prompt oder eine Frage. |
 | **Review** (blau) | Arbeit erledigt, Claude ist gestoppt; es gibt etwas zu prüfen. |
 
-Übergänge sind nahezu sofort. Siehe [Session-Status](/purplemux/de/docs/session-status/) für die Erkennungslogik.
+Übergänge sind nahezu sofort. Siehe [Session-Status](/purplemux-improved/de/docs/session-status/) für die Erkennungslogik.
 
 ## Auf einen Berechtigungs-Prompt antworten
 
-Wenn Claude bittet, ein Tool auszuführen oder eine Datei zu bearbeiten, **fängt purplemux den Prompt ab** und zeigt ihn inline in der Session-Ansicht. Du kannst:
+Wenn Claude bittet, ein Tool auszuführen oder eine Datei zu bearbeiten, **fängt purplemux-improved den Prompt ab** und zeigt ihn inline in der Session-Ansicht. Du kannst:
 
 - **1 · Yes** / **2 · Yes, always** / **3 · No** klicken, oder
 - die Zifferntasten auf der Tastatur drücken, oder
 - ihn ignorieren und am Handy beantworten — Mobile Web Push feuert dieselbe Benachrichtigung.
 
-Die Claude-CLI blockiert beim abgefangenen Prompt nie wirklich; purplemux leitet deine Antwort zurück.
+Die Claude-CLI blockiert beim abgefangenen Prompt nie wirklich; purplemux-improved leitet deine Antwort zurück.
 
 ## Splitten und wechseln
 
@@ -75,13 +75,13 @@ Wenn ein Tab läuft, probier:
 - <kbd>⌘⌥←/→/↑/↓</kbd> — Fokus zwischen Splits bewegen
 - <kbd>⌘⇧[</kbd> / <kbd>⌘⇧]</kbd> — voriger / nächster Tab
 
-Vollständige Liste auf der Seite [Tastenkürzel](/purplemux/de/docs/keyboard-shortcuts/).
+Vollständige Liste auf der Seite [Tastenkürzel](/purplemux-improved/de/docs/keyboard-shortcuts/).
 
 ## Speichern und wiederherstellen
 
-Schließ den Browser. Deine Tabs verschwinden nicht — tmux hält sie auf dem Server offen. Aktualisiere in einer Stunde (oder einer Woche), und purplemux stellt das exakte Layout wieder her, inklusive Split-Verhältnissen und Arbeitsverzeichnissen.
+Schließ den Browser. Deine Tabs verschwinden nicht — tmux hält sie auf dem Server offen. Aktualisiere in einer Stunde (oder einer Woche), und purplemux-improved stellt das exakte Layout wieder her, inklusive Split-Verhältnissen und Arbeitsverzeichnissen.
 
-Sogar ein Server-Reboot ist erholbar: Beim Neustart liest purplemux das gespeicherte Layout aus `~/.purplemux/workspaces.json`, startet Shells in den richtigen Verzeichnissen und hängt Claude-Sessions möglichst wieder an.
+Sogar ein Server-Reboot ist erholbar: Beim Neustart liest purplemux-improved das gespeicherte Layout aus `~/.purplemux/workspaces.json`, startet Shells in den richtigen Verzeichnissen und hängt Claude-Sessions möglichst wieder an.
 
 ## Vom Handy aus erreichen
 
@@ -93,10 +93,10 @@ tailscale serve --bg 8022
 
 Öffne auf dem Handy `https://<machine>.<tailnet>.ts.net`, tippe **Teilen → Zum Home-Bildschirm** und erteile Benachrichtigungs-Berechtigungen. Du erhältst jetzt Push-Alerts für **Eingabe nötig**- und **Review**-Zustände, auch wenn der Tab geschlossen ist.
 
-Vollständige Anleitung: [PWA-Setup](/purplemux/de/docs/pwa-setup/) · [Web Push](/purplemux/de/docs/web-push/) · [Tailscale](/purplemux/de/docs/tailscale/).
+Vollständige Anleitung: [PWA-Setup](/purplemux-improved/de/docs/pwa-setup/) · [Web Push](/purplemux-improved/de/docs/web-push/) · [Tailscale](/purplemux-improved/de/docs/tailscale/).
 
 ## Wie es weitergeht
 
-- **[Tastenkürzel](/purplemux/de/docs/keyboard-shortcuts/)** — alle Bindings auf einen Blick.
-- **[Browser-Unterstützung](/purplemux/de/docs/browser-support/)** — Kompatibilitätsmatrix, vor allem iOS Safari 16.4+.
+- **[Tastenkürzel](/purplemux-improved/de/docs/keyboard-shortcuts/)** — alle Bindings auf einen Blick.
+- **[Browser-Unterstützung](/purplemux-improved/de/docs/browser-support/)** — Kompatibilitätsmatrix, vor allem iOS Safari 16.4+.
 - Erkunde die Seitenleiste: **Notizen** (<kbd>⌘⇧E</kbd>) für den AI-Tagesbericht, **Statistiken** (<kbd>⌘⇧U</kbd>) für Nutzungsanalysen.

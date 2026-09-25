@@ -6,7 +6,7 @@ permalink: /ja/docs/data-directory/index.html
 ---
 {% from "docs/callouts.njk" import callout %}
 
-purplemux が保持する永続状態 — 設定、レイアウト、セッション履歴、キャッシュ — はすべて `~/.purplemux/` の下にあります。それ以外には何もありません。`localStorage` も、システムキーチェーンも、外部サービスもありません。
+purplemux-improved が保持する永続状態 — 設定、レイアウト、セッション履歴、キャッシュ — はすべて `~/.purplemux/` の下にあります。それ以外には何もありません。`localStorage` も、システムキーチェーンも、外部サービスもありません。
 
 ## 概観
 
@@ -51,12 +51,12 @@ purplemux が保持する永続状態 — 設定、レイアウト、セッシ�
 | `quick-prompts.json`、`sidebar-items.json` | ビルトインリストへの `{ custom: […], disabledBuiltinIds: […], order: […] }` のオーバーレイ | はい — デフォルトに戻す |
 | `vapid-keys.json` | Web Push VAPID 鍵ペア、初回起動時に生成 | `push-subscriptions.json` も削除しない限りはやめておく (既存サブスクリプションが壊れる) |
 | `push-subscriptions.json` | ブラウザごとのプッシュエンドポイント | はい — 各デバイスで再サブスクライブ |
-| `cli-token` | `purplemux` CLI とフックスクリプト用 32 バイト hex トークン (`x-pmux-token` ヘッダ) | はい — 次回起動時に再生成。ただしすでに生成済みのフックスクリプトは、サーバが上書きするまで古いトークンを保持します |
+| `cli-token` | `purplemux-improved` CLI とフックスクリプト用 32 バイト hex トークン (`x-pmux-token` ヘッダ) | はい — 次回起動時に再生成。ただしすでに生成済みのフックスクリプトは、サーバが上書きするまで古いトークンを保持します |
 | `port` | 現在のポートをプレーンテキストで保持。フックスクリプトと CLI が読みます | はい — 次回起動時に再生成 |
-| `pmux.lock` | 単一インスタンスガード `{ pid, port, startedAt }` | purplemux プロセスが生きていない場合のみ |
+| `pmux.lock` | 単一インスタンスガード `{ pid, port, startedAt }` | purplemux-improved プロセスが生きていない場合のみ |
 
 {% call callout('warning', 'ロックファイルの落とし穴') %}
-purplemux が「すでに実行中」と言って起動を拒否するのにプロセスが生きていない場合、`pmux.lock` が古くなっています。`rm ~/.purplemux/pmux.lock` で再試行してください。一度でも `sudo` で purplemux を実行したことがある場合、ロックファイルが root 所有になっているかもしれません — 一度 `sudo rm` してください。
+purplemux-improved が「すでに実行中」と言って起動を拒否するのにプロセスが生きていない場合、`pmux.lock` が古くなっています。`rm ~/.purplemux/pmux.lock` で再試行してください。一度でも `sudo` で purplemux-improved を実行したことがある場合、ロックファイルが root 所有になっているかもしれません — 一度 `sudo rm` してください。
 {% endcall %}
 
 ## ワークスペース別ディレクトリ (`workspaces/{wsId}/`)
@@ -79,7 +79,7 @@ Pino-roll の出力。UTC 1 日に 1 ファイル、サイズ制限を超える�
 logs/purplemux.2026-04-19.1.log
 ```
 
-デフォルトレベルは `info`。`LOG_LEVEL` で上書き、または `LOG_LEVELS` でモジュール単位 — [ポート & 環境変数](/purplemux/ja/docs/ports-env-vars/) 参照。
+デフォルトレベルは `info`。`LOG_LEVEL` で上書き、または `LOG_LEVELS` でモジュール単位 — [ポート & 環境変数](/purplemux-improved/ja/docs/ports-env-vars/) 参照。
 
 ログは週次ローテーション (7 ファイルまで)。いつでも削除して構いません。
 
@@ -98,7 +98,7 @@ uploads/{wsId}/{tabId}/{timestamp}-{rand}-{name}.{ext}
 
 ## `stats/`
 
-純粋なキャッシュ。`~/.claude/projects/**/*.jsonl` から派生 — purplemux はそのディレクトリを読むだけです。
+純粋なキャッシュ。`~/.claude/projects/**/*.jsonl` から派生 — purplemux-improved はそのディレクトリを読むだけです。
 
 | ファイル | 内容 |
 |---|---|
@@ -130,7 +130,7 @@ uploads/{wsId}/{tabId}/{timestamp}-{rand}-{name}.{ext}
 tar czf purplemux-backup.tgz -C ~ .purplemux
 ```
 
-新しいマシンに復元するには展開して purplemux を起動するだけです。フックスクリプトは新しいサーバのポートで書き換えられ、それ以外 (ワークスペース、履歴、設定) はそのまま引き継がれます。
+新しいマシンに復元するには展開して purplemux-improved を起動するだけです。フックスクリプトは新しいサーバのポートで書き換えられ、それ以外 (ワークスペース、履歴、設定) はそのまま引き継がれます。
 
 {% call callout('warning') %}
 `pmux.lock` を復元しないでください — 特定の PID に紐付いており、起動をブロックします。除外してください: `--exclude pmux.lock`。
@@ -142,10 +142,10 @@ tar czf purplemux-backup.tgz -C ~ .purplemux
 rm -rf ~/.purplemux
 ```
 
-先に purplemux が動いていないことを確認してください。次回起動時には初回実行体験が再開します。
+先に purplemux-improved が動いていないことを確認してください。次回起動時には初回実行体験が再開します。
 
 ## 次のステップ
 
-- **[ポート & 環境変数](/purplemux/ja/docs/ports-env-vars/)** — このディレクトリに影響するすべての変数。
-- **[アーキテクチャ](/purplemux/ja/docs/architecture/)** — これらのファイルが動作中のサーバとどうつながるか。
-- **[トラブルシューティング](/purplemux/ja/docs/troubleshooting/)** — よくある問題と対処。
+- **[ポート & 環境変数](/purplemux-improved/ja/docs/ports-env-vars/)** — このディレクトリに影響するすべての変数。
+- **[アーキテクチャ](/purplemux-improved/ja/docs/architecture/)** — これらのファイルが動作中のサーバとどうつながるか。
+- **[トラブルシューティング](/purplemux-improved/ja/docs/troubleshooting/)** — よくある問題と対処。

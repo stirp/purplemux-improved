@@ -147,7 +147,7 @@
   },
   "system": {
     "networkAccess": "Accès réseau",
-    "networkAccessDescription": "Contrôle quels réseaux peuvent accéder à purplemux. Prend effet après redémarrage du serveur.",
+    "networkAccessDescription": "Contrôle quels réseaux peuvent accéder à purplemux-improved. Prend effet après redémarrage du serveur.",
     "networkAccessLocked": "Contrôlé par la variable d'environnement HOST.",
     "restartRequired": "Les modifications prennent effet après redémarrage du serveur.",
     "networkAccessOptions": {
@@ -167,7 +167,7 @@
     "showResources": "Afficher les ressources système",
     "showResourcesDescription": "Affiche l'utilisation du CPU, de la mémoire et des sessions tmux dans l'en-tête.",
     "startServerAtLogin": "Démarrer le serveur à la connexion",
-    "startServerAtLoginDescription": "Démarre le serveur purplemux en arrière-plan sans ouvrir l'application de bureau ni l'icône du Dock.",
+    "startServerAtLoginDescription": "Démarre le serveur purplemux-improved en arrière-plan sans ouvrir l'application de bureau ni l'icône du Dock.",
     "startServerAtLoginUnsupported": "Disponible après l'installation de l'application macOS empaquetée sur votre Mac.",
     "startupEnabled": "Le serveur démarrera à la connexion",
     "startupDisabled": "Démarrage automatique du serveur désactivé",

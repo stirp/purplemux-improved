@@ -6,7 +6,7 @@ permalink: /zh-CN/docs/installation/index.html
 ---
 {% from "docs/callouts.njk" import callout %}
 
-如果你按 [快速开始](/purplemux/zh-CN/docs/quickstart/) 跑了 `npx purplemux@latest` 就够用了,本页可以跳过。这页面是给那些想要永久安装、桌面应用,或者从源码运行的人看的。
+如果你按 [快速开始](/purplemux-improved/zh-CN/docs/quickstart/) 跑了 `npx purplemux-improved@latest` 就够用了,本页可以跳过。这页面是给那些想要永久安装、桌面应用,或者从源码运行的人看的。
 
 ## 系统要求
 
@@ -19,27 +19,27 @@ permalink: /zh-CN/docs/installation/index.html
 ### npx(无需安装)
 
 ```bash
-npx purplemux@latest
+npx purplemux-improved@latest
 ```
 
-首次运行时下载 purplemux 并缓存到 `~/.npm/_npx/`。最适合用来体验,或在远程机器上临时运行。每次运行都使用最新发布的版本。
+首次运行时下载 purplemux-improved 并缓存到 `~/.npm/_npx/`。最适合用来体验,或在远程机器上临时运行。每次运行都使用最新发布的版本。
 
 ### 全局安装
 
 ```bash
-npm install -g purplemux
-purplemux
+npm install -g purplemux-improved
+purplemux-improved
 ```
 
-pnpm 和 yarn 用法相同(`pnpm add -g purplemux` / `yarn global add purplemux`)。后续启动更快,因为不需要再解析依赖。用 `npm update -g purplemux` 升级。
+pnpm 和 yarn 用法相同(`pnpm add -g purplemux-improved` / `yarn global add purplemux-improved`)。后续启动更快,因为不需要再解析依赖。用 `npm update -g purplemux-improved` 升级。
 
 为了简短,二进制文件还有一个别名 `pmux`。
 
 ### macOS 原生应用
 
-从 [Releases](https://github.com/subicura/purplemux/releases/latest) 下载最新的 `.dmg` — 同时提供 Apple Silicon 和 Intel 版本。内置自动更新。
+从 [Releases](https://github.com/stirp/purplemux-improved/releases/latest) 下载最新的 `.dmg` — 同时提供 Apple Silicon 和 Intel 版本。内置自动更新。
 
-应用打包了 Node、tmux 和 purplemux 服务端,并加入了:
+应用打包了 Node、tmux 和 purplemux-improved 服务端,并加入了:
 
 - 显示服务状态的菜单栏图标
 - 原生通知(独立于 Web Push)
@@ -48,8 +48,8 @@ pnpm 和 yarn 用法相同(`pnpm add -g purplemux` / `yarn global add purplemux`
 ### 从源码运行
 
 ```bash
-git clone https://github.com/subicura/purplemux.git
-cd purplemux
+git clone https://github.com/stirp/purplemux-improved.git
+cd purplemux-improved
 pnpm install
 pnpm start
 ```
@@ -62,25 +62,25 @@ pnpm dev
 
 ## 端口与环境变量
 
-purplemux 监听 **8022**(web + ssh,纯属玩梗)。用 `PORT` 覆盖:
+purplemux-improved 监听 **8022**(web + ssh,纯属玩梗)。用 `PORT` 覆盖:
 
 ```bash
-PORT=9000 purplemux
+PORT=9000 purplemux-improved
 ```
 
 日志通过 `LOG_LEVEL`(默认 `info`)控制,`LOG_LEVELS` 用于按模块单独覆盖:
 
 ```bash
-LOG_LEVEL=debug purplemux
+LOG_LEVEL=debug purplemux-improved
 # 只对 Claude hook 模块开启 debug
-LOG_LEVELS=hooks=debug purplemux
+LOG_LEVELS=hooks=debug purplemux-improved
 # 同时对多个模块设置
-LOG_LEVELS=hooks=debug,status=warn purplemux
+LOG_LEVELS=hooks=debug,status=warn purplemux-improved
 ```
 
 可用级别:`trace` · `debug` · `info` · `warn` · `error` · `fatal`。未在 `LOG_LEVELS` 中列出的模块会回退到 `LOG_LEVEL`。
 
-完整列表见 [端口与环境变量](/purplemux/zh-CN/docs/ports-env-vars/)。
+完整列表见 [端口与环境变量](/purplemux-improved/zh-CN/docs/ports-env-vars/)。
 
 ## 开机自启动
 
@@ -91,12 +91,12 @@ LOG_LEVELS=hooks=debug,status=warn purplemux
 如果是 CLI 安装,可以用 launchd(macOS)或 systemd(Linux)包装。一个最小的 systemd 单元文件如下:
 
 ```ini
-# ~/.config/systemd/user/purplemux.service
+# ~/.config/systemd/user/purplemux-improved.service
 [Unit]
-Description=purplemux
+Description=purplemux-improved
 
 [Service]
-ExecStart=/usr/local/bin/purplemux
+ExecStart=/usr/local/bin/purplemux-improved
 Restart=on-failure
 
 [Install]
@@ -104,7 +104,7 @@ WantedBy=default.target
 ```
 
 ```bash
-systemctl --user enable --now purplemux
+systemctl --user enable --now purplemux-improved
 ```
 
 ## 升级
@@ -112,15 +112,15 @@ systemctl --user enable --now purplemux
 | 方式 | 命令 |
 |---|---|
 | npx | 自动(每次运行都是最新) |
-| 全局 npm | `npm update -g purplemux` |
+| 全局 npm | `npm update -g purplemux-improved` |
 | macOS 应用 | 自动(启动时检查更新) |
 | 从源码 | `git pull && pnpm install && pnpm start` |
 
 ## 卸载
 
 ```bash
-npm uninstall -g purplemux          # 或 pnpm remove -g / yarn global remove
+npm uninstall -g purplemux-improved          # 或 pnpm remove -g / yarn global remove
 rm -rf ~/.purplemux                 # 清除设置和会话数据
 ```
 
-原生应用直接拖到回收站即可。`~/.purplemux/` 下到底放了什么,见 [数据目录](/purplemux/zh-CN/docs/data-directory/)。
+原生应用直接拖到回收站即可。`~/.purplemux/` 下到底放了什么,见 [数据目录](/purplemux-improved/zh-CN/docs/data-directory/)。

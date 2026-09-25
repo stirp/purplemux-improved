@@ -31,7 +31,7 @@ permalink: /zh-CN/docs/sidebar-options/index.html
 点保存,行会出现在列表底部。把它拖到你想要的位置。
 
 {% call callout('note', '内置可隐藏,不可删除') %}
-内置条目(purplemux 自带的)只有开关和抓手 — 没有编辑或删除。它们一直在那里,以便你改变主意。自定义条目则有完整的工具集。
+内置条目(purplemux-improved 自带的)只有开关和抓手 — 没有编辑或删除。它们一直在那里,以便你改变主意。自定义条目则有完整的工具集。
 {% endcall %}
 
 ## 快捷提示
@@ -49,13 +49,13 @@ permalink: /zh-CN/docs/sidebar-options/index.html
 
 ## Claude CLI 选项
 
-设置 → **Claude** 标签页。这些标志影响 *purplemux 在新标签里如何启动 Claude CLI* — 它们不改变已经在运行的会话的行为。
+设置 → **Claude** 标签页。这些标志影响 *purplemux-improved 在新标签里如何启动 Claude CLI* — 它们不改变已经在运行的会话的行为。
 
 ### 跳过权限检查
 
 把 `--dangerously-skip-permissions` 加到 `claude` 命令上。Claude 会运行工具和编辑文件而不再每次询问。
 
-这就是官方 CLI 暴露的同一个标志 — purplemux 没有在它之上再放松什么安全。打开之前请先读 [Anthropic 的文档](https://docs.anthropic.com/en/docs/claude-code/cli-reference)。把它当作只对可信工作区开放的选项。
+这就是官方 CLI 暴露的同一个标志 — purplemux-improved 没有在它之上再放松什么安全。打开之前请先读 [Anthropic 的文档](https://docs.anthropic.com/en/docs/claude-code/cli-reference)。把它当作只对可信工作区开放的选项。
 
 ### 与 Claude 一同显示终端
 
@@ -67,6 +67,6 @@ permalink: /zh-CN/docs/sidebar-options/index.html
 
 ## 下一步
 
-- **[主题与字体](/purplemux/zh-CN/docs/themes-fonts/)** — 浅 / 深 / 跟随系统;字号预设。
-- **[编辑器集成](/purplemux/zh-CN/docs/editor-integration/)** — 接入 VS Code、Cursor、code-server。
-- **[第一个会话](/purplemux/zh-CN/docs/first-session/)** — 复习仪表盘布局。
+- **[主题与字体](/purplemux-improved/zh-CN/docs/themes-fonts/)** — 浅 / 深 / 跟随系统;字号预设。
+- **[编辑器集成](/purplemux-improved/zh-CN/docs/editor-integration/)** — 接入 VS Code、Cursor、code-server。
+- **[第一个会话](/purplemux-improved/zh-CN/docs/first-session/)** — 复习仪表盘布局。

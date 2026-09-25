@@ -1,4 +1,6 @@
-# purplemux
+# purplemux-improved
+
+An improved fork of [subicura/purplemux-improved](https://github.com/subicura/purplemux-improved). The `purplemux` / `pmux` aliases and `~/.purplemux` data directory remain compatible. npm installation requires this fork to be published; until then, run from source.
 
 **Claude Code e Codex, várias tarefas ao mesmo tempo. Mais rápido.**
 
@@ -6,23 +8,23 @@ Todas as sessões em uma tela só. Sem quebras, até no celular.
 
 Português (Brasil) | <a href="README.md">English</a> | <a href="README.ko.md">한국어</a> | <a href="README.ja.md">日本語</a> | <a href="README.zh-CN.md">简体中文</a> | <a href="README.zh-TW.md">繁體中文</a> | <a href="README.de.md">Deutsch</a> | <a href="README.es.md">Español</a> | <a href="README.fr.md">Français</a> | <a href="README.ru.md">Русский</a> | <a href="README.tr.md">Türkçe</a>
 
-![purplemux](docs/images/screenshot.png)
+![purplemux-improved](docs/images/screenshot.png)
 
-![purplemux mobile](docs/images/screenshot-mobile.png)
+![purplemux-improved mobile](docs/images/screenshot-mobile.png)
 
 ## Instalação
 
 ```bash
-npx purplemux@latest
+npx purplemux-improved@latest
 ```
 
 Abra [http://localhost:8022](http://localhost:8022) no navegador. Pronto.
 
 > Requer Node.js 20+ e tmux. macOS ou Linux.
 
-Prefere um app nativo? Baixe a versão Electron para macOS na [última release](https://github.com/subicura/purplemux/releases/latest) (`.dmg` para Apple Silicon e Intel).
+Prefere um app nativo? Baixe a versão Electron para macOS na [última release](https://github.com/stirp/purplemux-improved/releases/latest) (`.dmg` para Apple Silicon e Intel).
 
-## Por que purplemux
+## Por que purplemux-improved
 
 - **Painel multissessão** — Veja o status «trabalhando / aguardando entrada» de todas as sessões do Claude Code e do Codex de relance
 - **Monitor de rate limit** — Saldo de 5 horas / 7 dias com contagem regressiva até o reset
@@ -38,7 +40,7 @@ E ainda
 
 ## Diferenças para o Remote Control oficial
 
-> O Remote Control oficial foca no controle remoto de uma única sessão. Use o purplemux quando precisar de gestão multissessão, notificações push e persistência de sessão.
+> O Remote Control oficial foca no controle remoto de uma única sessão. Use o purplemux-improved quando precisar de gestão multissessão, notificações push e persistência de sessão.
 
 ## Recursos
 
@@ -50,7 +52,7 @@ E ainda
 - **Temas do terminal** — Modo escuro / claro e vários esquemas de cores
 - **Workspaces e grupos** — Salve e restaure layouts de painéis, abas e diretórios de trabalho por workspace. Organize os workspaces em grupos com arrastar e soltar
 - **Fluxo de trabalho Git** — Side-by-side / Line-by-line com destaque de sintaxe, expansão de hunks inline e uma aba de histórico paginada. Fetch / pull / push direto do painel com indicadores ahead/behind — se o sync falhar (dirty worktree, conflitos), Ask Claude ou Codex em um clique
-- **Painel de navegador web** — Navegador embutido ao lado do terminal para conferir o resultado de desenvolvimento (Electron). Controle pelo CLI `purplemux` e alterne viewports com um emulador de dispositivo integrado
+- **Painel de navegador web** — Navegador embutido ao lado do terminal para conferir o resultado de desenvolvimento (Electron). Controle pelo CLI `purplemux-improved` e alterne viewports com um emulador de dispositivo integrado
 - **Abas de agentes** — Inicie Claude, Codex ou uma lista de sessões combinada pelo menu de nova aba
 
 ### Integração com Claude Code e Codex
@@ -112,28 +114,28 @@ brew install --cask codex
 ### npx (mais rápido)
 
 ```bash
-npx purplemux@latest
+npx purplemux-improved@latest
 ```
 
 ### Instalação global
 
 ```bash
-npm install -g purplemux
-purplemux
+npm install -g purplemux-improved
+purplemux-improved
 ```
 
 ### Exemplos de CLI
 
 ```bash
-purplemux tab create -w WS -t codex-cli -n "fix auth"
-purplemux tab create -w WS -t agent-sessions
+purplemux-improved tab create -w WS -t codex-cli -n "fix auth"
+purplemux-improved tab create -w WS -t agent-sessions
 ```
 
 ### A partir do código-fonte
 
 ```bash
-git clone https://github.com/subicura/purplemux.git
-cd purplemux
+git clone https://github.com/stirp/purplemux-improved.git
+cd purplemux-improved
 pnpm install
 pnpm start
 ```

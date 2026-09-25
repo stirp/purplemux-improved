@@ -31,7 +31,7 @@
   "appearanceDescription": "Uygulama genelinde görüntüleme temasını seçin.",
   "skipPermissions": "İzin Kontrollerini Atla",
   "skipPermissionsDescription": "Skips permission prompts when running Claude and Codex agents.",
-  "networkDescription": "Hangi ağların purplemux'a erişebileceğini seçin. Daha sonra Ayarlar > Sistem'den değiştirilebilir.",
+  "networkDescription": "Hangi ağların purplemux-improved'a erişebileceğini seçin. Daha sonra Ayarlar > Sistem'den değiştirilebilir.",
   "networkFootnote": "Ters proxy, tünel veya Tailscale Serve kullanıyorsanız \"Yalnızca Localhost\" yeterlidir.",
   "networkOptions": {
     "localhost": {

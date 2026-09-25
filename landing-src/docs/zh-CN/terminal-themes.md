@@ -6,7 +6,7 @@ permalink: /zh-CN/docs/terminal-themes/index.html
 ---
 {% from "docs/callouts.njk" import callout %}
 
-终端窗格使用 xterm.js,自带调色板,与其余 UI 独立。你为深色和浅色各挑一套主题;purplemux 会跟着应用主题切换。
+终端窗格使用 xterm.js,自带调色板,与其余 UI 独立。你为深色和浅色各挑一套主题;purplemux-improved 会跟着应用主题切换。
 
 ## 打开选择器
 
@@ -68,6 +68,6 @@ UI 中目前没有自定义主题入口。内置列表在 `src/lib/terminal-them
 
 ## 下一步
 
-- **[主题与字体](/purplemux/zh-CN/docs/themes-fonts/)** — 应用主题和字号。
-- **[自定义 CSS](/purplemux/zh-CN/docs/custom-css/)** — 覆盖其余 UI。
-- **[编辑器集成](/purplemux/zh-CN/docs/editor-integration/)** — 用外部编辑器打开文件。
+- **[主题与字体](/purplemux-improved/zh-CN/docs/themes-fonts/)** — 应用主题和字号。
+- **[自定义 CSS](/purplemux-improved/zh-CN/docs/custom-css/)** — 覆盖其余 UI。
+- **[编辑器集成](/purplemux-improved/zh-CN/docs/editor-integration/)** — 用外部编辑器打开文件。

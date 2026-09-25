@@ -74,10 +74,10 @@ Equalize is the fastest way to reset a layout that's drifted toward unusable ext
 
 Closing a tab kills its tmux session. Closing the *browser*, refreshing, or losing the network does not — every tab keeps running on the server. Reopen and the same panes, splits, and tabs come back.
 
-For the recovery story across server reboots, see [Save & restore layouts](/purplemux/docs/save-restore/).
+For the recovery story across server reboots, see [Save & restore layouts](/purplemux-improved/docs/save-restore/).
 
 ## What's next
 
-- **[Save & restore layouts](/purplemux/docs/save-restore/)** — how this layout sticks around.
-- **[Keyboard shortcuts](/purplemux/docs/keyboard-shortcuts/)** — every binding in one table.
-- **[Git workflow panel](/purplemux/docs/git-workflow/)** — a useful tab type to drop into a split.
+- **[Save & restore layouts](/purplemux-improved/docs/save-restore/)** — how this layout sticks around.
+- **[Keyboard shortcuts](/purplemux-improved/docs/keyboard-shortcuts/)** — every binding in one table.
+- **[Git workflow panel](/purplemux-improved/docs/git-workflow/)** — a useful tab type to drop into a split.

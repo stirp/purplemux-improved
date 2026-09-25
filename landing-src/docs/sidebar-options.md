@@ -31,7 +31,7 @@ Click **Add Item** at the bottom. You'll get a small form:
 Click Save and the row appears at the bottom of the list. Drag it where you want it.
 
 {% call callout('note', 'Built-ins can be hidden, not deleted') %}
-Built-in items (the ones purplemux ships with) only have a switch and a grip — no edit or delete. They're always there in case you change your mind. Custom items get the full kit.
+Built-in items (the ones purplemux-improved ships with) only have a switch and a grip — no edit or delete. They're always there in case you change your mind. Custom items get the full kit.
 {% endcall %}
 
 ## Quick prompts
@@ -49,13 +49,13 @@ Adding a prompt asks for a **name** (the button label) and the **prompt** itself
 
 ## Claude CLI options
 
-Settings → **Claude** tab. These flags affect *how purplemux launches the Claude CLI* in new tabs — they don't change behavior of an already-running session.
+Settings → **Claude** tab. These flags affect *how purplemux-improved launches the Claude CLI* in new tabs — they don't change behavior of an already-running session.
 
 ### Skip Permission Checks
 
 Adds `--dangerously-skip-permissions` to the `claude` command. Claude will run tools and edit files without asking for approval each time.
 
-This is the same flag the official CLI exposes — purplemux doesn't loosen any safety on top of it. Read [Anthropic's documentation](https://docs.anthropic.com/en/docs/claude-code/cli-reference) before turning it on. Treat it as opt-in for trusted workspaces only.
+This is the same flag the official CLI exposes — purplemux-improved doesn't loosen any safety on top of it. Read [Anthropic's documentation](https://docs.anthropic.com/en/docs/claude-code/cli-reference) before turning it on. Treat it as opt-in for trusted workspaces only.
 
 ### Show Terminal with Claude
 
@@ -67,6 +67,6 @@ Use the off setting if you mostly drive Claude through the timeline view and wan
 
 ## What's next
 
-- **[Themes & fonts](/purplemux/docs/themes-fonts/)** — light, dark, system; font-size presets.
-- **[Editor integration](/purplemux/docs/editor-integration/)** — wire up VS Code, Cursor, code-server.
-- **[First session](/purplemux/docs/first-session/)** — refresh on the dashboard layout.
+- **[Themes & fonts](/purplemux-improved/docs/themes-fonts/)** — light, dark, system; font-size presets.
+- **[Editor integration](/purplemux-improved/docs/editor-integration/)** — wire up VS Code, Cursor, code-server.
+- **[First session](/purplemux-improved/docs/first-session/)** — refresh on the dashboard layout.

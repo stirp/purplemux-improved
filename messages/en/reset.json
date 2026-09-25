@@ -1,5 +1,5 @@
 {
-  "pageTitle": "Reset - purplemux",
+  "pageTitle": "Reset - purplemux-improved",
   "title": "tmux Reset",
   "stepCleanup": "Cleaning up connections",
   "stepReset": "Stopping and resetting tmux server",

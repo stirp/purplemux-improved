@@ -19,7 +19,6 @@ import useTabStore from '@/hooks/use-tab-store';
 import type { TCliState } from '@/types/timeline';
 import useConfigStore, { type TGitAskProvider } from '@/hooks/use-config-store';
 import useMobileLayoutActions from '@/hooks/use-mobile-layout-actions';
-import { useAutoDeleteEmptyWorkspace } from '@/hooks/use-auto-delete-empty-workspace';
 import { useAgentInstallCheck } from '@/hooks/use-agent-install-check';
 import { buildClaudeLaunchCommand } from '@/lib/providers/claude/client';
 import { fetchCodexLaunchCommand } from '@/lib/providers/codex/client';
@@ -54,11 +53,6 @@ const MobileTerminalPage = () => {
     return collectPanes(layout.layout.root);
   }, [layout.layout]);
 
-  const allTabsEmpty = !!(
-    layout.layout &&
-    !layout.isLoading &&
-    panes.every((p) => p.tabs.length === 0)
-  );
 
   const layoutUpdatedAt = layout.layout?.updatedAt;
   const hydratedRef = useRef<string | null>(null);
@@ -86,7 +80,6 @@ const MobileTerminalPage = () => {
     useTabMetadataStore.getState().retainOnly(allTabIds);
   }, [layout.layout]);
 
-  useAutoDeleteEmptyWorkspace(allTabsEmpty, layout.clearLayout);
 
   // Derive active pane/tab from layout store (same as desktop)
   const activePaneId = layout.layout?.activePaneId ?? null;
@@ -328,6 +321,15 @@ const MobileTerminalPage = () => {
           onCliStateChange={handleCliStateChange}
           onOpenNewTabDialog={handleOpenNewTabDialog}
         />
+      )}
+
+      {currentPane && currentPane.tabs.length === 0 && (
+        <div className="flex flex-1 items-center justify-center">
+          <Button className="gap-1.5" onClick={handleOpenNewTabDialog}>
+            <Plus className="h-3.5 w-3.5" />
+            {t('openNewTab')}
+          </Button>
+        </div>
       )}
 
       <MobileNewTabDialog

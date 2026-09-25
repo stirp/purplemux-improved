@@ -61,6 +61,6 @@ Esa es la apuesta principal del panel: utilidades para el caso común, un LLM pa
 
 ## Siguientes pasos
 
-- **[Pestañas y paneles](/purplemux/es/docs/tabs-panes/)** — dividir el panel de diff junto a una sesión de Claude.
-- **[Primera sesión](/purplemux/es/docs/first-session/)** — cómo aparecen los avisos de permisos de Claude en el panel.
-- **[Panel de navegador web](/purplemux/es/docs/web-browser-panel/)** — el otro tipo de panel que merece la pena ejecutar junto a una terminal.
+- **[Pestañas y paneles](/purplemux-improved/es/docs/tabs-panes/)** — dividir el panel de diff junto a una sesión de Claude.
+- **[Primera sesión](/purplemux-improved/es/docs/first-session/)** — cómo aparecen los avisos de permisos de Claude en el panel.
+- **[Panel de navegador web](/purplemux-improved/es/docs/web-browser-panel/)** — el otro tipo de panel que merece la pena ejecutar junto a una terminal.

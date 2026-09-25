@@ -6,7 +6,7 @@ permalink: /ja/docs/live-session-view/index.html
 ---
 {% from "docs/callouts.njk" import callout %}
 
-タブで Claude Code が動作しているとき、purplemux は生のターミナルビューを構造化されたタイムラインに置き換えます。同じセッション、同じ JSONL トランスクリプト — ただし、スキャンしたり、スクロールしたり、リンクできる個別のイベントとしてレイアウトされます。
+タブで Claude Code が動作しているとき、purplemux-improved は生のターミナルビューを構造化されたタイムラインに置き換えます。同じセッション、同じ JSONL トランスクリプト — ただし、スキャンしたり、スクロールしたり、リンクできる個別のイベントとしてレイアウトされます。
 
 ## なぜタイムラインがスクロールバックより優れるのか
 
@@ -62,7 +62,7 @@ Claude が `busy` の間、以下も表示されます:
 
 ## インラインの権限プロンプト
 
-Claude がツール実行やファイル編集の許可を求めると、プロンプトはモーダルではなくタイムライン内にインラインで表示されます。オプションをクリック、対応する数字キーを押す、あるいは無視してスマートフォンの Web Push から答えることもできます。フル仕様は [権限プロンプト](/purplemux/ja/docs/permission-prompts/) を参照してください。
+Claude がツール実行やファイル編集の許可を求めると、プロンプトはモーダルではなくタイムライン内にインラインで表示されます。オプションをクリック、対応する数字キーを押す、あるいは無視してスマートフォンの Web Push から答えることもできます。フル仕様は [権限プロンプト](/purplemux-improved/ja/docs/permission-prompts/) を参照してください。
 
 ## 1 つのタブでのモード
 
@@ -78,6 +78,6 @@ Claude がツール実行やファイル編集の許可を求めると、プロ�
 
 ## 次のステップ
 
-- **[権限プロンプト](/purplemux/ja/docs/permission-prompts/)** — インラインの承認フロー。
-- **[セッションステータス](/purplemux/ja/docs/session-status/)** — タイムラインのインジケータを駆動するバッジ。
-- **[クイックプロンプト & 添付](/purplemux/ja/docs/quick-prompts-attachments/)** — 下部の入力バーで何ができるか。
+- **[権限プロンプト](/purplemux-improved/ja/docs/permission-prompts/)** — インラインの承認フロー。
+- **[セッションステータス](/purplemux-improved/ja/docs/session-status/)** — タイムラインのインジケータを駆動するバッジ。
+- **[クイックプロンプト & 添付](/purplemux-improved/ja/docs/quick-prompts-attachments/)** — 下部の入力バーで何ができるか。

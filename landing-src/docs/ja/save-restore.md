@@ -6,7 +6,7 @@ permalink: /ja/docs/save-restore/index.html
 ---
 {% from "docs/callouts.njk" import callout %}
 
-purplemux は、ブラウザのタブを閉じてもセッションが終わってはいけないという発想で作られています。2 つのピースが連携します: tmux がシェルを動かし続け、`~/.purplemux/workspaces.json` がレイアウトを記憶します。
+purplemux-improved は、ブラウザのタブを閉じてもセッションが終わってはいけないという発想で作られています。2 つのピースが連携します: tmux がシェルを動かし続け、`~/.purplemux/workspaces.json` がレイアウトを記憶します。
 
 ## 何が永続化されるか
 
@@ -18,7 +18,7 @@ purplemux は、ブラウザのタブを閉じてもセッションが終わっ�
 - 各シェルの作業ディレクトリ
 - ワークスペースグループ、名前、順序
 
-`workspaces.json` はレイアウトの変化があるたびにトランザクション的に更新されるため、常に現在の状態を反映します。ディスク上のファイルマップは [データディレクトリ](/purplemux/ja/docs/data-directory/) を参照してください。
+`workspaces.json` はレイアウトの変化があるたびにトランザクション的に更新されるため、常に現在の状態を反映します。ディスク上のファイルマップは [データディレクトリ](/purplemux-improved/ja/docs/data-directory/) を参照してください。
 
 ## ブラウザを閉じる
 
@@ -34,7 +34,7 @@ purplemux は、ブラウザのタブを閉じてもセッションが終わっ�
 
 ## サーバ再起動からの復旧
 
-再起動すると tmux プロセスは kill されます — 単なる OS プロセスなので。purplemux は次回起動時にこれを処理します:
+再起動すると tmux プロセスは kill されます — 単なる OS プロセスなので。purplemux-improved は次回起動時にこれを処理します:
 
 1. **レイアウト読込** — `workspaces.json` がすべてのワークスペース、ペイン、タブを記述しています。
 2. **セッションを並列再生成** — 各タブについて、保存された作業ディレクトリで新しい tmux セッションが起動されます。
@@ -58,12 +58,12 @@ purplemux は、ブラウザのタブを閉じてもセッションが終わっ�
 
 - tmux ソケット名は `purple`。`tmux -L purple ls` で確認可能。
 - セッション名は `pt-{workspaceId}-{paneId}-{tabId}`。
-- purplemux 起動中に `workspaces.json` を編集するのは安全ではありません — サーバがファイルを開いて書き込み続けています。
+- purplemux-improved 起動中に `workspaces.json` を編集するのは安全ではありません — サーバがファイルを開いて書き込み続けています。
 
-より深い話 (バイナリプロトコル、バックプレッシャー、JSONL ウォッチング) は、ランディングページの [仕組み](/purplemux/#how) を参照してください。
+より深い話 (バイナリプロトコル、バックプレッシャー、JSONL ウォッチング) は、ランディングページの [仕組み](/purplemux-improved/#how) を参照してください。
 
 ## 次のステップ
 
-- **[ワークスペースとグループ](/purplemux/ja/docs/workspaces-groups/)** — ワークスペース単位で何が保存されるか。
-- **[タブとペイン](/purplemux/ja/docs/tabs-panes/)** — タブ単位で何が保存されるか。
-- **[ブラウザサポート](/purplemux/ja/docs/browser-support/)** — モバイルのバックグラウンドタブと再接続に関する既知のクセ。
+- **[ワークスペースとグループ](/purplemux-improved/ja/docs/workspaces-groups/)** — ワークスペース単位で何が保存されるか。
+- **[タブとペイン](/purplemux-improved/ja/docs/tabs-panes/)** — タブ単位で何が保存されるか。
+- **[ブラウザサポート](/purplemux-improved/ja/docs/browser-support/)** — モバイルのバックグラウンドタブと再接続に関する既知のクセ。

@@ -6,7 +6,7 @@ permalink: /docs/data-directory/index.html
 ---
 {% from "docs/callouts.njk" import callout %}
 
-Every persistent piece of state purplemux keeps — settings, layouts, session history, caches — lives under `~/.purplemux/`. Nothing else. No `localStorage`, no system keychain, no external service.
+Every persistent piece of state purplemux-improved keeps — settings, layouts, session history, caches — lives under `~/.purplemux/`. Nothing else. No `localStorage`, no system keychain, no external service.
 
 ## Layout at a glance
 
@@ -51,12 +51,12 @@ Files containing secrets (config, tokens, layouts, VAPID keys, lock) are written
 | `quick-prompts.json`, `sidebar-items.json` | `{ custom: […], disabledBuiltinIds: […], order: […] }` overlays on the built-in lists | Yes — restores defaults |
 | `vapid-keys.json` | Web Push VAPID keypair, generated on first run | Don't unless you also delete `push-subscriptions.json` (existing subscriptions break) |
 | `push-subscriptions.json` | Per-browser push endpoints | Yes — re-subscribe on each device |
-| `cli-token` | 32-byte hex token for `purplemux` CLI and hook scripts (`x-pmux-token` header) | Yes — regenerated on next start, but any hook script that's already been generated keeps the old token until the server overwrites it |
+| `cli-token` | 32-byte hex token for `purplemux-improved` CLI and hook scripts (`x-pmux-token` header) | Yes — regenerated on next start, but any hook script that's already been generated keeps the old token until the server overwrites it |
 | `port` | Plain-text current port, read by hook scripts and the CLI | Yes — regenerated on next start |
-| `pmux.lock` | Single-instance guard `{ pid, port, startedAt }` | Only if no purplemux process is alive |
+| `pmux.lock` | Single-instance guard `{ pid, port, startedAt }` | Only if no purplemux-improved process is alive |
 
 {% call callout('warning', 'Lock file gotchas') %}
-If purplemux refuses to start with "already running" but no process is alive, `pmux.lock` is stale. `rm ~/.purplemux/pmux.lock` and try again. If you ever ran purplemux with `sudo`, the lock file may be owned by root — `sudo rm` it once.
+If purplemux-improved refuses to start with "already running" but no process is alive, `pmux.lock` is stale. `rm ~/.purplemux/pmux.lock` and try again. If you ever ran purplemux-improved with `sudo`, the lock file may be owned by root — `sudo rm` it once.
 {% endcall %}
 
 ## Per-workspace directory (`workspaces/{wsId}/`)
@@ -79,7 +79,7 @@ Pino-roll output, one file per UTC day, with a numeric suffix when size limits a
 logs/purplemux.2026-04-19.1.log
 ```
 
-Default level is `info`. Override with `LOG_LEVEL` or per-module with `LOG_LEVELS` — see [Ports & env vars](/purplemux/docs/ports-env-vars/).
+Default level is `info`. Override with `LOG_LEVEL` or per-module with `LOG_LEVELS` — see [Ports & env vars](/purplemux-improved/docs/ports-env-vars/).
 
 Logs rotate weekly (7-file limit). Safe to delete at any time.
 
@@ -98,7 +98,7 @@ uploads/{wsId}/{tabId}/{timestamp}-{rand}-{name}.{ext}
 
 ## `stats/`
 
-Pure cache. Derived from `~/.claude/projects/**/*.jsonl` — purplemux only reads that directory.
+Pure cache. Derived from `~/.claude/projects/**/*.jsonl` — purplemux-improved only reads that directory.
 
 | File | Contents |
 |---|---|
@@ -130,7 +130,7 @@ The whole directory is plain JSON plus a few shell scripts. To back up:
 tar czf purplemux-backup.tgz -C ~ .purplemux
 ```
 
-To restore on a fresh machine, untar and start purplemux. Hook scripts will be rewritten with the new server's port; everything else (workspaces, history, settings) lifts over as-is.
+To restore on a fresh machine, untar and start purplemux-improved. Hook scripts will be rewritten with the new server's port; everything else (workspaces, history, settings) lifts over as-is.
 
 {% call callout('warning') %}
 Don't restore `pmux.lock` — it's tied to a specific PID and will block startup. Exclude it: `--exclude pmux.lock`.
@@ -142,10 +142,10 @@ Don't restore `pmux.lock` — it's tied to a specific PID and will block startup
 rm -rf ~/.purplemux
 ```
 
-Make sure no purplemux is running first. Next launch will be the first-run experience again.
+Make sure no purplemux-improved is running first. Next launch will be the first-run experience again.
 
 ## What's next
 
-- **[Ports & env vars](/purplemux/docs/ports-env-vars/)** — every variable that influences this directory.
-- **[Architecture](/purplemux/docs/architecture/)** — how the files connect to the running server.
-- **[Troubleshooting](/purplemux/docs/troubleshooting/)** — common issues and fixes.
+- **[Ports & env vars](/purplemux-improved/docs/ports-env-vars/)** — every variable that influences this directory.
+- **[Architecture](/purplemux-improved/docs/architecture/)** — how the files connect to the running server.
+- **[Troubleshooting](/purplemux-improved/docs/troubleshooting/)** — common issues and fixes.

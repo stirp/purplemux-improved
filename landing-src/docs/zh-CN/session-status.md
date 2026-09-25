@@ -1,6 +1,6 @@
 ---
 title: 会话状态
-description: purplemux 如何把 Claude Code 的活动转换成四态徽章 — 以及为什么它几乎是即时更新。
+description: purplemux-improved 如何把 Claude Code 的活动转换成四态徽章 — 以及为什么它几乎是即时更新。
 eyebrow: Claude Code
 permalink: /zh-CN/docs/session-status/index.html
 ---
@@ -17,11 +17,11 @@ permalink: /zh-CN/docs/session-status/index.html
 | **Needs input** | 琥珀色脉冲 | 有权限提示或问题在等你回应。 |
 | **Review** | 紫色脉冲 | Claude 完成了,有东西需要你检查。 |
 
-第五个值 **unknown** 会短暂出现在那些服务器重启时还在 `busy` 状态的标签上。一旦 purplemux 能够重新校验,它会自行解析。
+第五个值 **unknown** 会短暂出现在那些服务器重启时还在 `busy` 状态的标签上。一旦 purplemux-improved 能够重新校验,它会自行解析。
 
 ## hook 是事实来源
 
-purplemux 在 `~/.purplemux/hooks.json` 安装一份 Claude Code hook 配置,并在 `~/.purplemux/status-hook.sh` 安装一个微型 shell 脚本。该脚本注册到五个 Claude Code hook 事件,每次都用 CLI token 把事件 POST 给本地服务:
+purplemux-improved 在 `~/.purplemux/hooks.json` 安装一份 Claude Code hook 配置,并在 `~/.purplemux/status-hook.sh` 安装一个微型 shell 脚本。该脚本注册到五个 Claude Code hook 事件,每次都用 CLI token 把事件 POST 给本地服务:
 
 | Claude Code hook | 对应状态 |
 |---|---|
@@ -34,21 +34,21 @@ purplemux 在 `~/.purplemux/hooks.json` 安装一份 Claude Code hook 配置,并
 因为 hook 在 Claude Code 转换的瞬间就触发,侧边栏的更新比你在终端里注意到还要早。
 
 {% call callout('note', '只关心权限通知') %}
-Claude 的 `Notification` hook 因为多种原因触发。purplemux 仅在通知是 `permission_prompt` 或 `worker_permission_prompt` 时翻到 **needs-input**。空闲提醒和其他通知类型不会触发徽章。
+Claude 的 `Notification` hook 因为多种原因触发。purplemux-improved 仅在通知是 `permission_prompt` 或 `worker_permission_prompt` 时翻到 **needs-input**。空闲提醒和其他通知类型不会触发徽章。
 {% endcall %}
 
 ## 进程检测并行运行
 
 Claude CLI 是否真的在跑,跟工作状态分开追踪。两条路径协作:
 
-- **tmux 标题变化** — 每个窗格把 `pane_current_command|pane_current_path` 报为标题。xterm.js 通过 `onTitleChange` 通知,purplemux 调 `/api/check-claude` 确认。
+- **tmux 标题变化** — 每个窗格把 `pane_current_command|pane_current_path` 报为标题。xterm.js 通过 `onTitleChange` 通知,purplemux-improved 调 `/api/check-claude` 确认。
 - **进程树遍历** — 服务端,`detectActiveSession` 看窗格的 shell PID,遍历其子进程,与 `~/.claude/sessions/` 下 Claude 写的 PID 文件匹配。
 
 如果该目录不存在,UI 会显示 "Claude 未安装" 屏而不是状态点。
 
 ## JSONL 监视器填空白
 
-Claude Code 为每个会话在 `~/.claude/projects/` 下写一个 JSONL 转录文件。当一个标签处于 `busy`、`needs-input`、`unknown` 或 `ready-for-review` 时,purplemux 用 `fs.watch` 监视该文件,有两个目的:
+Claude Code 为每个会话在 `~/.claude/projects/` 下写一个 JSONL 转录文件。当一个标签处于 `busy`、`needs-input`、`unknown` 或 `ready-for-review` 时,purplemux-improved 用 `fs.watch` 监视该文件,有两个目的:
 
 - **元数据** — 当前工具、最近的 assistant 片段、token 计数。这些流入时间线和侧边栏,但不改变状态。
 - **合成 interrupt** — 当你在流过程中按 Esc,Claude 会把 `[Request interrupted by user]` 写入 JSONL 但不触发任何 hook。监视器检测到这一行后合成一个 `interrupt` 事件,让标签回到 idle 而不是卡在 busy。
@@ -65,7 +65,7 @@ Claude Code 为每个会话在 `~/.claude/projects/` 下写一个 JSONL 转录�
 
 ## 服务器重启后的存活
 
-purplemux 关闭期间 hook 无法触发,所以任何在途状态都可能过期。恢复规则是保守的:
+purplemux-improved 关闭期间 hook 无法触发,所以任何在途状态都可能过期。恢复规则是保守的:
 
 - 持久化的 `busy` 变成 `unknown` 并被重新校验:如果 Claude 不在跑,标签静默翻到 idle;如果 JSONL 干净结束,变为 review。
 - 其他状态 — `idle`、`needs-input`、`ready-for-review` — 球在你那一边,所以保持原样。
@@ -83,6 +83,6 @@ purplemux 关闭期间 hook 无法触发,所以任何在途状态都可能过期
 
 ## 下一步
 
-- **[权限提示](/purplemux/zh-CN/docs/permission-prompts/)** — **needs-input** 状态背后的工作流。
-- **[实时会话视图](/purplemux/zh-CN/docs/live-session-view/)** — 标签处于 `busy` 时时间线显示什么。
-- **[第一个会话](/purplemux/zh-CN/docs/first-session/)** — 在上下文中浏览仪表盘。
+- **[权限提示](/purplemux-improved/zh-CN/docs/permission-prompts/)** — **needs-input** 状态背后的工作流。
+- **[实时会话视图](/purplemux-improved/zh-CN/docs/live-session-view/)** — 标签处于 `busy` 时时间线显示什么。
+- **[第一个会话](/purplemux-improved/zh-CN/docs/first-session/)** — 在上下文中浏览仪表盘。

@@ -34,7 +34,7 @@ Hay una distinción significativa en cómo cada preset abre una carpeta:
 - **code-server** corre dentro del navegador. La URL apunta al servidor que estás alojando (tuyo, en tu red, o tras Tailscale). Haz clic en el botón EDITOR y una nueva pestaña carga la carpeta.
 - **IDEs locales** (VS Code, Cursor, Windsurf, Zed) requieren tener el IDE instalado en la *máquina donde corre el navegador*. El enlace se entrega al SO, que lanza el manejador registrado.
 
-Si usas purplemux desde el móvil, solo el preset code-server funciona — los móviles no pueden abrir URLs `vscode://` en una app de escritorio.
+Si usas purplemux-improved desde el móvil, solo el preset code-server funciona — los móviles no pueden abrir URLs `vscode://` en una app de escritorio.
 
 ## Configurar code-server
 
@@ -51,10 +51,10 @@ code-server --port 8080
 tailscale serve --bg --https=8443 http://localhost:8080
 ```
 
-Luego en la pestaña Editor, pon la URL a la dirección donde code-server es accesible — `http://localhost:8080` para local, o `https://<machine>.<tailnet>.ts.net:8443` si lo has puesto tras Tailscale Serve. purplemux valida que la URL empiece con `http://` o `https://` y añade `?folder=<ruta absoluta>` automáticamente.
+Luego en la pestaña Editor, pon la URL a la dirección donde code-server es accesible — `http://localhost:8080` para local, o `https://<machine>.<tailnet>.ts.net:8443` si lo has puesto tras Tailscale Serve. purplemux-improved valida que la URL empiece con `http://` o `https://` y añade `?folder=<ruta absoluta>` automáticamente.
 
 {% call callout('note', 'Elige un puerto que no sea 8022') %}
-purplemux ya vive en `8022`. Ejecuta code-server en un puerto diferente (el ejemplo usa `8080`) para que no peleen.
+purplemux-improved ya vive en `8022`. Ejecuta code-server en un puerto diferente (el ejemplo usa `8080`) para que no peleen.
 {% endcall %}
 
 ## Plantilla de URL personalizada
@@ -69,7 +69,7 @@ mieditor://open?path={folderEncoded}
 https://my.coder.example/workspace?dir={folderEncoded}
 ```
 
-purplemux valida la plantilla al guardar y rechaza una sin marcador.
+purplemux-improved valida la plantilla al guardar y rechaza una sin marcador.
 
 ## Desactivar el botón
 
@@ -77,6 +77,6 @@ Elige **Desactivado**. El botón desaparece de la cabecera del espacio de trabaj
 
 ## Siguientes pasos
 
-- **[Barra lateral y opciones de Claude](/purplemux/es/docs/sidebar-options/)** — reordena elementos de la barra lateral, alterna flags de Claude.
-- **[CSS personalizado](/purplemux/es/docs/custom-css/)** — más ajustes visuales.
-- **[Tailscale](/purplemux/es/docs/tailscale/)** — acceso externo seguro también para code-server.
+- **[Barra lateral y opciones de Claude](/purplemux-improved/es/docs/sidebar-options/)** — reordena elementos de la barra lateral, alterna flags de Claude.
+- **[CSS personalizado](/purplemux-improved/es/docs/custom-css/)** — más ajustes visuales.
+- **[Tailscale](/purplemux-improved/es/docs/tailscale/)** — acceso externo seguro también para code-server.

@@ -1,4 +1,13 @@
 {
+  "parentDirectory": "上一级目录",
+  "openDirectory": "打开",
+  "showHiddenDirectories": "显示隐藏目录",
+  "directoryReadFailed": "无法读取目录，请检查路径和访问权限。",
+  "noSubdirectories": "没有子目录",
+  "directorySelectionHint": "点击文件夹进入；勾选多个目录可分别创建工作区。",
+  "selectedDirectories": "已选目录",
+  "useCurrentDirectory": "使用当前目录",
+  "createSelectedWorkspaces": "创建所选工作区",
   "add": "添加工作区",
   "editTitle": "编辑工作区",
   "namePlaceholder": "输入工作区名称",

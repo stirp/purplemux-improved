@@ -1,6 +1,6 @@
 ---
 title: Oturum durumu
-description: purplemux'ın Claude Code etkinliğini dört durumlu bir rozete nasıl çevirdiği — ve neredeyse anlık güncellenmesinin nedeni.
+description: purplemux-improved'ın Claude Code etkinliğini dört durumlu bir rozete nasıl çevirdiği — ve neredeyse anlık güncellenmesinin nedeni.
 eyebrow: Claude Code
 permalink: /tr/docs/session-status/index.html
 ---
@@ -17,11 +17,11 @@ Kenar çubuğundaki her oturum, Claude'un ne yaptığını bir bakışta söyley
 | **Girdi gerekiyor** | sarı nabız | Bir izin istemi veya soru sizi bekliyor. |
 | **İnceleme** | mor nabız | Claude bitirdi, kontrol etmeniz gereken bir şey var. |
 
-Beşinci bir değer, **bilinmiyor**, sunucu yeniden başlatıldığında `busy` olan sekmeler için kısaca görünür. purplemux oturumu yeniden doğrulayabildiğinde kendiliğinden çözülür.
+Beşinci bir değer, **bilinmiyor**, sunucu yeniden başlatıldığında `busy` olan sekmeler için kısaca görünür. purplemux-improved oturumu yeniden doğrulayabildiğinde kendiliğinden çözülür.
 
 ## Doğruluk kaynağı hook'lardır
 
-purplemux, `~/.purplemux/hooks.json`'a bir Claude Code hook yapılandırması ve `~/.purplemux/status-hook.sh`'a küçük bir shell betiği kurar. Betik beş Claude Code hook olayına kayıtlıdır ve her birini bir CLI tokenıyla yerel sunucuya POST eder:
+purplemux-improved, `~/.purplemux/hooks.json`'a bir Claude Code hook yapılandırması ve `~/.purplemux/status-hook.sh`'a küçük bir shell betiği kurar. Betik beş Claude Code hook olayına kayıtlıdır ve her birini bir CLI tokenıyla yerel sunucuya POST eder:
 
 | Claude Code hook | Sonuç durum |
 |---|---|
@@ -34,21 +34,21 @@ purplemux, `~/.purplemux/hooks.json`'a bir Claude Code hook yapılandırması ve
 Hook'lar Claude Code geçiş yaptığı anda tetiklendiği için, kenar çubuğu siz terminalde fark etmeden önce güncellenir.
 
 {% call callout('note', 'Yalnızca izin bildirimleri') %}
-Claude'un `Notification` hook'u birkaç nedenle tetiklenir. purplemux yalnızca bildirim `permission_prompt` veya `worker_permission_prompt` olduğunda **needs-input**'a geçer. Boşta dürtmeleri ve diğer bildirim türleri rozeti tetiklemez.
+Claude'un `Notification` hook'u birkaç nedenle tetiklenir. purplemux-improved yalnızca bildirim `permission_prompt` veya `worker_permission_prompt` olduğunda **needs-input**'a geçer. Boşta dürtmeleri ve diğer bildirim türleri rozeti tetiklemez.
 {% endcall %}
 
 ## Süreç tespiti paralel çalışır
 
 Claude CLI'nin gerçekte çalışıp çalışmadığı, iş durumundan ayrı izlenir. İki yol işbirliği yapar:
 
-- **tmux başlık değişiklikleri** — her panel başlık olarak `pane_current_command|pane_current_path` raporlar. xterm.js değişikliği `onTitleChange` ile teslim eder ve purplemux doğrulamak için `/api/check-claude`'i pingler.
+- **tmux başlık değişiklikleri** — her panel başlık olarak `pane_current_command|pane_current_path` raporlar. xterm.js değişikliği `onTitleChange` ile teslim eder ve purplemux-improved doğrulamak için `/api/check-claude`'i pingler.
 - **Süreç ağacı yürüyüşü** — sunucu tarafında, `detectActiveSession` panelin shell PID'sine bakar, çocuklarını gezer ve Claude'un `~/.claude/sessions/` altında yazdığı PID dosyalarına eşleştirir.
 
 Dizin yoksa arayüz, durum noktası yerine "Claude yüklü değil" ekranı gösterir.
 
 ## JSONL izleyicisi boşlukları doldurur
 
-Claude Code, her oturum için `~/.claude/projects/` altına bir transkript JSONL'si yazar. Bir sekme `busy`, `needs-input`, `unknown` veya `ready-for-review` iken purplemux iki nedenle o dosyayı `fs.watch` ile izler:
+Claude Code, her oturum için `~/.claude/projects/` altına bir transkript JSONL'si yazar. Bir sekme `busy`, `needs-input`, `unknown` veya `ready-for-review` iken purplemux-improved iki nedenle o dosyayı `fs.watch` ile izler:
 
 - **Metadata** — geçerli araç, son asistan parçacığı, token sayıları. Bunlar zaman tüneline ve kenar çubuğuna durumu değiştirmeden akar.
 - **Sentetik kesinti** — siz akış ortasında Esc'ye bastığınızda Claude JSONL'ye `[Request interrupted by user]` yazar ama hook tetiklemez. İzleyici o satırı tespit eder ve bir `interrupt` olayı sentezler, böylece sekme `busy`'de takılı kalmak yerine `idle`'a döner.
@@ -65,7 +65,7 @@ Bu, açılış sayfasında bahsedilen "5–15 sn yedek polling"in, hook'lar güv
 
 ## Sunucu yeniden başlatmasından sağ çıkmak
 
-purplemux çalışmıyorken hook'lar tetiklenemez, dolayısıyla süreç içindeki herhangi bir durum eski hale gelebilir. Kurtarma kuralı muhafazakardır:
+purplemux-improved çalışmıyorken hook'lar tetiklenemez, dolayısıyla süreç içindeki herhangi bir durum eski hale gelebilir. Kurtarma kuralı muhafazakardır:
 
 - Kalıcılaştırılmış `busy`, `unknown` olur ve yeniden kontrol edilir: Claude artık çalışmıyorsa sekme sessizce idle'a döner; JSONL temiz biter ise review olur.
 - Diğer her durum — `idle`, `needs-input`, `ready-for-review` — top sizin sahanızda olduğu için dokunulmadan kalır.
@@ -83,6 +83,6 @@ Kurtarma sırasında otomatik durum değişiklikleri push bildirim göndermez. Y
 
 ## Sıradaki adımlar
 
-- **[İzin istemleri](/purplemux/tr/docs/permission-prompts/)** — **needs-input** durumunun arkasındaki iş akışı.
-- **[Canlı oturum görünümü](/purplemux/tr/docs/live-session-view/)** — bir sekme `busy` olduğunda zaman tünelinin neyi gösterdiği.
-- **[İlk oturum](/purplemux/tr/docs/first-session/)** — bağlam içinde panel turu.
+- **[İzin istemleri](/purplemux-improved/tr/docs/permission-prompts/)** — **needs-input** durumunun arkasındaki iş akışı.
+- **[Canlı oturum görünümü](/purplemux-improved/tr/docs/live-session-view/)** — bir sekme `busy` olduğunda zaman tünelinin neyi gösterdiği.
+- **[İlk oturum](/purplemux-improved/tr/docs/first-session/)** — bağlam içinde panel turu.

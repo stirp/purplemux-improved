@@ -16,7 +16,7 @@ permalink: /ja/docs/workspaces-groups/index.html
 - **タブとペイン** — ターミナル、Claude セッション、diff パネル、Web ブラウザパネル。
 - **レイアウト** — 分割比率、フォーカス、各ペインのアクティブタブ。
 
-すべては `~/.purplemux/workspaces.json` に永続化されるため、ワークスペースは purplemux が保存・復元する単位になります。ブラウザを閉じてもワークスペースは消えません。tmux がシェルを開いたままにし、レイアウトはそのまま残ります。
+すべては `~/.purplemux/workspaces.json` に永続化されるため、ワークスペースは purplemux-improved が保存・復元する単位になります。ブラウザを閉じてもワークスペースは消えません。tmux がシェルを開いたままにし、レイアウトはそのまま残ります。
 
 ## ワークスペースを作成する
 
@@ -61,10 +61,10 @@ permalink: /ja/docs/workspaces-groups/index.html
 
 ## ディスク上の配置
 
-すべての変更は `~/.purplemux/workspaces.json` に書き込まれます。確認やバックアップが可能です — ファイルレイアウト全体は [データディレクトリ](/purplemux/ja/docs/data-directory/) を参照してください。サーバの実行中にこのファイルを消去すると、purplemux は空のワークスペースにフォールバックして最初からやり直します。
+すべての変更は `~/.purplemux/workspaces.json` に書き込まれます。確認やバックアップが可能です — ファイルレイアウト全体は [データディレクトリ](/purplemux-improved/ja/docs/data-directory/) を参照してください。サーバの実行中にこのファイルを消去すると、purplemux-improved は空のワークスペースにフォールバックして最初からやり直します。
 
 ## 次のステップ
 
-- **[タブとペイン](/purplemux/ja/docs/tabs-panes/)** — ワークスペース内での分割・並べ替え・フォーカス。
-- **[レイアウトの保存と復元](/purplemux/ja/docs/save-restore/)** — ブラウザを閉じてもサーバ再起動でもワークスペースが残る仕組み。
-- **[キーボードショートカット](/purplemux/ja/docs/keyboard-shortcuts/)** — 完全なバインディング表。
+- **[タブとペイン](/purplemux-improved/ja/docs/tabs-panes/)** — ワークスペース内での分割・並べ替え・フォーカス。
+- **[レイアウトの保存と復元](/purplemux-improved/ja/docs/save-restore/)** — ブラウザを閉じてもサーバ再起動でもワークスペースが残る仕組み。
+- **[キーボードショートカット](/purplemux-improved/ja/docs/keyboard-shortcuts/)** — 完全なバインディング表。

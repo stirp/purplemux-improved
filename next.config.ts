@@ -1,4 +1,5 @@
 import { execSync } from 'child_process';
+import { networkInterfaces } from 'os';
 import type { NextConfig } from "next";
 
 const commitHash = (() => {
@@ -10,6 +11,10 @@ const commitHash = (() => {
 })();
 
 const nextConfig: NextConfig = {
+  // Allow LAN access to dev assets and HMR without trusting arbitrary origins.
+  allowedDevOrigins: Object.values(networkInterfaces()).flatMap((addresses) =>
+    (addresses ?? []).map(({ address, family }) => family === 'IPv6' ? `[${address}]` : address),
+  ),
   env: {
     NEXT_PUBLIC_COMMIT_HASH: commitHash,
   },

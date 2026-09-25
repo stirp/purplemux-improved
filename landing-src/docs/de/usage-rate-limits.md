@@ -6,7 +6,7 @@ permalink: /de/docs/usage-rate-limits/index.html
 ---
 {% from "docs/callouts.njk" import callout %}
 
-Mitten in der Arbeit ein Rate-Limit zu reißen, ist die schlimmste Art von Unterbrechung. purplemux zieht Claude Codes Quota-Zahlen in die Seitenleiste und ergänzt ein Statistik-Dashboard, sodass du deinen Nutzungsrhythmus auf einen Blick siehst.
+Mitten in der Arbeit ein Rate-Limit zu reißen, ist die schlimmste Art von Unterbrechung. purplemux-improved zieht Claude Codes Quota-Zahlen in die Seitenleiste und ergänzt ein Statistik-Dashboard, sodass du deinen Nutzungsrhythmus auf einen Blick siehst.
 
 ## Das Sidebar-Widget
 
@@ -18,7 +18,7 @@ Zwei dünne Balken sitzen unten in der Seitenleiste: **5h** und **7d**. Jeder ze
 
 Hover einen Balken für die volle Aufschlüsselung — verbrauchter Prozent, projizierter Prozent und Reset-Zeit als relative Dauer.
 
-Die Zahlen kommen aus Claude Codes eigenem statusline-JSON. purplemux installiert ein winziges `~/.purplemux/statusline.sh`-Skript, das die Daten jedes Mal an den lokalen Server postet, wenn Claude seine Statusline auffrischt; ein `fs.watch` hält die UI synchron.
+Die Zahlen kommen aus Claude Codes eigenem statusline-JSON. purplemux-improved installiert ein winziges `~/.purplemux/statusline.sh`-Skript, das die Daten jedes Mal an den lokalen Server postet, wenn Claude seine Statusline auffrischt; ein `fs.watch` hält die UI synchron.
 
 ## Farb-Schwellen
 
@@ -71,14 +71,14 @@ Ein Tag × Stunde-Raster, das zeigt, wann du Claude in der letzten Woche tatsäc
 
 ## Woher die Daten kommen
 
-Alles im Dashboard wird lokal aus Claude Codes eigenen Session-JSONLs unter `~/.claude/projects/` berechnet. purplemux liest sie, cached die geparsten Counts in `~/.purplemux/stats/` und sendet kein Byte aus der Maschine. Sprache wechseln oder den Cache neu generieren reicht nirgendwohin nach außen.
+Alles im Dashboard wird lokal aus Claude Codes eigenen Session-JSONLs unter `~/.claude/projects/` berechnet. purplemux-improved liest sie, cached die geparsten Counts in `~/.purplemux/stats/` und sendet kein Byte aus der Maschine. Sprache wechseln oder den Cache neu generieren reicht nirgendwohin nach außen.
 
 ## Reset-Verhalten
 
-Die 5h- und 7d-Fenster sind rollend und an deinen Claude-Code-Account gebunden. Wenn ein Fenster resettet, fällt der Balken auf 0 %, und Prozent und Restzeit rechnen sich aus dem nächsten Reset-Timestamp neu. Wenn purplemux den Reset verpasst (Server war aus), korrigiert sich das Widget beim nächsten Statusline-Tick selbst.
+Die 5h- und 7d-Fenster sind rollend und an deinen Claude-Code-Account gebunden. Wenn ein Fenster resettet, fällt der Balken auf 0 %, und Prozent und Restzeit rechnen sich aus dem nächsten Reset-Timestamp neu. Wenn purplemux-improved den Reset verpasst (Server war aus), korrigiert sich das Widget beim nächsten Statusline-Tick selbst.
 
 ## Wie es weitergeht
 
-- **[Notizen (AI-Tagesbericht)](/purplemux/de/docs/notes-daily-report/)** — dieselben Daten, als pro-Tag-Briefing geschrieben.
-- **[Session-Status](/purplemux/de/docs/session-status/)** — was die Seitenleiste sonst noch pro Tab verfolgt.
-- **[Tastenkürzel](/purplemux/de/docs/keyboard-shortcuts/)** — inklusive <kbd>⌘⇧U</kbd> für Statistiken.
+- **[Notizen (AI-Tagesbericht)](/purplemux-improved/de/docs/notes-daily-report/)** — dieselben Daten, als pro-Tag-Briefing geschrieben.
+- **[Session-Status](/purplemux-improved/de/docs/session-status/)** — was die Seitenleiste sonst noch pro Tab verfolgt.
+- **[Tastenkürzel](/purplemux-improved/de/docs/keyboard-shortcuts/)** — inklusive <kbd>⌘⇧U</kbd> für Statistiken.

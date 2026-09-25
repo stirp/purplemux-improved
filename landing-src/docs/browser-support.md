@@ -7,7 +7,7 @@ permalink: /docs/browser-support/index.html
 ---
 {% from "docs/callouts.njk" import callout %}
 
-purplemux is a web app, so the experience depends on the browser you open it in. These are the versions we actively test against — older browsers may work but aren't supported.
+purplemux-improved is a web app, so the experience depends on the browser you open it in. These are the versions we actively test against — older browsers may work but aren't supported.
 
 ## Desktop
 
@@ -34,12 +34,12 @@ Apple added Web Push to iOS only in Safari 16.4 (March 2023). Earlier iOS versio
 
 ## Feature requirements
 
-purplemux leans on a handful of modern browser APIs. If any of these are missing, the app falls back gracefully but loses the corresponding feature.
+purplemux-improved leans on a handful of modern browser APIs. If any of these are missing, the app falls back gracefully but loses the corresponding feature.
 
 | API | Used for | Fallback |
 |---|---|---|
 | WebSocket | Terminal I/O, status sync, timeline | Hard requirement — no fallback. |
-| Clipboard API | `npx purplemux@latest` copy, code-block copy | Button is hidden if unavailable. |
+| Clipboard API | `npx purplemux-improved@latest` copy, code-block copy | Button is hidden if unavailable. |
 | Notifications API | Desktop / mobile push | Skipped — you'll still see in-app status. |
 | Service Workers | PWA + Web Push | Served only as a normal web app. |
 | IntersectionObserver | Live session timeline, nav reveal | Elements render without animation. |
@@ -48,7 +48,7 @@ purplemux leans on a handful of modern browser APIs. If any of these are missing
 
 ## Is my browser OK?
 
-purplemux ships a built-in self-check at **Settings → Browser check**. It runs the same probes listed above and shows a green / amber / red badge per feature, so you can verify without reading a spec sheet.
+purplemux-improved ships a built-in self-check at **Settings → Browser check**. It runs the same probes listed above and shows a green / amber / red badge per feature, so you can verify without reading a spec sheet.
 
 ## Known quirks
 
@@ -63,4 +63,4 @@ purplemux ships a built-in self-check at **Settings → Browser check**. It runs
 - **UC Browser, Opera Mini, Puffin** — proxy-based browsers break WebSocket. Won't work.
 - **Any browser < 3 years old** — our CSS uses OKLCH color and container queries that need a 2023-era engine.
 
-If you're on an unusual setup and something doesn't work, please [open an issue](https://github.com/subicura/purplemux/issues) with your user agent and the self-check output.
+If you're on an unusual setup and something doesn't work, please [open an issue](https://github.com/stirp/purplemux-improved/issues) with your user agent and the self-check output.

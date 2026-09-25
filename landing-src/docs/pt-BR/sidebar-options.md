@@ -31,7 +31,7 @@ Clique em **Adicionar item** no fim. Você verá um pequeno formulário:
 Clique em Salvar e a linha aparece no fim da lista. Arraste para onde quiser.
 
 {% call callout('note', 'Built-ins podem ser escondidos, não deletados') %}
-Itens built-in (os que o purplemux entrega) só têm switch e alça — sem editar ou deletar. Eles ficam sempre lá caso você mude de ideia. Itens customizados ganham o kit completo.
+Itens built-in (os que o purplemux-improved entrega) só têm switch e alça — sem editar ou deletar. Eles ficam sempre lá caso você mude de ideia. Itens customizados ganham o kit completo.
 {% endcall %}
 
 ## Quick prompts
@@ -49,13 +49,13 @@ Adicionar um prompt pede um **nome** (rótulo do botão) e o **prompt** em si (t
 
 ## Opções do CLI Claude
 
-Configurações → aba **Claude**. Essas flags afetam *como o purplemux inicia o CLI Claude* em novas abas — não mudam o comportamento de uma sessão já em execução.
+Configurações → aba **Claude**. Essas flags afetam *como o purplemux-improved inicia o CLI Claude* em novas abas — não mudam o comportamento de uma sessão já em execução.
 
 ### Pular verificações de permissão
 
 Adiciona `--dangerously-skip-permissions` ao comando `claude`. O Claude vai rodar ferramentas e editar arquivos sem pedir aprovação a cada vez.
 
-Essa é a mesma flag que o CLI oficial expõe — o purplemux não afrouxa nenhuma segurança em cima dela. Leia a [documentação da Anthropic](https://docs.anthropic.com/en/docs/claude-code/cli-reference) antes de ligar. Trate como opt-in apenas para workspaces confiáveis.
+Essa é a mesma flag que o CLI oficial expõe — o purplemux-improved não afrouxa nenhuma segurança em cima dela. Leia a [documentação da Anthropic](https://docs.anthropic.com/en/docs/claude-code/cli-reference) antes de ligar. Trate como opt-in apenas para workspaces confiáveis.
 
 ### Mostrar terminal junto com o Claude
 
@@ -67,6 +67,6 @@ Use desligado se você dirige o Claude principalmente pela timeline e quer um pa
 
 ## Próximos passos
 
-- **[Temas e fontes](/purplemux/pt-BR/docs/themes-fonts/)** — claro, escuro, sistema; presets de tamanho de fonte.
-- **[Integração com editor](/purplemux/pt-BR/docs/editor-integration/)** — conecte VS Code, Cursor, code-server.
-- **[Primeira sessão](/purplemux/pt-BR/docs/first-session/)** — relembre a estrutura do painel.
+- **[Temas e fontes](/purplemux-improved/pt-BR/docs/themes-fonts/)** — claro, escuro, sistema; presets de tamanho de fonte.
+- **[Integração com editor](/purplemux-improved/pt-BR/docs/editor-integration/)** — conecte VS Code, Cursor, code-server.
+- **[Primeira sessão](/purplemux-improved/pt-BR/docs/first-session/)** — relembre a estrutura do painel.

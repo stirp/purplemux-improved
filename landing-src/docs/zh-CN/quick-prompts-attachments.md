@@ -31,7 +31,7 @@ permalink: /zh-CN/docs/quick-prompts-attachments/index.html
 
 ## 拖放图片
 
-把图片文件(PNG、JPG、WebP 等)拖到输入栏的任意位置即可附加。purplemux 会把文件上传到服务端的临时路径,并自动在你的提示中插入引用。
+把图片文件(PNG、JPG、WebP 等)拖到输入栏的任意位置即可附加。purplemux-improved 会把文件上传到服务端的临时路径,并自动在你的提示中插入引用。
 
 你也可以:
 
@@ -43,7 +43,7 @@ permalink: /zh-CN/docs/quick-prompts-attachments/index.html
 
 ## 其他文件附件
 
-同一个回形针也支持非图片文件 — markdown、JSON、CSV、源码,任何东西。purplemux 把它们放到一个临时目录里并插入路径,Claude 即可作为请求的一部分 `read` 它们。
+同一个回形针也支持非图片文件 — markdown、JSON、CSV、源码,任何东西。purplemux-improved 把它们放到一个临时目录里并插入路径,Claude 即可作为请求的一部分 `read` 它们。
 
 这是分享 Claude 自己拿不到的东西最简单的方式,比如从另一台机器粘贴的堆栈跟踪,或来自不同项目的配置文件。
 
@@ -74,6 +74,6 @@ permalink: /zh-CN/docs/quick-prompts-attachments/index.html
 
 ## 下一步
 
-- **[实时会话视图](/purplemux/zh-CN/docs/live-session-view/)** — 你的提示和 Claude 的回复出现在哪里。
-- **[键盘快捷键](/purplemux/zh-CN/docs/keyboard-shortcuts/)** — 完整按键绑定表。
-- **[权限提示](/purplemux/zh-CN/docs/permission-prompts/)** — 你发送了一个需要批准的请求之后会发生什么。
+- **[实时会话视图](/purplemux-improved/zh-CN/docs/live-session-view/)** — 你的提示和 Claude 的回复出现在哪里。
+- **[键盘快捷键](/purplemux-improved/zh-CN/docs/keyboard-shortcuts/)** — 完整按键绑定表。
+- **[权限提示](/purplemux-improved/zh-CN/docs/permission-prompts/)** — 你发送了一个需要批准的请求之后会发生什么。

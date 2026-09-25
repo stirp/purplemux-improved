@@ -6,7 +6,7 @@ permalink: /zh-TW/docs/data-directory/index.html
 ---
 {% from "docs/callouts.njk" import callout %}
 
-purplemux 保留的每一片持久狀態 — 設定、版面、工作階段歷史、快取 — 都活在 `~/.purplemux/` 之下。沒有別的地方。沒有 `localStorage`、沒有系統 keychain、沒有外部服務。
+purplemux-improved 保留的每一片持久狀態 — 設定、版面、工作階段歷史、快取 — 都活在 `~/.purplemux/` 之下。沒有別的地方。沒有 `localStorage`、沒有系統 keychain、沒有外部服務。
 
 ## 目錄一覽
 
@@ -51,12 +51,12 @@ purplemux 保留的每一片持久狀態 — 設定、版面、工作階段歷�
 | `quick-prompts.json`、`sidebar-items.json` | `{ custom: […], disabledBuiltinIds: […], order: […] }`，覆蓋在內建清單之上 | 可 — 還原為預設 |
 | `vapid-keys.json` | Web Push VAPID 金鑰對，第一次執行時產生 | 不要刪，除非也刪掉 `push-subscriptions.json`（既有訂閱會壞掉） |
 | `push-subscriptions.json` | 每瀏覽器推播 endpoints | 可 — 每個裝置會重新訂閱 |
-| `cli-token` | `purplemux` CLI 與 hook 指令稿用的 32 位元組 hex 權杖（`x-pmux-token` header） | 可 — 下次啟動會重新產生，但已產生的 hook 指令稿在伺服器覆寫前仍會持有舊權杖 |
+| `cli-token` | `purplemux-improved` CLI 與 hook 指令稿用的 32 位元組 hex 權杖（`x-pmux-token` header） | 可 — 下次啟動會重新產生，但已產生的 hook 指令稿在伺服器覆寫前仍會持有舊權杖 |
 | `port` | 純文字目前連接埠，由 hook 指令稿與 CLI 讀取 | 可 — 下次啟動會重新產生 |
-| `pmux.lock` | 單例守衛 `{ pid, port, startedAt }` | 僅在沒有 purplemux 程序存活時可刪 |
+| `pmux.lock` | 單例守衛 `{ pid, port, startedAt }` | 僅在沒有 purplemux-improved 程序存活時可刪 |
 
 {% call callout('warning', 'Lock 檔的注意事項') %}
-如果 purplemux 拒絕啟動並回報「already running」，但實際上沒有程序存活，就是 `pmux.lock` 過期了。`rm ~/.purplemux/pmux.lock` 後再試。如果你曾用 `sudo` 執行過 purplemux，lock 檔可能屬於 root — 用 `sudo rm` 一次。
+如果 purplemux-improved 拒絕啟動並回報「already running」，但實際上沒有程序存活，就是 `pmux.lock` 過期了。`rm ~/.purplemux/pmux.lock` 後再試。如果你曾用 `sudo` 執行過 purplemux-improved，lock 檔可能屬於 root — 用 `sudo rm` 一次。
 {% endcall %}
 
 ## 每工作區目錄（`workspaces/{wsId}/`）
@@ -79,7 +79,7 @@ Pino-roll 輸出，每個 UTC 日一個檔案，超過大小上限時附加數�
 logs/purplemux.2026-04-19.1.log
 ```
 
-預設等級為 `info`。可用 `LOG_LEVEL` 覆寫，或用 `LOG_LEVELS` 逐模組覆寫 — 請見 [連接埠與環境變數](/purplemux/zh-TW/docs/ports-env-vars/)。
+預設等級為 `info`。可用 `LOG_LEVEL` 覆寫，或用 `LOG_LEVELS` 逐模組覆寫 — 請見 [連接埠與環境變數](/purplemux-improved/zh-TW/docs/ports-env-vars/)。
 
 紀錄每週輪替（上限 7 個檔案）。隨時可以安全刪除。
 
@@ -98,7 +98,7 @@ uploads/{wsId}/{tabId}/{timestamp}-{rand}-{name}.{ext}
 
 ## `stats/`
 
-純粹的快取。從 `~/.claude/projects/**/*.jsonl` 衍生而來 — purplemux 只讀取該目錄。
+純粹的快取。從 `~/.claude/projects/**/*.jsonl` 衍生而來 — purplemux-improved 只讀取該目錄。
 
 | 檔案 | 內容 |
 |---|---|
@@ -130,7 +130,7 @@ uploads/{wsId}/{tabId}/{timestamp}-{rand}-{name}.{ext}
 tar czf purplemux-backup.tgz -C ~ .purplemux
 ```
 
-要在新機器上還原，解壓後啟動 purplemux 即可。Hook 指令稿會以新伺服器的連接埠重寫；其餘（工作區、歷史、設定）原樣搬遷。
+要在新機器上還原，解壓後啟動 purplemux-improved 即可。Hook 指令稿會以新伺服器的連接埠重寫；其餘（工作區、歷史、設定）原樣搬遷。
 
 {% call callout('warning') %}
 不要還原 `pmux.lock` — 它與特定 PID 繫結，會擋住啟動。請排除：`--exclude pmux.lock`。
@@ -142,10 +142,10 @@ tar czf purplemux-backup.tgz -C ~ .purplemux
 rm -rf ~/.purplemux
 ```
 
-執行前確認沒有 purplemux 在跑。下次啟動會回到首次執行的體驗。
+執行前確認沒有 purplemux-improved 在跑。下次啟動會回到首次執行的體驗。
 
 ## 下一步
 
-- **[連接埠與環境變數](/purplemux/zh-TW/docs/ports-env-vars/)** — 影響此目錄的所有變數。
-- **[架構](/purplemux/zh-TW/docs/architecture/)** — 這些檔案如何連到執行中的伺服器。
-- **[疑難排解](/purplemux/zh-TW/docs/troubleshooting/)** — 常見問題與修法。
+- **[連接埠與環境變數](/purplemux-improved/zh-TW/docs/ports-env-vars/)** — 影響此目錄的所有變數。
+- **[架構](/purplemux-improved/zh-TW/docs/architecture/)** — 這些檔案如何連到執行中的伺服器。
+- **[疑難排解](/purplemux-improved/zh-TW/docs/troubleshooting/)** — 常見問題與修法。

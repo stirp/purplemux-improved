@@ -74,10 +74,10 @@ Ausgleichen ist der schnellste Weg, ein Layout zurückzusetzen, das in unbrauchb
 
 Einen Tab zu schließen tötet seine tmux-Session. Den *Browser* zu schließen, neu zu laden oder das Netzwerk zu verlieren tut das nicht — jeder Tab läuft auf dem Server weiter. Wieder öffnen, und dieselben Panels, Splits und Tabs sind zurück.
 
-Zur Recovery-Story bei Server-Reboots siehe [Layouts speichern & wiederherstellen](/purplemux/de/docs/save-restore/).
+Zur Recovery-Story bei Server-Reboots siehe [Layouts speichern & wiederherstellen](/purplemux-improved/de/docs/save-restore/).
 
 ## Wie es weitergeht
 
-- **[Layouts speichern & wiederherstellen](/purplemux/de/docs/save-restore/)** — wie das Layout bestehen bleibt.
-- **[Tastenkürzel](/purplemux/de/docs/keyboard-shortcuts/)** — alle Bindings auf einen Blick.
-- **[Git-Workflow-Panel](/purplemux/de/docs/git-workflow/)** — ein nützlicher Tab-Typ für einen Split.
+- **[Layouts speichern & wiederherstellen](/purplemux-improved/de/docs/save-restore/)** — wie das Layout bestehen bleibt.
+- **[Tastenkürzel](/purplemux-improved/de/docs/keyboard-shortcuts/)** — alle Bindings auf einen Blick.
+- **[Git-Workflow-Panel](/purplemux-improved/de/docs/git-workflow/)** — ein nützlicher Tab-Typ für einen Split.

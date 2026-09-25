@@ -74,10 +74,10 @@ L'égalisation est le moyen le plus rapide de remettre d'aplomb une mise en page
 
 Fermer un onglet tue sa session tmux. Fermer le *navigateur*, rafraîchir ou perdre le réseau, non — chaque onglet continue de tourner sur le serveur. Rouvrez et les mêmes volets, divisions et onglets reviennent.
 
-Pour la récupération à travers les redémarrages serveur, voir [Sauvegarder & restaurer les mises en page](/purplemux/fr/docs/save-restore/).
+Pour la récupération à travers les redémarrages serveur, voir [Sauvegarder & restaurer les mises en page](/purplemux-improved/fr/docs/save-restore/).
 
 ## Pour aller plus loin
 
-- **[Sauvegarder & restaurer les mises en page](/purplemux/fr/docs/save-restore/)** — comment cette mise en page persiste.
-- **[Raccourcis clavier](/purplemux/fr/docs/keyboard-shortcuts/)** — tous les raccourcis dans un seul tableau.
-- **[Panneau de workflow Git](/purplemux/fr/docs/git-workflow/)** — un type d'onglet utile à mettre dans une division.
+- **[Sauvegarder & restaurer les mises en page](/purplemux-improved/fr/docs/save-restore/)** — comment cette mise en page persiste.
+- **[Raccourcis clavier](/purplemux-improved/fr/docs/keyboard-shortcuts/)** — tous les raccourcis dans un seul tableau.
+- **[Panneau de workflow Git](/purplemux-improved/fr/docs/git-workflow/)** — un type d'onglet utile à mettre dans une division.

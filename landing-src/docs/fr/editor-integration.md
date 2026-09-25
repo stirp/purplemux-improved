@@ -34,7 +34,7 @@ Il y a une distinction importante dans la façon dont chaque préréglage ouvre 
 - **code-server** tourne dans le navigateur. L'URL pointe sur le serveur que vous hébergez (le vôtre, sur votre réseau, ou derrière Tailscale). Cliquez le bouton EDITOR et un nouvel onglet charge le dossier.
 - **IDE locaux** (VS Code, Cursor, Windsurf, Zed) demandent que l'IDE soit installé sur la *machine qui fait tourner le navigateur*. Le lien est passé à l'OS, qui lance le gestionnaire enregistré.
 
-Si vous utilisez purplemux sur votre téléphone, seul le préréglage code-server marche — les téléphones ne peuvent pas ouvrir d'URL `vscode://` dans une app desktop.
+Si vous utilisez purplemux-improved sur votre téléphone, seul le préréglage code-server marche — les téléphones ne peuvent pas ouvrir d'URL `vscode://` dans une app desktop.
 
 ## Configuration code-server
 
@@ -51,10 +51,10 @@ code-server --port 8080
 tailscale serve --bg --https=8443 http://localhost:8080
 ```
 
-Puis dans l'onglet Éditeur, réglez l'URL à l'adresse à laquelle code-server est joignable — `http://localhost:8080` pour le local, ou `https://<machine>.<tailnet>.ts.net:8443` si vous l'avez mis derrière Tailscale Serve. purplemux valide que l'URL commence par `http://` ou `https://` et ajoute automatiquement `?folder=<chemin absolu>`.
+Puis dans l'onglet Éditeur, réglez l'URL à l'adresse à laquelle code-server est joignable — `http://localhost:8080` pour le local, ou `https://<machine>.<tailnet>.ts.net:8443` si vous l'avez mis derrière Tailscale Serve. purplemux-improved valide que l'URL commence par `http://` ou `https://` et ajoute automatiquement `?folder=<chemin absolu>`.
 
 {% call callout('note', 'Choisissez un port qui n\'est pas 8022') %}
-purplemux vit déjà sur `8022`. Faites tourner code-server sur un port différent (l'exemple utilise `8080`) pour qu'ils ne se battent pas.
+purplemux-improved vit déjà sur `8022`. Faites tourner code-server sur un port différent (l'exemple utilise `8080`) pour qu'ils ne se battent pas.
 {% endcall %}
 
 ## Template d'URL personnalisée
@@ -69,7 +69,7 @@ myeditor://open?path={folderEncoded}
 https://my.coder.example/workspace?dir={folderEncoded}
 ```
 
-purplemux valide le template à la sauvegarde et refuse celui qui n'a pas de placeholder.
+purplemux-improved valide le template à la sauvegarde et refuse celui qui n'a pas de placeholder.
 
 ## Désactiver le bouton
 
@@ -77,6 +77,6 @@ Choisissez **Désactivé**. Le bouton disparaît de l'en-tête de l'espace de tr
 
 ## Pour aller plus loin
 
-- **[Barre latérale & options Claude](/purplemux/fr/docs/sidebar-options/)** — réordonner les éléments de la barre latérale, basculer les flags Claude.
-- **[CSS personnalisé](/purplemux/fr/docs/custom-css/)** — peaufinage visuel supplémentaire.
-- **[Tailscale](/purplemux/fr/docs/tailscale/)** — accès externe sécurisé pour code-server aussi.
+- **[Barre latérale & options Claude](/purplemux-improved/fr/docs/sidebar-options/)** — réordonner les éléments de la barre latérale, basculer les flags Claude.
+- **[CSS personnalisé](/purplemux-improved/fr/docs/custom-css/)** — peaufinage visuel supplémentaire.
+- **[Tailscale](/purplemux-improved/fr/docs/tailscale/)** — accès externe sécurisé pour code-server aussi.

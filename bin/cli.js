@@ -257,9 +257,9 @@ const stripFlags = (args, names) => {
 };
 
 const usage = () => {
-  process.stdout.write(`purplemux CLI
+  process.stdout.write(`purplemux-improved CLI
 
-Usage: purplemux <command> [args...]
+Usage: purplemux-improved <command> [args...]
 
 Commands:
   workspaces                               List workspaces
@@ -304,7 +304,7 @@ const main = async () => {
         case 'result': return cmdTabResult(rest);
         case 'close': return cmdTabClose(rest);
         case 'browser': return cmdTabBrowser(rest);
-        default: die(`unknown tab command: ${sub || '(none)'}. Run 'purplemux help' for usage.`);
+        default: die(`unknown tab command: ${sub || '(none)'}. Run 'purplemux-improved help' for usage.`);
       }
       break;
     case 'api-guide':
@@ -314,7 +314,7 @@ const main = async () => {
     case '--help':
       return usage();
     default:
-      die(`unknown command: ${cmd}. Run 'purplemux help' for usage.`);
+      die(`unknown command: ${cmd}. Run 'purplemux-improved help' for usage.`);
   }
 };
 

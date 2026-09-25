@@ -6,7 +6,7 @@ permalink: /fr/docs/data-directory/index.html
 ---
 {% from "docs/callouts.njk" import callout %}
 
-Chaque morceau d'état persistant que purplemux garde — paramètres, mises en page, historique de sessions, caches — vit sous `~/.purplemux/`. Rien d'autre. Pas de `localStorage`, pas de keychain système, pas de service externe.
+Chaque morceau d'état persistant que purplemux-improved garde — paramètres, mises en page, historique de sessions, caches — vit sous `~/.purplemux/`. Rien d'autre. Pas de `localStorage`, pas de keychain système, pas de service externe.
 
 ## Vue d'ensemble
 
@@ -51,12 +51,12 @@ Les fichiers contenant des secrets (config, tokens, mises en page, clés VAPID, 
 | `quick-prompts.json`, `sidebar-items.json` | `{ custom: […], disabledBuiltinIds: […], order: […] }` overlays sur les listes intégrées | Oui — restaure les défauts |
 | `vapid-keys.json` | Paire de clés VAPID Web Push, générée au premier lancement | Pas sauf si vous supprimez aussi `push-subscriptions.json` (les souscriptions existantes cassent) |
 | `push-subscriptions.json` | Endpoints push par navigateur | Oui — réabonner sur chaque appareil |
-| `cli-token` | Token hex 32 octets pour la CLI `purplemux` et les scripts hook (en-tête `x-pmux-token`) | Oui — régénéré au prochain démarrage, mais tout script hook déjà généré garde l'ancien token jusqu'à ce que le serveur l'écrase |
+| `cli-token` | Token hex 32 octets pour la CLI `purplemux-improved` et les scripts hook (en-tête `x-pmux-token`) | Oui — régénéré au prochain démarrage, mais tout script hook déjà généré garde l'ancien token jusqu'à ce que le serveur l'écrase |
 | `port` | Port courant en clair, lu par les scripts hook et la CLI | Oui — régénéré au prochain démarrage |
-| `pmux.lock` | Garde-instance unique `{ pid, port, startedAt }` | Seulement si aucun processus purplemux n'est vivant |
+| `pmux.lock` | Garde-instance unique `{ pid, port, startedAt }` | Seulement si aucun processus purplemux-improved n'est vivant |
 
 {% call callout('warning', 'Pièges du fichier de lock') %}
-Si purplemux refuse de démarrer avec « already running » mais qu'aucun processus n'est vivant, `pmux.lock` est obsolète. `rm ~/.purplemux/pmux.lock` et réessayez. Si vous avez déjà lancé purplemux avec `sudo`, le fichier de lock peut appartenir à root — `sudo rm` une fois.
+Si purplemux-improved refuse de démarrer avec « already running » mais qu'aucun processus n'est vivant, `pmux.lock` est obsolète. `rm ~/.purplemux/pmux.lock` et réessayez. Si vous avez déjà lancé purplemux-improved avec `sudo`, le fichier de lock peut appartenir à root — `sudo rm` une fois.
 {% endcall %}
 
 ## Répertoire par espace (`workspaces/{wsId}/`)
@@ -79,7 +79,7 @@ Sortie pino-roll, un fichier par jour UTC, avec un suffixe numérique quand les 
 logs/purplemux.2026-04-19.1.log
 ```
 
-Niveau par défaut `info`. Surcharge avec `LOG_LEVEL` ou par module avec `LOG_LEVELS` — voir [Ports & variables d'environnement](/purplemux/fr/docs/ports-env-vars/).
+Niveau par défaut `info`. Surcharge avec `LOG_LEVEL` ou par module avec `LOG_LEVELS` — voir [Ports & variables d'environnement](/purplemux-improved/fr/docs/ports-env-vars/).
 
 Les logs tournent chaque semaine (limite de 7 fichiers). Sûrs à supprimer à tout moment.
 
@@ -98,7 +98,7 @@ uploads/{wsId}/{tabId}/{timestamp}-{rand}-{name}.{ext}
 
 ## `stats/`
 
-Cache pur. Dérivé de `~/.claude/projects/**/*.jsonl` — purplemux ne lit que ce répertoire.
+Cache pur. Dérivé de `~/.claude/projects/**/*.jsonl` — purplemux-improved ne lit que ce répertoire.
 
 | Fichier | Contenu |
 |---|---|
@@ -130,7 +130,7 @@ Tout le répertoire est du JSON simple plus quelques scripts shell. Pour sauvega
 tar czf purplemux-backup.tgz -C ~ .purplemux
 ```
 
-Pour restaurer sur une machine fraîche, désarchivez et démarrez purplemux. Les scripts hook seront réécrits avec le port du nouveau serveur ; tout le reste (espaces, historique, paramètres) se transfère tel quel.
+Pour restaurer sur une machine fraîche, désarchivez et démarrez purplemux-improved. Les scripts hook seront réécrits avec le port du nouveau serveur ; tout le reste (espaces, historique, paramètres) se transfère tel quel.
 
 {% call callout('warning') %}
 Ne restaurez pas `pmux.lock` — il est lié à un PID spécifique et bloquera le démarrage. Excluez-le : `--exclude pmux.lock`.
@@ -142,10 +142,10 @@ Ne restaurez pas `pmux.lock` — il est lié à un PID spécifique et bloquera l
 rm -rf ~/.purplemux
 ```
 
-Vérifiez qu'aucun purplemux ne tourne d'abord. Le prochain lancement sera l'expérience de premier lancement à nouveau.
+Vérifiez qu'aucun purplemux-improved ne tourne d'abord. Le prochain lancement sera l'expérience de premier lancement à nouveau.
 
 ## Pour aller plus loin
 
-- **[Ports & variables d'environnement](/purplemux/fr/docs/ports-env-vars/)** — chaque variable qui influence ce répertoire.
-- **[Architecture](/purplemux/fr/docs/architecture/)** — comment les fichiers se connectent au serveur en cours.
-- **[Dépannage](/purplemux/fr/docs/troubleshooting/)** — problèmes courants et corrections.
+- **[Ports & variables d'environnement](/purplemux-improved/fr/docs/ports-env-vars/)** — chaque variable qui influence ce répertoire.
+- **[Architecture](/purplemux-improved/fr/docs/architecture/)** — comment les fichiers se connectent au serveur en cours.
+- **[Dépannage](/purplemux-improved/fr/docs/troubleshooting/)** — problèmes courants et corrections.

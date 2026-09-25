@@ -31,7 +31,7 @@ Los prompts rápidos funcionan muy bien como disparadores de un solo clic para l
 
 ## Drag-and-drop de imágenes
 
-Suelta un archivo de imagen (PNG, JPG, WebP, etc.) en cualquier parte de la barra de entrada para adjuntarlo. purplemux sube el archivo a una ruta temporal en el servidor e inserta una referencia en tu prompt automáticamente.
+Suelta un archivo de imagen (PNG, JPG, WebP, etc.) en cualquier parte de la barra de entrada para adjuntarlo. purplemux-improved sube el archivo a una ruta temporal en el servidor e inserta una referencia en tu prompt automáticamente.
 
 También puedes:
 
@@ -43,7 +43,7 @@ Aparece una tira de miniaturas encima del input mientras los adjuntos están pen
 
 ## Otros adjuntos de archivo
 
-El mismo clip funciona también para archivos que no son imagen — markdown, JSON, CSV, archivos de código, lo que sea. purplemux los pone en un directorio temporal e inserta la ruta para que Claude pueda hacer `read` sobre ellos como parte de la petición.
+El mismo clip funciona también para archivos que no son imagen — markdown, JSON, CSV, archivos de código, lo que sea. purplemux-improved los pone en un directorio temporal e inserta la ruta para que Claude pueda hacer `read` sobre ellos como parte de la petición.
 
 Es la forma más fácil de compartir algo a lo que Claude no llega por sí mismo, como un stack trace pegado desde otra máquina o un archivo de configuración de otro proyecto.
 
@@ -74,6 +74,6 @@ Las entradas antiguas pueden borrarse desde el selector. El historial se almacen
 
 ## Siguientes pasos
 
-- **[Vista de sesión en directo](/purplemux/es/docs/live-session-view/)** — donde aparecen tus prompts y las respuestas de Claude.
-- **[Atajos de teclado](/purplemux/es/docs/keyboard-shortcuts/)** — la tabla completa.
-- **[Avisos de permisos](/purplemux/es/docs/permission-prompts/)** — qué pasa después de enviar una petición que necesita aprobación.
+- **[Vista de sesión en directo](/purplemux-improved/es/docs/live-session-view/)** — donde aparecen tus prompts y las respuestas de Claude.
+- **[Atajos de teclado](/purplemux-improved/es/docs/keyboard-shortcuts/)** — la tabla completa.
+- **[Avisos de permisos](/purplemux-improved/es/docs/permission-prompts/)** — qué pasa después de enviar una petición que necesita aprobación.

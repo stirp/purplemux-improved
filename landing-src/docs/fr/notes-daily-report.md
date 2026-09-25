@@ -6,7 +6,7 @@ permalink: /fr/docs/notes-daily-report/index.html
 ---
 {% from "docs/callouts.njk" import callout %}
 
-Quand la journée est terminée, purplemux peut lire les logs de session du jour et vous écrire un brief en une ligne plus un résumé Markdown par projet. Ça vit dans la barre latérale comme **Notes** et existe pour que rétros, daily standups et 1:1 cessent de commencer par « qu'est-ce que j'ai fait hier ? ».
+Quand la journée est terminée, purplemux-improved peut lire les logs de session du jour et vous écrire un brief en une ligne plus un résumé Markdown par projet. Ça vit dans la barre latérale comme **Notes** et existe pour que rétros, daily standups et 1:1 cessent de commencer par « qu'est-ce que j'ai fait hier ? ».
 
 ## Ce que vous avez par jour
 
@@ -17,7 +17,7 @@ Chaque entrée a deux couches :
 
 Le brief est ce que vous parcourez ; la vue détaillée est ce que vous collez dans un doc de rétro.
 
-Un petit en-tête sur chaque jour montre le compte de sessions et le coût total — les mêmes chiffres qu'utilise le [tableau de bord stats](/purplemux/fr/docs/usage-rate-limits/), sous forme de résumé.
+Un petit en-tête sur chaque jour montre le compte de sessions et le coût total — les mêmes chiffres qu'utilise le [tableau de bord stats](/purplemux-improved/fr/docs/usage-rate-limits/), sous forme de résumé.
 
 ## Générer un rapport
 
@@ -30,7 +30,7 @@ Les rapports sont générés à la demande, pas automatiquement. Depuis la vue N
 Le LLM traite chaque session individuellement avant de les fusionner par projet, donc le contexte n'est pas perdu sur les longues journées avec beaucoup d'onglets.
 
 {% call callout('note', 'La locale suit l\'app') %}
-Les rapports sont écrits dans la langue à laquelle purplemux est réglé. Changer la langue de l'app et régénérer vous donne le même contenu dans la nouvelle locale.
+Les rapports sont écrits dans la langue à laquelle purplemux-improved est réglé. Changer la langue de l'app et régénérer vous donne le même contenu dans la nouvelle locale.
 {% endcall %}
 
 ## Où ça vit
@@ -48,7 +48,7 @@ Chaque jour est un fichier JSON contenant le brief, le Markdown détaillé, la l
 Dans la vue détaillée, une journée typique ressemble à :
 
 ```markdown
-**purplemux**
+**purplemux-improved**
 
 ### Brouillon de la landing page
 - Conception de la structure en huit sections avec layouts Hero / Why / Mobile / Stats
@@ -74,6 +74,6 @@ Le texte utilisé pour construire un rapport est composé des mêmes transcripts
 
 ## Pour aller plus loin
 
-- **[Usage & limites de débit](/purplemux/fr/docs/usage-rate-limits/)** — le tableau de bord d'où viennent ces comptes de sessions et coûts.
-- **[Vue de session en direct](/purplemux/fr/docs/live-session-view/)** — les données source, en temps réel.
-- **[Raccourcis clavier](/purplemux/fr/docs/keyboard-shortcuts/)** — y compris <kbd>⌘⇧E</kbd> pour Notes.
+- **[Usage & limites de débit](/purplemux-improved/fr/docs/usage-rate-limits/)** — le tableau de bord d'où viennent ces comptes de sessions et coûts.
+- **[Vue de session en direct](/purplemux-improved/fr/docs/live-session-view/)** — les données source, en temps réel.
+- **[Raccourcis clavier](/purplemux-improved/fr/docs/keyboard-shortcuts/)** — y compris <kbd>⌘⇧E</kbd> pour Notes.

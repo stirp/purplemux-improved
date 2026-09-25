@@ -6,7 +6,7 @@ permalink: /tr/docs/themes-fonts/index.html
 ---
 {% from "docs/callouts.njk" import callout %}
 
-purplemux, tutarlı tek bir görünüm ve küçük bir anahtar setiyle gelir: uygulama teması, font boyutu ve ayrı bir terminal paleti. Bu sayfa ilk ikisini ele alıyor — terminal renkleri kendi sayfasında.
+purplemux-improved, tutarlı tek bir görünüm ve küçük bir anahtar setiyle gelir: uygulama teması, font boyutu ve ayrı bir terminal paleti. Bu sayfa ilk ikisini ele alıyor — terminal renkleri kendi sayfasında.
 
 ## Ayarlar'ı açın
 
@@ -48,7 +48,7 @@ Font boyutu **UI kromu ve terminal metnini** ölçeklendirir. Şunları değişt
 - Boşluk — oranlar korunur
 - Kod bloğu sözdizimi stili
 
-Tek tek öğeleri ince ayarlamak istiyorsanız (örneğin yalnızca terminal veya yalnızca kenar çubuğu), [Özel CSS](/purplemux/tr/docs/custom-css/) sayfasına bakın.
+Tek tek öğeleri ince ayarlamak istiyorsanız (örneğin yalnızca terminal veya yalnızca kenar çubuğu), [Özel CSS](/purplemux-improved/tr/docs/custom-css/) sayfasına bakın.
 
 ## Cihaz başına, tarayıcı başına değil
 
@@ -58,6 +58,6 @@ Mobil ile masaüstünü farklı tutmayı tercih ediyorsanız, bu şu anda destek
 
 ## Sıradaki adımlar
 
-- **[Özel CSS](/purplemux/tr/docs/custom-css/)** — tek tek renkleri ve boşlukları geçersiz kılın.
-- **[Terminal temaları](/purplemux/tr/docs/terminal-themes/)** — xterm.js için ayrı palet.
-- **[Klavye kısayolları](/purplemux/tr/docs/keyboard-shortcuts/)** — tüm bağlamalar tek tabloda.
+- **[Özel CSS](/purplemux-improved/tr/docs/custom-css/)** — tek tek renkleri ve boşlukları geçersiz kılın.
+- **[Terminal temaları](/purplemux-improved/tr/docs/terminal-themes/)** — xterm.js için ayrı palet.
+- **[Klavye kısayolları](/purplemux-improved/tr/docs/keyboard-shortcuts/)** — tüm bağlamalar tek tabloda.

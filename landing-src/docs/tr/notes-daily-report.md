@@ -6,7 +6,7 @@ permalink: /tr/docs/notes-daily-report/index.html
 ---
 {% from "docs/callouts.njk" import callout %}
 
-Gün bittiğinde, purplemux günün oturum loglarını okuyup size tek satırlık bir özet ve proje bazlı bir Markdown özeti yazabilir. Kenar çubuğunda **Notlar** olarak yaşar ve retrolar, standuplar ve 1:1 görüşmelerin "dün ne yaptım?" diyerek başlamasını engellemek için vardır.
+Gün bittiğinde, purplemux-improved günün oturum loglarını okuyup size tek satırlık bir özet ve proje bazlı bir Markdown özeti yazabilir. Kenar çubuğunda **Notlar** olarak yaşar ve retrolar, standuplar ve 1:1 görüşmelerin "dün ne yaptım?" diyerek başlamasını engellemek için vardır.
 
 ## Gün başına ne alıyorsunuz
 
@@ -17,7 +17,7 @@ Her giriş iki katmana sahiptir:
 
 Özet taradığınız şeydir; detaylı görünüm bir retro dokümanına yapıştırdığınız şey.
 
-Her günün başında oturum sayısı ve toplam maliyeti gösteren küçük bir başlık vardır — [istatistik panelinin](/purplemux/tr/docs/usage-rate-limits/) kullandığı aynı sayılar, özet biçiminde.
+Her günün başında oturum sayısı ve toplam maliyeti gösteren küçük bir başlık vardır — [istatistik panelinin](/purplemux-improved/tr/docs/usage-rate-limits/) kullandığı aynı sayılar, özet biçiminde.
 
 ## Rapor üretme
 
@@ -30,7 +30,7 @@ Raporlar talep üzerine üretilir, otomatik değil. Notlar görünümünden:
 LLM, projeye göre birleştirmeden önce her oturumu ayrı ayrı işler, böylece çok sekmeli uzun günlerde bağlam kaybolmaz.
 
 {% call callout('note', 'Yerel uygulamayı takip eder') %}
-Raporlar purplemux'ın ayarlandığı dilde yazılır. Uygulama dilini değiştirip yeniden üretmek aynı içeriği yeni dilde verir.
+Raporlar purplemux-improved'ın ayarlandığı dilde yazılır. Uygulama dilini değiştirip yeniden üretmek aynı içeriği yeni dilde verir.
 {% endcall %}
 
 ## Nerede yaşar
@@ -48,7 +48,7 @@ Her gün özeti, detaylı Markdown'u, dili ve oturum metadata'sını içeren tek
 Detaylı görünümün içinde tipik bir gün şöyle görünür:
 
 ```markdown
-**purplemux**
+**purplemux-improved**
 
 ### Açılış sayfası taslağı
 - Hero / Why / Mobile / Stats düzenleriyle sekiz bölümlü yapı tasarlandı
@@ -74,6 +74,6 @@ Bir rapor oluşturmak için kullanılan metin, `~/.claude/projects/` içinde ken
 
 ## Sıradaki adımlar
 
-- **[Kullanım & kota sınırları](/purplemux/tr/docs/usage-rate-limits/)** — bu oturum sayıları ve maliyetlerin geldiği panel.
-- **[Canlı oturum görünümü](/purplemux/tr/docs/live-session-view/)** — gerçek zamanlı kaynak veri.
-- **[Klavye kısayolları](/purplemux/tr/docs/keyboard-shortcuts/)** — Notlar için <kbd>⌘⇧E</kbd> dahil.
+- **[Kullanım & kota sınırları](/purplemux-improved/tr/docs/usage-rate-limits/)** — bu oturum sayıları ve maliyetlerin geldiği panel.
+- **[Canlı oturum görünümü](/purplemux-improved/tr/docs/live-session-view/)** — gerçek zamanlı kaynak veri.
+- **[Klavye kısayolları](/purplemux-improved/tr/docs/keyboard-shortcuts/)** — Notlar için <kbd>⌘⇧E</kbd> dahil.

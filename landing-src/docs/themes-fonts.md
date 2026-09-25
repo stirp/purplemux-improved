@@ -6,7 +6,7 @@ permalink: /docs/themes-fonts/index.html
 ---
 {% from "docs/callouts.njk" import callout %}
 
-purplemux ships with a single coherent look and a small set of switches: app theme, font size, and a separate terminal palette. This page covers the first two — terminal colors live on their own page.
+purplemux-improved ships with a single coherent look and a small set of switches: app theme, font size, and a separate terminal palette. This page covers the first two — terminal colors live on their own page.
 
 ## Open Settings
 
@@ -48,7 +48,7 @@ Font size scales the **UI chrome and the terminal text**. It doesn't change:
 - Spacing — proportions are preserved
 - Code-block syntax styling
 
-If you want to tweak individual elements (e.g. only the terminal, or only the sidebar), see [Custom CSS](/purplemux/docs/custom-css/).
+If you want to tweak individual elements (e.g. only the terminal, or only the sidebar), see [Custom CSS](/purplemux-improved/docs/custom-css/).
 
 ## Per-device, not per-browser
 
@@ -58,6 +58,6 @@ If you'd rather keep mobile and desktop different, that's not currently supporte
 
 ## What's next
 
-- **[Custom CSS](/purplemux/docs/custom-css/)** — override individual colors and spacing.
-- **[Terminal themes](/purplemux/docs/terminal-themes/)** — separate palette for xterm.js.
-- **[Keyboard shortcuts](/purplemux/docs/keyboard-shortcuts/)** — every binding in one table.
+- **[Custom CSS](/purplemux-improved/docs/custom-css/)** — override individual colors and spacing.
+- **[Terminal themes](/purplemux-improved/docs/terminal-themes/)** — separate palette for xterm.js.
+- **[Keyboard shortcuts](/purplemux-improved/docs/keyboard-shortcuts/)** — every binding in one table.

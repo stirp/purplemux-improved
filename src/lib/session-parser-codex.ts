@@ -120,6 +120,7 @@ type TInFlightEntry = IInFlightExec | IInFlightWebSearch | IInFlightMcp | IInFli
 const isPatchApply = (name: string): boolean => name === 'apply_patch';
 
 const summarizeFunctionCall = (name: string, args: unknown): string => {
+  if (typeof args === 'string') return args.trim() ? `${name} ${oneLineSummary(args)}` : name;
   if (typeof args !== 'object' || args === null) return name;
   const obj = args as Record<string, unknown>;
   if (name === 'exec_command') {
@@ -159,6 +160,17 @@ const summarizeFunctionOutput = (output: string): string => {
   const lines = trimmed.split('\n');
   if (lines.length > 1) return `${lines.length} lines`;
   return oneLineSummary(trimmed);
+};
+
+const readToolOutput = (output: unknown): string => {
+  if (typeof output === 'string') return output;
+  if (!Array.isArray(output)) return '';
+  return output.flatMap((part: unknown) => {
+    if (!part || typeof part !== 'object') return [];
+    const block = part as Record<string, unknown>;
+    return block.type === 'input_text' || block.type === 'text'
+      ? [safeString(block.text)] : [];
+  }).join('\n');
 };
 
 interface IPatchSummary {
@@ -376,6 +388,25 @@ const processResponseItem = (
       }
       const argsRaw = payload.arguments;
       const args = typeof argsRaw === 'string' ? tryParseJson(argsRaw) ?? argsRaw : argsRaw;
+      if (name === 'request_user_input_async' && args && typeof args === 'object') {
+        const raw = (args as Record<string, unknown>).questions;
+        if (!Array.isArray(raw)) return [];
+        const questions = raw.flatMap((item: unknown) => {
+          if (!item || typeof item !== 'object') return [];
+          const question = item as Record<string, unknown>;
+          const title = safeString(question.title);
+          if (!title) return [];
+          return [{ question: title, header: '', multiSelect: false,
+            options: (Array.isArray(question.options) ? question.options : [])
+              .filter((option): option is string => typeof option === 'string')
+              .map((label) => ({ label, description: '' })),
+          }];
+        });
+        if (!questions.length) return [];
+        state.suppressedCallIds.add(callId);
+        return [{ id: nanoid(), type: 'ask-user-question', timestamp, toolUseId: callId,
+          questions, status: 'pending', answerMode: 'compose' }];
+      }
       const summary = summarizeFunctionCall(name, args);
       const entry: ITimelineToolCall = {
         id: nanoid(),
@@ -395,7 +426,7 @@ const processResponseItem = (
         state.suppressedCallIds.delete(callId);
         return [];
       }
-      const output = safeString(payload.output);
+      const output = readToolOutput(payload.output);
       const entry: ITimelineToolResult = {
         id: nanoid(),
         type: 'tool-result',
@@ -403,6 +434,7 @@ const processResponseItem = (
         toolUseId: callId,
         isError: false,
         summary: summarizeFunctionOutput(output),
+        output,
       };
       return [entry];
     }
@@ -437,6 +469,7 @@ const processResponseItem = (
         toolUseId: callId,
         toolName: name,
         summary,
+        input: safeString(payload.input) || undefined,
         status: safeString(payload.status) === 'completed' ? 'success' : 'pending',
       };
       return [entry];
@@ -448,7 +481,7 @@ const processResponseItem = (
         state.suppressedCallIds.delete(callId);
         return [];
       }
-      const output = safeString(payload.output);
+      const output = readToolOutput(payload.output);
       const entry: ITimelineToolResult = {
         id: nanoid(),
         type: 'tool-result',
@@ -456,6 +489,7 @@ const processResponseItem = (
         toolUseId: callId,
         isError: false,
         summary: summarizeFunctionOutput(output),
+        output,
       };
       return [entry];
     }
@@ -528,7 +562,6 @@ const processEventMsg = (
   switch (type) {
     case 'user_message': {
       const text = safeString(payload.message);
-      if (!text) return [];
       const imagesRaw = Array.isArray(payload.images) ? payload.images : [];
       const localImagesRaw = Array.isArray(payload.local_images) ? payload.local_images : [];
       const images = imagesRaw.filter((s): s is string => typeof s === 'string');
@@ -537,6 +570,7 @@ const processEventMsg = (
         .map((s) => uploadPathToImageUrl(s))
         .filter((s): s is string => !!s);
       const allImages = [...images, ...localImages];
+      if (!text && allImages.length === 0) return [];
       const entry: ITimelineUserMessage = {
         id: nanoid(),
         type: 'user-message',
@@ -546,8 +580,31 @@ const processEventMsg = (
       };
       return [entry];
     }
+    case 'item_completed':
     case 'agent_message': {
-      const message = safeString(payload.message);
+      let message = safeString(payload.message);
+      if (type === 'item_completed') {
+        const item = payload.item;
+        if (!item || typeof item !== 'object') return [];
+        const completed = item as Record<string, unknown>;
+        if (completed.type === 'UserMessage' && Array.isArray(completed.content)) {
+          const blocks = completed.content.filter(
+            (part): part is Record<string, unknown> => !!part && typeof part === 'object',
+          );
+          return processEventMsg({
+            type: 'user_message',
+            message: blocks.filter((part) => part.type === 'text').map((part) => safeString(part.text)).join('\n'),
+            images: blocks.filter((part) => part.type === 'image').map((part) => part.image_url),
+            local_images: blocks.filter((part) => part.type === 'local_image').map((part) => part.path),
+          }, timestamp, state);
+        }
+        if (completed.type !== 'AgentMessage' || !Array.isArray(completed.content)) return [];
+        message = completed.content.map((part: unknown) => {
+          if (!part || typeof part !== 'object') return '';
+          const block = part as Record<string, unknown>;
+          return block.type === 'Text' ? safeString(block.text) : '';
+        }).join('');
+      }
       if (!message) return [];
       const entry: ITimelineAssistantMessage = {
         id: nanoid(),
@@ -945,14 +1002,11 @@ const parseLines = (
       continue;
     }
     const item = validated.data;
-    if (!summary && item.type === 'event_msg') {
-      const payload = (item.payload ?? {}) as Record<string, unknown>;
-      if (safeString(payload.type) === 'user_message') {
-        const msg = safeString(payload.message);
-        if (msg) summary = oneLineSummary(msg);
-      }
-    }
     const produced = processItem(item, state);
+    if (!summary) {
+      const userMessage = produced.find((entry) => entry.type === 'user-message');
+      if (userMessage?.text) summary = oneLineSummary(userMessage.text);
+    }
     if (produced.length > 0) {
       entries.push(...produced);
       entryLineOffsets.push(...produced.map(() => lineOffsets?.[lineIdx] ?? 0));

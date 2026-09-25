@@ -6,7 +6,7 @@ permalink: /ko/docs/troubleshooting/index.html
 ---
 {% from "docs/callouts.njk" import callout %}
 
-여기 적힌 내용과 다른 증상이라면, 플랫폼·브라우저와 `~/.purplemux/logs/`의 로그 파일을 첨부해 [이슈를 열어주세요](https://github.com/subicura/purplemux/issues).
+여기 적힌 내용과 다른 증상이라면, 플랫폼·브라우저와 `~/.purplemux/logs/`의 로그 파일을 첨부해 [이슈를 열어주세요](https://github.com/stirp/purplemux-improved/issues).
 
 ## 설치와 시작
 
@@ -31,13 +31,13 @@ sudo dnf install tmux
 
 Node 20 LTS 이상을 설치하세요. `node -v`로 확인. macOS 네이티브 앱은 자체 Node를 번들하므로 이 항목은 `npx` / `npm install -g` 경로에만 해당됩니다.
 
-### "purplemux is already running (pid=…, port=…)"
+### "purplemux-improved is already running (pid=…, port=…)"
 
-다른 purplemux 인스턴스가 살아 있고 `/api/health`에 응답합니다. 그것을 그대로 쓰거나(출력된 URL 열기), 먼저 종료하세요:
+다른 purplemux-improved 인스턴스가 살아 있고 `/api/health`에 응답합니다. 그것을 그대로 쓰거나(출력된 URL 열기), 먼저 종료하세요:
 
 ```bash
 # 찾기
-ps aux | grep purplemux
+ps aux | grep purplemux-improved
 
 # 또는 lock 파일로 바로 종료
 kill $(jq -r .pid ~/.purplemux/pmux.lock)
@@ -58,14 +58,14 @@ rm ~/.purplemux/pmux.lock
 다른 프로세스가 `8022`를 사용 중입니다. 서버는 임의의 빈 포트로 폴백하고 새 URL을 출력합니다. 직접 포트를 지정하려면:
 
 ```bash
-PORT=9000 purplemux
+PORT=9000 purplemux-improved
 ```
 
 `8022`을 잡고 있는 프로세스는 `lsof -iTCP:8022 -sTCP:LISTEN -n -P`로 찾을 수 있습니다.
 
 ### Windows에서 동작하나요?
 
-**공식 지원 X.** purplemux는 `node-pty`와 tmux에 의존하는데, 둘 다 Windows 네이티브로 동작하지 않습니다. WSL2에서는 대체로 동작하지만 (사실상 Linux이므로) 테스트 범위 밖입니다.
+**공식 지원 X.** purplemux-improved는 `node-pty`와 tmux에 의존하는데, 둘 다 Windows 네이티브로 동작하지 않습니다. WSL2에서는 대체로 동작하지만 (사실상 Linux이므로) 테스트 범위 밖입니다.
 
 ## 세션과 복원
 
@@ -77,7 +77,7 @@ PORT=9000 purplemux
 2. tmux 세션 존재 확인: `tmux -L purple ls`.
 3. `autoResumeOnStartup` 중 에러가 없었는지 `~/.purplemux/logs/purplemux.YYYY-MM-DD.N.log` 확인.
 
-tmux가 "no server running"이라면 호스트가 재부팅됐거나 tmux가 죽은 것입니다. 세션은 사라지지만 레이아웃(워크스페이스, 탭, 작업 디렉토리)은 `~/.purplemux/workspaces/{wsId}/layout.json`에 보존되어 있어 다음 purplemux 시작 시 다시 launch됩니다.
+tmux가 "no server running"이라면 호스트가 재부팅됐거나 tmux가 죽은 것입니다. 세션은 사라지지만 레이아웃(워크스페이스, 탭, 작업 디렉토리)은 `~/.purplemux/workspaces/{wsId}/layout.json`에 보존되어 있어 다음 purplemux-improved 시작 시 다시 launch됩니다.
 
 ### Claude 세션이 resume되지 않아요
 
@@ -85,7 +85,7 @@ tmux가 "no server running"이라면 호스트가 재부팅됐거나 tmux가 죽
 
 ### 모든 탭이 "unknown" 상태입니다
 
-`unknown`은 서버 재시작 전에 `busy`였던 탭이 아직 복구 중임을 의미합니다. `resolveUnknown`이 백그라운드에서 돌면서 `idle` (Claude 종료) 또는 `ready-for-review` (마지막 어시스턴트 메시지 있음)를 확정합니다. 10분 이상 `unknown`에 머무르면 **busy stuck safety net**이 조용히 `idle`로 넘깁니다. 전체 상태 머신은 [STATUS.md](https://github.com/subicura/purplemux/blob/main/docs/STATUS.md) 참고.
+`unknown`은 서버 재시작 전에 `busy`였던 탭이 아직 복구 중임을 의미합니다. `resolveUnknown`이 백그라운드에서 돌면서 `idle` (Claude 종료) 또는 `ready-for-review` (마지막 어시스턴트 메시지 있음)를 확정합니다. 10분 이상 `unknown`에 머무르면 **busy stuck safety net**이 조용히 `idle`로 넘깁니다. 전체 상태 머신은 [STATUS.md](https://github.com/stirp/purplemux-improved/blob/main/docs/STATUS.md) 참고.
 
 ## 브라우저와 UI
 
@@ -96,10 +96,10 @@ tmux가 "no server running"이라면 호스트가 재부팅됐거나 tmux가 죽
 1. **iOS Safari ≥ 16.4 만 가능.** 이전 iOS는 Web Push 자체가 없습니다.
 2. **iOS는 PWA 필수.** **공유 → 홈 화면에 추가** 후에만 푸시가 옵니다 — 일반 Safari 탭에서는 안 옵니다.
 3. **HTTPS 필수.** 자체 서명 인증서로는 안 됩니다 — Web Push 등록 자체가 조용히 거부됩니다. Tailscale Serve(자동 Let's Encrypt)나 실제 도메인 + Nginx / Caddy를 쓰세요.
-4. **알림 권한 허용.** purplemux 안의 **설정 → 알림 → On** *과* 브라우저 레벨 권한 둘 다 허용되어야 합니다.
+4. **알림 권한 허용.** purplemux-improved 안의 **설정 → 알림 → On** *과* 브라우저 레벨 권한 둘 다 허용되어야 합니다.
 5. **구독이 존재해야 함.** `~/.purplemux/push-subscriptions.json`에 해당 디바이스 항목이 있어야 합니다. 비어 있으면 권한을 다시 부여하세요.
 
-전체 호환성 매트릭스는 [브라우저 지원](/purplemux/ko/docs/browser-support/) 참고.
+전체 호환성 매트릭스는 [브라우저 지원](/purplemux-improved/ko/docs/browser-support/) 참고.
 
 ### iOS Safari 16.4+인데도 알림이 안 와요
 
@@ -111,7 +111,7 @@ Safari 17+ 프라이빗 창은 IndexedDB가 비활성화되어 워크스페이�
 
 ### 모바일 터미널이 백그라운드 후 사라져요
 
-iOS Safari는 약 30초 백그라운드면 WebSocket을 끊어버립니다. tmux는 실제 세션을 계속 유지하므로 — 탭으로 돌아오면 purplemux가 재연결하고 다시 렌더링합니다. iOS 동작이지 purplemux 문제가 아닙니다.
+iOS Safari는 약 30초 백그라운드면 WebSocket을 끊어버립니다. tmux는 실제 세션을 계속 유지하므로 — 탭으로 돌아오면 purplemux-improved가 재연결하고 다시 렌더링합니다. iOS 동작이지 purplemux-improved 문제가 아닙니다.
 
 ### Firefox + Tailscale serve 인증서 경고
 
@@ -119,7 +119,7 @@ iOS Safari는 약 30초 백그라운드면 WebSocket을 끊어버립니다. tmux
 
 ### "Browser too old" 또는 일부 기능이 안 보여요
 
-**설정 → 브라우저 체크**를 실행해 API별 리포트를 보세요. [브라우저 지원](/purplemux/ko/docs/browser-support/)의 최소 버전 미만은 기능을 그레이스풀하게 잃지만 공식 지원은 아닙니다.
+**설정 → 브라우저 체크**를 실행해 API별 리포트를 보세요. [브라우저 지원](/purplemux-improved/ko/docs/browser-support/)의 최소 버전 미만은 기능을 그레이스풀하게 잃지만 공식 지원은 아닙니다.
 
 ## 네트워크와 외부 접근
 
@@ -137,12 +137,12 @@ iOS Safari는 약 30초 백그라운드면 WebSocket을 끊어버립니다. tmux
 기본은 localhost 전용입니다. env 또는 앱 설정으로 접근 범위를 엽니다:
 
 ```bash
-HOST=lan,localhost purplemux       # LAN
-HOST=tailscale,localhost purplemux # tailnet
-HOST=all purplemux                 # 모두
+HOST=lan,localhost purplemux-improved       # LAN
+HOST=tailscale,localhost purplemux-improved # tailnet
+HOST=all purplemux-improved                 # 모두
 ```
 
-또는 앱의 **설정 → 네트워크 접근** (이 값은 `~/.purplemux/config.json`에 기록). env로 `HOST`를 지정한 경우 이 필드는 잠깁니다. 키워드와 CIDR 문법은 [포트 & 환경변수](/purplemux/ko/docs/ports-env-vars/) 참고.
+또는 앱의 **설정 → 네트워크 접근** (이 값은 `~/.purplemux/config.json`에 기록). env로 `HOST`를 지정한 경우 이 필드는 잠깁니다. 키워드와 CIDR 문법은 [포트 & 환경변수](/purplemux-improved/ko/docs/ports-env-vars/) 참고.
 
 ### 리버스 프록시 WebSocket 이슈
 
@@ -164,7 +164,7 @@ Caddy는 WebSocket 포워딩이 기본이므로 `reverse_proxy 127.0.0.1:8022`�
 
 ### 데이터는 어디에 저장되나요?
 
-전부 로컬 `~/.purplemux/` 안. 외부로 나가는 데이터는 없습니다. 로그인 비밀번호는 `config.json` 안의 scrypt 해시. 전체 구조는 [데이터 디렉토리](/purplemux/ko/docs/data-directory/) 참고.
+전부 로컬 `~/.purplemux/` 안. 외부로 나가는 데이터는 없습니다. 로그인 비밀번호는 `config.json` 안의 scrypt 해시. 전체 구조는 [데이터 디렉토리](/purplemux-improved/ko/docs/data-directory/) 참고.
 
 ### 비밀번호를 잊었어요
 
@@ -176,24 +176,24 @@ Caddy는 WebSocket 포워딩이 기본이므로 `reverse_proxy 127.0.0.1:8022`�
 
 ### 기존 tmux 설정과 충돌하나요?
 
-아니요. purplemux는 전용 소켓(`-L purple`)에서 자체 설정(`src/config/tmux.conf`)으로 격리된 tmux를 실행합니다. `~/.tmux.conf`나 기존 tmux 세션은 건드리지 않습니다.
+아니요. purplemux-improved는 전용 소켓(`-L purple`)에서 자체 설정(`src/config/tmux.conf`)으로 격리된 tmux를 실행합니다. `~/.tmux.conf`나 기존 tmux 세션은 건드리지 않습니다.
 
 ## 비용과 사용량
 
-### purplemux를 쓰면 비용이 절약되나요?
+### purplemux-improved를 쓰면 비용이 절약되나요?
 
 직접 절약시키지는 않습니다. 다만 **사용량을 투명하게** 만듭니다: 오늘/이달/프로젝트별 비용, 모델별 토큰 분해, 5시간/7일 rate-limit 카운트다운이 한 화면에 모여 있어 한도에 부딪치기 전에 페이스를 조절할 수 있습니다.
 
-### purplemux 자체에 비용이 드나요?
+### purplemux-improved 자체에 비용이 드나요?
 
-아니요. purplemux는 MIT 라이선스 오픈소스입니다. Claude Code 사용료는 Anthropic이 별도로 청구합니다.
+아니요. purplemux-improved는 MIT 라이선스 오픈소스입니다. Claude Code 사용료는 Anthropic이 별도로 청구합니다.
 
 ### 데이터가 외부로 전송되나요?
 
-아니요. purplemux는 완전히 셀프호스팅입니다. 외부로 나가는 네트워크 호출은 (1) 로컬 Claude CLI가 알아서 Anthropic과 통신하는 것, (2) 시작 시 `update-notifier`의 버전 확인뿐입니다. 버전 확인을 끄려면 `NO_UPDATE_NOTIFIER=1`.
+아니요. purplemux-improved는 완전히 셀프호스팅입니다. 외부로 나가는 네트워크 호출은 (1) 로컬 Claude CLI가 알아서 Anthropic과 통신하는 것, (2) 시작 시 `update-notifier`의 버전 확인뿐입니다. 버전 확인을 끄려면 `NO_UPDATE_NOTIFIER=1`.
 
 ## 다음으로
 
-- **[브라우저 지원](/purplemux/ko/docs/browser-support/)** — 자세한 호환성 매트릭스와 알려진 quirk
-- **[데이터 디렉토리](/purplemux/ko/docs/data-directory/)** — 각 파일의 역할과 삭제 안전성
-- **[아키텍처](/purplemux/ko/docs/architecture/)** — 더 깊이 파야 할 때 컴포넌트가 어떻게 맞물리는지
+- **[브라우저 지원](/purplemux-improved/ko/docs/browser-support/)** — 자세한 호환성 매트릭스와 알려진 quirk
+- **[데이터 디렉토리](/purplemux-improved/ko/docs/data-directory/)** — 각 파일의 역할과 삭제 안전성
+- **[아키텍처](/purplemux-improved/ko/docs/architecture/)** — 더 깊이 파야 할 때 컴포넌트가 어떻게 맞물리는지

@@ -147,7 +147,7 @@
   },
   "system": {
     "networkAccess": "Netzwerkzugriff",
-    "networkAccessDescription": "Steuert, welche Netzwerke auf purplemux zugreifen können. Wirkt nach Server-Neustart.",
+    "networkAccessDescription": "Steuert, welche Netzwerke auf purplemux-improved zugreifen können. Wirkt nach Server-Neustart.",
     "networkAccessLocked": "Wird durch die Umgebungsvariable HOST gesteuert.",
     "restartRequired": "Änderungen erfordern einen Server-Neustart.",
     "networkAccessOptions": {

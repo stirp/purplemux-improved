@@ -6,7 +6,7 @@ permalink: /es/docs/live-session-view/index.html
 ---
 {% from "docs/callouts.njk" import callout %}
 
-Cuando una pestaña ejecuta Claude Code, purplemux sustituye la vista de terminal cruda por una línea de tiempo estructurada. La misma sesión, el mismo transcript JSONL — pero presentado como eventos discretos que puedes escanear, recorrer y enlazar.
+Cuando una pestaña ejecuta Claude Code, purplemux-improved sustituye la vista de terminal cruda por una línea de tiempo estructurada. La misma sesión, el mismo transcript JSONL — pero presentado como eventos discretos que puedes escanear, recorrer y enlazar.
 
 ## Por qué una línea de tiempo gana al scrollback
 
@@ -62,7 +62,7 @@ Pulsa <kbd>⌘I</kbd> desde cualquier lugar de la línea de tiempo para enfocar 
 
 ## Avisos de permisos en línea
 
-Cuando Claude pide ejecutar una herramienta o editar un archivo, el aviso aparece en línea dentro de la línea de tiempo en lugar de como modal. Puedes hacer clic en la opción, pulsar la tecla numérica correspondiente, o ignorarlo y responder desde el móvil vía Web Push. Consulta [Avisos de permisos](/purplemux/es/docs/permission-prompts/) para el flujo completo.
+Cuando Claude pide ejecutar una herramienta o editar un archivo, el aviso aparece en línea dentro de la línea de tiempo en lugar de como modal. Puedes hacer clic en la opción, pulsar la tecla numérica correspondiente, o ignorarlo y responder desde el móvil vía Web Push. Consulta [Avisos de permisos](/purplemux-improved/es/docs/permission-prompts/) para el flujo completo.
 
 ## Modos en una sola pestaña
 
@@ -78,6 +78,6 @@ Atajos: <kbd>⌘⇧C</kbd> · <kbd>⌘⇧T</kbd> · <kbd>⌘⇧F</kbd>.
 
 ## Siguientes pasos
 
-- **[Avisos de permisos](/purplemux/es/docs/permission-prompts/)** — el flujo de aprobación en línea.
-- **[Estado de la sesión](/purplemux/es/docs/session-status/)** — las insignias que dirigen los indicadores de la línea de tiempo.
-- **[Prompts rápidos y adjuntos](/purplemux/es/docs/quick-prompts-attachments/)** — qué puede hacer la barra de entrada de abajo.
+- **[Avisos de permisos](/purplemux-improved/es/docs/permission-prompts/)** — el flujo de aprobación en línea.
+- **[Estado de la sesión](/purplemux-improved/es/docs/session-status/)** — las insignias que dirigen los indicadores de la línea de tiempo.
+- **[Prompts rápidos y adjuntos](/purplemux-improved/es/docs/quick-prompts-attachments/)** — qué puede hacer la barra de entrada de abajo.

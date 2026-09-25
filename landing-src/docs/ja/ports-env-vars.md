@@ -1,24 +1,24 @@
 ---
 title: ポートと環境変数
-description: purplemux が開くすべてのポートと、その動作に影響するすべての環境変数。
+description: purplemux-improved が開くすべてのポートと、その動作に影響するすべての環境変数。
 eyebrow: リファレンス
 permalink: /ja/docs/ports-env-vars/index.html
 ---
 {% from "docs/callouts.njk" import callout %}
 
-purplemux はワンライナーインストールを目指していますが、ランタイムは設定可能です。このページではサーバが開くすべてのポートと、サーバが読むすべての環境変数を列挙します。
+purplemux-improved はワンライナーインストールを目指していますが、ランタイムは設定可能です。このページではサーバが開くすべてのポートと、サーバが読むすべての環境変数を列挙します。
 
 ## ポート
 
 | ポート | デフォルト | 上書き | 備考 |
 |---|---|---|---|
-| HTTP + WebSocket | `8022` | `PORT=9000 purplemux` | `8022` がすでに使用中ならサーバは警告を出してランダムな空きポートにバインドします。 |
-| 内部 Next.js (本番) | ランダム | — | `pnpm start` / `purplemux start` では外側のサーバが `127.0.0.1:<random>` にバインドされた Next.js standalone にプロキシします。外部公開なし。 |
+| HTTP + WebSocket | `8022` | `PORT=9000 purplemux-improved` | `8022` がすでに使用中ならサーバは警告を出してランダムな空きポートにバインドします。 |
+| 内部 Next.js (本番) | ランダム | — | `pnpm start` / `purplemux-improved start` では外側のサーバが `127.0.0.1:<random>` にバインドされた Next.js standalone にプロキシします。外部公開なし。 |
 
 `8022` は `web` + `ssh` をくっつけたもの。プロトコルではなくユーモアです。
 
 {% call callout('note', 'バインドするインターフェースはアクセスポリシーに従う') %}
-purplemux は、アクセスポリシーが実際に外部クライアントを許可している場合にのみ `0.0.0.0` にバインドします。localhost のみのセットアップは `127.0.0.1` にバインドするので、LAN 上の他のマシンは TCP 接続すら開けません。下記の `HOST` を参照。
+purplemux-improved は、アクセスポリシーが実際に外部クライアントを許可している場合にのみ `0.0.0.0` にバインドします。localhost のみのセットアップは `127.0.0.1` にバインドするので、LAN 上の他のマシンは TCP 接続すら開けません。下記の `HOST` を参照。
 {% endcall %}
 
 ## サーバ環境変数
@@ -29,7 +29,7 @@ purplemux は、アクセスポリシーが実際に外部クライアントを�
 |---|---|---|
 | `PORT` | `8022` | HTTP/WS の待ち受けポート。`EADDRINUSE` 時はランダムポートにフォールバック。 |
 | `HOST` | 未設定 | 許可するクライアントを示すカンマ区切りの CIDR / キーワード。キーワード: `localhost`、`tailscale`、`lan`、`all` (または `*` / `0.0.0.0`)。例: `HOST=localhost`、`HOST=localhost,tailscale`、`HOST=10.0.0.0/8,localhost`。env で設定された場合、アプリ内の **設定 → ネットワークアクセス** はロックされます。 |
-| `NODE_ENV` | `purplemux start` では `production`、`pnpm dev` では `development` | 開発パイプライン (`tsx watch`、Next dev) と本番パイプライン (`tsup` バンドルが Next standalone にプロキシ) を切り替え。 |
+| `NODE_ENV` | `purplemux-improved start` では `production`、`pnpm dev` では `development` | 開発パイプライン (`tsx watch`、Next dev) と本番パイプライン (`tsup` バンドルが Next standalone にプロキシ) を切り替え。 |
 | `__PMUX_APP_DIR` | `process.cwd()` | `dist/server.js` と `.next/standalone/` を保持するディレクトリを上書き。`bin/purplemux.js` が自動設定。通常触る必要はありません。 |
 | `__PMUX_APP_DIR_UNPACKED` | 未設定 | macOS Electron アプリ内の asar-unpacked パス用の `__PMUX_APP_DIR` バリアント。 |
 | `__PMUX_ELECTRON` | 未設定 | Electron メインプロセスがプロセス内でサーバを起動するときに設定し、`server.ts` の自動 `start()` 呼び出しをスキップして Electron がライフサイクルを駆動できるようにする。 |
@@ -50,13 +50,13 @@ purplemux は、アクセスポリシーが実際に外部クライアントを�
 レベル順: `trace` · `debug` · `info` · `warn` · `error` · `fatal`。
 
 ```bash
-LOG_LEVEL=debug purplemux
+LOG_LEVEL=debug purplemux-improved
 
 # Claude フックモジュールだけをデバッグ
-LOG_LEVELS=hooks=debug purplemux
+LOG_LEVELS=hooks=debug purplemux-improved
 
 # 複数モジュールを同時に
-LOG_LEVELS=hooks=debug,status=warn,tmux=trace purplemux
+LOG_LEVELS=hooks=debug,status=warn,tmux=trace purplemux-improved
 ```
 
 最も役立つモジュール名:
@@ -86,7 +86,7 @@ CLI は env でも受け取り、こちらが優先されます:
 | `PMUX_PORT` | `~/.purplemux/port` の内容 | CLI が話すポート。 |
 | `PMUX_TOKEN` | `~/.purplemux/cli-token` の内容 | `x-pmux-token` として送られる Bearer トークン。 |
 
-完全なコマンドは [CLI リファレンス](/purplemux/ja/docs/cli-reference/) を参照してください。
+完全なコマンドは [CLI リファレンス](/purplemux-improved/ja/docs/cli-reference/) を参照してください。
 
 ## 組み合わせの例
 
@@ -94,27 +94,27 @@ CLI は env でも受け取り、こちらが優先されます:
 
 ```bash
 # デフォルト: localhost のみ、ポート 8022
-purplemux
+purplemux-improved
 
 # どこからでもバインド (LAN + Tailscale + リモート)
-HOST=all purplemux
+HOST=all purplemux-improved
 
 # Localhost + Tailscale のみ
-HOST=localhost,tailscale purplemux
+HOST=localhost,tailscale purplemux-improved
 
 # カスタムポート + 詳細なフックトレース
-PORT=9000 LOG_LEVELS=hooks=debug purplemux
+PORT=9000 LOG_LEVELS=hooks=debug purplemux-improved
 
 # デバッグ用フルセット
-PORT=9000 HOST=localhost LOG_LEVEL=debug LOG_LEVELS=tmux=trace purplemux
+PORT=9000 HOST=localhost LOG_LEVEL=debug LOG_LEVELS=tmux=trace purplemux-improved
 ```
 
 {% call callout('tip') %}
-永続インストールでは launchd / systemd ユニットの `Environment=` ブロックで設定してください。ユニットファイル例は [インストール](/purplemux/ja/docs/installation/#start-on-boot) を参照。
+永続インストールでは launchd / systemd ユニットの `Environment=` ブロックで設定してください。ユニットファイル例は [インストール](/purplemux-improved/ja/docs/installation/#start-on-boot) を参照。
 {% endcall %}
 
 ## 次のステップ
 
-- **[インストール](/purplemux/ja/docs/installation/)** — これらの変数が通常置かれる場所。
-- **[データディレクトリ](/purplemux/ja/docs/data-directory/)** — `port` と `cli-token` がフックスクリプトとどう連携するか。
-- **[CLI リファレンス](/purplemux/ja/docs/cli-reference/)** — `PMUX_PORT` / `PMUX_TOKEN` の文脈。
+- **[インストール](/purplemux-improved/ja/docs/installation/)** — これらの変数が通常置かれる場所。
+- **[データディレクトリ](/purplemux-improved/ja/docs/data-directory/)** — `port` と `cli-token` がフックスクリプトとどう連携するか。
+- **[CLI リファレンス](/purplemux-improved/ja/docs/cli-reference/)** — `PMUX_PORT` / `PMUX_TOKEN` の文脈。

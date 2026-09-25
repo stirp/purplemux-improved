@@ -6,7 +6,7 @@ permalink: /ja/docs/architecture/index.html
 ---
 {% from "docs/callouts.njk" import callout %}
 
-purplemux は 3 つの層を縫い合わせたものです: ブラウザフロントエンド、`:8022` の Node.js サーバ、ホスト上の tmux + Claude CLI。間にあるすべてはバイナリ WebSocket か小さな HTTP POST です。
+purplemux-improved は 3 つの層を縫い合わせたものです: ブラウザフロントエンド、`:8022` の Node.js サーバ、ホスト上の tmux + Claude CLI。間にあるすべてはバイナリ WebSocket か小さな HTTP POST です。
 
 ## 3 つの層
 
@@ -71,11 +71,11 @@ Sync      ◀──ws /api/sync──────▶  sync-server.ts
 
 `src/lib/status-manager.ts` は `cliState` の単一の信頼できるソースです。フックイベントは `/api/status/hook` (トークン認証 POST) を経由し、(タブごとに `eventSeq` で) シーケンス化され、`deriveStateFromEvent` によって `idle` / `busy` / `needs-input` / `ready-for-review` / `unknown` に reduce されます。JSONL ウォッチャーは合成 `interrupt` イベントを除いてメタデータのみを更新します。
 
-完全な状態マシンは [Session status (STATUS.md)](https://github.com/subicura/purplemux/blob/main/docs/STATUS.md) を参照してください。
+完全な状態マシンは [Session status (STATUS.md)](https://github.com/stirp/purplemux-improved/blob/main/docs/STATUS.md) を参照してください。
 
 ## tmux 層
 
-purplemux は専用ソケット — `-L purple` — で隔離された tmux を、自前の設定 `src/config/tmux.conf` で実行します。あなたの `~/.tmux.conf` は決して読まれません。
+purplemux-improved は専用ソケット — `-L purple` — で隔離された tmux を、自前の設定 `src/config/tmux.conf` で実行します。あなたの `~/.tmux.conf` は決して読まれません。
 
 セッション名は `pt-{workspaceId}-{paneId}-{tabId}`。ブラウザの 1 ターミナルペインが 1 つの tmux セッションに対応し、`node-pty` 経由でアタッチされます。
 
@@ -88,16 +88,16 @@ tmux ソケット: purple
 
 `prefix` は無効、ステータスバーはオフ (xterm.js がクロームを描画)、`set-titles` はオン、`mouse on` でホイールが copy-mode に入ります。tmux こそが、ブラウザを閉じても、Wi-Fi が切れても、サーバが再起動してもセッションが生き残る理由です。
 
-完全な tmux セットアップ、コマンドラッパー、プロセス検出の詳細は [tmux & process detection (TMUX.md)](https://github.com/subicura/purplemux/blob/main/docs/TMUX.md) を参照してください。
+完全な tmux セットアップ、コマンドラッパー、プロセス検出の詳細は [tmux & process detection (TMUX.md)](https://github.com/stirp/purplemux-improved/blob/main/docs/TMUX.md) を参照してください。
 
 ## Claude CLI 統合
 
-purplemux は Claude を fork したりラップしたりしません — `claude` バイナリはあなたがインストールしているものそのままです。2 つだけ追加されます:
+purplemux-improved は Claude を fork したりラップしたりしません — `claude` バイナリはあなたがインストールしているものそのままです。2 つだけ追加されます:
 
 1. **フック設定** — 起動時に `ensureHookSettings()` が `~/.purplemux/hooks.json`、`status-hook.sh`、`statusline.sh` を書き込みます。すべての Claude タブは `--settings ~/.purplemux/hooks.json` 付きで起動するので、`SessionStart`、`UserPromptSubmit`、`Notification`、`Stop`、`PreCompact`、`PostCompact` がすべてサーバに POST し返されます。
 2. **JSONL 読み込み** — `~/.claude/projects/**/*.jsonl` は `timeline-server.ts` がライブ会話ビュー用にパースし、`session-detection.ts` が `~/.claude/sessions/` の PID ファイル経由で動作中の Claude プロセスを検出するために監視します。
 
-フックスクリプトは `~/.purplemux/port` と `~/.purplemux/cli-token` を読み、`x-pmux-token` 付きで POST します。サーバが落ちていれば静かに失敗するので、Claude が動いている最中に purplemux を閉じても何もクラッシュしません。
+フックスクリプトは `~/.purplemux/port` と `~/.purplemux/cli-token` を読み、`x-pmux-token` 付きで POST します。サーバが落ちていれば静かに失敗するので、Claude が動いている最中に purplemux-improved を閉じても何もクラッシュしません。
 
 ## 起動シーケンス
 
@@ -126,12 +126,12 @@ purplemux は Claude を fork したりラップしたりしません — `claud
 
 ## さらに読むには
 
-- [`docs/TMUX.md`](https://github.com/subicura/purplemux/blob/main/docs/TMUX.md) — tmux 設定、コマンドラッパー、プロセスツリー走査、ターミナルバイナリプロトコル。
-- [`docs/STATUS.md`](https://github.com/subicura/purplemux/blob/main/docs/STATUS.md) — Claude CLI の状態マシン、フックフロー、合成 interrupt イベント、JSONL ウォッチャー。
-- [`docs/DATA-DIR.md`](https://github.com/subicura/purplemux/blob/main/docs/DATA-DIR.md) — purplemux が書き込むすべてのファイル。
+- [`docs/TMUX.md`](https://github.com/stirp/purplemux-improved/blob/main/docs/TMUX.md) — tmux 設定、コマンドラッパー、プロセスツリー走査、ターミナルバイナリプロトコル。
+- [`docs/STATUS.md`](https://github.com/stirp/purplemux-improved/blob/main/docs/STATUS.md) — Claude CLI の状態マシン、フックフロー、合成 interrupt イベント、JSONL ウォッチャー。
+- [`docs/DATA-DIR.md`](https://github.com/stirp/purplemux-improved/blob/main/docs/DATA-DIR.md) — purplemux-improved が書き込むすべてのファイル。
 
 ## 次のステップ
 
-- **[データディレクトリ](/purplemux/ja/docs/data-directory/)** — 上記のアーキテクチャが触れるすべてのファイル。
-- **[CLI リファレンス](/purplemux/ja/docs/cli-reference/)** — ブラウザ外からサーバと話す方法。
-- **[トラブルシューティング](/purplemux/ja/docs/troubleshooting/)** — ここで何かが期待通りに動かないときの診断。
+- **[データディレクトリ](/purplemux-improved/ja/docs/data-directory/)** — 上記のアーキテクチャが触れるすべてのファイル。
+- **[CLI リファレンス](/purplemux-improved/ja/docs/cli-reference/)** — ブラウザ外からサーバと話す方法。
+- **[トラブルシューティング](/purplemux-improved/ja/docs/troubleshooting/)** — ここで何かが期待通りに動かないときの診断。

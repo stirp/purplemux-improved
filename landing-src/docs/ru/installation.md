@@ -6,7 +6,7 @@ permalink: /ru/docs/installation/index.html
 ---
 {% from "docs/callouts.njk" import callout %}
 
-Если в [Быстром старте](/purplemux/ru/docs/quickstart/) вам хватило `npx purplemux@latest`, читать дальше не нужно. Эта страница — для тех, кому нужна постоянная установка, десктопное приложение или запуск из исходников.
+Если в [Быстром старте](/purplemux-improved/ru/docs/quickstart/) вам хватило `npx purplemux-improved@latest`, читать дальше не нужно. Эта страница — для тех, кому нужна постоянная установка, десктопное приложение или запуск из исходников.
 
 ## Требования
 
@@ -19,27 +19,27 @@ permalink: /ru/docs/installation/index.html
 ### npx (без установки)
 
 ```bash
-npx purplemux@latest
+npx purplemux-improved@latest
 ```
 
-При первом запуске purplemux загружается и кешируется в `~/.npm/_npx/`. Подходит, если хотите попробовать или запустить разово на удалённой машине. Каждый запуск использует последнюю опубликованную версию.
+При первом запуске purplemux-improved загружается и кешируется в `~/.npm/_npx/`. Подходит, если хотите попробовать или запустить разово на удалённой машине. Каждый запуск использует последнюю опубликованную версию.
 
 ### Глобальная установка
 
 ```bash
-npm install -g purplemux
-purplemux
+npm install -g purplemux-improved
+purplemux-improved
 ```
 
-pnpm и yarn работают так же (`pnpm add -g purplemux` / `yarn global add purplemux`). Последующие запуски быстрее, потому что не нужно ничего разрешать. Обновление — `npm update -g purplemux`.
+pnpm и yarn работают так же (`pnpm add -g purplemux-improved` / `yarn global add purplemux-improved`). Последующие запуски быстрее, потому что не нужно ничего разрешать. Обновление — `npm update -g purplemux-improved`.
 
 Бинарник также доступен под коротким именем `pmux`.
 
 ### Нативное macOS-приложение
 
-Скачайте последний `.dmg` из [Releases](https://github.com/subicura/purplemux/releases/latest) — есть сборки для Apple Silicon и Intel. Авто-обновление встроено.
+Скачайте последний `.dmg` из [Releases](https://github.com/stirp/purplemux-improved/releases/latest) — есть сборки для Apple Silicon и Intel. Авто-обновление встроено.
 
-Приложение содержит Node, tmux и сервер purplemux, плюс добавляет:
+Приложение содержит Node, tmux и сервер purplemux-improved, плюс добавляет:
 
 - Иконку в меню-баре со статусом сервера
 - Нативные уведомления (отдельно от Web Push)
@@ -48,8 +48,8 @@ pnpm и yarn работают так же (`pnpm add -g purplemux` / `yarn globa
 ### Запуск из исходников
 
 ```bash
-git clone https://github.com/subicura/purplemux.git
-cd purplemux
+git clone https://github.com/stirp/purplemux-improved.git
+cd purplemux-improved
 pnpm install
 pnpm start
 ```
@@ -62,25 +62,25 @@ pnpm dev
 
 ## Порт и переменные окружения
 
-purplemux слушает на **8022** (web + ssh, шутки ради). Перенастраивается через `PORT`:
+purplemux-improved слушает на **8022** (web + ssh, шутки ради). Перенастраивается через `PORT`:
 
 ```bash
-PORT=9000 purplemux
+PORT=9000 purplemux-improved
 ```
 
 Логирование управляется через `LOG_LEVEL` (по умолчанию `info`) и `LOG_LEVELS` для переопределений по модулям:
 
 ```bash
-LOG_LEVEL=debug purplemux
+LOG_LEVEL=debug purplemux-improved
 # debug только для модуля Claude hook
-LOG_LEVELS=hooks=debug purplemux
+LOG_LEVELS=hooks=debug purplemux-improved
 # несколько модулей сразу
-LOG_LEVELS=hooks=debug,status=warn purplemux
+LOG_LEVELS=hooks=debug,status=warn purplemux-improved
 ```
 
 Доступные уровни: `trace` · `debug` · `info` · `warn` · `error` · `fatal`. Модули, не указанные в `LOG_LEVELS`, наследуют `LOG_LEVEL`.
 
-Полный список — в [Порты и переменные окружения](/purplemux/ru/docs/ports-env-vars/).
+Полный список — в [Порты и переменные окружения](/purplemux-improved/ru/docs/ports-env-vars/).
 
 ## Автозапуск при загрузке
 
@@ -91,12 +91,12 @@ LOG_LEVELS=hooks=debug,status=warn purplemux
 При CLI-установке оберните в launchd (macOS) или systemd (Linux). Минимальная systemd-юнит:
 
 ```ini
-# ~/.config/systemd/user/purplemux.service
+# ~/.config/systemd/user/purplemux-improved.service
 [Unit]
-Description=purplemux
+Description=purplemux-improved
 
 [Service]
-ExecStart=/usr/local/bin/purplemux
+ExecStart=/usr/local/bin/purplemux-improved
 Restart=on-failure
 
 [Install]
@@ -104,7 +104,7 @@ WantedBy=default.target
 ```
 
 ```bash
-systemctl --user enable --now purplemux
+systemctl --user enable --now purplemux-improved
 ```
 
 ## Обновление
@@ -112,15 +112,15 @@ systemctl --user enable --now purplemux
 | Способ | Команда |
 |---|---|
 | npx | автоматически (свежая версия при каждом запуске) |
-| Глобальный npm | `npm update -g purplemux` |
+| Глобальный npm | `npm update -g purplemux-improved` |
 | macOS-приложение | автоматически (обновляется при запуске) |
 | Из исходников | `git pull && pnpm install && pnpm start` |
 
 ## Удаление
 
 ```bash
-npm uninstall -g purplemux          # или pnpm remove -g / yarn global remove
+npm uninstall -g purplemux-improved          # или pnpm remove -g / yarn global remove
 rm -rf ~/.purplemux                 # удаляет настройки и данные сессий
 ```
 
-Нативное приложение перетаскивается в Корзину обычным образом. Подробнее о том, что хранится в `~/.purplemux/`, — в [Каталоге данных](/purplemux/ru/docs/data-directory/).
+Нативное приложение перетаскивается в Корзину обычным образом. Подробнее о том, что хранится в `~/.purplemux/`, — в [Каталоге данных](/purplemux-improved/ru/docs/data-directory/).

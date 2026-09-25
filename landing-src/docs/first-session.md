@@ -6,7 +6,7 @@ permalink: /docs/first-session/index.html
 ---
 {% from "docs/callouts.njk" import callout %}
 
-purplemux is already running (if not, see [Quickstart](/purplemux/docs/quickstart/)). This page walks through what the UI actually does so the first few minutes feel less abstract.
+purplemux-improved is already running (if not, see [Quickstart](/purplemux-improved/docs/quickstart/)). This page walks through what the UI actually does so the first few minutes feel less abstract.
 
 ## The dashboard
 
@@ -40,7 +40,7 @@ Pick a **template**:
 - **Claude** — starts with `claude` already running in the shell.
 
 {% call callout('tip', 'Templates are just shortcuts') %}
-Under the hood every tab is a regular shell. The Claude template is just "open a terminal and run `claude`". If you run `claude` manually in a Terminal tab later, purplemux notices and starts surfacing its status the same way.
+Under the hood every tab is a regular shell. The Claude template is just "open a terminal and run `claude`". If you run `claude` manually in a Terminal tab later, purplemux-improved notices and starts surfacing its status the same way.
 {% endcall %}
 
 ## Read the session status
@@ -54,17 +54,17 @@ Look at the **sidebar session row** for your tab. You'll see one of these indica
 | **Needs input** (amber) | Claude hit a permission prompt or asked a question. |
 | **Review** (blue) | Work done, Claude stopped; there's something to check. |
 
-Transitions are near-instant. See [Session status](/purplemux/docs/session-status/) for how this is detected.
+Transitions are near-instant. See [Session status](/purplemux-improved/docs/session-status/) for how this is detected.
 
 ## Respond to a permission prompt
 
-When Claude asks to run a tool or edit a file, purplemux **intercepts the prompt** and shows it inline in the session view. You can:
+When Claude asks to run a tool or edit a file, purplemux-improved **intercepts the prompt** and shows it inline in the session view. You can:
 
 - Click **1 · Yes** / **2 · Yes, always** / **3 · No**, or
 - Press the number keys on your keyboard, or
 - Ignore it and answer on your phone — mobile Web Push fires the same alert.
 
-The Claude CLI never actually blocks on the intercepted prompt; purplemux pipes your answer back.
+The Claude CLI never actually blocks on the intercepted prompt; purplemux-improved pipes your answer back.
 
 ## Split and switch
 
@@ -75,13 +75,13 @@ Once you have a tab running, try:
 - <kbd>⌘⌥←/→/↑/↓</kbd> — move focus between splits
 - <kbd>⌘⇧[</kbd> / <kbd>⌘⇧]</kbd> — previous / next tab
 
-Full list on the [Keyboard shortcuts](/purplemux/docs/keyboard-shortcuts/) page.
+Full list on the [Keyboard shortcuts](/purplemux-improved/docs/keyboard-shortcuts/) page.
 
 ## Save and restore
 
-Close the browser. Your tabs don't go anywhere — tmux holds them open on the server. Refresh in an hour (or a week) and purplemux restores the exact layout, including split ratios and working directories.
+Close the browser. Your tabs don't go anywhere — tmux holds them open on the server. Refresh in an hour (or a week) and purplemux-improved restores the exact layout, including split ratios and working directories.
 
-Even a server reboot is recoverable: on restart, purplemux reads the saved layout from `~/.purplemux/workspaces.json`, relaunches shells in the right directories, and reattaches Claude sessions where possible.
+Even a server reboot is recoverable: on restart, purplemux-improved reads the saved layout from `~/.purplemux/workspaces.json`, relaunches shells in the right directories, and reattaches Claude sessions where possible.
 
 ## Reach it from your phone
 
@@ -93,10 +93,10 @@ tailscale serve --bg 8022
 
 On your phone, open `https://<machine>.<tailnet>.ts.net`, tap **Share → Add to Home Screen**, and grant notification permission. You now get push alerts for **needs-input** and **review** states even when the tab is closed.
 
-Full walkthrough: [PWA setup](/purplemux/docs/pwa-setup/) · [Web Push](/purplemux/docs/web-push/) · [Tailscale](/purplemux/docs/tailscale/).
+Full walkthrough: [PWA setup](/purplemux-improved/docs/pwa-setup/) · [Web Push](/purplemux-improved/docs/web-push/) · [Tailscale](/purplemux-improved/docs/tailscale/).
 
 ## What's next
 
-- **[Keyboard shortcuts](/purplemux/docs/keyboard-shortcuts/)** — every binding in one table.
-- **[Browser support](/purplemux/docs/browser-support/)** — compatibility matrix, especially iOS Safari 16.4+.
+- **[Keyboard shortcuts](/purplemux-improved/docs/keyboard-shortcuts/)** — every binding in one table.
+- **[Browser support](/purplemux-improved/docs/browser-support/)** — compatibility matrix, especially iOS Safari 16.4+.
 - Explore the sidebar: **Notes** (<kbd>⌘⇧E</kbd>) for the AI daily report, **Stats** (<kbd>⌘⇧U</kbd>) for usage analytics.

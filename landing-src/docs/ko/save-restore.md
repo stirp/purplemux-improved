@@ -6,7 +6,7 @@ permalink: /ko/docs/save-restore/index.html
 ---
 {% from "docs/callouts.njk" import callout %}
 
-purplemux는 "브라우저 탭을 닫는 것이 세션을 끝내는 것이어선 안 된다"는 전제로 설계됐습니다. 두 축이 함께 동작합니다 — tmux가 쉘을 살려두고, `~/.purplemux/workspaces.json`이 레이아웃을 기억합니다.
+purplemux-improved는 "브라우저 탭을 닫는 것이 세션을 끝내는 것이어선 안 된다"는 전제로 설계됐습니다. 두 축이 함께 동작합니다 — tmux가 쉘을 살려두고, `~/.purplemux/workspaces.json`이 레이아웃을 기억합니다.
 
 ## 저장되는 것
 
@@ -18,7 +18,7 @@ purplemux는 "브라우저 탭을 닫는 것이 세션을 끝내는 것이어선
 - 모든 쉘의 작업 디렉토리
 - 워크스페이스 그룹, 이름, 순서
 
-`workspaces.json`은 레이아웃 변경 때마다 트랜잭션 단위로 업데이트되므로 파일은 항상 현재 상태를 반영합니다. 디스크 파일 구조는 [데이터 디렉토리](/purplemux/ko/docs/data-directory/)를 참고하세요.
+`workspaces.json`은 레이아웃 변경 때마다 트랜잭션 단위로 업데이트되므로 파일은 항상 현재 상태를 반영합니다. 디스크 파일 구조는 [데이터 디렉토리](/purplemux-improved/ko/docs/data-directory/)를 참고하세요.
 
 ## 브라우저 닫기
 
@@ -34,7 +34,7 @@ purplemux는 "브라우저 탭을 닫는 것이 세션을 끝내는 것이어선
 
 ## 서버 재부팅 후 복구
 
-재부팅은 tmux 프로세스를 종료시킵니다 — 결국은 OS 프로세스니까요. purplemux는 다음 시작 시 이 상황을 처리합니다.
+재부팅은 tmux 프로세스를 종료시킵니다 — 결국은 OS 프로세스니까요. purplemux-improved는 다음 시작 시 이 상황을 처리합니다.
 
 1. **레이아웃 읽기** — `workspaces.json`이 모든 워크스페이스, 창, 탭을 기술합니다.
 2. **세션 병렬 재생성** — 각 탭마다 저장된 작업 디렉토리에서 새 tmux 세션이 생성됩니다.
@@ -60,10 +60,10 @@ purplemux는 "브라우저 탭을 닫는 것이 세션을 끝내는 것이어선
 - 세션 이름 형식은 `pt-{workspaceId}-{paneId}-{tabId}`입니다.
 - 서버 실행 중에 `workspaces.json`을 직접 편집하는 것은 안전하지 않습니다 — 서버가 파일을 잡고 있고 변경을 즉시 써내려갑니다.
 
-이진 프로토콜, 백프레셔, JSONL 워처 같은 더 깊은 이야기는 랜딩의 [How it works](/purplemux/ko/#how) 섹션을 참고하세요.
+이진 프로토콜, 백프레셔, JSONL 워처 같은 더 깊은 이야기는 랜딩의 [How it works](/purplemux-improved/ko/#how) 섹션을 참고하세요.
 
 ## 다음으로
 
-- **[워크스페이스와 그룹](/purplemux/ko/docs/workspaces-groups/)** — 워크스페이스 단위로 저장되는 것
-- **[탭 & 창](/purplemux/ko/docs/tabs-panes/)** — 탭 단위로 저장되는 것
-- **[브라우저 지원](/purplemux/ko/docs/browser-support/)** — 모바일 백그라운드 탭과 재연결의 알려진 이슈
+- **[워크스페이스와 그룹](/purplemux-improved/ko/docs/workspaces-groups/)** — 워크스페이스 단위로 저장되는 것
+- **[탭 & 창](/purplemux-improved/ko/docs/tabs-panes/)** — 탭 단위로 저장되는 것
+- **[브라우저 지원](/purplemux-improved/ko/docs/browser-support/)** — 모바일 백그라운드 탭과 재연결의 알려진 이슈

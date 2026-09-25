@@ -6,7 +6,7 @@ permalink: /ja/docs/installation/index.html
 ---
 {% from "docs/callouts.njk" import callout %}
 
-[クイックスタート](/purplemux/ja/docs/quickstart/) で `npx purplemux@latest` を実行してそれで十分なら、もう終わりです。このページは、永続的なインストール、デスクトップアプリ、ソースからの実行をしたい人向けです。
+[クイックスタート](/purplemux-improved/ja/docs/quickstart/) で `npx purplemux-improved@latest` を実行してそれで十分なら、もう終わりです。このページは、永続的なインストール、デスクトップアプリ、ソースからの実行をしたい人向けです。
 
 ## 必要要件
 
@@ -19,27 +19,27 @@ permalink: /ja/docs/installation/index.html
 ### npx (インストールなし)
 
 ```bash
-npx purplemux@latest
+npx purplemux-improved@latest
 ```
 
-初回実行時に purplemux をダウンロードし、`~/.npm/_npx/` の下にキャッシュします。試用やリモートマシンでのアドホック実行に最適です。実行のたびに最新版が使われます。
+初回実行時に purplemux-improved をダウンロードし、`~/.npm/_npx/` の下にキャッシュします。試用やリモートマシンでのアドホック実行に最適です。実行のたびに最新版が使われます。
 
 ### グローバルインストール
 
 ```bash
-npm install -g purplemux
-purplemux
+npm install -g purplemux-improved
+purplemux-improved
 ```
 
-pnpm や yarn でも同様に動作します (`pnpm add -g purplemux` / `yarn global add purplemux`)。2 回目以降は解決処理が不要なため起動が速くなります。アップデートは `npm update -g purplemux` で。
+pnpm や yarn でも同様に動作します (`pnpm add -g purplemux-improved` / `yarn global add purplemux-improved`)。2 回目以降は解決処理が不要なため起動が速くなります。アップデートは `npm update -g purplemux-improved` で。
 
 短縮形として `pmux` バイナリも使えます。
 
 ### macOS ネイティブアプリ
 
-最新の `.dmg` を [リリース](https://github.com/subicura/purplemux/releases/latest) からダウンロードしてください — Apple Silicon と Intel のビルドを提供しています。自動アップデート対応です。
+最新の `.dmg` を [リリース](https://github.com/stirp/purplemux-improved/releases/latest) からダウンロードしてください — Apple Silicon と Intel のビルドを提供しています。自動アップデート対応です。
 
-このアプリは Node、tmux、purplemux サーバを同梱し、さらに以下を追加します:
+このアプリは Node、tmux、purplemux-improved サーバを同梱し、さらに以下を追加します:
 
 - サーバステータスを表示するメニューバーアイコン
 - ネイティブ通知 (Web Push とは別)
@@ -48,8 +48,8 @@ pnpm や yarn でも同様に動作します (`pnpm add -g purplemux` / `yarn gl
 ### ソースから実行
 
 ```bash
-git clone https://github.com/subicura/purplemux.git
-cd purplemux
+git clone https://github.com/stirp/purplemux-improved.git
+cd purplemux-improved
 pnpm install
 pnpm start
 ```
@@ -62,25 +62,25 @@ pnpm dev
 
 ## ポートと環境変数
 
-purplemux は **8022** で待ち受けます (web + ssh の語呂合わせ)。`PORT` で上書き可能です:
+purplemux-improved は **8022** で待ち受けます (web + ssh の語呂合わせ)。`PORT` で上書き可能です:
 
 ```bash
-PORT=9000 purplemux
+PORT=9000 purplemux-improved
 ```
 
 ロギングは `LOG_LEVEL` (デフォルト `info`) と、モジュール単位の上書き用 `LOG_LEVELS` で制御します:
 
 ```bash
-LOG_LEVEL=debug purplemux
+LOG_LEVEL=debug purplemux-improved
 # Claude フックモジュールだけをデバッグ
-LOG_LEVELS=hooks=debug purplemux
+LOG_LEVELS=hooks=debug purplemux-improved
 # 複数モジュールを同時に
-LOG_LEVELS=hooks=debug,status=warn purplemux
+LOG_LEVELS=hooks=debug,status=warn purplemux-improved
 ```
 
 利用可能なレベル: `trace` · `debug` · `info` · `warn` · `error` · `fatal`。`LOG_LEVELS` に列挙されていないモジュールは `LOG_LEVEL` にフォールバックします。
 
-すべてのリストは [ポート & 環境変数](/purplemux/ja/docs/ports-env-vars/) を参照してください。
+すべてのリストは [ポート & 環境変数](/purplemux-improved/ja/docs/ports-env-vars/) を参照してください。
 
 ## 起動時に開始する
 
@@ -91,12 +91,12 @@ macOS アプリを使っているなら、**設定 → 一般 → ログイン�
 CLI インストールの場合、launchd (macOS) または systemd (Linux) でラップします。最小限の systemd ユニットの例:
 
 ```ini
-# ~/.config/systemd/user/purplemux.service
+# ~/.config/systemd/user/purplemux-improved.service
 [Unit]
-Description=purplemux
+Description=purplemux-improved
 
 [Service]
-ExecStart=/usr/local/bin/purplemux
+ExecStart=/usr/local/bin/purplemux-improved
 Restart=on-failure
 
 [Install]
@@ -104,7 +104,7 @@ WantedBy=default.target
 ```
 
 ```bash
-systemctl --user enable --now purplemux
+systemctl --user enable --now purplemux-improved
 ```
 
 ## アップデート
@@ -112,15 +112,15 @@ systemctl --user enable --now purplemux
 | 方法 | コマンド |
 |---|---|
 | npx | 自動 (毎回最新) |
-| グローバル npm | `npm update -g purplemux` |
+| グローバル npm | `npm update -g purplemux-improved` |
 | macOS アプリ | 自動 (起動時に更新) |
 | ソースから | `git pull && pnpm install && pnpm start` |
 
 ## アンインストール
 
 ```bash
-npm uninstall -g purplemux          # または pnpm remove -g / yarn global remove
+npm uninstall -g purplemux-improved          # または pnpm remove -g / yarn global remove
 rm -rf ~/.purplemux                 # 設定とセッションデータを消去
 ```
 
-ネイティブアプリは通常通りゴミ箱にドラッグしてください。`~/.purplemux/` に何が保存されているかは [データディレクトリ](/purplemux/ja/docs/data-directory/) を参照してください。
+ネイティブアプリは通常通りゴミ箱にドラッグしてください。`~/.purplemux/` に何が保存されているかは [データディレクトリ](/purplemux-improved/ja/docs/data-directory/) を参照してください。

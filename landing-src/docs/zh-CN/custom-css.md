@@ -6,7 +6,7 @@ permalink: /zh-CN/docs/custom-css/index.html
 ---
 {% from "docs/callouts.njk" import callout %}
 
-purplemux 建立在一套 CSS 变量系统上。你几乎可以在不改源码的情况下改动任何视觉 — 在 **外观** 标签页粘贴规则,点应用,即可在每个连接的客户端立即生效。
+purplemux-improved 建立在一套 CSS 变量系统上。你几乎可以在不改源码的情况下改动任何视觉 — 在 **外观** 标签页粘贴规则,点应用,即可在每个连接的客户端立即生效。
 
 ## 在哪里写
 
@@ -24,7 +24,7 @@ CSS 存在服务端的 `~/.purplemux/config.json`(`customCSS`),所以会应用�
 
 ## 工作原理
 
-purplemux 中大多数颜色、表面和强调色暴露为 `:root`(浅色)和 `.dark` 下的 CSS 变量。覆盖一个变量会把改动级联到所有用到它的地方 — 侧边栏、对话框、图表、状态徽章。
+purplemux-improved 中大多数颜色、表面和强调色暴露为 `:root`(浅色)和 `.dark` 下的 CSS 变量。覆盖一个变量会把改动级联到所有用到它的地方 — 侧边栏、对话框、图表、状态徽章。
 
 改单个变量几乎总是优于直接覆盖组件选择器。组件类不是稳定 API;变量是。
 
@@ -65,7 +65,7 @@ purplemux 中大多数颜色、表面和强调色暴露为 `:root`(浅色)和 `.
 - **调色板** — `--ui-blue`、`--ui-teal`、`--ui-coral`、`--ui-amber`、`--ui-purple`、`--ui-pink`、`--ui-green`、`--ui-gray`、`--ui-red`
 - **语义** — `--positive`、`--negative`、`--accent-color`、`--brand`、`--focus-indicator`、`--claude-active`
 
-完整 token 列表(包含默认 OKLCH 值和设计逻辑)见仓库的 [`docs/STYLE.md`](https://github.com/subicura/purplemux/blob/main/docs/STYLE.md)。该文档是事实来源。
+完整 token 列表(包含默认 OKLCH 值和设计逻辑)见仓库的 [`docs/STYLE.md`](https://github.com/stirp/purplemux-improved/blob/main/docs/STYLE.md)。该文档是事实来源。
 
 ## 只针对一种模式
 
@@ -85,10 +85,10 @@ purplemux 中大多数颜色、表面和强调色暴露为 `:root`(浅色)和 `.
 
 ## 终端怎么办
 
-xterm.js 终端有自己的调色板,从一份精选列表中选择 — 不被这些 CSS 变量驱动。在 **终端** 标签页里切换。见 [终端主题](/purplemux/zh-CN/docs/terminal-themes/)。
+xterm.js 终端有自己的调色板,从一份精选列表中选择 — 不被这些 CSS 变量驱动。在 **终端** 标签页里切换。见 [终端主题](/purplemux-improved/zh-CN/docs/terminal-themes/)。
 
 ## 下一步
 
-- **[主题与字体](/purplemux/zh-CN/docs/themes-fonts/)** — 浅色 / 深色 / 跟随系统;字号预设。
-- **[终端主题](/purplemux/zh-CN/docs/terminal-themes/)** — 终端区域的独立调色板。
-- **[侧边栏与 Claude 选项](/purplemux/zh-CN/docs/sidebar-options/)** — 重排序条目、切换 Claude 标志。
+- **[主题与字体](/purplemux-improved/zh-CN/docs/themes-fonts/)** — 浅色 / 深色 / 跟随系统;字号预设。
+- **[终端主题](/purplemux-improved/zh-CN/docs/terminal-themes/)** — 终端区域的独立调色板。
+- **[侧边栏与 Claude 选项](/purplemux-improved/zh-CN/docs/sidebar-options/)** — 重排序条目、切换 Claude 标志。

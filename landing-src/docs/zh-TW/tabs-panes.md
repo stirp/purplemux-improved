@@ -74,10 +74,10 @@ permalink: /zh-TW/docs/tabs-panes/index.html
 
 關閉分頁會終止它對應的 tmux 工作階段。但是關閉 *瀏覽器*、重新整理、網路斷線都不會 — 每個分頁會繼續在伺服器上運作。重新打開後，相同的窗格、分割與分頁都會回來。
 
-伺服器重啟時的還原機制請見 [儲存與還原版面](/purplemux/zh-TW/docs/save-restore/)。
+伺服器重啟時的還原機制請見 [儲存與還原版面](/purplemux-improved/zh-TW/docs/save-restore/)。
 
 ## 下一步
 
-- **[儲存與還原版面](/purplemux/zh-TW/docs/save-restore/)** — 版面是如何保留下來的。
-- **[鍵盤快速鍵](/purplemux/zh-TW/docs/keyboard-shortcuts/)** — 所有繫結一覽表。
-- **[Git 工作流面板](/purplemux/zh-TW/docs/git-workflow/)** — 一個值得擺進分割視窗的好用分頁類型。
+- **[儲存與還原版面](/purplemux-improved/zh-TW/docs/save-restore/)** — 版面是如何保留下來的。
+- **[鍵盤快速鍵](/purplemux-improved/zh-TW/docs/keyboard-shortcuts/)** — 所有繫結一覽表。
+- **[Git 工作流面板](/purplemux-improved/zh-TW/docs/git-workflow/)** — 一個值得擺進分割視窗的好用分頁類型。

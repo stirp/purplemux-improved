@@ -6,7 +6,7 @@ permalink: /zh-CN/docs/usage-rate-limits/index.html
 ---
 {% from "docs/callouts.njk" import callout %}
 
-任务做到一半撞到速率限制是最糟糕的中断。purplemux 把 Claude Code 的配额数字拉进侧边栏,并加了一个统计仪表盘,让你一眼看清自己的使用节奏。
+任务做到一半撞到速率限制是最糟糕的中断。purplemux-improved 把 Claude Code 的配额数字拉进侧边栏,并加了一个统计仪表盘,让你一眼看清自己的使用节奏。
 
 ## 侧边栏组件
 
@@ -18,7 +18,7 @@ permalink: /zh-CN/docs/usage-rate-limits/index.html
 
 把鼠标悬停到任何一条上可看完整明细 — 已用百分比、预测百分比和重置时间(以相对时长表示)。
 
-数据来自 Claude Code 自己的状态行 JSON。purplemux 安装一个微型 `~/.purplemux/statusline.sh` 脚本,每次 Claude 刷新状态行时把数据 POST 给本地服务;`fs.watch` 让 UI 保持同步。
+数据来自 Claude Code 自己的状态行 JSON。purplemux-improved 安装一个微型 `~/.purplemux/statusline.sh` 脚本,每次 Claude 刷新状态行时把数据 POST 给本地服务;`fs.watch` 让 UI 保持同步。
 
 ## 颜色阈值
 
@@ -71,14 +71,14 @@ permalink: /zh-CN/docs/usage-rate-limits/index.html
 
 ## 数据从哪来
 
-仪表盘里的所有内容都从 `~/.claude/projects/` 下 Claude Code 自己的会话 JSONL 本地计算。purplemux 读取它们,把解析后的计数缓存到 `~/.purplemux/stats/`,从不向外发送一个字节。切换语言或重新生成缓存也不会向任何地方发请求。
+仪表盘里的所有内容都从 `~/.claude/projects/` 下 Claude Code 自己的会话 JSONL 本地计算。purplemux-improved 读取它们,把解析后的计数缓存到 `~/.purplemux/stats/`,从不向外发送一个字节。切换语言或重新生成缓存也不会向任何地方发请求。
 
 ## 重置行为
 
-5 小时和 7 天窗口是滚动的,绑定到你的 Claude Code 账户。窗口重置时,条降到 0%,百分比和剩余时间从下一个重置时间戳重新计算。如果 purplemux 错过了重置(服务关着),组件会在下一次状态行刷新时自我修正。
+5 小时和 7 天窗口是滚动的,绑定到你的 Claude Code 账户。窗口重置时,条降到 0%,百分比和剩余时间从下一个重置时间戳重新计算。如果 purplemux-improved 错过了重置(服务关着),组件会在下一次状态行刷新时自我修正。
 
 ## 下一步
 
-- **[笔记(AI 每日报告)](/purplemux/zh-CN/docs/notes-daily-report/)** — 同样的数据,以每日简报形式书写。
-- **[会话状态](/purplemux/zh-CN/docs/session-status/)** — 侧边栏按标签追踪的另一个东西。
-- **[键盘快捷键](/purplemux/zh-CN/docs/keyboard-shortcuts/)** — 包括用于统计的 <kbd>⌘⇧U</kbd>。
+- **[笔记(AI 每日报告)](/purplemux-improved/zh-CN/docs/notes-daily-report/)** — 同样的数据,以每日简报形式书写。
+- **[会话状态](/purplemux-improved/zh-CN/docs/session-status/)** — 侧边栏按标签追踪的另一个东西。
+- **[键盘快捷键](/purplemux-improved/zh-CN/docs/keyboard-shortcuts/)** — 包括用于统计的 <kbd>⌘⇧U</kbd>。

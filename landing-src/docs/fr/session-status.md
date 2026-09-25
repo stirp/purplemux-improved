@@ -1,6 +1,6 @@
 ---
 title: Statut de session
-description: Comment purplemux transforme l'activité Claude Code en un badge à quatre états — et pourquoi il se met à jour quasi instantanément.
+description: Comment purplemux-improved transforme l'activité Claude Code en un badge à quatre états — et pourquoi il se met à jour quasi instantanément.
 eyebrow: Claude Code
 permalink: /fr/docs/session-status/index.html
 ---
@@ -17,11 +17,11 @@ Chaque session de la barre latérale porte un point coloré qui vous indique, d'
 | **Saisie requise** | pulsation orange | Une invite de permission ou une question vous attend. |
 | **À examiner** | pulsation violette | Claude a fini et il y a quelque chose à vérifier. |
 
-Une cinquième valeur, **inconnu**, apparaît brièvement pour les onglets qui étaient `busy` au redémarrage du serveur. Elle se résout d'elle-même dès que purplemux peut revérifier la session.
+Une cinquième valeur, **inconnu**, apparaît brièvement pour les onglets qui étaient `busy` au redémarrage du serveur. Elle se résout d'elle-même dès que purplemux-improved peut revérifier la session.
 
 ## Les hooks sont la source de vérité
 
-purplemux installe une configuration de hook Claude Code dans `~/.purplemux/hooks.json` et un petit script shell dans `~/.purplemux/status-hook.sh`. Le script est enregistré pour cinq événements de hook Claude Code et POST chacun au serveur local avec un token CLI :
+purplemux-improved installe une configuration de hook Claude Code dans `~/.purplemux/hooks.json` et un petit script shell dans `~/.purplemux/status-hook.sh`. Le script est enregistré pour cinq événements de hook Claude Code et POST chacun au serveur local avec un token CLI :
 
 | Hook Claude Code | État résultant |
 |---|---|
@@ -34,21 +34,21 @@ purplemux installe une configuration de hook Claude Code dans `~/.purplemux/hook
 Comme les hooks se déclenchent au moment où Claude Code transitionne, la barre latérale se met à jour avant que vous ne le remarquiez dans le terminal.
 
 {% call callout('note', 'Notifications de permission uniquement') %}
-Le hook `Notification` de Claude se déclenche pour plusieurs raisons. purplemux ne bascule en **needs-input** que quand la notification est `permission_prompt` ou `worker_permission_prompt`. Les rappels d'inactivité et autres types de notification ne déclenchent pas le badge.
+Le hook `Notification` de Claude se déclenche pour plusieurs raisons. purplemux-improved ne bascule en **needs-input** que quand la notification est `permission_prompt` ou `worker_permission_prompt`. Les rappels d'inactivité et autres types de notification ne déclenchent pas le badge.
 {% endcall %}
 
 ## La détection de processus tourne en parallèle
 
 Savoir si la CLI Claude tourne réellement est suivi séparément de l'état de travail. Deux chemins coopèrent :
 
-- **Changements de titre tmux** — chaque volet rapporte `pane_current_command|pane_current_path` comme titre. xterm.js livre le changement via `onTitleChange`, et purplemux ping `/api/check-claude` pour confirmer.
+- **Changements de titre tmux** — chaque volet rapporte `pane_current_command|pane_current_path` comme titre. xterm.js livre le changement via `onTitleChange`, et purplemux-improved ping `/api/check-claude` pour confirmer.
 - **Parcours de l'arbre de processus** — côté serveur, `detectActiveSession` regarde le PID du shell du volet, parcourt ses enfants et compare avec les fichiers PID que Claude écrit sous `~/.claude/sessions/`.
 
 Si le répertoire n'existe pas, l'interface affiche un écran « Claude pas installé » au lieu d'un point d'état.
 
 ## Le watcher JSONL comble les trous
 
-Claude Code écrit un transcript JSONL pour chaque session sous `~/.claude/projects/`. Pendant qu'un onglet est `busy`, `needs-input`, `unknown` ou `ready-for-review`, purplemux surveille ce fichier avec `fs.watch` pour deux raisons :
+Claude Code écrit un transcript JSONL pour chaque session sous `~/.claude/projects/`. Pendant qu'un onglet est `busy`, `needs-input`, `unknown` ou `ready-for-review`, purplemux-improved surveille ce fichier avec `fs.watch` pour deux raisons :
 
 - **Métadonnées** — outil courant, dernier extrait assistant, comptes de tokens. Tout cela alimente la timeline et la barre latérale sans changer l'état.
 - **Interrupt synthétique** — quand vous pressez Esc en plein flux, Claude écrit `[Request interrupted by user]` dans le JSONL mais ne déclenche aucun hook. Le watcher détecte cette ligne et synthétise un événement `interrupt` pour que l'onglet revienne en idle au lieu de rester bloqué en busy.
@@ -65,7 +65,7 @@ C'est le « polling de repli 5–15 s » mentionné sur la page d'accueil, ralen
 
 ## Survivre à un redémarrage du serveur
 
-Les hooks ne peuvent pas se déclencher pendant que purplemux est down, donc tout état en vol pourrait devenir périmé. La règle de récupération est conservatrice :
+Les hooks ne peuvent pas se déclencher pendant que purplemux-improved est down, donc tout état en vol pourrait devenir périmé. La règle de récupération est conservatrice :
 
 - Un `busy` persisté devient `unknown` et est revérifié : si Claude ne tourne plus, l'onglet bascule silencieusement en idle ; si le JSONL se termine proprement, il devient review.
 - Tous les autres états — `idle`, `needs-input`, `ready-for-review` — vous laissent la balle, donc ils persistent intacts.
@@ -83,6 +83,6 @@ Aucun changement d'état automatique pendant la récupération ne déclenche de 
 
 ## Pour aller plus loin
 
-- **[Invites de permission](/purplemux/fr/docs/permission-prompts/)** — le workflow derrière l'état **needs-input**.
-- **[Vue de session en direct](/purplemux/fr/docs/live-session-view/)** — ce que la timeline montre quand un onglet est `busy`.
-- **[Première session](/purplemux/fr/docs/first-session/)** — la visite du tableau de bord, en contexte.
+- **[Invites de permission](/purplemux-improved/fr/docs/permission-prompts/)** — le workflow derrière l'état **needs-input**.
+- **[Vue de session en direct](/purplemux-improved/fr/docs/live-session-view/)** — ce que la timeline montre quand un onglet est `busy`.
+- **[Première session](/purplemux-improved/fr/docs/first-session/)** — la visite du tableau de bord, en contexte.

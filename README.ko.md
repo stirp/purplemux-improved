@@ -1,4 +1,6 @@
-# purplemux
+# purplemux-improved
+
+An improved fork of [subicura/purplemux-improved](https://github.com/subicura/purplemux-improved). The `purplemux` / `pmux` aliases and `~/.purplemux` data directory remain compatible. npm installation requires this fork to be published; until then, run from source.
 
 **Claude Code와 Codex, 여러 작업을 동시에. 더 빠르게.**
 
@@ -6,23 +8,23 @@
 
 한국어 | <a href="README.md">English</a> | <a href="README.ja.md">日本語</a> | <a href="README.zh-CN.md">简体中文</a> | <a href="README.zh-TW.md">繁體中文</a> | <a href="README.de.md">Deutsch</a> | <a href="README.es.md">Español</a> | <a href="README.fr.md">Français</a> | <a href="README.ru.md">Русский</a> | <a href="README.pt-BR.md">Português (Brasil)</a> | <a href="README.tr.md">Türkçe</a>
 
-![purplemux](docs/images/screenshot.png)
+![purplemux-improved](docs/images/screenshot.png)
 
-![purplemux mobile](docs/images/screenshot-mobile.png)
+![purplemux-improved mobile](docs/images/screenshot-mobile.png)
 
 ## 설치
 
 ```bash
-npx purplemux@latest
+npx purplemux-improved@latest
 ```
 
 브라우저에서 [http://localhost:8022](http://localhost:8022)으로 접속합니다. 끝.
 
 > Node.js 20+, tmux 필요. macOS 또는 Linux.
 
-네이티브 앱을 선호한다면, [최신 릴리스](https://github.com/subicura/purplemux/releases/latest)에서 macOS Electron 빌드를 받을 수 있습니다 (Apple Silicon & Intel용 `.dmg`).
+네이티브 앱을 선호한다면, [최신 릴리스](https://github.com/stirp/purplemux-improved/releases/latest)에서 macOS Electron 빌드를 받을 수 있습니다 (Apple Silicon & Intel용 `.dmg`).
 
-## 왜 purplemux인가
+## 왜 purplemux-improved인가
 
 - **멀티 세션 대시보드** — 모든 Claude Code와 Codex 세션의 작업중/사용자 요청 상태를 한눈에 확인
 - **Rate Limit 모니터링** — 5시간/7일 잔여량과 리셋 카운트다운 표시
@@ -38,7 +40,7 @@ npx purplemux@latest
 
 ## 공식 Remote Control과 차이점
 
-> 공식 Remote Control은 단일 세션 원격 제어에 초점을 둡니다. purplemux는 멀티 세션 관리, 푸시 알림, 세션 지속성이 필요할 때 사용합니다.
+> 공식 Remote Control은 단일 세션 원격 제어에 초점을 둡니다. purplemux-improved는 멀티 세션 관리, 푸시 알림, 세션 지속성이 필요할 때 사용합니다.
 
 ## 특징
 
@@ -50,7 +52,7 @@ npx purplemux@latest
 - **터미널 테마** — 다크/라이트 모드, 다양한 컬러 테마
 - **워크스페이스 & 그룹** — 패널 레이아웃, 탭, 작업 디렉토리를 워크스페이스 단위로 저장/복원. 드래그 앤 드롭으로 워크스페이스를 그룹으로 묶어 관리
 - **Git 워크플로** — Side-by-side / Line-by-line 뷰 전환과 Syntax highlighting, 인라인 hunk 펼치기, 페이지네이션 히스토리 탭. 패널에서 바로 fetch / pull / push (ahead/behind 표시) — 동기화 실패(dirty worktree, 충돌)는 원클릭으로 Claude 또는 Codex에게 질문
-- **웹 브라우저 패널** — 터미널 옆 내장 브라우저로 개발 결과 확인 (Electron). `purplemux` CLI로 제어하고, 내장 디바이스 에뮬레이터로 뷰포트 전환
+- **웹 브라우저 패널** — 터미널 옆 내장 브라우저로 개발 결과 확인 (Electron). `purplemux-improved` CLI로 제어하고, 내장 디바이스 에뮬레이터로 뷰포트 전환
 - **에이전트 탭** — 새 탭 메뉴에서 Claude, Codex 또는 통합 세션 목록 시작
 
 ### Claude Code와 Codex 연동
@@ -112,28 +114,28 @@ brew install --cask codex
 ### npx (가장 빠름)
 
 ```bash
-npx purplemux@latest
+npx purplemux-improved@latest
 ```
 
 ### 글로벌 설치
 
 ```bash
-npm install -g purplemux
-purplemux
+npm install -g purplemux-improved
+purplemux-improved
 ```
 
 ### CLI 예시
 
 ```bash
-purplemux tab create -w WS -t codex-cli -n "fix auth"
-purplemux tab create -w WS -t agent-sessions
+purplemux-improved tab create -w WS -t codex-cli -n "fix auth"
+purplemux-improved tab create -w WS -t agent-sessions
 ```
 
 ### 소스에서 실행
 
 ```bash
-git clone https://github.com/subicura/purplemux.git
-cd purplemux
+git clone https://github.com/stirp/purplemux-improved.git
+cd purplemux-improved
 pnpm install
 pnpm start
 ```

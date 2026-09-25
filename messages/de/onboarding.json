@@ -31,7 +31,7 @@
   "appearanceDescription": "Wähle das Anzeige-Theme für die gesamte App.",
   "skipPermissions": "Berechtigungsprüfungen überspringen",
   "skipPermissionsDescription": "Skips permission prompts when running Claude and Codex agents.",
-  "networkDescription": "Wähle, welche Netzwerke auf purplemux zugreifen können. Später unter Einstellungen > System änderbar.",
+  "networkDescription": "Wähle, welche Netzwerke auf purplemux-improved zugreifen können. Später unter Einstellungen > System änderbar.",
   "networkFootnote": "Wenn du einen Reverse Proxy, Tunnel oder Tailscale Serve nutzt, reicht „Nur Localhost“.",
   "networkOptions": {
     "localhost": {

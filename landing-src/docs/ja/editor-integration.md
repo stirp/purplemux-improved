@@ -34,7 +34,7 @@ permalink: /ja/docs/editor-integration/index.html
 - **code-server** はブラウザ内で動作します。URL はあなたがホストしているサーバ (自分のもの、ネットワーク上、または Tailscale の前面に置いたもの) を指します。EDITOR ボタンを押すと新しいタブでフォルダが読み込まれます。
 - **ローカル IDE** (VS Code、Cursor、Windsurf、Zed) は *ブラウザを動かしているマシン* に IDE がインストールされている必要があります。リンクは OS に渡され、登録されたハンドラが起動します。
 
-スマートフォンで purplemux を使っている場合、code-server プリセットだけが動作します — スマートフォンは `vscode://` URL をデスクトップアプリで開けません。
+スマートフォンで purplemux-improved を使っている場合、code-server プリセットだけが動作します — スマートフォンは `vscode://` URL をデスクトップアプリで開けません。
 
 ## code-server セットアップ
 
@@ -51,10 +51,10 @@ code-server --port 8080
 tailscale serve --bg --https=8443 http://localhost:8080
 ```
 
-エディタタブで URL に code-server が到達可能なアドレスを設定します — ローカルなら `http://localhost:8080`、Tailscale Serve の背後なら `https://<machine>.<tailnet>.ts.net:8443`。purplemux は URL が `http://` または `https://` で始まることを検証し、`?folder=<absolute path>` を自動で付加します。
+エディタタブで URL に code-server が到達可能なアドレスを設定します — ローカルなら `http://localhost:8080`、Tailscale Serve の背後なら `https://<machine>.<tailnet>.ts.net:8443`。purplemux-improved は URL が `http://` または `https://` で始まることを検証し、`?folder=<absolute path>` を自動で付加します。
 
 {% call callout('note', '8022 以外のポートを選ぶ') %}
-purplemux はすでに `8022` に住んでいます。code-server は別のポート (例では `8080`) で動かして、ぶつからないようにしてください。
+purplemux-improved はすでに `8022` に住んでいます。code-server は別のポート (例では `8080`) で動かして、ぶつからないようにしてください。
 {% endcall %}
 
 ## カスタム URL テンプレート
@@ -69,7 +69,7 @@ myeditor://open?path={folderEncoded}
 https://my.coder.example/workspace?dir={folderEncoded}
 ```
 
-purplemux は保存時にテンプレートを検証し、プレースホルダのないものを拒否します。
+purplemux-improved は保存時にテンプレートを検証し、プレースホルダのないものを拒否します。
 
 ## ボタンを無効にする
 
@@ -77,6 +77,6 @@ purplemux は保存時にテンプレートを検証し、プレースホルダ�
 
 ## 次のステップ
 
-- **[サイドバーと Claude オプション](/purplemux/ja/docs/sidebar-options/)** — サイドバー項目並び替え、Claude フラグの切り替え。
-- **[カスタム CSS](/purplemux/ja/docs/custom-css/)** — さらなるビジュアル調整。
-- **[Tailscale](/purplemux/ja/docs/tailscale/)** — code-server にも安全な外部アクセス。
+- **[サイドバーと Claude オプション](/purplemux-improved/ja/docs/sidebar-options/)** — サイドバー項目並び替え、Claude フラグの切り替え。
+- **[カスタム CSS](/purplemux-improved/ja/docs/custom-css/)** — さらなるビジュアル調整。
+- **[Tailscale](/purplemux-improved/ja/docs/tailscale/)** — code-server にも安全な外部アクセス。

@@ -6,7 +6,7 @@ permalink: /zh-TW/docs/save-restore/index.html
 ---
 {% from "docs/callouts.njk" import callout %}
 
-purplemux 的核心理念之一就是：在瀏覽器關閉一個分頁不應該結束工作階段。兩個機制協同運作 — tmux 維持 shell 持續運行，而 `~/.purplemux/workspaces.json` 記住版面配置。
+purplemux-improved 的核心理念之一就是：在瀏覽器關閉一個分頁不應該結束工作階段。兩個機制協同運作 — tmux 維持 shell 持續運行，而 `~/.purplemux/workspaces.json` 記住版面配置。
 
 ## 哪些東西會被保留
 
@@ -18,7 +18,7 @@ purplemux 的核心理念之一就是：在瀏覽器關閉一個分頁不應該�
 - 每個 shell 的工作目錄
 - 工作區群組、名稱與順序
 
-`workspaces.json` 會在每次版面變更時以交易方式更新，因此檔案永遠反映目前狀態。完整的磁碟檔案地圖請見 [資料目錄](/purplemux/zh-TW/docs/data-directory/)。
+`workspaces.json` 會在每次版面變更時以交易方式更新，因此檔案永遠反映目前狀態。完整的磁碟檔案地圖請見 [資料目錄](/purplemux-improved/zh-TW/docs/data-directory/)。
 
 ## 關閉瀏覽器
 
@@ -34,7 +34,7 @@ purplemux 的核心理念之一就是：在瀏覽器關閉一個分頁不應該�
 
 ## 從伺服器重啟中恢復
 
-重啟確實會殺掉 tmux 程序 — 它們只是普通的 OS 程序。purplemux 在下次啟動時會處理這件事：
+重啟確實會殺掉 tmux 程序 — 它們只是普通的 OS 程序。purplemux-improved 在下次啟動時會處理這件事：
 
 1. **讀取版面** — `workspaces.json` 描述每一個工作區、窗格與分頁。
 2. **平行重建工作階段** — 為每個分頁在儲存的工作目錄中產生新的 tmux 工作階段。
@@ -58,12 +58,12 @@ purplemux 的核心理念之一就是：在瀏覽器關閉一個分頁不應該�
 
 - tmux socket 名稱是 `purple`。可用 `tmux -L purple ls` 檢視。
 - 工作階段命名格式為 `pt-{workspaceId}-{paneId}-{tabId}`。
-- 在 purplemux 執行中時編輯 `workspaces.json` 並不安全 — 伺服器會持續打開並寫入。
+- 在 purplemux-improved 執行中時編輯 `workspaces.json` 並不安全 — 伺服器會持續打開並寫入。
 
-更深入的說明（二進位協定、背壓、JSONL 監看）請見著陸頁的 [How it works](/purplemux/#how)。
+更深入的說明（二進位協定、背壓、JSONL 監看）請見著陸頁的 [How it works](/purplemux-improved/#how)。
 
 ## 下一步
 
-- **[工作區與群組](/purplemux/zh-TW/docs/workspaces-groups/)** — 工作區會儲存什麼。
-- **[分頁與窗格](/purplemux/zh-TW/docs/tabs-panes/)** — 分頁會儲存什麼。
-- **[瀏覽器支援](/purplemux/zh-TW/docs/browser-support/)** — 行動裝置背景分頁與重新連線的已知差異。
+- **[工作區與群組](/purplemux-improved/zh-TW/docs/workspaces-groups/)** — 工作區會儲存什麼。
+- **[分頁與窗格](/purplemux-improved/zh-TW/docs/tabs-panes/)** — 分頁會儲存什麼。
+- **[瀏覽器支援](/purplemux-improved/zh-TW/docs/browser-support/)** — 行動裝置背景分頁與重新連線的已知差異。

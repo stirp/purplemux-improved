@@ -1,4 +1,6 @@
-# purplemux
+# purplemux-improved
+
+An improved fork of [subicura/purplemux-improved](https://github.com/subicura/purplemux-improved). The `purplemux` / `pmux` aliases and `~/.purplemux` data directory remain compatible. npm installation requires this fork to be published; until then, run from source.
 
 **Claude Code 與 Codex,多項任務同時進行。更快速。**
 
@@ -6,23 +8,23 @@
 
 繁體中文 | <a href="README.md">English</a> | <a href="README.ko.md">한국어</a> | <a href="README.ja.md">日本語</a> | <a href="README.zh-CN.md">简体中文</a> | <a href="README.de.md">Deutsch</a> | <a href="README.es.md">Español</a> | <a href="README.fr.md">Français</a> | <a href="README.ru.md">Русский</a> | <a href="README.pt-BR.md">Português (Brasil)</a> | <a href="README.tr.md">Türkçe</a>
 
-![purplemux](docs/images/screenshot.png)
+![purplemux-improved](docs/images/screenshot.png)
 
-![purplemux mobile](docs/images/screenshot-mobile.png)
+![purplemux-improved mobile](docs/images/screenshot-mobile.png)
 
 ## 安裝
 
 ```bash
-npx purplemux@latest
+npx purplemux-improved@latest
 ```
 
 在瀏覽器中開啟 [http://localhost:8022](http://localhost:8022)。完成。
 
 > 需要 Node.js 20+ 與 tmux。macOS 或 Linux。
 
-想用原生應用程式?可從[最新發行版](https://github.com/subicura/purplemux/releases/latest)下載 macOS Electron 版(適用於 Apple Silicon 與 Intel 的 `.dmg`)。
+想用原生應用程式?可從[最新發行版](https://github.com/stirp/purplemux-improved/releases/latest)下載 macOS Electron 版(適用於 Apple Silicon 與 Intel 的 `.dmg`)。
 
-## 為什麼選擇 purplemux
+## 為什麼選擇 purplemux-improved
 
 - **多工作階段儀表板** — 一眼掌握所有 Claude Code 與 Codex 工作階段的「執行中 / 等待輸入」狀態
 - **速率限制監控** — 顯示 5 小時 / 7 天剩餘額度與重置倒數
@@ -38,7 +40,7 @@ npx purplemux@latest
 
 ## 與官方 Remote Control 的差異
 
-> 官方 Remote Control 專注於單一工作階段的遠端控制。當你需要多工作階段管理、推播通知與工作階段持久化時,請使用 purplemux。
+> 官方 Remote Control 專注於單一工作階段的遠端控制。當你需要多工作階段管理、推播通知與工作階段持久化時,請使用 purplemux-improved。
 
 ## 特色
 
@@ -50,7 +52,7 @@ npx purplemux@latest
 - **終端機佈景主題** — 深色 / 淺色模式,多種配色佈景主題
 - **工作區 & 群組** — 以工作區為單位儲存 / 還原窗格配置、分頁與工作目錄。可透過拖曳將工作區組織為群組進行管理
 - **Git 工作流程** — 支援 Side-by-side / Line-by-line 切換與語法高亮,並可行內展開 hunk、分頁瀏覽歷史紀錄分頁。可從窗格直接 fetch / pull / push (含 ahead/behind 指示) — 同步失敗時 (dirty worktree、衝突) 一鍵 Ask Claude 或 Codex
-- **內建瀏覽器窗格** — 在終端機旁嵌入瀏覽器檢視開發結果 (Electron)。可透過 `purplemux` CLI 控制,並以內建裝置模擬器切換視口
+- **內建瀏覽器窗格** — 在終端機旁嵌入瀏覽器檢視開發結果 (Electron)。可透過 `purplemux-improved` CLI 控制,並以內建裝置模擬器切換視口
 - **代理分頁** — 從新增分頁選單啟動 Claude、Codex 或整合工作階段列表
 
 ### Claude Code 與 Codex 整合
@@ -112,28 +114,28 @@ brew install --cask codex
 ### npx (最快速)
 
 ```bash
-npx purplemux@latest
+npx purplemux-improved@latest
 ```
 
 ### 全域安裝
 
 ```bash
-npm install -g purplemux
-purplemux
+npm install -g purplemux-improved
+purplemux-improved
 ```
 
 ### CLI 範例
 
 ```bash
-purplemux tab create -w WS -t codex-cli -n "fix auth"
-purplemux tab create -w WS -t agent-sessions
+purplemux-improved tab create -w WS -t codex-cli -n "fix auth"
+purplemux-improved tab create -w WS -t agent-sessions
 ```
 
 ### 從原始碼執行
 
 ```bash
-git clone https://github.com/subicura/purplemux.git
-cd purplemux
+git clone https://github.com/stirp/purplemux-improved.git
+cd purplemux-improved
 pnpm install
 pnpm start
 ```

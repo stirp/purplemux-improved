@@ -6,7 +6,7 @@ permalink: /ko/docs/terminal-themes/index.html
 ---
 {% from "docs/callouts.njk" import callout %}
 
-터미널 영역은 UI와는 독립된 xterm.js 팔레트를 씁니다. 다크 테마와 라이트 테마를 각각 하나씩 골라두면, 앱 테마가 바뀔 때 purplemux가 자동으로 전환합니다.
+터미널 영역은 UI와는 독립된 xterm.js 팔레트를 씁니다. 다크 테마와 라이트 테마를 각각 하나씩 골라두면, 앱 테마가 바뀔 때 purplemux-improved가 자동으로 전환합니다.
 
 ## 선택 화면 열기
 
@@ -68,6 +68,6 @@ UI에서 커스텀 테마를 등록하는 기능은 아직 없습니다. 기본 
 
 ## 다음으로
 
-- **[테마 & 폰트](/purplemux/ko/docs/themes-fonts/)** — 앱 테마와 폰트 크기
-- **[커스텀 CSS](/purplemux/ko/docs/custom-css/)** — 나머지 UI 오버라이드
-- **[에디터 연동](/purplemux/ko/docs/editor-integration/)** — 외부 에디터로 파일 열기
+- **[테마 & 폰트](/purplemux-improved/ko/docs/themes-fonts/)** — 앱 테마와 폰트 크기
+- **[커스텀 CSS](/purplemux-improved/ko/docs/custom-css/)** — 나머지 UI 오버라이드
+- **[에디터 연동](/purplemux-improved/ko/docs/editor-integration/)** — 외부 에디터로 파일 열기

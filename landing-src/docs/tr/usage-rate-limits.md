@@ -6,7 +6,7 @@ permalink: /tr/docs/usage-rate-limits/index.html
 ---
 {% from "docs/callouts.njk" import callout %}
 
-Görev ortasında kota sınırına çarpmak en kötü kesinti türüdür. purplemux, Claude Code'un kota sayılarını kenar çubuğuna çeker ve bir istatistik paneli ekler, böylece kullanım ritminizi bir bakışta görebilirsiniz.
+Görev ortasında kota sınırına çarpmak en kötü kesinti türüdür. purplemux-improved, Claude Code'un kota sayılarını kenar çubuğuna çeker ve bir istatistik paneli ekler, böylece kullanım ritminizi bir bakışta görebilirsiniz.
 
 ## Kenar çubuğu widget'ı
 
@@ -18,7 +18,7 @@ Kenar çubuğunun altında iki ince çubuk oturur: **5h** ve **7d**. Her biri ş
 
 Tam dağılım için herhangi bir çubuğun üzerine gelin — kullanılan yüzde, projeksiyon yüzdesi ve sıfırlama zamanı bağıl bir süre olarak.
 
-Sayılar Claude Code'un kendi statusline JSON'undan gelir. purplemux, Claude statusline'ını her yenilediğinde verileri yerel sunucuya gönderen küçük bir `~/.purplemux/statusline.sh` betiği kurar; bir `fs.watch` arayüzü senkronize tutar.
+Sayılar Claude Code'un kendi statusline JSON'undan gelir. purplemux-improved, Claude statusline'ını her yenilediğinde verileri yerel sunucuya gönderen küçük bir `~/.purplemux/statusline.sh` betiği kurar; bir `fs.watch` arayüzü senkronize tutar.
 
 ## Renk eşikleri
 
@@ -71,14 +71,14 @@ Son haftada Claude'u gerçekte ne zaman kullandığınızı gösteren gün × sa
 
 ## Veri nereden geliyor
 
-Paneldeki her şey, `~/.claude/projects/` altındaki Claude Code'un kendi oturum JSONL'lerinden yerel olarak hesaplanır. purplemux onları okur, ayrıştırılmış sayıları `~/.purplemux/stats/` altında önbelleğe alır ve makineden bir bayt bile göndermez. Dilleri değiştirmek veya önbelleği yeniden oluşturmak hiçbir yere ulaşmaz.
+Paneldeki her şey, `~/.claude/projects/` altındaki Claude Code'un kendi oturum JSONL'lerinden yerel olarak hesaplanır. purplemux-improved onları okur, ayrıştırılmış sayıları `~/.purplemux/stats/` altında önbelleğe alır ve makineden bir bayt bile göndermez. Dilleri değiştirmek veya önbelleği yeniden oluşturmak hiçbir yere ulaşmaz.
 
 ## Sıfırlama davranışı
 
-5 saatlik ve 7 günlük pencereler kayan ve Claude Code hesabınıza bağlıdır. Bir pencere sıfırlandığında çubuk %0'a düşer ve yüzde ile kalan süre bir sonraki sıfırlama zaman damgasından yeniden hesaplanır. purplemux sıfırlamayı kaçırdıysa (sunucu kapalıydı), widget bir sonraki statusline tikinde kendini düzeltir.
+5 saatlik ve 7 günlük pencereler kayan ve Claude Code hesabınıza bağlıdır. Bir pencere sıfırlandığında çubuk %0'a düşer ve yüzde ile kalan süre bir sonraki sıfırlama zaman damgasından yeniden hesaplanır. purplemux-improved sıfırlamayı kaçırdıysa (sunucu kapalıydı), widget bir sonraki statusline tikinde kendini düzeltir.
 
 ## Sıradaki adımlar
 
-- **[Notlar (AI günlük raporu)](/purplemux/tr/docs/notes-daily-report/)** — aynı veri, gün başına özet olarak yazılmış.
-- **[Oturum durumu](/purplemux/tr/docs/session-status/)** — kenar çubuğunun sekme başına izlediği diğer şey.
-- **[Klavye kısayolları](/purplemux/tr/docs/keyboard-shortcuts/)** — istatistik için <kbd>⌘⇧U</kbd> dahil.
+- **[Notlar (AI günlük raporu)](/purplemux-improved/tr/docs/notes-daily-report/)** — aynı veri, gün başına özet olarak yazılmış.
+- **[Oturum durumu](/purplemux-improved/tr/docs/session-status/)** — kenar çubuğunun sekme başına izlediği diğer şey.
+- **[Klavye kısayolları](/purplemux-improved/tr/docs/keyboard-shortcuts/)** — istatistik için <kbd>⌘⇧U</kbd> dahil.

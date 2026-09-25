@@ -6,7 +6,7 @@ permalink: /ja/docs/terminal-themes/index.html
 ---
 {% from "docs/callouts.njk" import callout %}
 
-ターミナルペインは xterm.js を使い、UI の他の部分とは独立した独自のカラーパレットを持ちます。ダークテーマとライトテーマを 1 つずつ選び、purplemux はアプリのテーマ切替に合わせてそれらを切り替えます。
+ターミナルペインは xterm.js を使い、UI の他の部分とは独立した独自のカラーパレットを持ちます。ダークテーマとライトテーマを 1 つずつ選び、purplemux-improved はアプリのテーマ切替に合わせてそれらを切り替えます。
 
 ## ピッカーを開く
 
@@ -68,6 +68,6 @@ permalink: /ja/docs/terminal-themes/index.html
 
 ## 次のステップ
 
-- **[テーマとフォント](/purplemux/ja/docs/themes-fonts/)** — アプリテーマとフォントサイズ。
-- **[カスタム CSS](/purplemux/ja/docs/custom-css/)** — UI の他の部分を上書き。
-- **[エディタ連携](/purplemux/ja/docs/editor-integration/)** — 外部エディタでファイルを開く。
+- **[テーマとフォント](/purplemux-improved/ja/docs/themes-fonts/)** — アプリテーマとフォントサイズ。
+- **[カスタム CSS](/purplemux-improved/ja/docs/custom-css/)** — UI の他の部分を上書き。
+- **[エディタ連携](/purplemux-improved/ja/docs/editor-integration/)** — 外部エディタでファイルを開く。

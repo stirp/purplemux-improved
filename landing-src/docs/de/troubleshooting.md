@@ -6,13 +6,13 @@ permalink: /de/docs/troubleshooting/index.html
 ---
 {% from "docs/callouts.njk" import callout %}
 
-Wenn etwas hier nicht zu dem passt, was du siehst, [eröffne bitte ein Issue](https://github.com/subicura/purplemux/issues) mit deiner Plattform, deinem Browser und der relevanten Log-Datei aus `~/.purplemux/logs/`.
+Wenn etwas hier nicht zu dem passt, was du siehst, [eröffne bitte ein Issue](https://github.com/stirp/purplemux-improved/issues) mit deiner Plattform, deinem Browser und der relevanten Log-Datei aus `~/.purplemux/logs/`.
 
 ## Installation & Startup
 
 ### `tmux: command not found`
 
-purplemux braucht tmux 3.0+ auf dem Host. Installier es:
+purplemux-improved braucht tmux 3.0+ auf dem Host. Installier es:
 
 ```bash
 # macOS (Homebrew)
@@ -31,13 +31,13 @@ Verifizieren mit `tmux -V`. tmux 2.9+ besteht den Preflight-Check technisch, abe
 
 Installier Node 20 LTS oder neuer. Prüfen mit `node -v`. Die native macOS-App bringt ihr eigenes Node mit, das gilt also nur für die `npx` / `npm install -g`-Pfade.
 
-### „purplemux is already running (pid=…, port=…)"
+### „purplemux-improved is already running (pid=…, port=…)"
 
 Eine andere purplemux-Instanz lebt und antwortet auf `/api/health`. Entweder die nutzen (gedruckte URL öffnen) oder zuerst stoppen:
 
 ```bash
 # finden
-ps aux | grep purplemux
+ps aux | grep purplemux-improved
 
 # oder via Lock-File killen
 kill $(jq -r .pid ~/.purplemux/pmux.lock)
@@ -51,21 +51,21 @@ kill $(jq -r .pid ~/.purplemux/pmux.lock)
 rm ~/.purplemux/pmux.lock
 ```
 
-Falls du purplemux jemals mit `sudo` gestartet hast, gehört die Datei evtl. root — `sudo rm` einmalig.
+Falls du purplemux-improved jemals mit `sudo` gestartet hast, gehört die Datei evtl. root — `sudo rm` einmalig.
 
 ### `Port 8022 is in use, finding an available port...`
 
 Ein anderer Prozess hält `8022`. Der Server fällt auf einen zufälligen freien Port zurück und gibt die neue URL aus. Um den Port selbst zu wählen:
 
 ```bash
-PORT=9000 purplemux
+PORT=9000 purplemux-improved
 ```
 
 Finde, was `8022` hält, mit `lsof -iTCP:8022 -sTCP:LISTEN -n -P`.
 
 ### Funktioniert es unter Windows?
 
-**Nicht offiziell.** purplemux hängt an `node-pty` und tmux, beide laufen nicht nativ unter Windows. WSL2 funktioniert meistens (du bist effektiv unter Linux), ist aber außerhalb unserer Test-Matrix.
+**Nicht offiziell.** purplemux-improved hängt an `node-pty` und tmux, beide laufen nicht nativ unter Windows. WSL2 funktioniert meistens (du bist effektiv unter Linux), ist aber außerhalb unserer Test-Matrix.
 
 ## Sessions & Restore
 
@@ -85,7 +85,7 @@ Sagt tmux „no server running", hat der Host rebooted oder etwas hat tmux gekil
 
 ### Meine Tabs zeigen alle „unknown"
 
-`unknown` bedeutet, ein Tab war `busy` vor einem Server-Restart, und Recovery läuft noch. `resolveUnknown` läuft im Hintergrund und bestätigt `idle` (Claude beendet) oder `ready-for-review` (finale Assistant-Nachricht vorhanden). Steht ein Tab länger als zehn Minuten in `unknown`, kippt das **Busy-Stuck-Sicherheitsnetz** ihn still auf `idle`. Siehe [STATUS.md](https://github.com/subicura/purplemux/blob/main/docs/STATUS.md) für die vollständige State-Machine.
+`unknown` bedeutet, ein Tab war `busy` vor einem Server-Restart, und Recovery läuft noch. `resolveUnknown` läuft im Hintergrund und bestätigt `idle` (Claude beendet) oder `ready-for-review` (finale Assistant-Nachricht vorhanden). Steht ein Tab länger als zehn Minuten in `unknown`, kippt das **Busy-Stuck-Sicherheitsnetz** ihn still auf `idle`. Siehe [STATUS.md](https://github.com/stirp/purplemux-improved/blob/main/docs/STATUS.md) für die vollständige State-Machine.
 
 ## Browser & UI
 
@@ -96,10 +96,10 @@ Geh diese Checkliste durch:
 1. **Nur iOS Safari ≥ 16.4.** Frühere iOS hat überhaupt kein Web Push.
 2. **Auf iOS muss es eine PWA sein.** Tipp **Teilen → Zum Home-Bildschirm** zuerst; Push feuert nicht aus einem normalen Safari-Tab.
 3. **HTTPS erforderlich.** Selbstsignierte Zertifikate funktionieren nicht — Web Push verweigert die Registrierung still. Nutz Tailscale Serve (kostenloses Let's Encrypt) oder eine echte Domain hinter Nginx / Caddy.
-4. **Notification-Berechtigung erteilt.** **Einstellungen → Notification → An** in purplemux *und* die Browser-Berechtigung müssen beide erlaubt sein.
+4. **Notification-Berechtigung erteilt.** **Einstellungen → Notification → An** in purplemux-improved *und* die Browser-Berechtigung müssen beide erlaubt sein.
 5. **Abonnements existieren.** `~/.purplemux/push-subscriptions.json` sollte einen Eintrag fürs Gerät haben. Falls leer, erteil die Berechtigung neu.
 
-Siehe [Browser-Unterstützung](/purplemux/de/docs/browser-support/) für die vollständige Kompatibilitätsmatrix.
+Siehe [Browser-Unterstützung](/purplemux-improved/de/docs/browser-support/) für die vollständige Kompatibilitätsmatrix.
 
 ### iOS Safari 16.4+, aber trotzdem keine Notifications
 
@@ -111,7 +111,7 @@ IndexedDB ist in Safari 17+ Privatfenstern deaktiviert, der Workspace-Cache übe
 
 ### Mobile-Terminal verschwindet nach Backgrounding
 
-iOS Safari baut den WebSocket nach ca. 30 s Backgrounding ab. tmux hält die eigentliche Session am Leben — wenn du zum Tab zurückkehrst, verbindet sich purplemux neu und rendert neu. Das ist iOS, nicht wir.
+iOS Safari baut den WebSocket nach ca. 30 s Backgrounding ab. tmux hält die eigentliche Session am Leben — wenn du zum Tab zurückkehrst, verbindet sich purplemux-improved neu und rendert neu. Das ist iOS, nicht wir.
 
 ### Firefox + Tailscale Serve = Zertifikats-Warnung
 
@@ -119,11 +119,11 @@ Wenn dein Tailnet eine Custom-Domain nutzt, die nicht `*.ts.net` ist, ist Firefo
 
 ### „Browser zu alt" oder Features fehlen
 
-Führ **Einstellungen → Browser-Check** für einen Pro-API-Bericht aus. Alles unter den Mindestversionen in [Browser-Unterstützung](/purplemux/de/docs/browser-support/) verliert Features graceful, ist aber nicht unterstützt.
+Führ **Einstellungen → Browser-Check** für einen Pro-API-Bericht aus. Alles unter den Mindestversionen in [Browser-Unterstützung](/purplemux-improved/de/docs/browser-support/) verliert Features graceful, ist aber nicht unterstützt.
 
 ## Netzwerk & Remote-Zugriff
 
-### Kann ich purplemux ins Internet exponieren?
+### Kann ich purplemux-improved ins Internet exponieren?
 
 Ja, aber immer über HTTPS. Empfohlen:
 
@@ -132,17 +132,17 @@ Ja, aber immer über HTTPS. Empfohlen:
 
 Plain HTTP über das offene Internet ist eine schlechte Idee — der Auth-Cookie ist HMAC-signiert, aber die WebSocket-Payloads (Terminal-Bytes!) sind nicht verschlüsselt.
 
-### Andere Geräte im LAN erreichen purplemux nicht
+### Andere Geräte im LAN erreichen purplemux-improved nicht
 
-Standardmäßig erlaubt purplemux nur Localhost. Öffne den Zugriff via Env oder in den App-Einstellungen:
+Standardmäßig erlaubt purplemux-improved nur Localhost. Öffne den Zugriff via Env oder in den App-Einstellungen:
 
 ```bash
-HOST=lan,localhost purplemux       # LAN-freundlich
-HOST=tailscale,localhost purplemux # tailnet-freundlich
-HOST=all purplemux                 # alles
+HOST=lan,localhost purplemux-improved       # LAN-freundlich
+HOST=tailscale,localhost purplemux-improved # tailnet-freundlich
+HOST=all purplemux-improved                 # alles
 ```
 
-Oder **Einstellungen → Netzwerk-Zugriff** in der App, das in `~/.purplemux/config.json` schreibt. (Wenn `HOST` per Env gesetzt ist, ist das Feld gesperrt.) Siehe [Ports & Umgebungsvariablen](/purplemux/de/docs/ports-env-vars/) für Keyword- und CIDR-Syntax.
+Oder **Einstellungen → Netzwerk-Zugriff** in der App, das in `~/.purplemux/config.json` schreibt. (Wenn `HOST` per Env gesetzt ist, ist das Feld gesperrt.) Siehe [Ports & Umgebungsvariablen](/purplemux-improved/de/docs/ports-env-vars/) für Keyword- und CIDR-Syntax.
 
 ### Reverse-Proxy-WebSocket-Probleme
 
@@ -164,7 +164,7 @@ Caddy: WebSocket-Forwarding ist Default; einfach `reverse_proxy 127.0.0.1:8022`.
 
 ### Wo sind meine Daten?
 
-Alles ist lokal unter `~/.purplemux/`. Nichts verlässt deine Maschine. Das Login-Passwort ist ein scrypt-Hash in `config.json`. Siehe [Daten-Verzeichnis](/purplemux/de/docs/data-directory/) für das vollständige Layout.
+Alles ist lokal unter `~/.purplemux/`. Nichts verlässt deine Maschine. Das Login-Passwort ist ein scrypt-Hash in `config.json`. Siehe [Daten-Verzeichnis](/purplemux-improved/de/docs/data-directory/) für das vollständige Layout.
 
 ### Ich habe mein Passwort vergessen
 
@@ -176,24 +176,24 @@ Das `Busy-Stuck-Sicherheitsnetz` kippt einen Tab nach zehn Minuten still auf `id
 
 ### Konfligiert es mit meiner bestehenden tmux-Config?
 
-Nein. purplemux betreibt ein isoliertes tmux auf einem dedizierten Socket (`-L purple`) mit eigener Config (`src/config/tmux.conf`). Deine `~/.tmux.conf` und alle bestehenden tmux-Sessions bleiben unangetastet.
+Nein. purplemux-improved betreibt ein isoliertes tmux auf einem dedizierten Socket (`-L purple`) mit eigener Config (`src/config/tmux.conf`). Deine `~/.tmux.conf` und alle bestehenden tmux-Sessions bleiben unangetastet.
 
 ## Kosten & Nutzung
 
-### Spart purplemux mir Geld?
+### Spart purplemux-improved mir Geld?
 
 Direkt nicht. Was es tut: **Nutzung transparent machen** — heutige / monatliche / pro-Projekt-Kosten, pro-Modell-Token-Aufschlüsselungen und 5h- / 7d-Rate-Limit-Countdowns sind alle auf einem Bildschirm, sodass du dein Tempo dosieren kannst, bevor du an die Wand knallst.
 
-### Ist purplemux selbst kostenpflichtig?
+### Ist purplemux-improved selbst kostenpflichtig?
 
-Nein. purplemux ist MIT-lizensierte Open Source. Claude-Code-Nutzung wird separat von Anthropic abgerechnet.
+Nein. purplemux-improved ist MIT-lizensierte Open Source. Claude-Code-Nutzung wird separat von Anthropic abgerechnet.
 
 ### Werden meine Daten irgendwohin gesendet?
 
-Nein. purplemux ist vollständig self-hosted. Die einzigen Netzwerk-Calls sind zu deiner lokalen Claude-CLI (die selbst mit Anthropic redet) und der Versions-Check via `update-notifier` beim Start. Versions-Check mit `NO_UPDATE_NOTIFIER=1` deaktivieren.
+Nein. purplemux-improved ist vollständig self-hosted. Die einzigen Netzwerk-Calls sind zu deiner lokalen Claude-CLI (die selbst mit Anthropic redet) und der Versions-Check via `update-notifier` beim Start. Versions-Check mit `NO_UPDATE_NOTIFIER=1` deaktivieren.
 
 ## Wie es weitergeht
 
-- **[Browser-Unterstützung](/purplemux/de/docs/browser-support/)** — detaillierte Kompatibilitätsmatrix und bekannte Browser-Eigenheiten.
-- **[Daten-Verzeichnis](/purplemux/de/docs/data-directory/)** — was jede Datei tut und was sicher gelöscht werden kann.
-- **[Architektur](/purplemux/de/docs/architecture/)** — wie die Teile zusammenpassen, wenn etwas tieferes Graben braucht.
+- **[Browser-Unterstützung](/purplemux-improved/de/docs/browser-support/)** — detaillierte Kompatibilitätsmatrix und bekannte Browser-Eigenheiten.
+- **[Daten-Verzeichnis](/purplemux-improved/de/docs/data-directory/)** — was jede Datei tut und was sicher gelöscht werden kann.
+- **[Architektur](/purplemux-improved/de/docs/architecture/)** — wie die Teile zusammenpassen, wenn etwas tieferes Graben braucht.

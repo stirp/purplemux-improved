@@ -31,7 +31,7 @@ permalink: /ja/docs/quick-prompts-attachments/index.html
 
 ## 画像のドラッグ&ドロップ
 
-画像ファイル (PNG、JPG、WebP など) を入力バーのどこかにドロップすると添付されます。purplemux はファイルをサーバ上のテンポラリパスにアップロードし、プロンプトに参照を自動で挿入します。
+画像ファイル (PNG、JPG、WebP など) を入力バーのどこかにドロップすると添付されます。purplemux-improved はファイルをサーバ上のテンポラリパスにアップロードし、プロンプトに参照を自動で挿入します。
 
 他にも以下が可能です:
 
@@ -43,7 +43,7 @@ permalink: /ja/docs/quick-prompts-attachments/index.html
 
 ## その他のファイル添付
 
-同じクリップアイコンは画像以外のファイルにも使えます — markdown、JSON、CSV、ソースファイル、何でも。purplemux はそれらをテンポラリディレクトリに置き、Claude が `read` できるようパスを挿入します。
+同じクリップアイコンは画像以外のファイルにも使えます — markdown、JSON、CSV、ソースファイル、何でも。purplemux-improved はそれらをテンポラリディレクトリに置き、Claude が `read` できるようパスを挿入します。
 
 これは Claude が自力で到達できないもの — 別マシンから貼り付けたスタックトレースや別プロジェクトの設定ファイルなど — を共有する一番楽な方法です。
 
@@ -74,6 +74,6 @@ permalink: /ja/docs/quick-prompts-attachments/index.html
 
 ## 次のステップ
 
-- **[ライブセッションビュー](/purplemux/ja/docs/live-session-view/)** — あなたのプロンプトと Claude の返信が表示される場所。
-- **[キーボードショートカット](/purplemux/ja/docs/keyboard-shortcuts/)** — 完全なバインディング表。
-- **[権限プロンプト](/purplemux/ja/docs/permission-prompts/)** — 承認が必要なリクエストを送った後に何が起きるか。
+- **[ライブセッションビュー](/purplemux-improved/ja/docs/live-session-view/)** — あなたのプロンプトと Claude の返信が表示される場所。
+- **[キーボードショートカット](/purplemux-improved/ja/docs/keyboard-shortcuts/)** — 完全なバインディング表。
+- **[権限プロンプト](/purplemux-improved/ja/docs/permission-prompts/)** — 承認が必要なリクエストを送った後に何が起きるか。

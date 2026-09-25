@@ -6,7 +6,7 @@ permalink: /tr/docs/browser-support/index.html
 ---
 {% from "docs/callouts.njk" import callout %}
 
-purplemux bir web uygulamasıdır; yani deneyim açtığınız tarayıcıya bağlıdır. Aşağıdakiler aktif olarak test ettiğimiz sürümlerdir — daha eski tarayıcılar çalışabilir ama desteklenmez.
+purplemux-improved bir web uygulamasıdır; yani deneyim açtığınız tarayıcıya bağlıdır. Aşağıdakiler aktif olarak test ettiğimiz sürümlerdir — daha eski tarayıcılar çalışabilir ama desteklenmez.
 
 ## Masaüstü
 
@@ -33,12 +33,12 @@ Apple Web Push'u iOS'a yalnızca Safari 16.4 (Mart 2023) ile ekledi. Daha eski i
 
 ## Özellik gereksinimleri
 
-purplemux birkaç modern tarayıcı API'sine yaslanır. Eksik olduklarında uygulama kibarca düşer ama ilgili özelliği kaybeder.
+purplemux-improved birkaç modern tarayıcı API'sine yaslanır. Eksik olduklarında uygulama kibarca düşer ama ilgili özelliği kaybeder.
 
 | API | Kullanıldığı yer | Yedek |
 |---|---|---|
 | WebSocket | Terminal G/Ç, durum senkronizasyonu, zaman tüneli | Zorunlu — yedek yok. |
-| Clipboard API | `npx purplemux@latest` kopyala, kod bloğu kopyala | Mevcut değilse düğme gizlenir. |
+| Clipboard API | `npx purplemux-improved@latest` kopyala, kod bloğu kopyala | Mevcut değilse düğme gizlenir. |
 | Notifications API | Masaüstü / mobil push | Atlanır — uygulama içi durum yine görünür. |
 | Service Workers | PWA + Web Push | Yalnızca normal web uygulaması olarak sunulur. |
 | IntersectionObserver | Canlı oturum zaman tüneli, gezinti açılışları | Öğeler animasyonsuz çizilir. |
@@ -47,7 +47,7 @@ purplemux birkaç modern tarayıcı API'sine yaslanır. Eksik olduklarında uygu
 
 ## Tarayıcım uygun mu?
 
-purplemux **Ayarlar → Tarayıcı kontrolü** içinde yerleşik bir öz denetim sunar. Yukarıdaki kontrolleri çalıştırır ve özellik başına yeşil / sarı / kırmızı bir rozet gösterir, böylece bir spesifikasyon okumadan doğrulayabilirsiniz.
+purplemux-improved **Ayarlar → Tarayıcı kontrolü** içinde yerleşik bir öz denetim sunar. Yukarıdaki kontrolleri çalıştırır ve özellik başına yeşil / sarı / kırmızı bir rozet gösterir, böylece bir spesifikasyon okumadan doğrulayabilirsiniz.
 
 ## Bilinen tuhaflıklar
 
@@ -62,4 +62,4 @@ purplemux **Ayarlar → Tarayıcı kontrolü** içinde yerleşik bir öz denetim
 - **UC Browser, Opera Mini, Puffin** — proxy tabanlı tarayıcılar WebSocket'i bozar. Çalışmaz.
 - **3 yıldan eski herhangi bir tarayıcı** — CSS'imiz 2023 sonrası bir motor gerektiren OKLCH renk ve container query'leri kullanır.
 
-Sıra dışı bir kurulumdaysanız ve bir şey çalışmıyorsa, lütfen user agent ve öz denetim çıktısıyla [bir issue açın](https://github.com/subicura/purplemux/issues).
+Sıra dışı bir kurulumdaysanız ve bir şey çalışmıyorsa, lütfen user agent ve öz denetim çıktısıyla [bir issue açın](https://github.com/stirp/purplemux-improved/issues).

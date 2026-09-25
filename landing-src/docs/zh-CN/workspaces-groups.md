@@ -16,7 +16,7 @@ permalink: /zh-CN/docs/workspaces-groups/index.html
 - **标签页和窗格** — 终端、Claude 会话、差异面板、网页浏览器面板。
 - **布局** — 分割比例、焦点、每个窗格的活动标签。
 
-所有这些都持久化到 `~/.purplemux/workspaces.json`,因此工作区是 purplemux 保存和恢复的最小单位。关掉浏览器并不会让工作区消失;tmux 保持 shell 存活,布局也保留原样。
+所有这些都持久化到 `~/.purplemux/workspaces.json`,因此工作区是 purplemux-improved 保存和恢复的最小单位。关掉浏览器并不会让工作区消失;tmux 保持 shell 存活,布局也保留原样。
 
 ## 创建工作区
 
@@ -61,10 +61,10 @@ permalink: /zh-CN/docs/workspaces-groups/index.html
 
 ## 在磁盘上的位置
 
-每次改动都会写到 `~/.purplemux/workspaces.json`。你可以查看或备份它 — 完整文件结构见 [数据目录](/purplemux/zh-CN/docs/data-directory/)。如果服务运行时清掉这个文件,purplemux 会回退到一个空工作区并重新开始。
+每次改动都会写到 `~/.purplemux/workspaces.json`。你可以查看或备份它 — 完整文件结构见 [数据目录](/purplemux-improved/zh-CN/docs/data-directory/)。如果服务运行时清掉这个文件,purplemux-improved 会回退到一个空工作区并重新开始。
 
 ## 下一步
 
-- **[标签页与窗格](/purplemux/zh-CN/docs/tabs-panes/)** — 在工作区内分割、重排序、聚焦。
-- **[保存与恢复布局](/purplemux/zh-CN/docs/save-restore/)** — 工作区如何撑过浏览器关闭和服务器重启。
-- **[键盘快捷键](/purplemux/zh-CN/docs/keyboard-shortcuts/)** — 完整按键绑定表。
+- **[标签页与窗格](/purplemux-improved/zh-CN/docs/tabs-panes/)** — 在工作区内分割、重排序、聚焦。
+- **[保存与恢复布局](/purplemux-improved/zh-CN/docs/save-restore/)** — 工作区如何撑过浏览器关闭和服务器重启。
+- **[键盘快捷键](/purplemux-improved/zh-CN/docs/keyboard-shortcuts/)** — 完整按键绑定表。

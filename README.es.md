@@ -1,4 +1,6 @@
-# purplemux
+# purplemux-improved
+
+An improved fork of [subicura/purplemux-improved](https://github.com/subicura/purplemux-improved). The `purplemux` / `pmux` aliases and `~/.purplemux` data directory remain compatible. npm installation requires this fork to be published; until then, run from source.
 
 **Claude Code y Codex, muchas tareas a la vez. Más rápido.**
 
@@ -6,23 +8,23 @@ Todas tus sesiones en una sola pantalla. Sin interrupciones, incluso desde el m�
 
 Español | <a href="README.md">English</a> | <a href="README.ko.md">한국어</a> | <a href="README.ja.md">日本語</a> | <a href="README.zh-CN.md">简体中文</a> | <a href="README.zh-TW.md">繁體中文</a> | <a href="README.de.md">Deutsch</a> | <a href="README.fr.md">Français</a> | <a href="README.ru.md">Русский</a> | <a href="README.pt-BR.md">Português (Brasil)</a> | <a href="README.tr.md">Türkçe</a>
 
-![purplemux](docs/images/screenshot.png)
+![purplemux-improved](docs/images/screenshot.png)
 
-![purplemux mobile](docs/images/screenshot-mobile.png)
+![purplemux-improved mobile](docs/images/screenshot-mobile.png)
 
 ## Instalación
 
 ```bash
-npx purplemux@latest
+npx purplemux-improved@latest
 ```
 
 Abre [http://localhost:8022](http://localhost:8022) en tu navegador. Listo.
 
 > Requiere Node.js 20+ y tmux. macOS o Linux.
 
-¿Prefieres una app nativa? Descarga la versión Electron para macOS desde la [última release](https://github.com/subicura/purplemux/releases/latest) (`.dmg` para Apple Silicon e Intel).
+¿Prefieres una app nativa? Descarga la versión Electron para macOS desde la [última release](https://github.com/stirp/purplemux-improved/releases/latest) (`.dmg` para Apple Silicon e Intel).
 
-## Por qué purplemux
+## Por qué purplemux-improved
 
 - **Panel multisesión** — Consulta de un vistazo el estado «trabajando / requiere entrada» de todas tus sesiones de Claude Code y Codex
 - **Monitor de límites** — Saldo de 5 horas / 7 días y cuenta atrás para el reinicio
@@ -38,7 +40,7 @@ Además
 
 ## Diferencias con el Remote Control oficial
 
-> El Remote Control oficial se centra en el control remoto de una única sesión. Usa purplemux cuando necesites gestión multisesión, notificaciones push y persistencia de sesiones.
+> El Remote Control oficial se centra en el control remoto de una única sesión. Usa purplemux-improved cuando necesites gestión multisesión, notificaciones push y persistencia de sesiones.
 
 ## Características
 
@@ -50,7 +52,7 @@ Además
 - **Temas de terminal** — Modo oscuro / claro y varios esquemas de color
 - **Workspaces y grupos** — Guarda y restaura diseños de paneles, pestañas y directorios de trabajo por workspace. Organiza los workspaces en grupos con arrastrar y soltar
 - **Flujo de trabajo Git** — Side-by-side / Line-by-line con resaltado de sintaxis, expansión de hunks en línea y una pestaña de historial paginada. Fetch / pull / push desde el panel con indicadores ahead/behind — si la sincronización falla (dirty worktree, conflictos), Ask Claude o Codex con un clic
-- **Panel de navegador web** — Navegador integrado junto al terminal para comprobar la salida de desarrollo (Electron). Contrólalo desde la CLI `purplemux` y cambia el viewport con un emulador de dispositivo integrado
+- **Panel de navegador web** — Navegador integrado junto al terminal para comprobar la salida de desarrollo (Electron). Contrólalo desde la CLI `purplemux-improved` y cambia el viewport con un emulador de dispositivo integrado
 - **Pestañas de agentes** — Inicia Claude, Codex o una lista de sesiones combinada desde el menú de nueva pestaña
 
 ### Integración con Claude Code y Codex
@@ -112,28 +114,28 @@ brew install --cask codex
 ### npx (el más rápido)
 
 ```bash
-npx purplemux@latest
+npx purplemux-improved@latest
 ```
 
 ### Instalación global
 
 ```bash
-npm install -g purplemux
-purplemux
+npm install -g purplemux-improved
+purplemux-improved
 ```
 
 ### Ejemplos de CLI
 
 ```bash
-purplemux tab create -w WS -t codex-cli -n "fix auth"
-purplemux tab create -w WS -t agent-sessions
+purplemux-improved tab create -w WS -t codex-cli -n "fix auth"
+purplemux-improved tab create -w WS -t agent-sessions
 ```
 
 ### Desde el código fuente
 
 ```bash
-git clone https://github.com/subicura/purplemux.git
-cd purplemux
+git clone https://github.com/stirp/purplemux-improved.git
+cd purplemux-improved
 pnpm install
 pnpm start
 ```

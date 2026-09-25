@@ -6,7 +6,7 @@ permalink: /docs/live-session-view/index.html
 ---
 {% from "docs/callouts.njk" import callout %}
 
-When a tab is running Claude Code, purplemux replaces the raw terminal view with a structured timeline. Same session, same JSONL transcript — but laid out as discrete events you can scan, scroll, and link to.
+When a tab is running Claude Code, purplemux-improved replaces the raw terminal view with a structured timeline. Same session, same JSONL transcript — but laid out as discrete events you can scan, scroll, and link to.
 
 ## Why a timeline beats scrollback
 
@@ -62,7 +62,7 @@ Press <kbd>⌘I</kbd> from anywhere in the timeline to focus the input bar at th
 
 ## Permission prompts inline
 
-When Claude asks to run a tool or edit a file, the prompt appears inline in the timeline rather than as a modal. You can click the option, press the matching number key, or ignore it and answer from your phone via Web Push. See [Permission prompts](/purplemux/docs/permission-prompts/) for the full flow.
+When Claude asks to run a tool or edit a file, the prompt appears inline in the timeline rather than as a modal. You can click the option, press the matching number key, or ignore it and answer from your phone via Web Push. See [Permission prompts](/purplemux-improved/docs/permission-prompts/) for the full flow.
 
 ## Modes on a single tab
 
@@ -78,6 +78,6 @@ Shortcuts: <kbd>⌘⇧C</kbd> · <kbd>⌘⇧T</kbd> · <kbd>⌘⇧F</kbd>.
 
 ## What's next
 
-- **[Permission prompts](/purplemux/docs/permission-prompts/)** — the inline approval flow.
-- **[Session status](/purplemux/docs/session-status/)** — the badges that drive the timeline indicators.
-- **[Quick prompts & attachments](/purplemux/docs/quick-prompts-attachments/)** — what the input bar at the bottom can do.
+- **[Permission prompts](/purplemux-improved/docs/permission-prompts/)** — the inline approval flow.
+- **[Session status](/purplemux-improved/docs/session-status/)** — the badges that drive the timeline indicators.
+- **[Quick prompts & attachments](/purplemux-improved/docs/quick-prompts-attachments/)** — what the input bar at the bottom can do.

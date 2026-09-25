@@ -6,7 +6,7 @@ permalink: /zh-CN/docs/architecture/index.html
 ---
 {% from "docs/callouts.njk" import callout %}
 
-purplemux 是三层缝合而成:浏览器前端、跑在 `:8022` 上的 Node.js 服务、主机上的 tmux + Claude CLI。中间走的不是二进制 WebSocket,就是小型 HTTP POST。
+purplemux-improved 是三层缝合而成:浏览器前端、跑在 `:8022` 上的 Node.js 服务、主机上的 tmux + Claude CLI。中间走的不是二进制 WebSocket,就是小型 HTTP POST。
 
 ## 三层结构
 
@@ -71,11 +71,11 @@ Sync      ◀──ws /api/sync──────▶  sync-server.ts
 
 `src/lib/status-manager.ts` 是 `cliState` 的唯一真相源。Hook 事件经过 `/api/status/hook`(token 鉴权 POST),按标签 `eventSeq` 排序,由 `deriveStateFromEvent` 归并为 `idle` / `busy` / `needs-input` / `ready-for-review` / `unknown`。JSONL 监视器只更新元数据,例外是合成的 `interrupt` 事件。
 
-完整状态机见 [会话状态(STATUS.md)](https://github.com/subicura/purplemux/blob/main/docs/STATUS.md)。
+完整状态机见 [会话状态(STATUS.md)](https://github.com/stirp/purplemux-improved/blob/main/docs/STATUS.md)。
 
 ## tmux 层
 
-purplemux 在专用 socket 上跑一个隔离的 tmux — `-L purple` — 用自己的配置 `src/config/tmux.conf`。你的 `~/.tmux.conf` 永远不会被读取。
+purplemux-improved 在专用 socket 上跑一个隔离的 tmux — `-L purple` — 用自己的配置 `src/config/tmux.conf`。你的 `~/.tmux.conf` 永远不会被读取。
 
 会话命名为 `pt-{workspaceId}-{paneId}-{tabId}`。浏览器中的一个终端窗格映射到一个 tmux 会话,通过 `node-pty` 挂接。
 
@@ -88,16 +88,16 @@ tmux socket: purple
 
 `prefix` 被禁用,状态栏关闭(由 xterm.js 绘制框架),`set-titles` 开启,`mouse on` 把滚轮交给 copy-mode。tmux 是会话能撑过浏览器关闭、Wi-Fi 中断或服务重启的原因。
 
-完整 tmux 设置、命令封装和进程检测细节见 [tmux 与进程检测(TMUX.md)](https://github.com/subicura/purplemux/blob/main/docs/TMUX.md)。
+完整 tmux 设置、命令封装和进程检测细节见 [tmux 与进程检测(TMUX.md)](https://github.com/stirp/purplemux-improved/blob/main/docs/TMUX.md)。
 
 ## Claude CLI 集成
 
-purplemux 不 fork 也不包装 Claude — `claude` 二进制就是你装的那个。只追加两件事:
+purplemux-improved 不 fork 也不包装 Claude — `claude` 二进制就是你装的那个。只追加两件事:
 
 1. **Hook 设置** — 启动时,`ensureHookSettings()` 写出 `~/.purplemux/hooks.json`、`status-hook.sh` 和 `statusline.sh`。每个 Claude 标签都以 `--settings ~/.purplemux/hooks.json` 启动,这样 `SessionStart`、`UserPromptSubmit`、`Notification`、`Stop`、`PreCompact`、`PostCompact` 都会 POST 回服务。
 2. **JSONL 读取** — `~/.claude/projects/**/*.jsonl` 由 `timeline-server.ts` 解析以提供实时对话视图,由 `session-detection.ts` 监视以通过 `~/.claude/sessions/` 下的 PID 文件检测正在运行的 Claude 进程。
 
-Hook 脚本读 `~/.purplemux/port` 和 `~/.purplemux/cli-token`,带 `x-pmux-token` 发起 POST。服务下线时它们静默失败,因此 Claude 运行中关闭 purplemux 不会让任何东西崩。
+Hook 脚本读 `~/.purplemux/port` 和 `~/.purplemux/cli-token`,带 `x-pmux-token` 发起 POST。服务下线时它们静默失败,因此 Claude 运行中关闭 purplemux-improved 不会让任何东西崩。
 
 ## 启动顺序
 
@@ -126,12 +126,12 @@ Hook 脚本读 `~/.purplemux/port` 和 `~/.purplemux/cli-token`,带 `x-pmux-toke
 
 ## 想读更多
 
-- [`docs/TMUX.md`](https://github.com/subicura/purplemux/blob/main/docs/TMUX.md) — tmux 配置、命令封装、进程树遍历、终端二进制协议。
-- [`docs/STATUS.md`](https://github.com/subicura/purplemux/blob/main/docs/STATUS.md) — Claude CLI 状态机、hook 流程、合成 interrupt 事件、JSONL 监视器。
-- [`docs/DATA-DIR.md`](https://github.com/subicura/purplemux/blob/main/docs/DATA-DIR.md) — purplemux 写入的每个文件。
+- [`docs/TMUX.md`](https://github.com/stirp/purplemux-improved/blob/main/docs/TMUX.md) — tmux 配置、命令封装、进程树遍历、终端二进制协议。
+- [`docs/STATUS.md`](https://github.com/stirp/purplemux-improved/blob/main/docs/STATUS.md) — Claude CLI 状态机、hook 流程、合成 interrupt 事件、JSONL 监视器。
+- [`docs/DATA-DIR.md`](https://github.com/stirp/purplemux-improved/blob/main/docs/DATA-DIR.md) — purplemux-improved 写入的每个文件。
 
 ## 下一步
 
-- **[数据目录](/purplemux/zh-CN/docs/data-directory/)** — 上面架构涉及的每个文件。
-- **[CLI 参考](/purplemux/zh-CN/docs/cli-reference/)** — 从浏览器之外与服务对话。
-- **[故障排查](/purplemux/zh-CN/docs/troubleshooting/)** — 这里某处出问题时如何诊断。
+- **[数据目录](/purplemux-improved/zh-CN/docs/data-directory/)** — 上面架构涉及的每个文件。
+- **[CLI 参考](/purplemux-improved/zh-CN/docs/cli-reference/)** — 从浏览器之外与服务对话。
+- **[故障排查](/purplemux-improved/zh-CN/docs/troubleshooting/)** — 这里某处出问题时如何诊断。

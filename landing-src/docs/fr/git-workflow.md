@@ -61,6 +61,6 @@ C'est le pari principal du panneau : de l'outillage pour le cas courant, un LLM 
 
 ## Pour aller plus loin
 
-- **[Onglets & volets](/purplemux/fr/docs/tabs-panes/)** — diviser le panneau de diff à côté d'une session Claude.
-- **[Première session](/purplemux/fr/docs/first-session/)** — comment les invites de permission Claude apparaissent dans le tableau de bord.
-- **[Panneau navigateur web](/purplemux/fr/docs/web-browser-panel/)** — l'autre type de panneau qui mérite d'être placé à côté d'un terminal.
+- **[Onglets & volets](/purplemux-improved/fr/docs/tabs-panes/)** — diviser le panneau de diff à côté d'une session Claude.
+- **[Première session](/purplemux-improved/fr/docs/first-session/)** — comment les invites de permission Claude apparaissent dans le tableau de bord.
+- **[Panneau navigateur web](/purplemux-improved/fr/docs/web-browser-panel/)** — l'autre type de panneau qui mérite d'être placé à côté d'un terminal.

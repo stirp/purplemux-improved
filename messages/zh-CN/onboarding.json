@@ -31,7 +31,7 @@
   "appearanceDescription": "选择应用的整体显示主题。",
   "skipPermissions": "跳过权限检查",
   "skipPermissionsDescription": "Skips permission prompts when running Claude and Codex agents.",
-  "networkDescription": "选择哪些网络可以访问 purplemux。稍后可在设置 > 系统中更改。",
+  "networkDescription": "选择哪些网络可以访问 purplemux-improved。稍后可在设置 > 系统中更改。",
   "networkFootnote": "如果通过反向代理、隧道或 Tailscale Serve 访问，选择\"仅 Localhost\"即可。",
   "networkOptions": {
     "localhost": {

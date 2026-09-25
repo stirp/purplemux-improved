@@ -411,7 +411,7 @@ export const start = async (opts?: IStartOptions): Promise<IStartResult> => {
   const mode = dev ? 'development' : process.env.NODE_ENV;
   const urls = listInterfaceIps(accessSpec, result.port);
   console.log('');
-  console.log(`  \x1b[1m\x1b[35m⚡ purplemux\x1b[0m  \x1b[2mv${pkg.version}\x1b[0m`);
+  console.log(`  \x1b[1m\x1b[35m⚡ purplemux-improved\x1b[0m  \x1b[2mv${pkg.version}\x1b[0m`);
   console.log(`  \x1b[2m➜\x1b[0m  Available on:`);
   for (const url of urls) {
     console.log(`       \x1b[36m${url}\x1b[0m`);

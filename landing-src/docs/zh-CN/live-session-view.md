@@ -6,7 +6,7 @@ permalink: /zh-CN/docs/live-session-view/index.html
 ---
 {% from "docs/callouts.njk" import callout %}
 
-当一个标签在跑 Claude Code 时,purplemux 把原始终端视图替换成结构化的时间线。同一个会话、同一份 JSONL 转录 — 只是布局成可扫读、可滚动、可链接的离散事件。
+当一个标签在跑 Claude Code 时,purplemux-improved 把原始终端视图替换成结构化的时间线。同一个会话、同一份 JSONL 转录 — 只是布局成可扫读、可滚动、可链接的离散事件。
 
 ## 为什么时间线优于滚动条
 
@@ -62,7 +62,7 @@ Claude CLI 是交互式的。要在终端里看 15 分钟前它做了什么,需�
 
 ## 内联权限提示
 
-当 Claude 请求运行工具或修改文件时,提示直接在时间线里以行内方式出现,而不是模态。你可以点选项、按对应数字键,或忽略它然后从手机上通过 Web Push 回答。完整流程见 [权限提示](/purplemux/zh-CN/docs/permission-prompts/)。
+当 Claude 请求运行工具或修改文件时,提示直接在时间线里以行内方式出现,而不是模态。你可以点选项、按对应数字键,或忽略它然后从手机上通过 Web Push 回答。完整流程见 [权限提示](/purplemux-improved/zh-CN/docs/permission-prompts/)。
 
 ## 同一标签上的多种模式
 
@@ -78,6 +78,6 @@ Claude CLI 是交互式的。要在终端里看 15 分钟前它做了什么,需�
 
 ## 下一步
 
-- **[权限提示](/purplemux/zh-CN/docs/permission-prompts/)** — 内联审批流。
-- **[会话状态](/purplemux/zh-CN/docs/session-status/)** — 驱动时间线指示的徽章。
-- **[快捷提示与附件](/purplemux/zh-CN/docs/quick-prompts-attachments/)** — 底部输入栏能做什么。
+- **[权限提示](/purplemux-improved/zh-CN/docs/permission-prompts/)** — 内联审批流。
+- **[会话状态](/purplemux-improved/zh-CN/docs/session-status/)** — 驱动时间线指示的徽章。
+- **[快捷提示与附件](/purplemux-improved/zh-CN/docs/quick-prompts-attachments/)** — 底部输入栏能做什么。

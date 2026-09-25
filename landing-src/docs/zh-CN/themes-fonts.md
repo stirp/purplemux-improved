@@ -6,7 +6,7 @@ permalink: /zh-CN/docs/themes-fonts/index.html
 ---
 {% from "docs/callouts.njk" import callout %}
 
-purplemux 走一致的视觉风格,只提供一小组开关:应用主题、字号,以及独立的终端调色板。本页讲前两项 — 终端配色单独有一页。
+purplemux-improved 走一致的视觉风格,只提供一小组开关:应用主题、字号,以及独立的终端调色板。本页讲前两项 — 终端配色单独有一页。
 
 ## 打开设置
 
@@ -48,7 +48,7 @@ purplemux 走一致的视觉风格,只提供一小组开关:应用主题、字�
 - 间距 — 比例被保留
 - 代码块的语法配色
 
-如果想单独调整某些元素(例如只改终端,或只改侧边栏),见 [自定义 CSS](/purplemux/zh-CN/docs/custom-css/)。
+如果想单独调整某些元素(例如只改终端,或只改侧边栏),见 [自定义 CSS](/purplemux-improved/zh-CN/docs/custom-css/)。
 
 ## 按设备,而非按浏览器
 
@@ -58,6 +58,6 @@ purplemux 走一致的视觉风格,只提供一小组开关:应用主题、字�
 
 ## 下一步
 
-- **[自定义 CSS](/purplemux/zh-CN/docs/custom-css/)** — 覆盖单独的颜色和间距。
-- **[终端主题](/purplemux/zh-CN/docs/terminal-themes/)** — xterm.js 的独立调色板。
-- **[键盘快捷键](/purplemux/zh-CN/docs/keyboard-shortcuts/)** — 完整按键绑定表。
+- **[自定义 CSS](/purplemux-improved/zh-CN/docs/custom-css/)** — 覆盖单独的颜色和间距。
+- **[终端主题](/purplemux-improved/zh-CN/docs/terminal-themes/)** — xterm.js 的独立调色板。
+- **[键盘快捷键](/purplemux-improved/zh-CN/docs/keyboard-shortcuts/)** — 完整按键绑定表。

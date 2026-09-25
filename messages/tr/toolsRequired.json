@@ -1,7 +1,7 @@
 {
-  "pageTitle": "Tools Required - purplemux",
+  "pageTitle": "Tools Required - purplemux-improved",
   "title": "Required tools are missing",
-  "description": "The following tools must be installed for purplemux to work.",
+  "description": "The following tools must be installed for purplemux-improved to work.",
   "checking": "Checking tools...",
   "installTmux": "Install tmux",
   "upgradeTmux": "Upgrade tmux",
@@ -27,5 +27,5 @@
   "codexMissingTitle": "Codex CLI is not installed",
   "codexMissingDescription": "Open the Codex CLI install guide, or cancel and install it manually before starting a Codex tab.",
   "preflightFailedTitle": "Could not check agent tools",
-  "preflightFailedDescription": "purplemux could not verify the agent CLI installation. The current action was canceled."
+  "preflightFailedDescription": "purplemux-improved could not verify the agent CLI installation. The current action was canceled."
 }

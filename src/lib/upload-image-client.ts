@@ -10,6 +10,7 @@ interface IUploadOptions {
 interface IUploadResult {
   path: string;
   filename: string;
+  url?: string;
 }
 
 const isImageFile = (file: File | { type?: string }): boolean => SUPPORTED_MIMES.has(file.type ?? '');

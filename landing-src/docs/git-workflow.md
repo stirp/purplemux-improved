@@ -61,6 +61,6 @@ This is the panel's main bet: tooling for the common case, an LLM for the long t
 
 ## What's next
 
-- **[Tabs & panes](/purplemux/docs/tabs-panes/)** — splitting the diff panel next to a Claude session.
-- **[First session](/purplemux/docs/first-session/)** — how Claude permission prompts surface in the dashboard.
-- **[Web browser panel](/purplemux/docs/web-browser-panel/)** — the other panel type worth running side-by-side with a terminal.
+- **[Tabs & panes](/purplemux-improved/docs/tabs-panes/)** — splitting the diff panel next to a Claude session.
+- **[First session](/purplemux-improved/docs/first-session/)** — how Claude permission prompts surface in the dashboard.
+- **[Web browser panel](/purplemux-improved/docs/web-browser-panel/)** — the other panel type worth running side-by-side with a terminal.

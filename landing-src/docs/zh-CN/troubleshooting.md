@@ -6,13 +6,13 @@ permalink: /zh-CN/docs/troubleshooting/index.html
 ---
 {% from "docs/callouts.njk" import callout %}
 
-如果这里没有匹配你看到的现象,请提一个 [issue](https://github.com/subicura/purplemux/issues),附上平台、浏览器,以及 `~/.purplemux/logs/` 下相关的日志文件。
+如果这里没有匹配你看到的现象,请提一个 [issue](https://github.com/stirp/purplemux-improved/issues),附上平台、浏览器,以及 `~/.purplemux/logs/` 下相关的日志文件。
 
 ## 安装与启动
 
 ### `tmux: command not found`
 
-purplemux 在主机上需要 tmux 3.0+。安装:
+purplemux-improved 在主机上需要 tmux 3.0+。安装:
 
 ```bash
 # macOS(Homebrew)
@@ -31,13 +31,13 @@ sudo dnf install tmux
 
 安装 Node 20 LTS 或更高版本。用 `node -v` 检查。macOS 原生应用打包了自己的 Node,所以这条只对 `npx` / `npm install -g` 路径适用。
 
-### "purplemux is already running (pid=…, port=…)"
+### "purplemux-improved is already running (pid=…, port=…)"
 
-另一个 purplemux 实例还活着并在响应 `/api/health`。要么直接用它(打开打印的 URL),要么先停掉:
+另一个 purplemux-improved 实例还活着并在响应 `/api/health`。要么直接用它(打开打印的 URL),要么先停掉:
 
 ```bash
 # 找到它
-ps aux | grep purplemux
+ps aux | grep purplemux-improved
 
 # 或者直接通过锁文件杀掉
 kill $(jq -r .pid ~/.purplemux/pmux.lock)
@@ -51,21 +51,21 @@ kill $(jq -r .pid ~/.purplemux/pmux.lock)
 rm ~/.purplemux/pmux.lock
 ```
 
-如果你曾经用 `sudo` 跑过 purplemux,这个文件可能属于 root — 一次 `sudo rm` 即可。
+如果你曾经用 `sudo` 跑过 purplemux-improved,这个文件可能属于 root — 一次 `sudo rm` 即可。
 
 ### `Port 8022 is in use, finding an available port...`
 
 另一个进程占了 `8022`。服务回退到一个随机空闲端口并打印新 URL。要自己挑端口:
 
 ```bash
-PORT=9000 purplemux
+PORT=9000 purplemux-improved
 ```
 
 用 `lsof -iTCP:8022 -sTCP:LISTEN -n -P` 找出谁占了 `8022`。
 
 ### 在 Windows 上能用吗?
 
-**官方不支持。** purplemux 依赖 `node-pty` 和 tmux,两者都不能在 Windows 上原生运行。WSL2 通常能用(此时你实际上在 Linux 上),但不在我们的测试范围。
+**官方不支持。** purplemux-improved 依赖 `node-pty` 和 tmux,两者都不能在 Windows 上原生运行。WSL2 通常能用(此时你实际上在 Linux 上),但不在我们的测试范围。
 
 ## 会话与恢复
 
@@ -77,7 +77,7 @@ PORT=9000 purplemux
 2. 检查 tmux 会话是否存在:`tmux -L purple ls`。
 3. 看 `~/.purplemux/logs/purplemux.YYYY-MM-DD.N.log` 中 `autoResumeOnStartup` 期间的报错。
 
-如果 tmux 提示 "no server running",说明主机重启了或某些事杀掉了 tmux。会话没了,但布局(工作区、标签、工作目录)在 `~/.purplemux/workspaces/{wsId}/layout.json` 中保留着,会在下次启动 purplemux 时重新拉起。
+如果 tmux 提示 "no server running",说明主机重启了或某些事杀掉了 tmux。会话没了,但布局(工作区、标签、工作目录)在 `~/.purplemux/workspaces/{wsId}/layout.json` 中保留着,会在下次启动 purplemux-improved 时重新拉起。
 
 ### 一个 Claude 会话拒绝 resume
 
@@ -85,7 +85,7 @@ PORT=9000 purplemux
 
 ### 我的标签全显示 "unknown"
 
-`unknown` 表示标签在服务重启前是 `busy` 的,恢复仍在进行。`resolveUnknown` 在后台运行,确认 `idle`(Claude 已退出)或 `ready-for-review`(有最终 assistant 消息)。如果一个标签卡在 `unknown` 超过 10 分钟,**busy 卡死兜底** 会静默将其翻到 `idle`。完整状态机见 [STATUS.md](https://github.com/subicura/purplemux/blob/main/docs/STATUS.md)。
+`unknown` 表示标签在服务重启前是 `busy` 的,恢复仍在进行。`resolveUnknown` 在后台运行,确认 `idle`(Claude 已退出)或 `ready-for-review`(有最终 assistant 消息)。如果一个标签卡在 `unknown` 超过 10 分钟,**busy 卡死兜底** 会静默将其翻到 `idle`。完整状态机见 [STATUS.md](https://github.com/stirp/purplemux-improved/blob/main/docs/STATUS.md)。
 
 ## 浏览器与 UI
 
@@ -96,10 +96,10 @@ PORT=9000 purplemux
 1. **仅限 iOS Safari ≥ 16.4。** 更早的 iOS 完全没有 Web Push。
 2. **iOS 上必须是 PWA。** 先点 **分享 → 添加到主屏幕**;普通 Safari 标签不会触发推送。
 3. **必须 HTTPS。** 自签名证书无效 — Web Push 静默拒绝注册。请用 Tailscale Serve(免费 Let's Encrypt)或挂在 Nginx / Caddy 后的真实域名。
-4. **通知权限已授予。** purplemux 内 **设置 → 通知 → 开** *和* 浏览器级权限都必须允许。
+4. **通知权限已授予。** purplemux-improved 内 **设置 → 通知 → 开** *和* 浏览器级权限都必须允许。
 5. **订阅存在。** `~/.purplemux/push-subscriptions.json` 应该有该设备的条目。如果是空,重新授予权限。
 
-完整兼容性矩阵见 [浏览器支持](/purplemux/zh-CN/docs/browser-support/)。
+完整兼容性矩阵见 [浏览器支持](/purplemux-improved/zh-CN/docs/browser-support/)。
 
 ### iOS Safari 16.4+ 但仍然没通知
 
@@ -111,7 +111,7 @@ Safari 17+ 私密窗口禁用 IndexedDB,工作区缓存撑不过重启。请用�
 
 ### 移动端终端在切到后台后消失
 
-iOS Safari 在标签后台约 30 秒后会拆掉 WebSocket。tmux 仍保持真实会话存活 — 当你回到标签时,purplemux 会重新连接并重新渲染。这是 iOS 的行为,不是我们造成的。
+iOS Safari 在标签后台约 30 秒后会拆掉 WebSocket。tmux 仍保持真实会话存活 — 当你回到标签时,purplemux-improved 会重新连接并重新渲染。这是 iOS 的行为,不是我们造成的。
 
 ### Firefox + Tailscale serve = 证书警告
 
@@ -119,11 +119,11 @@ iOS Safari 在标签后台约 30 秒后会拆掉 WebSocket。tmux 仍保持真�
 
 ### "浏览器太旧" 或缺特性
 
-运行 **设置 → 浏览器检查** 查看每 API 报告。低于 [浏览器支持](/purplemux/zh-CN/docs/browser-support/) 中最低要求的浏览器会优雅地丢失功能,但不被支持。
+运行 **设置 → 浏览器检查** 查看每 API 报告。低于 [浏览器支持](/purplemux-improved/zh-CN/docs/browser-support/) 中最低要求的浏览器会优雅地丢失功能,但不被支持。
 
 ## 网络与远程访问
 
-### 我能把 purplemux 暴露到公网吗?
+### 我能把 purplemux-improved 暴露到公网吗?
 
 可以,但请始终走 HTTPS。推荐:
 
@@ -132,17 +132,17 @@ iOS Safari 在标签后台约 30 秒后会拆掉 WebSocket。tmux 仍保持真�
 
 直接把纯 HTTP 暴露在公网是个坏主意 — 认证 cookie 是 HMAC 签名的,但 WebSocket 的 payload(终端字节!)并未加密。
 
-### 局域网上的其他设备无法访问 purplemux
+### 局域网上的其他设备无法访问 purplemux-improved
 
-purplemux 默认只允许 localhost。通过环境变量或应用内设置开通:
+purplemux-improved 默认只允许 localhost。通过环境变量或应用内设置开通:
 
 ```bash
-HOST=lan,localhost purplemux       # LAN 友好
-HOST=tailscale,localhost purplemux # tailnet 友好
-HOST=all purplemux                 # 全开
+HOST=lan,localhost purplemux-improved       # LAN 友好
+HOST=tailscale,localhost purplemux-improved # tailnet 友好
+HOST=all purplemux-improved                 # 全开
 ```
 
-或者在应用内 **设置 → 网络访问**,会写入 `~/.purplemux/config.json`。(当 `HOST` 通过环境变量设置时,该字段被锁定。) 关键字和 CIDR 语法见 [端口与环境变量](/purplemux/zh-CN/docs/ports-env-vars/)。
+或者在应用内 **设置 → 网络访问**,会写入 `~/.purplemux/config.json`。(当 `HOST` 通过环境变量设置时,该字段被锁定。) 关键字和 CIDR 语法见 [端口与环境变量](/purplemux-improved/zh-CN/docs/ports-env-vars/)。
 
 ### 反向代理 WebSocket 问题
 
@@ -164,7 +164,7 @@ Caddy:WebSocket 转发是默认行为;直接 `reverse_proxy 127.0.0.1:8022` 即�
 
 ### 我的数据在哪?
 
-全部在本地的 `~/.purplemux/` 下。没有任何东西离开你的机器。登录密码是 `config.json` 中的 scrypt 哈希。完整结构见 [数据目录](/purplemux/zh-CN/docs/data-directory/)。
+全部在本地的 `~/.purplemux/` 下。没有任何东西离开你的机器。登录密码是 `config.json` 中的 scrypt 哈希。完整结构见 [数据目录](/purplemux-improved/zh-CN/docs/data-directory/)。
 
 ### 我忘了密码
 
@@ -176,24 +176,24 @@ Caddy:WebSocket 转发是默认行为;直接 `reverse_proxy 127.0.0.1:8022` 即�
 
 ### 它会跟我现有的 tmux 配置冲突吗?
 
-不会。purplemux 在专用 socket 上跑一个隔离的 tmux(`-L purple`),用自己的配置(`src/config/tmux.conf`)。你的 `~/.tmux.conf` 和现有 tmux 会话都不受影响。
+不会。purplemux-improved 在专用 socket 上跑一个隔离的 tmux(`-L purple`),用自己的配置(`src/config/tmux.conf`)。你的 `~/.tmux.conf` 和现有 tmux 会话都不受影响。
 
 ## 成本与用量
 
-### purplemux 能帮我省钱吗?
+### purplemux-improved 能帮我省钱吗?
 
 直接不会。它做的是 **让用量透明**:今天 / 当月 / 按项目的成本、按模型的 token 分解、5h / 7d 速率限制倒计时都在一屏,这样你能在撞墙之前调好节奏。
 
-### purplemux 自身收费吗?
+### purplemux-improved 自身收费吗?
 
-不。purplemux 是 MIT 许可的开源软件。Claude Code 的用量由 Anthropic 单独计费。
+不。purplemux-improved 是 MIT 许可的开源软件。Claude Code 的用量由 Anthropic 单独计费。
 
 ### 我的数据会被发送到任何地方吗?
 
-不会。purplemux 完全自托管。它发起的网络调用只有:本地 Claude CLI(它自己跟 Anthropic 通信)和启动时通过 `update-notifier` 检查版本。用 `NO_UPDATE_NOTIFIER=1` 关闭版本检查。
+不会。purplemux-improved 完全自托管。它发起的网络调用只有:本地 Claude CLI(它自己跟 Anthropic 通信)和启动时通过 `update-notifier` 检查版本。用 `NO_UPDATE_NOTIFIER=1` 关闭版本检查。
 
 ## 下一步
 
-- **[浏览器支持](/purplemux/zh-CN/docs/browser-support/)** — 详细兼容性矩阵和已知浏览器注意事项。
-- **[数据目录](/purplemux/zh-CN/docs/data-directory/)** — 每个文件的作用,以及哪些可以安全删除。
-- **[架构](/purplemux/zh-CN/docs/architecture/)** — 部件如何拼接,在需要深挖时参考。
+- **[浏览器支持](/purplemux-improved/zh-CN/docs/browser-support/)** — 详细兼容性矩阵和已知浏览器注意事项。
+- **[数据目录](/purplemux-improved/zh-CN/docs/data-directory/)** — 每个文件的作用,以及哪些可以安全删除。
+- **[架构](/purplemux-improved/zh-CN/docs/architecture/)** — 部件如何拼接,在需要深挖时参考。

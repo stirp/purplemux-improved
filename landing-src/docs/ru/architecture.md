@@ -6,7 +6,7 @@ permalink: /ru/docs/architecture/index.html
 ---
 {% from "docs/callouts.njk" import callout %}
 
-purplemux — это три слоя, сшитых вместе: фронтенд в браузере, сервер Node.js на `:8022` и tmux + Claude CLI на хосте. Между ними — либо бинарный WebSocket, либо небольшой HTTP POST.
+purplemux-improved — это три слоя, сшитых вместе: фронтенд в браузере, сервер Node.js на `:8022` и tmux + Claude CLI на хосте. Между ними — либо бинарный WebSocket, либо небольшой HTTP POST.
 
 ## Три слоя
 
@@ -71,11 +71,11 @@ Backpressure: `pty.pause` при `bufferedAmount > 1 МБ` у WS, возобно
 
 `src/lib/status-manager.ts` — единственный источник истины для `cliState`. События хуков идут через `/api/status/hook` (POST с токеном), секвенсятся (`eventSeq` на вкладку) и сводятся в `idle` / `busy` / `needs-input` / `ready-for-review` / `unknown` через `deriveStateFromEvent`. JSONL-watcher обновляет только метаданные, кроме одного синтетического события `interrupt`.
 
-Полную машину состояний см. в [Статусе сессии (STATUS.md)](https://github.com/subicura/purplemux/blob/main/docs/STATUS.md).
+Полную машину состояний см. в [Статусе сессии (STATUS.md)](https://github.com/stirp/purplemux-improved/blob/main/docs/STATUS.md).
 
 ## Слой tmux
 
-purplemux запускает изолированный tmux на отдельном сокете — `-L purple` — со своим конфигом в `src/config/tmux.conf`. Ваш `~/.tmux.conf` никогда не читается.
+purplemux-improved запускает изолированный tmux на отдельном сокете — `-L purple` — со своим конфигом в `src/config/tmux.conf`. Ваш `~/.tmux.conf` никогда не читается.
 
 Сессии именуются `pt-{workspaceId}-{paneId}-{tabId}`. Одна панель терминала в браузере соответствует одной tmux-сессии, привязанной через `node-pty`.
 
@@ -88,16 +88,16 @@ tmux socket: purple
 
 `prefix` отключён, статус-бар выключен (хром рисует xterm.js), `set-titles` включён, а `mouse on` отправляет колесо в copy-mode. tmux — причина, по которой сессии переживают закрытие браузера, обрыв Wi-Fi или перезапуск сервера.
 
-Полную настройку tmux, обёртку над командами и детали определения процесса см. в [tmux и определении процессов (TMUX.md)](https://github.com/subicura/purplemux/blob/main/docs/TMUX.md).
+Полную настройку tmux, обёртку над командами и детали определения процесса см. в [tmux и определении процессов (TMUX.md)](https://github.com/stirp/purplemux-improved/blob/main/docs/TMUX.md).
 
 ## Интеграция с Claude CLI
 
-purplemux не форкает и не оборачивает Claude — бинарь `claude` тот, что у вас установлен. Добавляются две вещи:
+purplemux-improved не форкает и не оборачивает Claude — бинарь `claude` тот, что у вас установлен. Добавляются две вещи:
 
 1. **Hook settings** — на старте `ensureHookSettings()` пишет `~/.purplemux/hooks.json`, `status-hook.sh` и `statusline.sh`. Каждая вкладка Claude запускается с `--settings ~/.purplemux/hooks.json`, поэтому `SessionStart`, `UserPromptSubmit`, `Notification`, `Stop`, `PreCompact`, `PostCompact` все POST'ятся обратно на сервер.
 2. **Чтение JSONL** — `~/.claude/projects/**/*.jsonl` парсится `timeline-server.ts` для живого вида разговора и наблюдается `session-detection.ts`, чтобы определять запущенный процесс Claude через PID-файлы в `~/.claude/sessions/`.
 
-Скрипты хуков читают `~/.purplemux/port` и `~/.purplemux/cli-token` и POST'ят с `x-pmux-token`. Они тихо проваливаются, если сервер выключен, поэтому закрытие purplemux при работающем Claude ничего не ломает.
+Скрипты хуков читают `~/.purplemux/port` и `~/.purplemux/cli-token` и POST'ят с `x-pmux-token`. Они тихо проваливаются, если сервер выключен, поэтому закрытие purplemux-improved при работающем Claude ничего не ломает.
 
 ## Последовательность запуска
 
@@ -126,12 +126,12 @@ purplemux не форкает и не оборачивает Claude — бина
 
 ## Где почитать дальше
 
-- [`docs/TMUX.md`](https://github.com/subicura/purplemux/blob/main/docs/TMUX.md) — конфиг tmux, обёртка команд, обход дерева процессов, бинарный протокол терминала.
-- [`docs/STATUS.md`](https://github.com/subicura/purplemux/blob/main/docs/STATUS.md) — машина состояний Claude CLI, поток хуков, синтетическое событие interrupt, JSONL-watcher.
-- [`docs/DATA-DIR.md`](https://github.com/subicura/purplemux/blob/main/docs/DATA-DIR.md) — каждый файл, который пишет purplemux.
+- [`docs/TMUX.md`](https://github.com/stirp/purplemux-improved/blob/main/docs/TMUX.md) — конфиг tmux, обёртка команд, обход дерева процессов, бинарный протокол терминала.
+- [`docs/STATUS.md`](https://github.com/stirp/purplemux-improved/blob/main/docs/STATUS.md) — машина состояний Claude CLI, поток хуков, синтетическое событие interrupt, JSONL-watcher.
+- [`docs/DATA-DIR.md`](https://github.com/stirp/purplemux-improved/blob/main/docs/DATA-DIR.md) — каждый файл, который пишет purplemux-improved.
 
 ## Что дальше
 
-- **[Каталог данных](/purplemux/ru/docs/data-directory/)** — каждый файл, которого касается архитектура выше.
-- **[CLI reference](/purplemux/ru/docs/cli-reference/)** — общение с сервером вне браузера.
-- **[Поиск проблем](/purplemux/ru/docs/troubleshooting/)** — диагностика, когда что-то здесь капризничает.
+- **[Каталог данных](/purplemux-improved/ru/docs/data-directory/)** — каждый файл, которого касается архитектура выше.
+- **[CLI reference](/purplemux-improved/ru/docs/cli-reference/)** — общение с сервером вне браузера.
+- **[Поиск проблем](/purplemux-improved/ru/docs/troubleshooting/)** — диагностика, когда что-то здесь капризничает.

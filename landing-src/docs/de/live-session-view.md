@@ -6,7 +6,7 @@ permalink: /de/docs/live-session-view/index.html
 ---
 {% from "docs/callouts.njk" import callout %}
 
-Wenn ein Tab Claude Code ausführt, ersetzt purplemux die rohe Terminal-Ansicht durch eine strukturierte Timeline. Gleiche Session, gleiches JSONL-Transkript — aber als diskrete Events angeordnet, die du scannen, scrollen und verlinken kannst.
+Wenn ein Tab Claude Code ausführt, ersetzt purplemux-improved die rohe Terminal-Ansicht durch eine strukturierte Timeline. Gleiche Session, gleiches JSONL-Transkript — aber als diskrete Events angeordnet, die du scannen, scrollen und verlinken kannst.
 
 ## Warum eine Timeline besser als Scrollback ist
 
@@ -62,7 +62,7 @@ Drück <kbd>⌘I</kbd> von überall in der Timeline, um die Eingabeleiste unten 
 
 ## Berechtigungs-Prompts inline
 
-Wenn Claude bittet, ein Tool auszuführen oder eine Datei zu bearbeiten, erscheint der Prompt inline in der Timeline statt als Modal. Du kannst die Option klicken, die passende Zifferntaste drücken oder sie ignorieren und am Handy via Web Push antworten. Siehe [Berechtigungs-Prompts](/purplemux/de/docs/permission-prompts/) für den vollständigen Ablauf.
+Wenn Claude bittet, ein Tool auszuführen oder eine Datei zu bearbeiten, erscheint der Prompt inline in der Timeline statt als Modal. Du kannst die Option klicken, die passende Zifferntaste drücken oder sie ignorieren und am Handy via Web Push antworten. Siehe [Berechtigungs-Prompts](/purplemux-improved/de/docs/permission-prompts/) für den vollständigen Ablauf.
 
 ## Modi auf einem einzelnen Tab
 
@@ -78,6 +78,6 @@ Shortcuts: <kbd>⌘⇧C</kbd> · <kbd>⌘⇧T</kbd> · <kbd>⌘⇧F</kbd>.
 
 ## Wie es weitergeht
 
-- **[Berechtigungs-Prompts](/purplemux/de/docs/permission-prompts/)** — der Inline-Approval-Flow.
-- **[Session-Status](/purplemux/de/docs/session-status/)** — die Badges, die die Timeline-Indikatoren steuern.
-- **[Quick-Prompts & Anhänge](/purplemux/de/docs/quick-prompts-attachments/)** — was die Eingabeleiste unten kann.
+- **[Berechtigungs-Prompts](/purplemux-improved/de/docs/permission-prompts/)** — der Inline-Approval-Flow.
+- **[Session-Status](/purplemux-improved/de/docs/session-status/)** — die Badges, die die Timeline-Indikatoren steuern.
+- **[Quick-Prompts & Anhänge](/purplemux-improved/de/docs/quick-prompts-attachments/)** — was die Eingabeleiste unten kann.

@@ -6,7 +6,7 @@ permalink: /zh-CN/docs/notes-daily-report/index.html
 ---
 {% from "docs/callouts.njk" import callout %}
 
-一天结束后,purplemux 可以读取当天的会话日志,为你写一句话简报和按项目分解的 Markdown 总结。它在侧边栏中以 **笔记** 形式存在,目的是让回顾会、站会和 1:1 不再以 "我昨天做了啥来着?" 开场。
+一天结束后,purplemux-improved 可以读取当天的会话日志,为你写一句话简报和按项目分解的 Markdown 总结。它在侧边栏中以 **笔记** 形式存在,目的是让回顾会、站会和 1:1 不再以 "我昨天做了啥来着?" 开场。
 
 ## 每天的两层内容
 
@@ -17,7 +17,7 @@ permalink: /zh-CN/docs/notes-daily-report/index.html
 
 简报用来扫读;详细视图用来粘到回顾文档里。
 
-每一天的小标头显示会话数和总成本 — 与 [统计仪表盘](/purplemux/zh-CN/docs/usage-rate-limits/) 用同样的数字,只是简报形式。
+每一天的小标头显示会话数和总成本 — 与 [统计仪表盘](/purplemux-improved/zh-CN/docs/usage-rate-limits/) 用同样的数字,只是简报形式。
 
 ## 生成报告
 
@@ -30,7 +30,7 @@ permalink: /zh-CN/docs/notes-daily-report/index.html
 LLM 先单独处理每个会话再按项目合并,因此跨多个标签的长日子里上下文不会丢失。
 
 {% call callout('note', '语言跟随应用') %}
-报告用 purplemux 当前的语言写。切换应用语言后重新生成,可以得到同样内容的新语种版本。
+报告用 purplemux-improved 当前的语言写。切换应用语言后重新生成,可以得到同样内容的新语种版本。
 {% endcall %}
 
 ## 在哪里
@@ -48,7 +48,7 @@ LLM 先单独处理每个会话再按项目合并,因此跨多个标签的长日
 详细视图里,典型一天看起来像:
 
 ```markdown
-**purplemux**
+**purplemux-improved**
 
 ### 落地页草稿
 - 设计了 Hero / Why / Mobile / Stats 八节结构布局
@@ -74,6 +74,6 @@ LLM 先单独处理每个会话再按项目合并,因此跨多个标签的长日
 
 ## 下一步
 
-- **[用量与速率限制](/purplemux/zh-CN/docs/usage-rate-limits/)** — 那些会话计数和成本数字所在的仪表盘。
-- **[实时会话视图](/purplemux/zh-CN/docs/live-session-view/)** — 数据来源,实时版。
-- **[键盘快捷键](/purplemux/zh-CN/docs/keyboard-shortcuts/)** — 包括用于笔记的 <kbd>⌘⇧E</kbd>。
+- **[用量与速率限制](/purplemux-improved/zh-CN/docs/usage-rate-limits/)** — 那些会话计数和成本数字所在的仪表盘。
+- **[实时会话视图](/purplemux-improved/zh-CN/docs/live-session-view/)** — 数据来源,实时版。
+- **[键盘快捷键](/purplemux-improved/zh-CN/docs/keyboard-shortcuts/)** — 包括用于笔记的 <kbd>⌘⇧E</kbd>。

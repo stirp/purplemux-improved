@@ -6,7 +6,7 @@ permalink: /es/docs/usage-rate-limits/index.html
 ---
 {% from "docs/callouts.njk" import callout %}
 
-Llegar al límite a mitad de tarea es la peor interrupción. purplemux trae los números de cuota de Claude Code a la barra lateral y añade un dashboard de estadísticas para que veas tu ritmo de uso de un vistazo.
+Llegar al límite a mitad de tarea es la peor interrupción. purplemux-improved trae los números de cuota de Claude Code a la barra lateral y añade un dashboard de estadísticas para que veas tu ritmo de uso de un vistazo.
 
 ## El widget de la barra lateral
 
@@ -18,7 +18,7 @@ Dos barras finas viven al pie de la barra lateral: **5h** y **7d**. Cada una mue
 
 Pasa el ratón por cualquier barra para ver el desglose completo — porcentaje usado, porcentaje proyectado y hora de reseteo como duración relativa.
 
-Los números vienen del JSON de statusline propio de Claude Code. purplemux instala un script `~/.purplemux/statusline.sh` que postea los datos al servidor local cada vez que Claude refresca su statusline; un `fs.watch` mantiene la UI sincronizada.
+Los números vienen del JSON de statusline propio de Claude Code. purplemux-improved instala un script `~/.purplemux/statusline.sh` que postea los datos al servidor local cada vez que Claude refresca su statusline; un `fs.watch` mantiene la UI sincronizada.
 
 ## Umbrales de color
 
@@ -71,14 +71,14 @@ Una rejilla día × hora que muestra cuándo usaste Claude la última semana. La
 
 ## De dónde vienen los datos
 
-Todo en el dashboard se calcula localmente desde los JSONLs de sesión propios de Claude Code en `~/.claude/projects/`. purplemux los lee, cachea los conteos parseados en `~/.purplemux/stats/` y nunca envía un byte fuera de la máquina. Cambiar de idioma o regenerar la caché no llega a ninguna parte.
+Todo en el dashboard se calcula localmente desde los JSONLs de sesión propios de Claude Code en `~/.claude/projects/`. purplemux-improved los lee, cachea los conteos parseados en `~/.purplemux/stats/` y nunca envía un byte fuera de la máquina. Cambiar de idioma o regenerar la caché no llega a ninguna parte.
 
 ## Comportamiento del reseteo
 
-Las ventanas de 5 horas y 7 días son rodantes y están atadas a tu cuenta de Claude Code. Cuando una ventana se resetea, la barra cae a 0 % y el porcentaje y tiempo restante se recalculan desde el siguiente timestamp de reseteo. Si purplemux se perdió el reseteo (servidor apagado), el widget se autocorrige en el siguiente tick de statusline.
+Las ventanas de 5 horas y 7 días son rodantes y están atadas a tu cuenta de Claude Code. Cuando una ventana se resetea, la barra cae a 0 % y el porcentaje y tiempo restante se recalculan desde el siguiente timestamp de reseteo. Si purplemux-improved se perdió el reseteo (servidor apagado), el widget se autocorrige en el siguiente tick de statusline.
 
 ## Siguientes pasos
 
-- **[Notas (informe diario de IA)](/purplemux/es/docs/notes-daily-report/)** — los mismos datos, redactados como un brief diario.
-- **[Estado de la sesión](/purplemux/es/docs/session-status/)** — la otra cosa que la barra lateral rastrea por pestaña.
-- **[Atajos de teclado](/purplemux/es/docs/keyboard-shortcuts/)** — incluyendo <kbd>⌘⇧U</kbd> para estadísticas.
+- **[Notas (informe diario de IA)](/purplemux-improved/es/docs/notes-daily-report/)** — los mismos datos, redactados como un brief diario.
+- **[Estado de la sesión](/purplemux-improved/es/docs/session-status/)** — la otra cosa que la barra lateral rastrea por pestaña.
+- **[Atajos de teclado](/purplemux-improved/es/docs/keyboard-shortcuts/)** — incluyendo <kbd>⌘⇧U</kbd> para estadísticas.

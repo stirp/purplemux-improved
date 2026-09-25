@@ -61,6 +61,6 @@ sync が失敗すると、エラートーストに **Claude に質問** ボタ�
 
 ## 次のステップ
 
-- **[タブとペイン](/purplemux/ja/docs/tabs-panes/)** — Claude セッションの隣に diff パネルを置く方法。
-- **[最初のセッション](/purplemux/ja/docs/first-session/)** — ダッシュボードでの Claude 権限プロンプトの表示方法。
-- **[Web ブラウザパネル](/purplemux/ja/docs/web-browser-panel/)** — ターミナルの並びで動かすともう 1 つ便利なパネルタイプ。
+- **[タブとペイン](/purplemux-improved/ja/docs/tabs-panes/)** — Claude セッションの隣に diff パネルを置く方法。
+- **[最初のセッション](/purplemux-improved/ja/docs/first-session/)** — ダッシュボードでの Claude 権限プロンプトの表示方法。
+- **[Web ブラウザパネル](/purplemux-improved/ja/docs/web-browser-panel/)** — ターミナルの並びで動かすともう 1 つ便利なパネルタイプ。

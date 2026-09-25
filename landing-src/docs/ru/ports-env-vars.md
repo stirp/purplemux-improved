@@ -1,24 +1,24 @@
 ---
 title: Порты и переменные окружения
-description: Каждый порт, который открывает purplemux, и каждая переменная окружения, влияющая на его работу.
+description: Каждый порт, который открывает purplemux-improved, и каждая переменная окружения, влияющая на его работу.
 eyebrow: Справочник
 permalink: /ru/docs/ports-env-vars/index.html
 ---
 {% from "docs/callouts.njk" import callout %}
 
-purplemux задуман как установка в одну строку, но рантайм настраивается. Эта страница перечисляет каждый открываемый порт и каждую переменную окружения, которую читает сервер.
+purplemux-improved задуман как установка в одну строку, но рантайм настраивается. Эта страница перечисляет каждый открываемый порт и каждую переменную окружения, которую читает сервер.
 
 ## Порты
 
 | Порт | По умолчанию | Перенастройка | Заметки |
 |---|---|---|---|
-| HTTP + WebSocket | `8022` | `PORT=9000 purplemux` | Если `8022` уже занят, сервер пишет предупреждение и привязывается к случайному свободному порту. |
-| Внутренний Next.js (production) | случайный | — | В `pnpm start` / `purplemux start` внешний сервер проксирует на standalone Next.js, привязанный к `127.0.0.1:<random>`. Не выставляется. |
+| HTTP + WebSocket | `8022` | `PORT=9000 purplemux-improved` | Если `8022` уже занят, сервер пишет предупреждение и привязывается к случайному свободному порту. |
+| Внутренний Next.js (production) | случайный | — | В `pnpm start` / `purplemux-improved start` внешний сервер проксирует на standalone Next.js, привязанный к `127.0.0.1:<random>`. Не выставляется. |
 
 `8022` — это `web` + `ssh`, склеенные. Выбор шуточный, не протокольный.
 
 {% call callout('note', 'Привязанный интерфейс следует за политикой доступа') %}
-purplemux привязывается к `0.0.0.0`, только если политика доступа фактически разрешает внешних клиентов. Установки только-localhost привязываются к `127.0.0.1`, поэтому другие машины в LAN даже TCP-соединение не откроют. См. `HOST` ниже.
+purplemux-improved привязывается к `0.0.0.0`, только если политика доступа фактически разрешает внешних клиентов. Установки только-localhost привязываются к `127.0.0.1`, поэтому другие машины в LAN даже TCP-соединение не откроют. См. `HOST` ниже.
 {% endcall %}
 
 ## Переменные окружения сервера
@@ -29,7 +29,7 @@ purplemux привязывается к `0.0.0.0`, только если пол�
 |---|---|---|
 | `PORT` | `8022` | Порт прослушивания HTTP/WS. Откатывается на случайный порт при `EADDRINUSE`. |
 | `HOST` | не задана | Спецификация через запятую CIDR/ключевых слов, кому разрешено. Ключевые слова: `localhost`, `tailscale`, `lan`, `all` (или `*` / `0.0.0.0`). Примеры: `HOST=localhost`, `HOST=localhost,tailscale`, `HOST=10.0.0.0/8,localhost`. Когда задана через env, в приложении **Настройки → Сетевой доступ** заблокированы. |
-| `NODE_ENV` | `production` (в `purplemux start`), `development` (в `pnpm dev`) | Выбирает между dev-конвейером (`tsx watch`, Next dev) и prod-конвейером (`tsup`-бандл, проксирующий в Next standalone). |
+| `NODE_ENV` | `production` (в `purplemux-improved start`), `development` (в `pnpm dev`) | Выбирает между dev-конвейером (`tsx watch`, Next dev) и prod-конвейером (`tsup`-бандл, проксирующий в Next standalone). |
 | `__PMUX_APP_DIR` | `process.cwd()` | Переопределяет каталог с `dist/server.js` и `.next/standalone/`. Устанавливается автоматически из `bin/purplemux.js`; обычно трогать не нужно. |
 | `__PMUX_APP_DIR_UNPACKED` | не задана | Вариант `__PMUX_APP_DIR` для asar-unpacked пути внутри Electron-приложения macOS. |
 | `__PMUX_ELECTRON` | не задана | Когда главный процесс Electron стартует сервер in-process, он выставляет это, чтобы `server.ts` пропустил автоматический вызов `start()` и отдал жизненный цикл Electron. |
@@ -50,13 +50,13 @@ purplemux привязывается к `0.0.0.0`, только если пол�
 Уровни по порядку: `trace` · `debug` · `info` · `warn` · `error` · `fatal`.
 
 ```bash
-LOG_LEVEL=debug purplemux
+LOG_LEVEL=debug purplemux-improved
 
 # debug только для Claude hook модуля
-LOG_LEVELS=hooks=debug purplemux
+LOG_LEVELS=hooks=debug purplemux-improved
 
 # несколько модулей сразу
-LOG_LEVELS=hooks=debug,status=warn,tmux=trace purplemux
+LOG_LEVELS=hooks=debug,status=warn,tmux=trace purplemux-improved
 ```
 
 Самые полезные имена модулей:
@@ -86,7 +86,7 @@ CLI также принимает их через env, и env имеет при�
 | `PMUX_PORT` | содержимое `~/.purplemux/port` | Порт, к которому обращается CLI. |
 | `PMUX_TOKEN` | содержимое `~/.purplemux/cli-token` | Bearer-токен, отправляемый как `x-pmux-token`. |
 
-См. [CLI reference](/purplemux/ru/docs/cli-reference/) для полного списка.
+См. [CLI reference](/purplemux-improved/ru/docs/cli-reference/) для полного списка.
 
 ## Сложить вместе
 
@@ -94,27 +94,27 @@ CLI также принимает их через env, и env имеет при�
 
 ```bash
 # По умолчанию: только localhost, порт 8022
-purplemux
+purplemux-improved
 
 # Слушать везде (LAN + Tailscale + удалённый)
-HOST=all purplemux
+HOST=all purplemux-improved
 
 # Только localhost + Tailscale
-HOST=localhost,tailscale purplemux
+HOST=localhost,tailscale purplemux-improved
 
 # Кастомный порт + подробное логирование хуков
-PORT=9000 LOG_LEVELS=hooks=debug purplemux
+PORT=9000 LOG_LEVELS=hooks=debug purplemux-improved
 
 # Полный набор для отладки
-PORT=9000 HOST=localhost LOG_LEVEL=debug LOG_LEVELS=tmux=trace purplemux
+PORT=9000 HOST=localhost LOG_LEVEL=debug LOG_LEVELS=tmux=trace purplemux-improved
 ```
 
 {% call callout('tip') %}
-Для постоянной установки задавайте это в блоке `Environment=` вашего launchd / systemd юнита. См. [Установка](/purplemux/ru/docs/installation/#avtozapusk-pri-zagruzke) для примера юнит-файла.
+Для постоянной установки задавайте это в блоке `Environment=` вашего launchd / systemd юнита. См. [Установка](/purplemux-improved/ru/docs/installation/#avtozapusk-pri-zagruzke) для примера юнит-файла.
 {% endcall %}
 
 ## Что дальше
 
-- **[Установка](/purplemux/ru/docs/installation/)** — куда обычно идут эти переменные.
-- **[Каталог данных](/purplemux/ru/docs/data-directory/)** — как `port` и `cli-token` взаимодействуют со скриптами хуков.
-- **[CLI reference](/purplemux/ru/docs/cli-reference/)** — `PMUX_PORT` / `PMUX_TOKEN` в контексте.
+- **[Установка](/purplemux-improved/ru/docs/installation/)** — куда обычно идут эти переменные.
+- **[Каталог данных](/purplemux-improved/ru/docs/data-directory/)** — как `port` и `cli-token` взаимодействуют со скриптами хуков.
+- **[CLI reference](/purplemux-improved/ru/docs/cli-reference/)** — `PMUX_PORT` / `PMUX_TOKEN` в контексте.

@@ -1,4 +1,6 @@
-# purplemux
+# purplemux-improved
+
+An improved fork of [subicura/purplemux-improved](https://github.com/subicura/purplemux-improved). The `purplemux` / `pmux` aliases and `~/.purplemux` data directory remain compatible. npm installation requires this fork to be published; until then, run from source.
 
 **Claude Code and Codex, many tasks at once. Faster.**
 
@@ -6,23 +8,23 @@ Every session on a single screen. Uninterrupted, even on your phone.
 
 English | <a href="README.ko.md">한국어</a> | <a href="README.ja.md">日本語</a> | <a href="README.zh-CN.md">简体中文</a> | <a href="README.zh-TW.md">繁體中文</a> | <a href="README.de.md">Deutsch</a> | <a href="README.es.md">Español</a> | <a href="README.fr.md">Français</a> | <a href="README.ru.md">Русский</a> | <a href="README.pt-BR.md">Português (Brasil)</a> | <a href="README.tr.md">Türkçe</a>
 
-![purplemux](docs/images/screenshot.png)
+![purplemux-improved](docs/images/screenshot.png)
 
-![purplemux mobile](docs/images/screenshot-mobile.png)
+![purplemux-improved mobile](docs/images/screenshot-mobile.png)
 
 ## Install
 
 ```bash
-npx purplemux@latest
+npx purplemux-improved@latest
 ```
 
 Open [http://localhost:8022](http://localhost:8022) in your browser. Done.
 
 > Requires Node.js 20+ and tmux. macOS or Linux.
 
-Prefer a native app? Grab the macOS Electron build from the [latest release](https://github.com/subicura/purplemux/releases/latest) (`.dmg` for Apple Silicon & Intel).
+Prefer a native app? Grab the macOS Electron build from the [latest release](https://github.com/stirp/purplemux-improved/releases/latest) (`.dmg` for Apple Silicon & Intel).
 
-## Why purplemux
+## Why purplemux-improved
 
 - **Multi-session dashboard** — See working/needs-input status for every Claude Code and Codex session at a glance
 - **Rate limit monitoring** — 5-hour / 7-day remaining usage with reset countdown
@@ -38,7 +40,7 @@ Plus
 
 ## How it differs from the official Remote Control
 
-> The official Remote Control focuses on single-session remote control. Use purplemux when you need multi-session management, push notifications, and persistent sessions.
+> The official Remote Control focuses on single-session remote control. Use purplemux-improved when you need multi-session management, push notifications, and persistent sessions.
 
 ## Features
 
@@ -50,7 +52,7 @@ Plus
 - **Terminal themes** — Dark / light mode, multiple color themes
 - **Workspaces & groups** — Save and restore panel layouts, tabs, and working directories. Organize workspaces into groups with drag-and-drop
 - **Git workflow** — Side-by-side / line-by-line diff with syntax highlighting, inline hunk expansion, and a paginated history tab. Fetch / pull / push from the panel with ahead/behind indicators — if sync fails (dirty worktree, conflicts), Ask Claude or Codex in one click
-- **Web browser panel** — Embedded browser for checking dev output (Electron). Drive it from the `purplemux` CLI and switch viewports with a built-in device emulator
+- **Web browser panel** — Embedded browser for checking dev output (Electron). Drive it from the `purplemux-improved` CLI and switch viewports with a built-in device emulator
 - **Agent tabs** — Start Claude, Codex, or a combined session list from the new-tab menu
 
 ### Claude Code and Codex integration
@@ -112,28 +114,28 @@ brew install --cask codex
 ### npx (fastest)
 
 ```bash
-npx purplemux@latest
+npx purplemux-improved@latest
 ```
 
 ### Global install
 
 ```bash
-npm install -g purplemux
-purplemux
+npm install -g purplemux-improved
+purplemux-improved
 ```
 
 ### CLI examples
 
 ```bash
-purplemux tab create -w WS -t codex-cli -n "fix auth"
-purplemux tab create -w WS -t agent-sessions
+purplemux-improved tab create -w WS -t codex-cli -n "fix auth"
+purplemux-improved tab create -w WS -t agent-sessions
 ```
 
 ### Run from source
 
 ```bash
-git clone https://github.com/subicura/purplemux.git
-cd purplemux
+git clone https://github.com/stirp/purplemux-improved.git
+cd purplemux-improved
 pnpm install
 pnpm start
 ```

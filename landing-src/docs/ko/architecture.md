@@ -6,7 +6,7 @@ permalink: /ko/docs/architecture/index.html
 ---
 {% from "docs/callouts.njk" import callout %}
 
-purplemux는 세 개의 레이어로 구성됩니다: 브라우저 프론트엔드, `:8022`에서 도는 Node.js 서버, 호스트의 tmux + Claude CLI. 이들 사이는 모두 바이너리 WebSocket이거나 작은 HTTP POST입니다.
+purplemux-improved는 세 개의 레이어로 구성됩니다: 브라우저 프론트엔드, `:8022`에서 도는 Node.js 서버, 호스트의 tmux + Claude CLI. 이들 사이는 모두 바이너리 WebSocket이거나 작은 HTTP POST입니다.
 
 ## 세 개의 레이어
 
@@ -71,11 +71,11 @@ Backpressure: WS `bufferedAmount > 1 MB`이면 `pty.pause`, `256 KB` 미만이�
 
 `src/lib/status-manager.ts`는 `cliState`의 단일 출처입니다. 훅 이벤트가 토큰 인증된 `/api/status/hook` POST로 들어와 탭별 `eventSeq`로 시퀀싱되고, `deriveStateFromEvent`로 `idle` / `busy` / `needs-input` / `ready-for-review` / `unknown` 중 하나로 reduce됩니다. JSONL watcher는 `interrupt` 합성 이벤트 하나를 제외하면 메타데이터만 갱신합니다.
 
-전체 상태 머신은 [세션 상태 (STATUS.md)](https://github.com/subicura/purplemux/blob/main/docs/STATUS.md) 참고.
+전체 상태 머신은 [세션 상태 (STATUS.md)](https://github.com/stirp/purplemux-improved/blob/main/docs/STATUS.md) 참고.
 
 ## tmux 레이어
 
-purplemux는 전용 소켓 — `-L purple` — 위에서 격리된 tmux를 실행하며, 자체 설정은 `src/config/tmux.conf`에 있습니다. `~/.tmux.conf`는 절대 읽지 않습니다.
+purplemux-improved는 전용 소켓 — `-L purple` — 위에서 격리된 tmux를 실행하며, 자체 설정은 `src/config/tmux.conf`에 있습니다. `~/.tmux.conf`는 절대 읽지 않습니다.
 
 세션 이름은 `pt-{workspaceId}-{paneId}-{tabId}`. 브라우저의 터미널 pane 하나가 tmux 세션 하나에 매핑되며 `node-pty`로 attach합니다.
 
@@ -88,16 +88,16 @@ tmux socket: purple
 
 `prefix`는 비활성, status bar는 off (xterm.js가 chrome을 그림), `set-titles`는 on, `mouse on`으로 휠은 copy-mode로 들어갑니다. 브라우저를 닫거나 Wi-Fi가 끊기거나 서버가 재시작해도 세션이 살아남는 것은 tmux 덕분입니다.
 
-전체 tmux 설정, 커맨드 래퍼, 프로세스 탐지의 자세한 내용은 [tmux & 프로세스 탐지 (TMUX.md)](https://github.com/subicura/purplemux/blob/main/docs/TMUX.md).
+전체 tmux 설정, 커맨드 래퍼, 프로세스 탐지의 자세한 내용은 [tmux & 프로세스 탐지 (TMUX.md)](https://github.com/stirp/purplemux-improved/blob/main/docs/TMUX.md).
 
 ## Claude CLI 통합
 
-purplemux는 Claude를 fork하거나 wrap하지 않습니다 — `claude` 바이너리는 사용자가 설치한 것 그대로 씁니다. 다음 두 가지가 추가됩니다:
+purplemux-improved는 Claude를 fork하거나 wrap하지 않습니다 — `claude` 바이너리는 사용자가 설치한 것 그대로 씁니다. 다음 두 가지가 추가됩니다:
 
 1. **훅 설정** — 시작 시 `ensureHookSettings()`가 `~/.purplemux/hooks.json`, `status-hook.sh`, `statusline.sh`를 작성합니다. 모든 Claude 탭은 `--settings ~/.purplemux/hooks.json`으로 실행되어 `SessionStart`, `UserPromptSubmit`, `Notification`, `Stop`, `PreCompact`, `PostCompact`가 모두 서버로 POST됩니다.
 2. **JSONL 읽기** — `~/.claude/projects/**/*.jsonl`을 `timeline-server.ts`가 라이브 대화 뷰용으로 파싱하고, `session-detection.ts`가 `~/.claude/sessions/`의 PID 파일을 통해 실행 중인 Claude 프로세스를 감지하기 위해 watch합니다.
 
-훅 스크립트는 `~/.purplemux/port`와 `~/.purplemux/cli-token`을 읽고 `x-pmux-token`을 붙여 POST합니다. 서버가 죽어 있으면 조용히 실패하므로 Claude 동작 중에 purplemux를 닫아도 아무 것도 깨지지 않습니다.
+훅 스크립트는 `~/.purplemux/port`와 `~/.purplemux/cli-token`을 읽고 `x-pmux-token`을 붙여 POST합니다. 서버가 죽어 있으면 조용히 실패하므로 Claude 동작 중에 purplemux-improved를 닫아도 아무 것도 깨지지 않습니다.
 
 ## 부팅 시퀀스
 
@@ -126,12 +126,12 @@ purplemux는 Claude를 fork하거나 wrap하지 않습니다 — `claude` 바이
 
 ## 더 깊이 읽으려면
 
-- [`docs/TMUX.md`](https://github.com/subicura/purplemux/blob/main/docs/TMUX.md) — tmux 설정, 커맨드 래퍼, 프로세스 트리 워킹, 터미널 바이너리 프로토콜
-- [`docs/STATUS.md`](https://github.com/subicura/purplemux/blob/main/docs/STATUS.md) — Claude CLI 상태 머신, 훅 플로우, 합성 interrupt 이벤트, JSONL watcher
-- [`docs/DATA-DIR.md`](https://github.com/subicura/purplemux/blob/main/docs/DATA-DIR.md) — purplemux가 쓰는 모든 파일
+- [`docs/TMUX.md`](https://github.com/stirp/purplemux-improved/blob/main/docs/TMUX.md) — tmux 설정, 커맨드 래퍼, 프로세스 트리 워킹, 터미널 바이너리 프로토콜
+- [`docs/STATUS.md`](https://github.com/stirp/purplemux-improved/blob/main/docs/STATUS.md) — Claude CLI 상태 머신, 훅 플로우, 합성 interrupt 이벤트, JSONL watcher
+- [`docs/DATA-DIR.md`](https://github.com/stirp/purplemux-improved/blob/main/docs/DATA-DIR.md) — purplemux-improved가 쓰는 모든 파일
 
 ## 다음으로
 
-- **[데이터 디렉토리](/purplemux/ko/docs/data-directory/)** — 위 아키텍처가 건드리는 모든 파일
-- **[CLI 레퍼런스](/purplemux/ko/docs/cli-reference/)** — 브라우저 외부에서 서버와 통신하기
-- **[문제 해결](/purplemux/ko/docs/troubleshooting/)** — 위 구성요소가 오작동할 때 진단법
+- **[데이터 디렉토리](/purplemux-improved/ko/docs/data-directory/)** — 위 아키텍처가 건드리는 모든 파일
+- **[CLI 레퍼런스](/purplemux-improved/ko/docs/cli-reference/)** — 브라우저 외부에서 서버와 통신하기
+- **[문제 해결](/purplemux-improved/ko/docs/troubleshooting/)** — 위 구성요소가 오작동할 때 진단법

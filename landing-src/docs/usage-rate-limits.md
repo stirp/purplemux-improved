@@ -6,7 +6,7 @@ permalink: /docs/usage-rate-limits/index.html
 ---
 {% from "docs/callouts.njk" import callout %}
 
-Hitting a rate limit mid-task is the worst kind of interruption. purplemux pulls Claude Code's quota numbers into the sidebar and adds a stats dashboard so you can see your usage rhythm at a glance.
+Hitting a rate limit mid-task is the worst kind of interruption. purplemux-improved pulls Claude Code's quota numbers into the sidebar and adds a stats dashboard so you can see your usage rhythm at a glance.
 
 ## The sidebar widget
 
@@ -18,7 +18,7 @@ Two thin bars sit at the bottom of the sidebar: **5h** and **7d**. Each shows:
 
 Hover any bar for the full breakdown — used percentage, projected percentage, and reset time as a relative duration.
 
-The numbers come from Claude Code's own statusline JSON. purplemux installs a tiny `~/.purplemux/statusline.sh` script that posts the data to the local server every time Claude refreshes its statusline; an `fs.watch` keeps the UI in sync.
+The numbers come from Claude Code's own statusline JSON. purplemux-improved installs a tiny `~/.purplemux/statusline.sh` script that posts the data to the local server every time Claude refreshes its statusline; an `fs.watch` keeps the UI in sync.
 
 ## Color thresholds
 
@@ -71,14 +71,14 @@ A day × hour grid showing when you actually used Claude in the last week. Concu
 
 ## Where the data comes from
 
-Everything in the dashboard is computed locally from Claude Code's own session JSONLs under `~/.claude/projects/`. purplemux reads them, caches the parsed counts in `~/.purplemux/stats/`, and never sends a byte off-machine. Switching languages or regenerating the cache won't reach out anywhere.
+Everything in the dashboard is computed locally from Claude Code's own session JSONLs under `~/.claude/projects/`. purplemux-improved reads them, caches the parsed counts in `~/.purplemux/stats/`, and never sends a byte off-machine. Switching languages or regenerating the cache won't reach out anywhere.
 
 ## Reset behavior
 
-The 5-hour and 7-day windows are rolling and tied to your Claude Code account. When a window resets, the bar drops to 0 % and the percentage and remaining time recompute from the next reset timestamp. If purplemux missed the reset (server was off), the widget self-corrects on the next statusline tick.
+The 5-hour and 7-day windows are rolling and tied to your Claude Code account. When a window resets, the bar drops to 0 % and the percentage and remaining time recompute from the next reset timestamp. If purplemux-improved missed the reset (server was off), the widget self-corrects on the next statusline tick.
 
 ## What's next
 
-- **[Notes (AI daily report)](/purplemux/docs/notes-daily-report/)** — same data, written up as a per-day brief.
-- **[Session status](/purplemux/docs/session-status/)** — the other thing the sidebar tracks per tab.
-- **[Keyboard shortcuts](/purplemux/docs/keyboard-shortcuts/)** — including <kbd>⌘⇧U</kbd> for stats.
+- **[Notes (AI daily report)](/purplemux-improved/docs/notes-daily-report/)** — same data, written up as a per-day brief.
+- **[Session status](/purplemux-improved/docs/session-status/)** — the other thing the sidebar tracks per tab.
+- **[Keyboard shortcuts](/purplemux-improved/docs/keyboard-shortcuts/)** — including <kbd>⌘⇧U</kbd> for stats.

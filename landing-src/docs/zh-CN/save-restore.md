@@ -6,7 +6,7 @@ permalink: /zh-CN/docs/save-restore/index.html
 ---
 {% from "docs/callouts.njk" import callout %}
 
-purplemux 的核心理念是:在浏览器里关掉标签页不应该结束会话。两块东西一起工作:tmux 让 shell 持续运行,`~/.purplemux/workspaces.json` 记住布局。
+purplemux-improved 的核心理念是:在浏览器里关掉标签页不应该结束会话。两块东西一起工作:tmux 让 shell 持续运行,`~/.purplemux/workspaces.json` 记住布局。
 
 ## 哪些东西被持久化
 
@@ -18,7 +18,7 @@ purplemux 的核心理念是:在浏览器里关掉标签页不应该结束会话
 - 每个 shell 的工作目录
 - 工作区分组、名称和顺序
 
-`workspaces.json` 在每次布局变更时事务性更新,所以文件始终反映当前状态。磁盘文件结构见 [数据目录](/purplemux/zh-CN/docs/data-directory/)。
+`workspaces.json` 在每次布局变更时事务性更新,所以文件始终反映当前状态。磁盘文件结构见 [数据目录](/purplemux-improved/zh-CN/docs/data-directory/)。
 
 ## 关闭浏览器
 
@@ -34,7 +34,7 @@ purplemux 的核心理念是:在浏览器里关掉标签页不应该结束会话
 
 ## 服务器重启后的恢复
 
-重启确实会杀掉 tmux 进程 — 它们也只是普通的操作系统进程。purplemux 在下次启动时处理:
+重启确实会杀掉 tmux 进程 — 它们也只是普通的操作系统进程。purplemux-improved 在下次启动时处理:
 
 1. **读取布局** — `workspaces.json` 描述了每个工作区、窗格和标签页。
 2. **并行重建会话** — 对每个标签页,在保存的工作目录中启动一个新的 tmux 会话。
@@ -58,12 +58,12 @@ purplemux 的核心理念是:在浏览器里关掉标签页不应该结束会话
 
 - tmux socket 名为 `purple`。用 `tmux -L purple ls` 查看。
 - 会话命名为 `pt-{workspaceId}-{paneId}-{tabId}`。
-- 在 purplemux 运行时编辑 `workspaces.json` 不安全 — 服务持有它并写入。
+- 在 purplemux-improved 运行时编辑 `workspaces.json` 不安全 — 服务持有它并写入。
 
-更深的细节(二进制协议、背压、JSONL 监视)见落地页的 [工作原理](/purplemux/#how)。
+更深的细节(二进制协议、背压、JSONL 监视)见落地页的 [工作原理](/purplemux-improved/#how)。
 
 ## 下一步
 
-- **[工作区与分组](/purplemux/zh-CN/docs/workspaces-groups/)** — 每个工作区都保存了什么。
-- **[标签页与窗格](/purplemux/zh-CN/docs/tabs-panes/)** — 每个标签页都保存了什么。
-- **[浏览器支持](/purplemux/zh-CN/docs/browser-support/)** — 关于移动后台标签页和重连的已知注意事项。
+- **[工作区与分组](/purplemux-improved/zh-CN/docs/workspaces-groups/)** — 每个工作区都保存了什么。
+- **[标签页与窗格](/purplemux-improved/zh-CN/docs/tabs-panes/)** — 每个标签页都保存了什么。
+- **[浏览器支持](/purplemux-improved/zh-CN/docs/browser-support/)** — 关于移动后台标签页和重连的已知注意事项。

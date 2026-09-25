@@ -16,7 +16,7 @@ Jeder Workspace hat sein eigenes:
 - **Tabs und Panels** — Terminals, Claude-Sessions, Diff-Panels, Web-Browser-Panels.
 - **Layout** — Split-Verhältnisse, Fokus, der aktive Tab in jedem Panel.
 
-Alles wird in `~/.purplemux/workspaces.json` persistiert, der Workspace ist also die Einheit, die purplemux speichert und wiederherstellt. Browser schließen löst keinen Workspace auf; tmux hält die Shells offen, das Layout bleibt.
+Alles wird in `~/.purplemux/workspaces.json` persistiert, der Workspace ist also die Einheit, die purplemux-improved speichert und wiederherstellt. Browser schließen löst keinen Workspace auf; tmux hält die Shells offen, das Layout bleibt.
 
 ## Einen Workspace anlegen
 
@@ -61,10 +61,10 @@ Gruppen sind reine visuelle Organisation. Sie ändern weder die Persistenz noch 
 
 ## Wo es auf der Festplatte liegt
 
-Jede Änderung schreibt durch nach `~/.purplemux/workspaces.json`. Du kannst die Datei einsehen oder sichern — siehe [Daten-Verzeichnis](/purplemux/de/docs/data-directory/) für das vollständige Datei-Layout. Wenn du sie löschst, während der Server läuft, fällt purplemux auf einen leeren Workspace zurück und beginnt neu.
+Jede Änderung schreibt durch nach `~/.purplemux/workspaces.json`. Du kannst die Datei einsehen oder sichern — siehe [Daten-Verzeichnis](/purplemux-improved/de/docs/data-directory/) für das vollständige Datei-Layout. Wenn du sie löschst, während der Server läuft, fällt purplemux-improved auf einen leeren Workspace zurück und beginnt neu.
 
 ## Wie es weitergeht
 
-- **[Tabs & Panels](/purplemux/de/docs/tabs-panes/)** — splitten, umsortieren, fokussieren innerhalb eines Workspaces.
-- **[Layouts speichern & wiederherstellen](/purplemux/de/docs/save-restore/)** — wie Workspaces das Browser-Schließen und Server-Reboots überleben.
-- **[Tastenkürzel](/purplemux/de/docs/keyboard-shortcuts/)** — die vollständige Bindungstabelle.
+- **[Tabs & Panels](/purplemux-improved/de/docs/tabs-panes/)** — splitten, umsortieren, fokussieren innerhalb eines Workspaces.
+- **[Layouts speichern & wiederherstellen](/purplemux-improved/de/docs/save-restore/)** — wie Workspaces das Browser-Schließen und Server-Reboots überleben.
+- **[Tastenkürzel](/purplemux-improved/de/docs/keyboard-shortcuts/)** — die vollständige Bindungstabelle.

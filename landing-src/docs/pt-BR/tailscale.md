@@ -1,25 +1,25 @@
 ---
 title: Acesso via Tailscale
-description: Acesse o purplemux pelo celular via HTTPS através do Tailscale Serve — sem port forwarding, sem malabarismo de certificado.
+description: Acesse o purplemux-improved pelo celular via HTTPS através do Tailscale Serve — sem port forwarding, sem malabarismo de certificado.
 eyebrow: Mobile e Remoto
 permalink: /pt-BR/docs/tailscale/index.html
 ---
 {% from "docs/callouts.njk" import callout %}
 
-Por padrão, o purplemux só escuta localmente. O Tailscale Serve é o jeito mais limpo de expô-lo aos seus outros dispositivos: criptografado por WireGuard, certificados Let's Encrypt automáticos e zero mudança de firewall.
+Por padrão, o purplemux-improved só escuta localmente. O Tailscale Serve é o jeito mais limpo de expô-lo aos seus outros dispositivos: criptografado por WireGuard, certificados Let's Encrypt automáticos e zero mudança de firewall.
 
 ## Por que Tailscale
 
 - **WireGuard** — toda conexão é criptografada de dispositivo a dispositivo.
 - **HTTPS automático** — o Tailscale provisiona certificado real para `*.<tailnet>.ts.net`.
 - **Sem port forwarding** — sua máquina nunca abre uma porta para a internet pública.
-- **HTTPS é obrigatório no iOS** — instalação de PWA e Web Push se recusam a funcionar sem ele. Veja [Configuração de PWA](/purplemux/pt-BR/docs/pwa-setup/) e [Web Push](/purplemux/pt-BR/docs/web-push/).
+- **HTTPS é obrigatório no iOS** — instalação de PWA e Web Push se recusam a funcionar sem ele. Veja [Configuração de PWA](/purplemux-improved/pt-BR/docs/pwa-setup/) e [Web Push](/purplemux-improved/pt-BR/docs/web-push/).
 
 ## Pré-requisitos
 
-- Uma conta Tailscale, com o daemon `tailscale` instalado e logado na máquina que roda o purplemux.
+- Uma conta Tailscale, com o daemon `tailscale` instalado e logado na máquina que roda o purplemux-improved.
 - HTTPS habilitado no tailnet (Admin console → DNS → habilitar HTTPS Certificates, se ainda não estiver).
-- purplemux rodando na porta padrão `8022` (ou onde você setou `PORT`).
+- purplemux-improved rodando na porta padrão `8022` (ou onde você setou `PORT`).
 
 ## Execute
 
@@ -45,17 +45,17 @@ tailscale serve --bg off 8022
 
 ## O que dá pra fazer com isso
 
-- Abra a URL no celular, toque em **Compartilhar → Adicionar à Tela de Início** e siga [Configuração de PWA](/purplemux/pt-BR/docs/pwa-setup/).
-- Ligue o push de dentro do PWA standalone: [Web Push](/purplemux/pt-BR/docs/web-push/).
+- Abra a URL no celular, toque em **Compartilhar → Adicionar à Tela de Início** e siga [Configuração de PWA](/purplemux-improved/pt-BR/docs/pwa-setup/).
+- Ligue o push de dentro do PWA standalone: [Web Push](/purplemux-improved/pt-BR/docs/web-push/).
 - Acesse o mesmo painel de um tablet, laptop ou outro desktop — o estado do workspace sincroniza em tempo real.
 
 {% call callout('tip', 'Funnel vs Serve') %}
-`tailscale serve` mantém o purplemux privado para o seu tailnet — quase sempre é o que você quer. `tailscale funnel` o expõe para a internet pública, o que é exagerado (e arriscado) para um multiplexador pessoal.
+`tailscale serve` mantém o purplemux-improved privado para o seu tailnet — quase sempre é o que você quer. `tailscale funnel` o expõe para a internet pública, o que é exagerado (e arriscado) para um multiplexador pessoal.
 {% endcall %}
 
 ## Fallback com reverse proxy
 
-Se Tailscale não é uma opção, qualquer reverse proxy com certificado TLS de verdade serve. A única coisa que você precisa acertar é **upgrades de WebSocket** — o purplemux os usa para I/O de terminal, sync de status e a timeline ao vivo.
+Se Tailscale não é uma opção, qualquer reverse proxy com certificado TLS de verdade serve. A única coisa que você precisa acertar é **upgrades de WebSocket** — o purplemux-improved os usa para I/O de terminal, sync de status e a timeline ao vivo.
 
 Nginx (esboço):
 
@@ -83,6 +83,6 @@ Sem o forwarding de `Upgrade` / `Connection`, o painel renderiza, mas os termina
 
 ## Próximos passos
 
-- **[Configuração de PWA](/purplemux/pt-BR/docs/pwa-setup/)** — instale na tela de início agora que você tem HTTPS.
-- **[Notificações Web Push](/purplemux/pt-BR/docs/web-push/)** — ligue alertas em background.
-- **[Segurança e autenticação](/purplemux/pt-BR/docs/security-auth/)** — senha, hashing e o que a exposição via tailnet implica.
+- **[Configuração de PWA](/purplemux-improved/pt-BR/docs/pwa-setup/)** — instale na tela de início agora que você tem HTTPS.
+- **[Notificações Web Push](/purplemux-improved/pt-BR/docs/web-push/)** — ligue alertas em background.
+- **[Segurança e autenticação](/purplemux-improved/pt-BR/docs/security-auth/)** — senha, hashing e o que a exposição via tailnet implica.

@@ -31,7 +31,7 @@ Cliquez **Ajouter un élément** en bas. Vous obtiendrez un petit formulaire :
 Cliquez Enregistrer et la ligne apparaît en bas de la liste. Glissez-la où vous voulez.
 
 {% call callout('note', 'Les intégrés peuvent être masqués, pas supprimés') %}
-Les éléments intégrés (ceux que purplemux livre) n'ont qu'un interrupteur et une poignée — pas d'édition ni de suppression. Ils sont toujours là au cas où vous changiez d'avis. Les éléments personnalisés ont le kit complet.
+Les éléments intégrés (ceux que purplemux-improved livre) n'ont qu'un interrupteur et une poignée — pas d'édition ni de suppression. Ils sont toujours là au cas où vous changiez d'avis. Les éléments personnalisés ont le kit complet.
 {% endcall %}
 
 ## Prompts rapides
@@ -49,13 +49,13 @@ Ajouter un prompt demande un **nom** (le label du bouton) et le **prompt** lui-m
 
 ## Options de la CLI Claude
 
-Paramètres → onglet **Claude**. Ces flags affectent *comment purplemux lance la CLI Claude* dans les nouveaux onglets — ils ne changent pas le comportement d'une session déjà lancée.
+Paramètres → onglet **Claude**. Ces flags affectent *comment purplemux-improved lance la CLI Claude* dans les nouveaux onglets — ils ne changent pas le comportement d'une session déjà lancée.
 
 ### Skip Permission Checks
 
 Ajoute `--dangerously-skip-permissions` à la commande `claude`. Claude exécutera les outils et modifiera les fichiers sans demander d'approbation à chaque fois.
 
-C'est le même flag que la CLI officielle expose — purplemux n'allège aucune sécurité par-dessus. Lisez la [documentation d'Anthropic](https://docs.anthropic.com/en/docs/claude-code/cli-reference) avant de l'activer. À traiter comme opt-in pour des espaces de travail de confiance uniquement.
+C'est le même flag que la CLI officielle expose — purplemux-improved n'allège aucune sécurité par-dessus. Lisez la [documentation d'Anthropic](https://docs.anthropic.com/en/docs/claude-code/cli-reference) avant de l'activer. À traiter comme opt-in pour des espaces de travail de confiance uniquement.
 
 ### Show Terminal with Claude
 
@@ -67,6 +67,6 @@ Utilisez le réglage off si vous pilotez surtout Claude via la timeline et voule
 
 ## Pour aller plus loin
 
-- **[Thèmes & polices](/purplemux/fr/docs/themes-fonts/)** — clair, sombre, système ; préréglages de taille de police.
-- **[Intégration éditeur](/purplemux/fr/docs/editor-integration/)** — câbler VS Code, Cursor, code-server.
-- **[Première session](/purplemux/fr/docs/first-session/)** — rappel sur la mise en page du tableau de bord.
+- **[Thèmes & polices](/purplemux-improved/fr/docs/themes-fonts/)** — clair, sombre, système ; préréglages de taille de police.
+- **[Intégration éditeur](/purplemux-improved/fr/docs/editor-integration/)** — câbler VS Code, Cursor, code-server.
+- **[Première session](/purplemux-improved/fr/docs/first-session/)** — rappel sur la mise en page du tableau de bord.

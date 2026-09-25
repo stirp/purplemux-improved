@@ -16,7 +16,7 @@ permalink: /zh-TW/docs/workspaces-groups/index.html
 - **分頁與窗格** — 終端機、Claude 工作階段、diff 面板、網頁瀏覽器面板。
 - **版面配置** — 分割比例、焦點、每個窗格中目前作用的分頁。
 
-所有資訊都會持久化到 `~/.purplemux/workspaces.json`，所以工作區是 purplemux 儲存與還原的最小單位。關閉瀏覽器並不會解散工作區；tmux 會保留 shell，版面也會保留。
+所有資訊都會持久化到 `~/.purplemux/workspaces.json`，所以工作區是 purplemux-improved 儲存與還原的最小單位。關閉瀏覽器並不會解散工作區；tmux 會保留 shell，版面也會保留。
 
 ## 建立工作區
 
@@ -61,10 +61,10 @@ permalink: /zh-TW/docs/workspaces-groups/index.html
 
 ## 在磁碟上的位置
 
-每次變更都會寫到 `~/.purplemux/workspaces.json`。你可以檢視或備份它 — 完整檔案配置請見 [資料目錄](/purplemux/zh-TW/docs/data-directory/)。如果在伺服器執行中時把它砍掉，purplemux 會回退到空白工作區並重新開始。
+每次變更都會寫到 `~/.purplemux/workspaces.json`。你可以檢視或備份它 — 完整檔案配置請見 [資料目錄](/purplemux-improved/zh-TW/docs/data-directory/)。如果在伺服器執行中時把它砍掉，purplemux-improved 會回退到空白工作區並重新開始。
 
 ## 下一步
 
-- **[分頁與窗格](/purplemux/zh-TW/docs/tabs-panes/)** — 在工作區內分割、重新排序、聚焦。
-- **[儲存與還原版面](/purplemux/zh-TW/docs/save-restore/)** — 工作區如何在瀏覽器關閉與伺服器重啟後存活。
-- **[鍵盤快速鍵](/purplemux/zh-TW/docs/keyboard-shortcuts/)** — 完整的繫結表。
+- **[分頁與窗格](/purplemux-improved/zh-TW/docs/tabs-panes/)** — 在工作區內分割、重新排序、聚焦。
+- **[儲存與還原版面](/purplemux-improved/zh-TW/docs/save-restore/)** — 工作區如何在瀏覽器關閉與伺服器重啟後存活。
+- **[鍵盤快速鍵](/purplemux-improved/zh-TW/docs/keyboard-shortcuts/)** — 完整的繫結表。

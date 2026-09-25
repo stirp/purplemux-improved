@@ -1,24 +1,24 @@
 ---
 title: 端口与环境变量
-description: purplemux 打开的每个端口和影响其运行的每个环境变量。
+description: purplemux-improved 打开的每个端口和影响其运行的每个环境变量。
 eyebrow: 参考
 permalink: /zh-CN/docs/ports-env-vars/index.html
 ---
 {% from "docs/callouts.njk" import callout %}
 
-purplemux 旨在一行命令安装,但运行时仍可配置。本页列出它打开的每个端口,以及服务读取的每个环境变量。
+purplemux-improved 旨在一行命令安装,但运行时仍可配置。本页列出它打开的每个端口,以及服务读取的每个环境变量。
 
 ## 端口
 
 | 端口 | 默认 | 覆盖方式 | 备注 |
 |---|---|---|---|
-| HTTP + WebSocket | `8022` | `PORT=9000 purplemux` | `8022` 已被占用时,服务记录警告并改绑随机空闲端口。 |
-| 内部 Next.js(生产) | 随机 | — | `pnpm start` / `purplemux start` 中,外层服务代理到绑定 `127.0.0.1:<random>` 的 Next.js standalone。不对外暴露。 |
+| HTTP + WebSocket | `8022` | `PORT=9000 purplemux-improved` | `8022` 已被占用时,服务记录警告并改绑随机空闲端口。 |
+| 内部 Next.js(生产) | 随机 | — | `pnpm start` / `purplemux-improved start` 中,外层服务代理到绑定 `127.0.0.1:<random>` 的 Next.js standalone。不对外暴露。 |
 
 `8022` 是 `web` + `ssh` 拼起来的。选这个就是好玩,跟协议无关。
 
 {% call callout('note', '绑定接口跟随访问策略') %}
-purplemux 仅当访问策略实际允许外部客户端时才绑 `0.0.0.0`。仅本地的设置绑 `127.0.0.1`,这样 LAN 上的其他机器连 TCP 连接都打不开。见下文的 `HOST`。
+purplemux-improved 仅当访问策略实际允许外部客户端时才绑 `0.0.0.0`。仅本地的设置绑 `127.0.0.1`,这样 LAN 上的其他机器连 TCP 连接都打不开。见下文的 `HOST`。
 {% endcall %}
 
 ## 服务环境变量
@@ -29,7 +29,7 @@ purplemux 仅当访问策略实际允许外部客户端时才绑 `0.0.0.0`。仅
 |---|---|---|
 | `PORT` | `8022` | HTTP/WS 监听端口。`EADDRINUSE` 时回退到随机端口。 |
 | `HOST` | 未设 | 控制哪些客户端被允许的逗号分隔 CIDR / 关键字规约。关键字:`localhost`、`tailscale`、`lan`、`all`(或 `*` / `0.0.0.0`)。例:`HOST=localhost`、`HOST=localhost,tailscale`、`HOST=10.0.0.0/8,localhost`。通过环境变量设置时,应用内 **设置 → 网络访问** 会被锁定。 |
-| `NODE_ENV` | `production`(`purplemux start`)、`development`(`pnpm dev`) | 在开发流水线(`tsx watch`、Next dev)和生产流水线(`tsup` 打包并代理到 Next standalone)之间选择。 |
+| `NODE_ENV` | `production`(`purplemux-improved start`)、`development`(`pnpm dev`) | 在开发流水线(`tsx watch`、Next dev)和生产流水线(`tsup` 打包并代理到 Next standalone)之间选择。 |
 | `__PMUX_APP_DIR` | `process.cwd()` | 覆盖包含 `dist/server.js` 和 `.next/standalone/` 的目录。由 `bin/purplemux.js` 自动设置,通常不要动。 |
 | `__PMUX_APP_DIR_UNPACKED` | 未设 | macOS Electron 应用中 asar-unpacked 路径下 `__PMUX_APP_DIR` 的变体。 |
 | `__PMUX_ELECTRON` | 未设 | 当 Electron 主进程在进程内启动服务时设此值,让 `server.ts` 跳过自动 `start()` 调用,把生命周期交给 Electron。 |
@@ -50,13 +50,13 @@ purplemux 仅当访问策略实际允许外部客户端时才绑 `0.0.0.0`。仅
 级别(从低到高):`trace` · `debug` · `info` · `warn` · `error` · `fatal`。
 
 ```bash
-LOG_LEVEL=debug purplemux
+LOG_LEVEL=debug purplemux-improved
 
 # 只对 Claude hook 模块开启 debug
-LOG_LEVELS=hooks=debug purplemux
+LOG_LEVELS=hooks=debug purplemux-improved
 
 # 同时多个模块
-LOG_LEVELS=hooks=debug,status=warn,tmux=trace purplemux
+LOG_LEVELS=hooks=debug,status=warn,tmux=trace purplemux-improved
 ```
 
 最有用的模块名:
@@ -86,7 +86,7 @@ CLI 也接受这些通过环境变量传入,优先级更高:
 | `PMUX_PORT` | `~/.purplemux/port` 的内容 | CLI 通信的端口。 |
 | `PMUX_TOKEN` | `~/.purplemux/cli-token` 的内容 | 作为 `x-pmux-token` 发送的 bearer token。 |
 
-完整命令面见 [CLI 参考](/purplemux/zh-CN/docs/cli-reference/)。
+完整命令面见 [CLI 参考](/purplemux-improved/zh-CN/docs/cli-reference/)。
 
 ## 组合起来
 
@@ -94,27 +94,27 @@ CLI 也接受这些通过环境变量传入,优先级更高:
 
 ```bash
 # 默认:仅本地,端口 8022
-purplemux
+purplemux-improved
 
 # 全部绑定(LAN + Tailscale + 远程)
-HOST=all purplemux
+HOST=all purplemux-improved
 
 # 仅本地 + Tailscale
-HOST=localhost,tailscale purplemux
+HOST=localhost,tailscale purplemux-improved
 
 # 自定义端口 + 详细 hook 跟踪
-PORT=9000 LOG_LEVELS=hooks=debug purplemux
+PORT=9000 LOG_LEVELS=hooks=debug purplemux-improved
 
 # 调试用全配
-PORT=9000 HOST=localhost LOG_LEVEL=debug LOG_LEVELS=tmux=trace purplemux
+PORT=9000 HOST=localhost LOG_LEVEL=debug LOG_LEVELS=tmux=trace purplemux-improved
 ```
 
 {% call callout('tip') %}
-对于永久安装,把这些放进你的 launchd / systemd 单元的 `Environment=` 块。一份示例单元文件见 [安装](/purplemux/zh-CN/docs/installation/#start-on-boot)。
+对于永久安装,把这些放进你的 launchd / systemd 单元的 `Environment=` 块。一份示例单元文件见 [安装](/purplemux-improved/zh-CN/docs/installation/#start-on-boot)。
 {% endcall %}
 
 ## 下一步
 
-- **[安装](/purplemux/zh-CN/docs/installation/)** — 这些变量通常放在哪。
-- **[数据目录](/purplemux/zh-CN/docs/data-directory/)** — `port` 和 `cli-token` 与 hook 脚本如何配合。
-- **[CLI 参考](/purplemux/zh-CN/docs/cli-reference/)** — 上下文中的 `PMUX_PORT` / `PMUX_TOKEN`。
+- **[安装](/purplemux-improved/zh-CN/docs/installation/)** — 这些变量通常放在哪。
+- **[数据目录](/purplemux-improved/zh-CN/docs/data-directory/)** — `port` 和 `cli-token` 与 hook 脚本如何配合。
+- **[CLI 参考](/purplemux-improved/zh-CN/docs/cli-reference/)** — 上下文中的 `PMUX_PORT` / `PMUX_TOKEN`。

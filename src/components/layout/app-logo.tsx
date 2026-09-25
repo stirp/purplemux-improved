@@ -16,7 +16,7 @@ const AppLogo = ({ shimmer = false, size = 'sm', className }: IAppLogoProps) => 
       <Terminal className={cn(iconSize, 'shrink-0 text-brand')} />
       <span className={cn(textSize, shimmer ? 'animate-shimmer' : 'text-brand')}>
         <span className="font-bold">purple</span>
-        <span className="font-normal">mux</span>
+        <span className="font-normal">mux-improved</span>
       </span>
     </div>
   );

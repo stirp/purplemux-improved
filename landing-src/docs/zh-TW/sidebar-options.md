@@ -31,7 +31,7 @@ permalink: /zh-TW/docs/sidebar-options/index.html
 點選儲存後，項目會出現在清單底部。再拖到你想要的位置。
 
 {% call callout('note', '內建項目可隱藏，無法刪除') %}
-內建項目（purplemux 出廠就有的）只有切換鈕與抓取握把 — 沒有編輯或刪除。它們會一直在那兒以防你改變主意。自訂項目則有完整功能。
+內建項目（purplemux-improved 出廠就有的）只有切換鈕與抓取握把 — 沒有編輯或刪除。它們會一直在那兒以防你改變主意。自訂項目則有完整功能。
 {% endcall %}
 
 ## 快速 prompts
@@ -49,13 +49,13 @@ permalink: /zh-TW/docs/sidebar-options/index.html
 
 ## Claude CLI 選項
 
-設定 → **Claude** 分頁。這些旗標影響 *purplemux 在新分頁中啟動 Claude CLI 的方式* — 對已執行的工作階段沒有影響。
+設定 → **Claude** 分頁。這些旗標影響 *purplemux-improved 在新分頁中啟動 Claude CLI 的方式* — 對已執行的工作階段沒有影響。
 
 ### Skip Permission Checks
 
 在 `claude` 指令中加入 `--dangerously-skip-permissions`。Claude 會執行工具與編輯檔案時不再每次詢問核可。
 
-這是官方 CLI 公開的同一旗標 — purplemux 不會在它之上放鬆任何安全性。打開前請先閱讀 [Anthropic 的文件](https://docs.anthropic.com/en/docs/claude-code/cli-reference)。把它當作只在受信任工作區才啟用的選項。
+這是官方 CLI 公開的同一旗標 — purplemux-improved 不會在它之上放鬆任何安全性。打開前請先閱讀 [Anthropic 的文件](https://docs.anthropic.com/en/docs/claude-code/cli-reference)。把它當作只在受信任工作區才啟用的選項。
 
 ### Show Terminal with Claude
 
@@ -67,6 +67,6 @@ permalink: /zh-TW/docs/sidebar-options/index.html
 
 ## 下一步
 
-- **[主題與字型](/purplemux/zh-TW/docs/themes-fonts/)** — 淺色、深色、跟隨系統；字級預設。
-- **[編輯器整合](/purplemux/zh-TW/docs/editor-integration/)** — 連接 VS Code、Cursor、code-server。
-- **[第一個工作階段](/purplemux/zh-TW/docs/first-session/)** — 重新熟悉儀表板版面。
+- **[主題與字型](/purplemux-improved/zh-TW/docs/themes-fonts/)** — 淺色、深色、跟隨系統；字級預設。
+- **[編輯器整合](/purplemux-improved/zh-TW/docs/editor-integration/)** — 連接 VS Code、Cursor、code-server。
+- **[第一個工作階段](/purplemux-improved/zh-TW/docs/first-session/)** — 重新熟悉儀表板版面。

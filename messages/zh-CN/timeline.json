@@ -1,4 +1,6 @@
 {
+  "composeAnswer": "填入回复框",
+  "composeAnswerHint": "选择或填写答案后，填入回复框并发送。",
   "requestCancelled": "请求已取消",
   "sessionExit": "会话已退出 (/exit)",
   "connectionError": "连接错误",

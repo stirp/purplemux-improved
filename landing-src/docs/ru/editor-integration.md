@@ -34,7 +34,7 @@ permalink: /ru/docs/editor-integration/index.html
 - **code-server** работает внутри браузера. URL указывает на сервер, который вы хостите (свой, в сети, прикрытый Tailscale). Клик по EDITOR открывает новую вкладку с папкой.
 - **Локальные IDE** (VS Code, Cursor, Windsurf, Zed) требуют, чтобы IDE была установлена на *машине, где работает браузер*. Ссылка отдаётся ОС, которая запускает зарегистрированный обработчик.
 
-Если вы используете purplemux с телефона, работает только пресет code-server — телефон не может открыть `vscode://` URL в десктопное приложение.
+Если вы используете purplemux-improved с телефона, работает только пресет code-server — телефон не может открыть `vscode://` URL в десктопное приложение.
 
 ## Настройка code-server
 
@@ -51,10 +51,10 @@ code-server --port 8080
 tailscale serve --bg --https=8443 http://localhost:8080
 ```
 
-Затем в вкладке Редактор задайте URL, по которому доступен code-server: `http://localhost:8080` локально или `https://<machine>.<tailnet>.ts.net:8443`, если поставили его за Tailscale Serve. purplemux проверяет, что URL начинается с `http://` или `https://`, и автоматически добавляет `?folder=<абсолютный путь>`.
+Затем в вкладке Редактор задайте URL, по которому доступен code-server: `http://localhost:8080` локально или `https://<machine>.<tailnet>.ts.net:8443`, если поставили его за Tailscale Serve. purplemux-improved проверяет, что URL начинается с `http://` или `https://`, и автоматически добавляет `?folder=<абсолютный путь>`.
 
 {% call callout('note', 'Выберите порт, отличный от 8022') %}
-purplemux уже стоит на `8022`. Запускайте code-server на другом порту (в примере `8080`), чтобы они не конфликтовали.
+purplemux-improved уже стоит на `8022`. Запускайте code-server на другом порту (в примере `8080`), чтобы они не конфликтовали.
 {% endcall %}
 
 ## Custom URL шаблон
@@ -69,7 +69,7 @@ myeditor://open?path={folderEncoded}
 https://my.coder.example/workspace?dir={folderEncoded}
 ```
 
-purplemux валидирует шаблон на сохранении и отказывает, если плейсхолдера нет.
+purplemux-improved валидирует шаблон на сохранении и отказывает, если плейсхолдера нет.
 
 ## Отключение кнопки
 
@@ -77,6 +77,6 @@ purplemux валидирует шаблон на сохранении и отк�
 
 ## Что дальше
 
-- **[Боковая панель и опции Claude](/purplemux/ru/docs/sidebar-options/)** — порядок элементов боковой панели, флаги Claude.
-- **[Custom CSS](/purplemux/ru/docs/custom-css/)** — дальнейшая визуальная настройка.
-- **[Tailscale](/purplemux/ru/docs/tailscale/)** — безопасный внешний доступ и для code-server.
+- **[Боковая панель и опции Claude](/purplemux-improved/ru/docs/sidebar-options/)** — порядок элементов боковой панели, флаги Claude.
+- **[Custom CSS](/purplemux-improved/ru/docs/custom-css/)** — дальнейшая визуальная настройка.
+- **[Tailscale](/purplemux-improved/ru/docs/tailscale/)** — безопасный внешний доступ и для code-server.

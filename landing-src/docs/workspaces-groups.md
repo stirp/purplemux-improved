@@ -16,7 +16,7 @@ Each workspace has its own:
 - **Tabs and panes** — terminals, Claude sessions, diff panels, web-browser panels.
 - **Layout** — split ratios, focus, the active tab in each pane.
 
-All of it is persisted to `~/.purplemux/workspaces.json`, so a workspace is the unit purplemux saves and restores. Closing the browser doesn't dissolve a workspace; tmux holds the shells open and the layout stays put.
+All of it is persisted to `~/.purplemux/workspaces.json`, so a workspace is the unit purplemux-improved saves and restores. Closing the browser doesn't dissolve a workspace; tmux holds the shells open and the layout stays put.
 
 ## Create a workspace
 
@@ -61,10 +61,10 @@ Groups are visual organization. They don't change how tabs persist or how shortc
 
 ## Where it lives on disk
 
-Every change writes through to `~/.purplemux/workspaces.json`. You can inspect or back it up — see [Data directory](/purplemux/docs/data-directory/) for the full file layout. If you wipe it while the server is running, purplemux falls back to an empty workspace and starts over.
+Every change writes through to `~/.purplemux/workspaces.json`. You can inspect or back it up — see [Data directory](/purplemux-improved/docs/data-directory/) for the full file layout. If you wipe it while the server is running, purplemux-improved falls back to an empty workspace and starts over.
 
 ## What's next
 
-- **[Tabs & panes](/purplemux/docs/tabs-panes/)** — split, reorder, and focus inside a workspace.
-- **[Save & restore layouts](/purplemux/docs/save-restore/)** — how workspaces survive browser close and server reboot.
-- **[Keyboard shortcuts](/purplemux/docs/keyboard-shortcuts/)** — the full binding table.
+- **[Tabs & panes](/purplemux-improved/docs/tabs-panes/)** — split, reorder, and focus inside a workspace.
+- **[Save & restore layouts](/purplemux-improved/docs/save-restore/)** — how workspaces survive browser close and server reboot.
+- **[Keyboard shortcuts](/purplemux-improved/docs/keyboard-shortcuts/)** — the full binding table.

@@ -6,7 +6,7 @@ permalink: /es/docs/notes-daily-report/index.html
 ---
 {% from "docs/callouts.njk" import callout %}
 
-Cuando termina el día, purplemux puede leer los logs de las sesiones del día y redactarte un brief de una línea más un resumen Markdown por proyecto. Vive en la barra lateral como **Notas** y existe para que las retros, dailies y 1:1 dejen de empezar con "¿qué hice ayer?".
+Cuando termina el día, purplemux-improved puede leer los logs de las sesiones del día y redactarte un brief de una línea más un resumen Markdown por proyecto. Vive en la barra lateral como **Notas** y existe para que las retros, dailies y 1:1 dejen de empezar con "¿qué hice ayer?".
 
 ## Qué obtienes por día
 
@@ -17,7 +17,7 @@ Cada entrada tiene dos capas:
 
 El brief es lo que escaneas; la vista detallada es lo que pegas en un documento de retro.
 
-Una pequeña cabecera en cada día muestra el conteo de sesiones y el coste total — los mismos números que usa el [dashboard de estadísticas](/purplemux/es/docs/usage-rate-limits/), en forma de resumen.
+Una pequeña cabecera en cada día muestra el conteo de sesiones y el coste total — los mismos números que usa el [dashboard de estadísticas](/purplemux-improved/es/docs/usage-rate-limits/), en forma de resumen.
 
 ## Generar un informe
 
@@ -30,7 +30,7 @@ Los informes se generan bajo demanda, no automáticamente. Desde la vista de Not
 El LLM procesa cada sesión individualmente antes de fusionarlas por proyecto, así que el contexto no se pierde en días largos con muchas pestañas.
 
 {% call callout('note', 'El idioma sigue al de la app') %}
-Los informes se escriben en el idioma al que esté configurado purplemux. Cambiar el idioma de la app y regenerar te da el mismo contenido en el nuevo locale.
+Los informes se escriben en el idioma al que esté configurado purplemux-improved. Cambiar el idioma de la app y regenerar te da el mismo contenido en el nuevo locale.
 {% endcall %}
 
 ## Dónde vive
@@ -48,7 +48,7 @@ Cada día es un archivo JSON con el brief, el Markdown detallado, el locale y lo
 Dentro de la vista detallada, un día típico se ve así:
 
 ```markdown
-**purplemux**
+**purplemux-improved**
 
 ### Borrador de la landing
 - Diseñé la estructura de ocho secciones con disposiciones Hero / Por qué / Móvil / Stats
@@ -74,6 +74,6 @@ El texto que se usa para construir un informe son los mismos transcripts JSONL q
 
 ## Siguientes pasos
 
-- **[Uso y límites de tasa](/purplemux/es/docs/usage-rate-limits/)** — el dashboard de donde vienen los conteos y costes de sesiones.
-- **[Vista de sesión en directo](/purplemux/es/docs/live-session-view/)** — los datos fuente, en tiempo real.
-- **[Atajos de teclado](/purplemux/es/docs/keyboard-shortcuts/)** — incluyendo <kbd>⌘⇧E</kbd> para Notas.
+- **[Uso y límites de tasa](/purplemux-improved/es/docs/usage-rate-limits/)** — el dashboard de donde vienen los conteos y costes de sesiones.
+- **[Vista de sesión en directo](/purplemux-improved/es/docs/live-session-view/)** — los datos fuente, en tiempo real.
+- **[Atajos de teclado](/purplemux-improved/es/docs/keyboard-shortcuts/)** — incluyendo <kbd>⌘⇧E</kbd> para Notas.

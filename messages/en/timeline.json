@@ -1,4 +1,6 @@
 {
+  "composeAnswer": "Insert answer into composer",
+  "composeAnswerHint": "Select or enter answers, then insert them into the composer and send.",
   "requestCancelled": "Request cancelled",
   "sessionExit": "Session exited (/exit)",
   "connectionError": "Connection error",

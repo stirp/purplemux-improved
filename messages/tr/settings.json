@@ -147,7 +147,7 @@
   },
   "system": {
     "networkAccess": "Ağ erişimi",
-    "networkAccessDescription": "Hangi ağların purplemux'a erişebileceğini kontrol eder. Sunucu yeniden başlatıldıktan sonra uygulanır.",
+    "networkAccessDescription": "Hangi ağların purplemux-improved'a erişebileceğini kontrol eder. Sunucu yeniden başlatıldıktan sonra uygulanır.",
     "networkAccessLocked": "HOST ortam değişkeni tarafından kontrol ediliyor.",
     "restartRequired": "Değişiklikler sunucu yeniden başlatıldıktan sonra uygulanır.",
     "networkAccessOptions": {
@@ -167,7 +167,7 @@
     "showResources": "Sistem kaynaklarını göster",
     "showResourcesDescription": "Başlıkta CPU, bellek ve tmux oturum kullanımını görüntüler.",
     "startServerAtLogin": "Oturum açıldığında sunucuyu başlat",
-    "startServerAtLoginDescription": "Masaüstü uygulamasını veya Dock simgesini açmadan purplemux sunucusunu arka planda başlatır.",
+    "startServerAtLoginDescription": "Masaüstü uygulamasını veya Dock simgesini açmadan purplemux-improved sunucusunu arka planda başlatır.",
     "startServerAtLoginUnsupported": "Paketlenmiş macOS uygulaması Mac'inize yüklendikten sonra kullanılabilir.",
     "startupEnabled": "Sunucu oturum açıldığında başlatılacak",
     "startupDisabled": "Sunucu otomatik başlatma devre dışı",

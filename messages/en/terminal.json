@@ -92,7 +92,7 @@
   "copyPaneCopyFailed": "Failed to copy",
   "codexNotInstalled": "Install Codex CLI: npm i -g @openai/codex or brew install --cask codex",
   "codexHookInstallFailed": "Codex hook installation failed. State detection may be inaccurate.",
-  "codexConfigParseFailed": "Failed to parse ~/.codex/config.toml. Only purplemux hooks applied.",
+  "codexConfigParseFailed": "Failed to parse ~/.codex/config.toml. Only purplemux-improved hooks applied.",
   "codexLaunchFailed": "Codex launch failed. Check the terminal.",
   "codexResumeFailed": "Codex resume failed.",
   "codexApprovalSendFailed": "Failed to send approval response. Please try again.",

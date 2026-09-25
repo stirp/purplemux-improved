@@ -6,7 +6,7 @@ permalink: /tr/docs/save-restore/index.html
 ---
 {% from "docs/callouts.njk" import callout %}
 
-purplemux, tarayıcıdaki bir sekmeyi kapatmanın bir oturumu bitirmemesi gerektiği fikri etrafında kuruludur. İki parça birlikte çalışır: tmux shell'leri çalışır halde tutar ve `~/.purplemux/workspaces.json` düzeni hatırlar.
+purplemux-improved, tarayıcıdaki bir sekmeyi kapatmanın bir oturumu bitirmemesi gerektiği fikri etrafında kuruludur. İki parça birlikte çalışır: tmux shell'leri çalışır halde tutar ve `~/.purplemux/workspaces.json` düzeni hatırlar.
 
 ## Neler kalıcı olur
 
@@ -18,7 +18,7 @@ Bir çalışma alanında görebileceğiniz her şey:
 - Her shell'in çalışma dizini
 - Çalışma alanı grupları, isimler ve sıra
 
-`workspaces.json` her düzen değişikliğinde işlemsel olarak güncellenir, bu nedenle dosya her zaman geçerli durumu yansıtır. Disk üzerindeki dosya haritası için [Veri dizini](/purplemux/tr/docs/data-directory/) sayfasına bakın.
+`workspaces.json` her düzen değişikliğinde işlemsel olarak güncellenir, bu nedenle dosya her zaman geçerli durumu yansıtır. Disk üzerindeki dosya haritası için [Veri dizini](/purplemux-improved/tr/docs/data-directory/) sayfasına bakın.
 
 ## Tarayıcıyı kapatma
 
@@ -34,7 +34,7 @@ Aynı şey telefonunuzda da geçerli. PWA'yı kapatın, cihazı kilitleyin, yar�
 
 ## Sunucu yeniden başlatmasından sonra kurtarma
 
-Yeniden başlatma tmux süreçlerini sonlandırır — sonuçta sıradan OS süreçleri. purplemux bunu bir sonraki başlangıçta halleder:
+Yeniden başlatma tmux süreçlerini sonlandırır — sonuçta sıradan OS süreçleri. purplemux-improved bunu bir sonraki başlangıçta halleder:
 
 1. **Düzeni oku** — `workspaces.json` her çalışma alanını, paneli ve sekmeyi tanımlar.
 2. **Oturumları paralel olarak yeniden oluştur** — her sekme için, kayıtlı çalışma dizininde yeni bir tmux oturumu açılır.
@@ -58,12 +58,12 @@ Normalde bunlara dokunmaya gerek yoktur ama meraklılar için:
 
 - tmux soketi `purple` adındadır. `tmux -L purple ls` ile inceleyin.
 - Oturumlar `pt-{workspaceId}-{paneId}-{tabId}` olarak adlandırılır.
-- purplemux çalışırken `workspaces.json`'u düzenlemek güvenli değildir — sunucu onu açık tutar ve üzerine yazar.
+- purplemux-improved çalışırken `workspaces.json`'u düzenlemek güvenli değildir — sunucu onu açık tutar ve üzerine yazar.
 
-Daha derin hikaye için (ikili protokol, geri basınç, JSONL izleme) açılış sayfasındaki [Nasıl çalışır](/purplemux/#how) bölümüne bakın.
+Daha derin hikaye için (ikili protokol, geri basınç, JSONL izleme) açılış sayfasındaki [Nasıl çalışır](/purplemux-improved/#how) bölümüne bakın.
 
 ## Sıradaki adımlar
 
-- **[Çalışma alanları & gruplar](/purplemux/tr/docs/workspaces-groups/)** — çalışma alanı başına neler kaydedilir.
-- **[Sekmeler & paneller](/purplemux/tr/docs/tabs-panes/)** — sekme başına neler kaydedilir.
-- **[Tarayıcı desteği](/purplemux/tr/docs/browser-support/)** — mobil arka plan sekmeleri ve yeniden bağlanmalarla ilgili bilinen tuhaflıklar.
+- **[Çalışma alanları & gruplar](/purplemux-improved/tr/docs/workspaces-groups/)** — çalışma alanı başına neler kaydedilir.
+- **[Sekmeler & paneller](/purplemux-improved/tr/docs/tabs-panes/)** — sekme başına neler kaydedilir.
+- **[Tarayıcı desteği](/purplemux-improved/tr/docs/browser-support/)** — mobil arka plan sekmeleri ve yeniden bağlanmalarla ilgili bilinen tuhaflıklar.

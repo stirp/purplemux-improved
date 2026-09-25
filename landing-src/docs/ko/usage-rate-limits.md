@@ -6,7 +6,7 @@ permalink: /ko/docs/usage-rate-limits/index.html
 ---
 {% from "docs/callouts.njk" import callout %}
 
-작업 도중에 rate limit에 걸리는 것만큼 끔찍한 인터럽트는 없습니다. purplemux는 Claude Code의 quota 수치를 사이드바로 끌어오고, 사용 패턴을 한눈에 볼 수 있도록 통계 대시보드를 추가합니다.
+작업 도중에 rate limit에 걸리는 것만큼 끔찍한 인터럽트는 없습니다. purplemux-improved는 Claude Code의 quota 수치를 사이드바로 끌어오고, 사용 패턴을 한눈에 볼 수 있도록 통계 대시보드를 추가합니다.
 
 ## 사이드바 위젯
 
@@ -18,7 +18,7 @@ permalink: /ko/docs/usage-rate-limits/index.html
 
 마우스를 올리면 전체 분석이 표시됩니다 — used percentage, projected percentage, reset 시간을 상대 표현으로.
 
-수치는 Claude Code 자체의 statusline JSON에서 옵니다. purplemux는 `~/.purplemux/statusline.sh`라는 작은 스크립트를 설치해, Claude가 statusline을 갱신할 때마다 데이터를 로컬 서버로 POST하도록 합니다. `fs.watch`가 UI를 동기 상태로 유지합니다.
+수치는 Claude Code 자체의 statusline JSON에서 옵니다. purplemux-improved는 `~/.purplemux/statusline.sh`라는 작은 스크립트를 설치해, Claude가 statusline을 갱신할 때마다 데이터를 로컬 서버로 POST하도록 합니다. `fs.watch`가 UI를 동기 상태로 유지합니다.
 
 ## 색상 임계값
 
@@ -71,14 +71,14 @@ solid 바 뒤의 옅은 바가 projection입니다 — 현재 페이스를 유�
 
 ## 데이터의 출처
 
-대시보드의 모든 내용은 `~/.claude/projects/` 아래 Claude Code 자체의 세션 JSONL에서 로컬로 계산됩니다. purplemux는 이를 읽어 파싱한 카운트를 `~/.purplemux/stats/`에 캐시하며, 단 1바이트도 머신 밖으로 보내지 않습니다. 언어를 바꾸거나 캐시를 재생성해도 외부에 닿지 않습니다.
+대시보드의 모든 내용은 `~/.claude/projects/` 아래 Claude Code 자체의 세션 JSONL에서 로컬로 계산됩니다. purplemux-improved는 이를 읽어 파싱한 카운트를 `~/.purplemux/stats/`에 캐시하며, 단 1바이트도 머신 밖으로 보내지 않습니다. 언어를 바꾸거나 캐시를 재생성해도 외부에 닿지 않습니다.
 
 ## reset 동작
 
-5시간과 7일 윈도우는 Claude Code 계정에 묶인 rolling window입니다. 윈도우가 reset되면 바는 0%로 떨어지고, 비율과 남은 시간은 다음 reset 타임스탬프 기준으로 재계산됩니다. purplemux가 reset을 놓쳤더라도(서버가 꺼져 있던 경우) 다음 statusline tick에 자동으로 보정됩니다.
+5시간과 7일 윈도우는 Claude Code 계정에 묶인 rolling window입니다. 윈도우가 reset되면 바는 0%로 떨어지고, 비율과 남은 시간은 다음 reset 타임스탬프 기준으로 재계산됩니다. purplemux-improved가 reset을 놓쳤더라도(서버가 꺼져 있던 경우) 다음 statusline tick에 자동으로 보정됩니다.
 
 ## 다음으로
 
-- **[노트 (AI 데일리 리포트)](/purplemux/ko/docs/notes-daily-report/)** — 같은 데이터를 일자별 브리프로
-- **[세션 상태](/purplemux/ko/docs/session-status/)** — 사이드바가 탭별로 추적하는 또 하나의 정보
-- **[키보드 단축키](/purplemux/ko/docs/keyboard-shortcuts/)** — 통계용 <kbd>⌘⇧U</kbd> 포함
+- **[노트 (AI 데일리 리포트)](/purplemux-improved/ko/docs/notes-daily-report/)** — 같은 데이터를 일자별 브리프로
+- **[세션 상태](/purplemux-improved/ko/docs/session-status/)** — 사이드바가 탭별로 추적하는 또 하나의 정보
+- **[키보드 단축키](/purplemux-improved/ko/docs/keyboard-shortcuts/)** — 통계용 <kbd>⌘⇧U</kbd> 포함

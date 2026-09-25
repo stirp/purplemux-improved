@@ -61,6 +61,6 @@ permalink: /ru/docs/git-workflow/index.html
 
 ## Что дальше
 
-- **[Вкладки и панели](/purplemux/ru/docs/tabs-panes/)** — как поставить панель diff рядом с сессией Claude.
-- **[Первая сессия](/purplemux/ru/docs/first-session/)** — как запросы разрешений Claude всплывают в панели.
-- **[Панель веб-браузера](/purplemux/ru/docs/web-browser-panel/)** — другой тип панели, который имеет смысл держать рядом с терминалом.
+- **[Вкладки и панели](/purplemux-improved/ru/docs/tabs-panes/)** — как поставить панель diff рядом с сессией Claude.
+- **[Первая сессия](/purplemux-improved/ru/docs/first-session/)** — как запросы разрешений Claude всплывают в панели.
+- **[Панель веб-браузера](/purplemux-improved/ru/docs/web-browser-panel/)** — другой тип панели, который имеет смысл держать рядом с терминалом.

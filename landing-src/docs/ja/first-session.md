@@ -6,7 +6,7 @@ permalink: /ja/docs/first-session/index.html
 ---
 {% from "docs/callouts.njk" import callout %}
 
-purplemux はすでに動作している前提です (まだなら [クイックスタート](/purplemux/ja/docs/quickstart/) を参照)。このページでは UI が実際に何をするのかを順に解説し、最初の数分の抽象度を下げます。
+purplemux-improved はすでに動作している前提です (まだなら [クイックスタート](/purplemux-improved/ja/docs/quickstart/) を参照)。このページでは UI が実際に何をするのかを順に解説し、最初の数分の抽象度を下げます。
 
 ## ダッシュボード
 
@@ -40,7 +40,7 @@ purplemux はすでに動作している前提です (まだなら [クイック
 - **Claude** — `claude` がすでに実行された状態で起動。
 
 {% call callout('tip', 'テンプレートはただのショートカット') %}
-内部的にはどのタブも普通のシェルです。Claude テンプレートは「ターミナルを開いて `claude` を実行する」だけのもの。後から Terminal タブで手動で `claude` を実行しても、purplemux はそれを認識して同じ方法でステータスを表示します。
+内部的にはどのタブも普通のシェルです。Claude テンプレートは「ターミナルを開いて `claude` を実行する」だけのもの。後から Terminal タブで手動で `claude` を実行しても、purplemux-improved はそれを認識して同じ方法でステータスを表示します。
 {% endcall %}
 
 ## セッションステータスを読む
@@ -54,17 +54,17 @@ purplemux はすでに動作している前提です (まだなら [クイック
 | **入力待ち** (アンバー) | Claude が権限プロンプトに到達したか、質問しています。 |
 | **レビュー** (ブルー) | 作業完了、Claude は停止。確認すべきものがあります。 |
 
-遷移はほぼ瞬時です。検出方法は [セッションステータス](/purplemux/ja/docs/session-status/) を参照してください。
+遷移はほぼ瞬時です。検出方法は [セッションステータス](/purplemux-improved/ja/docs/session-status/) を参照してください。
 
 ## 権限プロンプトに応答する
 
-Claude がツール実行やファイル編集の許可を求めると、purplemux は**プロンプトをインターセプトして** セッションビュー内にインラインで表示します。次のいずれかで応答できます:
+Claude がツール実行やファイル編集の許可を求めると、purplemux-improved は**プロンプトをインターセプトして** セッションビュー内にインラインで表示します。次のいずれかで応答できます:
 
 - **1 · はい** / **2 · 常にはい** / **3 · いいえ** をクリック
 - キーボードの数字キーを押す
 - 無視してスマートフォンで答える — モバイル Web Push が同じアラートを発火します
 
-Claude CLI 自体はインターセプトされたプロンプトでブロックされ続けることはありません。purplemux があなたの回答を返してくれます。
+Claude CLI 自体はインターセプトされたプロンプトでブロックされ続けることはありません。purplemux-improved があなたの回答を返してくれます。
 
 ## 分割と切り替え
 
@@ -75,13 +75,13 @@ Claude CLI 自体はインターセプトされたプロンプトでブロック
 - <kbd>⌘⌥←/→/↑/↓</kbd> — 分割間でフォーカス移動
 - <kbd>⌘⇧[</kbd> / <kbd>⌘⇧]</kbd> — 前 / 次のタブ
 
-すべては [キーボードショートカット](/purplemux/ja/docs/keyboard-shortcuts/) のページにまとめてあります。
+すべては [キーボードショートカット](/purplemux-improved/ja/docs/keyboard-shortcuts/) のページにまとめてあります。
 
 ## 保存と復元
 
-ブラウザを閉じてください。タブはどこにも行きません — tmux がサーバ上で開いたままにします。1 時間後 (あるいは 1 週間後) にリフレッシュすると、purplemux は分割比率や作業ディレクトリも含めた完全なレイアウトを復元します。
+ブラウザを閉じてください。タブはどこにも行きません — tmux がサーバ上で開いたままにします。1 時間後 (あるいは 1 週間後) にリフレッシュすると、purplemux-improved は分割比率や作業ディレクトリも含めた完全なレイアウトを復元します。
 
-サーバ再起動からも復旧可能です: 再起動時に purplemux は `~/.purplemux/workspaces.json` から保存されたレイアウトを読み込み、シェルを正しいディレクトリで再起動し、可能な限り Claude セッションを再アタッチします。
+サーバ再起動からも復旧可能です: 再起動時に purplemux-improved は `~/.purplemux/workspaces.json` から保存されたレイアウトを読み込み、シェルを正しいディレクトリで再起動し、可能な限り Claude セッションを再アタッチします。
 
 ## スマートフォンから接続する
 
@@ -93,10 +93,10 @@ tailscale serve --bg 8022
 
 スマートフォンで `https://<machine>.<tailnet>.ts.net` を開き、**共有 → ホーム画面に追加** をタップして通知の許可を与えます。これで、タブを閉じていても **入力待ち** や **レビュー** のステータスでプッシュアラートを受け取れます。
 
-詳しい手順: [PWA セットアップ](/purplemux/ja/docs/pwa-setup/) · [Web Push](/purplemux/ja/docs/web-push/) · [Tailscale](/purplemux/ja/docs/tailscale/)。
+詳しい手順: [PWA セットアップ](/purplemux-improved/ja/docs/pwa-setup/) · [Web Push](/purplemux-improved/ja/docs/web-push/) · [Tailscale](/purplemux-improved/ja/docs/tailscale/)。
 
 ## 次のステップ
 
-- **[キーボードショートカット](/purplemux/ja/docs/keyboard-shortcuts/)** — すべてのバインディングを 1 つの表で。
-- **[ブラウザサポート](/purplemux/ja/docs/browser-support/)** — 互換性マトリクス。特に iOS Safari 16.4+。
+- **[キーボードショートカット](/purplemux-improved/ja/docs/keyboard-shortcuts/)** — すべてのバインディングを 1 つの表で。
+- **[ブラウザサポート](/purplemux-improved/ja/docs/browser-support/)** — 互換性マトリクス。特に iOS Safari 16.4+。
 - サイドバーを探索: **ノート** (<kbd>⌘⇧E</kbd>) で AI 日次レポート、**統計** (<kbd>⌘⇧U</kbd>) で利用状況分析。

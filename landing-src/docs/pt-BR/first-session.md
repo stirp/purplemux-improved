@@ -6,7 +6,7 @@ permalink: /pt-BR/docs/first-session/index.html
 ---
 {% from "docs/callouts.njk" import callout %}
 
-O purplemux já está rodando (se ainda não, veja o [Início rápido](/purplemux/pt-BR/docs/quickstart/)). Esta página percorre o que a UI realmente faz, para que os primeiros minutos pareçam menos abstratos.
+O purplemux-improved já está rodando (se ainda não, veja o [Início rápido](/purplemux-improved/pt-BR/docs/quickstart/)). Esta página percorre o que a UI realmente faz, para que os primeiros minutos pareçam menos abstratos.
 
 ## O painel
 
@@ -40,7 +40,7 @@ Escolha um **template**:
 - **Claude** — começa com `claude` já rodando no shell.
 
 {% call callout('tip', 'Templates são apenas atalhos') %}
-Por baixo dos panos, toda aba é um shell comum. O template Claude é só "abre um terminal e roda `claude`". Se mais tarde você rodar `claude` manualmente em uma aba Terminal, o purplemux percebe e começa a exibir o status do mesmo jeito.
+Por baixo dos panos, toda aba é um shell comum. O template Claude é só "abre um terminal e roda `claude`". Se mais tarde você rodar `claude` manualmente em uma aba Terminal, o purplemux-improved percebe e começa a exibir o status do mesmo jeito.
 {% endcall %}
 
 ## Leia o status da sessão
@@ -54,17 +54,17 @@ Olhe a **linha da sessão na barra lateral** correspondente à sua aba. Você ve
 | **Needs input** (âmbar) | O Claude bateu em um prompt de permissão ou fez uma pergunta. |
 | **Review** (azul) | Trabalho concluído, Claude parou; tem algo para você conferir. |
 
-As transições são quase instantâneas. Veja [Status da sessão](/purplemux/pt-BR/docs/session-status/) para entender como isso é detectado.
+As transições são quase instantâneas. Veja [Status da sessão](/purplemux-improved/pt-BR/docs/session-status/) para entender como isso é detectado.
 
 ## Responda a um prompt de permissão
 
-Quando o Claude pede para rodar uma ferramenta ou editar um arquivo, o purplemux **intercepta o prompt** e o exibe inline na visualização de sessão. Você pode:
+Quando o Claude pede para rodar uma ferramenta ou editar um arquivo, o purplemux-improved **intercepta o prompt** e o exibe inline na visualização de sessão. Você pode:
 
 - Clicar em **1 · Sim** / **2 · Sim, sempre** / **3 · Não**, ou
 - Pressionar as teclas de número no teclado, ou
 - Ignorar e responder pelo celular — o Web Push mobile dispara o mesmo alerta.
 
-O CLI do Claude nunca de fato fica travado no prompt interceptado; o purplemux devolve a sua resposta.
+O CLI do Claude nunca de fato fica travado no prompt interceptado; o purplemux-improved devolve a sua resposta.
 
 ## Divida e alterne
 
@@ -75,13 +75,13 @@ Com uma aba aberta, experimente:
 - <kbd>⌘⌥←/→/↑/↓</kbd> — move o foco entre divisões
 - <kbd>⌘⇧[</kbd> / <kbd>⌘⇧]</kbd> — aba anterior / próxima
 
-Lista completa em [Atalhos de teclado](/purplemux/pt-BR/docs/keyboard-shortcuts/).
+Lista completa em [Atalhos de teclado](/purplemux-improved/pt-BR/docs/keyboard-shortcuts/).
 
 ## Salvar e restaurar
 
-Feche o navegador. Suas abas não vão a lugar nenhum — o tmux as mantém vivas no servidor. Volte daqui a uma hora (ou uma semana), e o purplemux restaura o layout exato, incluindo proporções de divisão e diretórios de trabalho.
+Feche o navegador. Suas abas não vão a lugar nenhum — o tmux as mantém vivas no servidor. Volte daqui a uma hora (ou uma semana), e o purplemux-improved restaura o layout exato, incluindo proporções de divisão e diretórios de trabalho.
 
-Até um reboot do servidor é recuperável: ao reiniciar, o purplemux lê o layout salvo em `~/.purplemux/workspaces.json`, relança shells nos diretórios certos e reconecta sessões Claude quando possível.
+Até um reboot do servidor é recuperável: ao reiniciar, o purplemux-improved lê o layout salvo em `~/.purplemux/workspaces.json`, relança shells nos diretórios certos e reconecta sessões Claude quando possível.
 
 ## Acesse pelo celular
 
@@ -93,10 +93,10 @@ tailscale serve --bg 8022
 
 No celular, abra `https://<máquina>.<tailnet>.ts.net`, toque em **Compartilhar → Adicionar à Tela de Início** e conceda permissão para notificações. Agora você recebe alertas push para os estados **needs-input** e **review** mesmo com a aba fechada.
 
-Passo a passo completo: [Configuração de PWA](/purplemux/pt-BR/docs/pwa-setup/) · [Web Push](/purplemux/pt-BR/docs/web-push/) · [Tailscale](/purplemux/pt-BR/docs/tailscale/).
+Passo a passo completo: [Configuração de PWA](/purplemux-improved/pt-BR/docs/pwa-setup/) · [Web Push](/purplemux-improved/pt-BR/docs/web-push/) · [Tailscale](/purplemux-improved/pt-BR/docs/tailscale/).
 
 ## Próximos passos
 
-- **[Atalhos de teclado](/purplemux/pt-BR/docs/keyboard-shortcuts/)** — todos os atalhos em uma tabela.
-- **[Suporte a navegadores](/purplemux/pt-BR/docs/browser-support/)** — matriz de compatibilidade, em especial iOS Safari 16.4+.
+- **[Atalhos de teclado](/purplemux-improved/pt-BR/docs/keyboard-shortcuts/)** — todos os atalhos em uma tabela.
+- **[Suporte a navegadores](/purplemux-improved/pt-BR/docs/browser-support/)** — matriz de compatibilidade, em especial iOS Safari 16.4+.
 - Explore a barra lateral: **Notas** (<kbd>⌘⇧E</kbd>) para o relatório diário com IA, **Estatísticas** (<kbd>⌘⇧U</kbd>) para análises de uso.

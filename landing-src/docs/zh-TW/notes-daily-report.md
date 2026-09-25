@@ -6,7 +6,7 @@ permalink: /zh-TW/docs/notes-daily-report/index.html
 ---
 {% from "docs/callouts.njk" import callout %}
 
-當一天結束時，purplemux 可以讀取當日的工作階段紀錄，幫你寫一行簡報加上每專案的 Markdown 摘要。它住在側邊欄裡稱為 **筆記**，存在的目的是讓回顧、站立會議與一對一不必再以「我昨天到底做了什麼？」開頭。
+當一天結束時，purplemux-improved 可以讀取當日的工作階段紀錄，幫你寫一行簡報加上每專案的 Markdown 摘要。它住在側邊欄裡稱為 **筆記**，存在的目的是讓回顧、站立會議與一對一不必再以「我昨天到底做了什麼？」開頭。
 
 ## 每天能得到什麼
 
@@ -17,7 +17,7 @@ permalink: /zh-TW/docs/notes-daily-report/index.html
 
 簡報用來掃讀；詳細檢視用來貼進回顧文件。
 
-每一天的小標頭顯示工作階段數與總費用 — 與 [統計儀表板](/purplemux/zh-TW/docs/usage-rate-limits/) 相同的數字，以摘要呈現。
+每一天的小標頭顯示工作階段數與總費用 — 與 [統計儀表板](/purplemux-improved/zh-TW/docs/usage-rate-limits/) 相同的數字，以摘要呈現。
 
 ## 產生報告
 
@@ -30,7 +30,7 @@ permalink: /zh-TW/docs/notes-daily-report/index.html
 LLM 會先個別處理每個工作階段，再依專案合併，因此即使是分頁眾多的長日，context 也不會丟失。
 
 {% call callout('note', '語系跟隨 App') %}
-報告以 purplemux 設定的語言撰寫。切換 App 語言並重新產生即可在新語系下取得相同內容。
+報告以 purplemux-improved 設定的語言撰寫。切換 App 語言並重新產生即可在新語系下取得相同內容。
 {% endcall %}
 
 ## 它住在哪裡
@@ -48,7 +48,7 @@ LLM 會先個別處理每個工作階段，再依專案合併，因此即使是�
 詳細檢視中，典型的一天看起來像：
 
 ```markdown
-**purplemux**
+**purplemux-improved**
 
 ### Landing page draft
 - Designed the eight-section structure with Hero / Why / Mobile / Stats layouts
@@ -74,6 +74,6 @@ LLM 會先個別處理每個工作階段，再依專案合併，因此即使是�
 
 ## 下一步
 
-- **[用量與用量限制](/purplemux/zh-TW/docs/usage-rate-limits/)** — 工作階段數與費用所來自的儀表板。
-- **[即時工作階段檢視](/purplemux/zh-TW/docs/live-session-view/)** — 來源資料，即時呈現。
-- **[鍵盤快速鍵](/purplemux/zh-TW/docs/keyboard-shortcuts/)** — 包含開啟筆記的 <kbd>⌘⇧E</kbd>。
+- **[用量與用量限制](/purplemux-improved/zh-TW/docs/usage-rate-limits/)** — 工作階段數與費用所來自的儀表板。
+- **[即時工作階段檢視](/purplemux-improved/zh-TW/docs/live-session-view/)** — 來源資料，即時呈現。
+- **[鍵盤快速鍵](/purplemux-improved/zh-TW/docs/keyboard-shortcuts/)** — 包含開啟筆記的 <kbd>⌘⇧E</kbd>。
