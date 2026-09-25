@@ -18,7 +18,7 @@ interface IValidateResponse {
 export interface IWorkspaceInitialData {
   workspaces: IWorkspace[];
   groups?: IWorkspaceGroup[];
-  activeWorkspaceId?: string;
+  activeWorkspaceId?: string | null;
   sidebarCollapsed: boolean;
   sidebarWidth: number;
 }
@@ -104,7 +104,7 @@ const saveActiveWorkspaceIdToServer = (id: string) => {
   }).catch(() => { /* */ });
 };
 
-const resolveActiveWorkspaceId = (workspaces: IWorkspace[], serverActiveId?: string): string | null => {
+const resolveActiveWorkspaceId = (workspaces: IWorkspace[], serverActiveId?: string | null): string | null => {
   const stored = getStoredActiveWorkspaceId();
   if (stored && workspaces.some((w) => w.id === stored)) return stored;
   if (serverActiveId && workspaces.some((w) => w.id === serverActiveId)) return serverActiveId;

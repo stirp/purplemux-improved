@@ -273,17 +273,17 @@ export const initWorkspaceStore = async (): Promise<void> => {
 export const getWorkspaces = async (): Promise<{
   workspaces: IWorkspace[];
   groups: IWorkspaceGroup[];
-  activeWorkspaceId?: string;
+  activeWorkspaceId: string | null;
   sidebarCollapsed: boolean;
   sidebarWidth: number;
 }> => {
   const data = await readWorkspacesFile();
-  if (!data) return { workspaces: [], groups: [], sidebarCollapsed: false, sidebarWidth: 220 };
+  if (!data) return { workspaces: [], groups: [], activeWorkspaceId: null, sidebarCollapsed: false, sidebarWidth: 220 };
 
   return {
     workspaces: data.workspaces,
     groups: data.groups ?? [],
-    activeWorkspaceId: data.activeWorkspaceId,
+    activeWorkspaceId: data.activeWorkspaceId ?? null,
     sidebarCollapsed: data.sidebarCollapsed,
     sidebarWidth: data.sidebarWidth,
   };
