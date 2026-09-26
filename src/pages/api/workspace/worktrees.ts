@@ -5,7 +5,7 @@ import { adoptWorktree, getWorktreeOverview, removeManagedWorktree, withWorktree
 
 const sourceSchema = z.object({ workspaceId: z.string().regex(/^ws-[a-zA-Z0-9_-]+$/) });
 const itemSchema = sourceSchema.extend({ repositoryId: z.string().min(1), directory: z.string().min(1) });
-const removeSchema = itemSchema.extend({ head: z.string().regex(/^[a-f0-9]{40,64}$/), branch: z.string().min(1).nullable(), deleteBranch: z.boolean().default(false), targetRef: z.string().trim().min(1).max(200).optional() });
+const removeSchema = itemSchema.extend({ head: z.string().regex(/^[a-f0-9]{40,64}$/), branch: z.string().min(1).nullable(), deleteBranch: z.boolean().default(false), targetRef: z.string().trim().min(1).max(200).optional(), confirmedIgnoredPaths: z.array(z.string().min(1)).optional() });
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   res.setHeader('Cache-Control', 'no-store');

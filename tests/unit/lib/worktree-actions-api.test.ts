@@ -16,6 +16,12 @@ const call = async (data: object, method = 'POST') => {
 };
 beforeEach(() => { vi.resetAllMocks(); mocks.source.mockResolvedValue(source); });
 describe('worktree action API', () => {
+  it('forwards per-worktree ignored path confirmations for batch cleanup', async () => {
+    const confirmed = { ...item, confirmedIgnoredPaths: ['.env', 'node_modules/'] };
+    expect((await call({ action: 'cleanup', items: [confirmed] })).status).toHaveBeenCalledWith(200);
+    expect(mocks.cleanup).toHaveBeenCalledWith(source, [confirmed]);
+    expect((await call({ action: 'cleanup', items: [{ ...item, confirmedIgnoredPaths: true }] })).status).toHaveBeenCalledWith(400);
+  });
   it('requires POST, known actions, and bounded unique batch selections', async () => {
     expect((await call({}, 'GET')).status).toHaveBeenCalledWith(405);
     expect((await call({ action: 'forceRemove', item })).status).toHaveBeenCalledWith(400);

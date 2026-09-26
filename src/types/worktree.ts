@@ -3,6 +3,7 @@ export interface IWorktreeStatus {
   staged: number;
   untracked: number;
   ignored: number;
+  ignoredPaths: string[];
   conflicts: number;
   upstream: string | null;
   ahead: number | null;
@@ -45,6 +46,7 @@ export interface IRemoveWorktreeOptions {
   head: string;
   branch: string | null;
   deleteBranch: boolean;
+  confirmedIgnoredPaths?: string[];
   targetRef?: string;
 }
 
@@ -53,7 +55,7 @@ export interface IRemoveWorktreeResult {
   warnings: string[];
 }
 
-export type TWorktreeSnapshot = Pick<IRemoveWorktreeOptions, 'repositoryId' | 'directory' | 'head' | 'branch'>;
+export type TWorktreeSnapshot = Pick<IRemoveWorktreeOptions, 'repositoryId' | 'directory' | 'head' | 'branch' | 'confirmedIgnoredPaths'>;
 export interface IWorktreeSize {
   bytes: number;
   entries: number;
@@ -61,6 +63,7 @@ export interface IWorktreeSize {
   measuredAt: string;
 }
 export interface ICleanupCandidate extends TWorktreeSnapshot {
+  ignoredPaths: string[];
   blockers: string[];
   workspaces: { id: string; name: string }[];
 }
