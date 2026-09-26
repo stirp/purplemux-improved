@@ -5,9 +5,9 @@ import path from 'node:path';
 import type { IManagedWorktree, IWorktreeStatus } from '@/types/worktree';
 
 const exec = promisify(execFile);
-export const worktreeGit = async (cwd: string, args: string[]) => {
+export const worktreeGit = async (cwd: string, args: string[], timeout = 15_000) => {
   const { stdout } = await exec('git', ['-C', cwd, ...args], {
-    timeout: 15_000, maxBuffer: 4 * 1024 * 1024,
+    timeout, maxBuffer: 4 * 1024 * 1024,
     env: { ...process.env, GIT_TERMINAL_PROMPT: '0', GIT_OPTIONAL_LOCKS: '0' },
   });
   return stdout;
@@ -27,13 +27,23 @@ export const parseWorktreeList = (output: string): IManagedWorktree[] => output.
     directory: fields.get('worktree')!, head: fields.get('HEAD') ?? '',
     branch: fields.get('branch')?.replace(/^refs\/heads\//, '') ?? null,
     main: index === 0, locked: fields.has('locked'), prunable: fields.has('prunable'),
-    missing: false, status: null, workspaces: [], sessions: null, blockers: [],
+    missing: false, status: null, workspaces: [], sessions: null, blockers: [], lastOpenedAt: null,
   };
 });
 
+export const readWorktreeOperation = async (directory: string): Promise<IWorktreeStatus['operation']> => {
+  const gitDir = (await worktreeGit(directory, ['rev-parse', '--absolute-git-dir'])).trim();
+  const exists = (name: string) => fs.stat(path.join(gitDir, name)).then(() => true).catch((error: NodeJS.ErrnoException) => {
+    if (error.code === 'ENOENT') return false;
+    throw error;
+  });
+  if (await exists('rebase-merge') || await exists('rebase-apply')) return 'rebase';
+  return await exists('MERGE_HEAD') ? 'merge' : null;
+};
+
 export const readWorktreeStatus = async (directory: string): Promise<IWorktreeStatus> => {
   const output = await worktreeGit(directory, ['status', '--porcelain=v2', '--branch', '-z', '--untracked-files=all', '--ignored=matching']);
-  const status: IWorktreeStatus = { modified: 0, staged: 0, untracked: 0, ignored: 0, conflicts: 0, upstream: null, ahead: null, behind: null };
+  const status: IWorktreeStatus = { modified: 0, staged: 0, untracked: 0, ignored: 0, conflicts: 0, upstream: null, ahead: null, behind: null, operation: await readWorktreeOperation(directory) };
   const records = output.split('\0');
   for (let i = 0; i < records.length; i++) {
     const record = records[i];

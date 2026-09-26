@@ -3,7 +3,8 @@ import { toast } from 'sonner';
 import { t } from '@/lib/i18n';
 import { getVisuallyOrderedWorkspaces } from '@/lib/workspace-order';
 import type { IWorkspace, IWorkspaceGroup, TPanelType } from '@/types/terminal';
-import type { IRemoveWorktreeOptions, IRemoveWorktreeResult } from '@/types/worktree';
+import type { IRemoveWorktreeOptions, IRemoveWorktreeResult, ICleanupResult, TWorktreeSnapshot } from '@/types/worktree';
+import { requestWorktreeAction } from '@/lib/worktree-action-client';
 
 const reorderToVisual = (
   workspaces: IWorkspace[],
@@ -44,6 +45,7 @@ interface IWorkspaceState {
   createWorktree: (workspaceId: string, options: { directoryIndex: number; name: string; branch: string; baseRef: string }) => Promise<IWorkspace>;
   adoptWorktree: (workspaceId: string, repositoryId: string, directory: string) => Promise<IWorkspace>;
   removeWorktree: (workspaceId: string, options: IRemoveWorktreeOptions) => Promise<IRemoveWorktreeResult>;
+  cleanupWorktrees: (workspaceId: string, items: TWorktreeSnapshot[]) => Promise<ICleanupResult>;
   deleteWorkspace: (workspaceId: string) => Promise<boolean>;
   removeWorkspace: (workspaceId: string) => void;
   markPendingDelete: (workspaceId: string) => void;
@@ -294,6 +296,13 @@ const useWorkspaceStore = create<IWorkspaceState>((set, get) => ({
 
   removeWorktree: async (workspaceId, options) => {
     const result = await requestWorktreeMutation<IRemoveWorktreeResult>('DELETE', { workspaceId, ...options });
+    bumpMutationFence();
+    for (const id of result.removedWorkspaceIds) get().removeWorkspace(id);
+    return result;
+  },
+
+  cleanupWorktrees: async (workspaceId, items) => {
+    const result = await requestWorktreeAction<ICleanupResult>(workspaceId, 'cleanup', { items });
     bumpMutationFence();
     for (const id of result.removedWorkspaceIds) get().removeWorkspace(id);
     return result;

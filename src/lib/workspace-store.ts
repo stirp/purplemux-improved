@@ -395,7 +395,13 @@ export const updateActive = async (updates: {
 }): Promise<void> =>
   withLock(async () => {
     const data = (await readWorkspacesFile()) ?? emptyState();
-    if (updates.activeWorkspaceId !== undefined) data.activeWorkspaceId = updates.activeWorkspaceId;
+    if (updates.activeWorkspaceId !== undefined) {
+      const workspace = data.workspaces.find((item) => item.id === updates.activeWorkspaceId);
+      if (workspace) {
+        data.activeWorkspaceId = workspace.id;
+        workspace.lastOpenedAt = new Date().toISOString();
+      }
+    }
     if (updates.sidebarCollapsed !== undefined) data.sidebarCollapsed = updates.sidebarCollapsed;
     if (updates.sidebarWidth !== undefined) data.sidebarWidth = updates.sidebarWidth;
     await writeWorkspacesFile(data);
