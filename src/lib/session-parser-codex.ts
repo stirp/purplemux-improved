@@ -1,6 +1,7 @@
 import { parseTaskSnapshot } from '@/lib/timeline-tasks';
 import { parseCodexExecPlans } from '@/lib/codex-exec-plan';
 import fs from 'fs/promises';
+import { readJsonlTurn } from './jsonl-turn-reader';
 import { nanoid } from 'nanoid';
 import { z } from 'zod';
 import { createLogger } from '@/lib/logger';
@@ -1214,6 +1215,28 @@ export class CodexParser {
     }
   }
 
+  async parseTurn(beforeByte?: number): Promise<IChunkReadResult> {
+    this.reset();
+    const page = await readJsonlTurn(this.jsonlPath, (line) => {
+      const raw = tryParseJson(line) as TRolloutItem | undefined;
+      if (raw?.type !== 'event_msg' || !raw.payload) return false;
+      if (raw.payload.type !== 'user_message' && raw.payload.type !== 'item_completed') return false;
+      return processEventMsg(raw.payload, tsToMillis(raw.timestamp), createState())
+        .some((entry) => entry.type === 'user-message');
+    }, beforeByte);
+    const result = parseContentWithOffsets(page.content, page.startByteOffset, this.state);
+    this.lastOffset = page.readOffset;
+    return {
+      entries: result.entries,
+      startByteOffset: page.startByteOffset,
+      fileSize: page.fileSize,
+      readOffset: page.readOffset,
+      hasMore: page.startByteOffset > 0,
+      errorCount: result.errorCount,
+      summary: result.summary,
+    };
+  }
+
   async parseIncremental(): Promise<IIncrementalResult> {
     let handle;
     try {
@@ -1286,6 +1309,9 @@ export class CodexParser {
 }
 
 export const createCodexParser = (jsonlPath: string): CodexParser => new CodexParser(jsonlPath);
+
+export const readCodexTurn = (filePath: string, beforeByte?: number): Promise<IChunkReadResult> =>
+  createCodexParser(filePath).parseTurn(beforeByte);
 
 export const parseCodexContent = (content: string): ITimelineEntry[] => {
   const state = createState();

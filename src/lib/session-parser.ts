@@ -1,4 +1,5 @@
 import fs from 'fs/promises';
+import { readJsonlTurn } from './jsonl-turn-reader';
 import { z } from 'zod';
 import { nanoid } from 'nanoid';
 import { diffLines } from 'diff';
@@ -914,6 +915,27 @@ const readChunk = async (
   } finally {
     await handle.close();
   }
+};
+
+export const readClaudeTurn = async (filePath: string, beforeByte?: number): Promise<IChunkReadResult> => {
+  const page = await readJsonlTurn(filePath, (line) => {
+    try {
+      const raw = JSON.parse(line);
+      if (raw.type !== 'user' || raw.isMeta || raw.isSidechain) return false;
+      return parseContent(line).entries.some((entry) => entry.type === 'user-message');
+    } catch { return false; }
+  }, beforeByte);
+  const result = parseContent(page.content);
+  return {
+    entries: result.entries,
+    startByteOffset: page.startByteOffset,
+    fileSize: page.fileSize,
+    hasMore: page.startByteOffset > 0,
+    errorCount: result.errorCount,
+    summary: result.summary,
+    customTitle: result.customTitle,
+    readOffset: page.readOffset,
+  };
 };
 
 export const readTailEntries = async (

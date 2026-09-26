@@ -451,6 +451,7 @@ export interface IChunkReadResult {
   entries: ITimelineEntry[];
   startByteOffset: number;
   fileSize: number;
+  readOffset?: number;
   hasMore: boolean;
   errorCount: number;
   summary?: string;

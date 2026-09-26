@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { readEntriesBefore } from '@/lib/session-parser';
-import { readCodexEntriesBefore } from '@/lib/session-parser-codex';
+import { readClaudeTurn, readEntriesBefore } from '@/lib/session-parser';
+import { readCodexTurn, readCodexEntriesBefore } from '@/lib/session-parser-codex';
 import { isAllowedJsonlPath, isCodexJsonlPath } from '@/lib/path-validation';
 
 const DEFAULT_LIMIT = 256;
@@ -32,7 +32,10 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     : undefined;
 
   const isCodex = isCodexJsonlPath(jsonlPath);
-  const result = isCodex
+  const byTurn = req.query.mode === 'turn';
+  const result = byTurn
+    ? await (isCodex ? readCodexTurn(jsonlPath, beforeByte) : readClaudeTurn(jsonlPath, beforeByte))
+    : isCodex
     ? await readCodexEntriesBefore(jsonlPath, beforeByte, limit, untilByte)
     : await readEntriesBefore(jsonlPath, beforeByte, limit);
 
@@ -40,7 +43,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     entries: result.entries,
     startByteOffset: result.startByteOffset,
     hasMore: result.hasMore,
-    replaceEntries: isCodex,
+    replaceEntries: !byTurn && isCodex,
   });
 };
 
