@@ -3,8 +3,8 @@ import { WebSocket } from 'ws';
 import { watch, type FSWatcher } from 'fs';
 import { existsSync, mkdirSync } from 'fs';
 import { type ISessionWatcher } from '@/lib/providers/types';
-import { readTailEntries, parseIncremental, parseJsonlContent } from './session-parser';
-import { CodexParser, createCodexParser, parseCodexContent, readTailCodexEntries } from './session-parser-codex';
+import { readClaudeTurn, parseIncremental, parseJsonlContent } from './session-parser';
+import { CodexParser, createCodexParser, parseCodexContent, readCodexTurn } from './session-parser-codex';
 import { CODEX_PROVIDER_ID } from '@/lib/providers/codex';
 import { findCodexSessionById } from '@/lib/providers/codex/session-detection';
 import { isCodexJsonlPath } from './path-validation';
@@ -39,7 +39,6 @@ const BACKPRESSURE_LIMIT = 1024 * 1024;
 const MAX_WATCHERS = 32;
 const MAX_CONNECTIONS = 32;
 const MAX_WATCHER_RETRIES = 3;
-const MAX_INIT_ENTRIES = 128;
 
 const resolveAgentSummary = async (
   provider: IAgentProvider,
@@ -199,10 +198,10 @@ const readBoundedEntries = async (
 const readInitForCodex = async (
   parser: CodexParser,
   isNewWatcher: boolean,
-  maxEntries: number,
 ): Promise<{
   entries: ITimelineEntry[];
   fileSize: number;
+  readOffset?: number;
   startByteOffset: number;
   hasMore: boolean;
   errorCount: number;
@@ -210,8 +209,8 @@ const readInitForCodex = async (
   customTitle?: string;
 }> => {
   return isNewWatcher
-    ? parser.parseTail(maxEntries)
-    : readTailCodexEntries(parser.path, maxEntries);
+    ? parser.parseTurn()
+    : readCodexTurn(parser.path);
 };
 
 const processFileChange = async (fw: IFileWatcher) => {
@@ -226,7 +225,7 @@ const processFileChange = async (fw: IFileWatcher) => {
       ? await fw.codexParser.parseIncremental()
       : await parseIncremental(fw.jsonlPath, fw.offset, fw.pendingBuffer);
     fw.pendingBuffer = pendingBuffer;
-    if (fw.codexParser) fw.offset = newOffset;
+    fw.offset = newOffset;
     if (newEntries.length > 0) {
       fw.offset = newOffset;
 
@@ -426,8 +425,8 @@ const subscribeToFile = async (
   fw.connections.add(ws);
 
   const result = fw.codexParser
-    ? await readInitForCodex(fw.codexParser, isNewWatcher, MAX_INIT_ENTRIES)
-    : await readTailEntries(jsonlPath, MAX_INIT_ENTRIES);
+    ? await readInitForCodex(fw.codexParser, isNewWatcher)
+    : await readClaudeTurn(jsonlPath);
 
   if (result.errorCount > 0) {
     sendJson(ws, {
@@ -438,7 +437,7 @@ const subscribeToFile = async (
   }
 
   if (isNewWatcher) {
-    fw.offset = result.fileSize;
+    fw.offset = result.readOffset ?? result.fileSize;
     startFileWatch(fw);
   }
 
@@ -462,7 +461,7 @@ const subscribeToFile = async (
   });
 
   if (!isNewWatcher) {
-    fw.initOffsets.set(ws, result.fileSize);
+    fw.initOffsets.set(ws, result.readOffset ?? result.fileSize);
   }
 
   if (sessionName) {

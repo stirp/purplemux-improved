@@ -791,7 +791,6 @@ const TimelineView = ({
 
   const isLoadingMoreRef = useRef(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
-  const sentinelRef = useRef<HTMLDivElement>(null);
   const needsManualAnchor = typeof CSS !== 'undefined' && !CSS.supports?.('overflow-anchor', 'auto');
   const scrollAnchorRef = useRef<{ scrollHeight: number } | null>(null);
 
@@ -826,23 +825,6 @@ const TimelineView = ({
     }
     scrollAnchorRef.current = null;
   }, [isLoadingMore, scrollRef, needsManualAnchor]);
-
-  useEffect(() => {
-    const sentinel = sentinelRef.current;
-    const root = scrollRef.current;
-    if (!sentinel || !root) return;
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting) {
-          triggerLoadMore();
-        }
-      },
-      { root, rootMargin: '200px 0px 0px 0px' },
-    );
-    observer.observe(sentinel);
-    return () => observer.disconnect();
-  }, [scrollRef, triggerLoadMore]);
 
   if (isLoading && wsStatus === 'disconnected') {
     return (
@@ -883,7 +865,6 @@ const TimelineView = ({
         aria-label={t('timelineAria')}
       >
         <div ref={contentRef} className="mx-auto max-w-content">
-          {hasMore && <div ref={sentinelRef} className="h-px" />}
           {hasMore && !isLoadingMore && (
             <div className="flex justify-center py-2">
               <Button variant="ghost" size="sm" className="h-7 text-xs text-muted-foreground" onClick={triggerLoadMore}>

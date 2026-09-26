@@ -91,6 +91,7 @@ const useTimeline = ({
   const jsonlPathRef = useRef<string | null>(null);
   const startByteOffsetRef = useRef(0);
   const isLoadingMoreRef = useRef(false);
+  const historyGenerationRef = useRef(0);
 
   const getCliStateRef = useRef(getCliState);
   useEffect(() => {
@@ -99,6 +100,7 @@ const useTimeline = ({
 
   const [prevSessionName, setPrevSessionName] = useState(sessionName);
   if (sessionName !== prevSessionName) {
+    historyGenerationRef.current++;
     setPrevSessionName(sessionName);
     setWsInitReceived(false);
     setAgentProcess(null);
@@ -118,6 +120,7 @@ const useTimeline = ({
   const isLoading = !wsInitReceived && entries.length === 0;
 
   const handleInit = useCallback((newEntries: ITimelineEntry[], _totalEntries: number, initSessionId: string, summary?: string, meta?: IInitMeta, startByteOffset?: number, hasMoreInit?: boolean, jsonlPath?: string | null, isClaudeStarting?: boolean, initStats?: ISessionStats | null) => {
+    historyGenerationRef.current++;
     setWsInitReceived(true);
     setAgentInstalled(true);
     setEntries((prev) => {
@@ -250,6 +253,7 @@ const useTimeline = ({
   }, []);
 
   const handleSessionChanged = useCallback((newSessionId: string, reason: string) => {
+    if (reason !== 'session-waiting') historyGenerationRef.current++;
     if (reason === 'session-ended') {
       setAgentProcess(false);
       setWsInitReceived(true);
@@ -295,37 +299,17 @@ const useTimeline = ({
       return;
     }
     isLoadingMoreRef.current = true;
+    const generation = historyGenerationRef.current;
+    const path = jsonlPathRef.current;
     try {
       const res = await fetch(
-        `/api/timeline/entries?jsonlPath=${encodeURIComponent(jsonlPathRef.current)}&beforeByte=${startByteOffsetRef.current}&limit=256`,
+        `/api/timeline/entries?jsonlPath=${encodeURIComponent(path)}&beforeByte=${startByteOffsetRef.current}&mode=turn`,
       );
       if (!res.ok) return;
       const data = await res.json();
+      if (generation !== historyGenerationRef.current || path !== jsonlPathRef.current) return;
       const loadedEntries = data.entries as ITimelineEntry[];
-      setEntries((prev) => {
-        if (!data.replaceEntries) return [...loadedEntries, ...prev];
-
-        const pendings = prev.filter(
-          (e): e is ITimelineEntry & { type: 'user-message'; pending: true } =>
-            e.type === 'user-message' && e.pending === true,
-        );
-        if (pendings.length === 0) return loadedEntries;
-
-        const unmatchedPendings = [...pendings];
-        const merged = loadedEntries.map((entry) => {
-          if (entry.type !== 'user-message') return entry;
-          const target = normalizeUserMessageText(entry.text);
-          const matchIdx = unmatchedPendings.findIndex(
-            (pending) => pending.attachmentPlaceholder || normalizeUserMessageText(pending.text) === target,
-          );
-          if (matchIdx === -1) return entry;
-          const matched = unmatchedPendings[matchIdx];
-          unmatchedPendings.splice(matchIdx, 1);
-          return { ...entry, id: matched.id };
-        });
-
-        return [...merged, ...unmatchedPendings];
-      });
+      setEntries((prev) => [...loadedEntries, ...prev]);
       startByteOffsetRef.current = data.startByteOffset;
       setHasMore(data.hasMore);
     } finally {
