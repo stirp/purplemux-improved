@@ -9,6 +9,8 @@ import {
 import { verifyTokenValue } from '@/lib/cli-token';
 
 export const proxy = async (request: NextRequest) => {
+  // Translation catalogs contain public UI text and are also used by login.
+  if (request.method === 'GET' && request.nextUrl.pathname === '/api/messages') return NextResponse.next();
   const cliToken = request.headers.get('x-pmux-token');
   if (cliToken && verifyTokenValue(cliToken)) {
     return NextResponse.next();

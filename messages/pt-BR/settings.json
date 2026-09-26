@@ -14,6 +14,15 @@
     "notification": "Notificacao",
     "system": "Sistema"
   },
+  "browserStorage": {
+    "title": "Armazenamento do site no navegador",
+    "description": "Limpe os dados locais e recarregue quando páginas ou traduções parecerem desatualizadas.",
+    "action": "Limpar e recarregar",
+    "confirm": "Os rascunhos locais, o estado da interface e os caches acessíveis deste site serão apagados, e a página será recarregada. Os espaços de trabalho, arquivos e configurações do servidor, assim como os cookies de login, serão preservados. Pode ser necessário reativar as notificações push. A limpeza do cache HTTP depende do navegador. Continuar?",
+    "clearing": "Limpando…",
+    "failed": "Alguns dados não puderam ser apagados. Feche as outras abas deste site e tente novamente, ou recarregue agora.",
+    "reload": "Recarregar"
+  },
   "general": {
     "theme": "Tema",
     "themeDescription": "Selecione o tema de exibicao.",

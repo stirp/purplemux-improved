@@ -14,6 +14,15 @@
     "notification": "Bildirim",
     "system": "Sistem"
   },
+  "browserStorage": {
+    "title": "Tarayıcı site depolaması",
+    "description": "Sayfalar veya çeviriler eski görünüyorsa yerel verileri temizleyip yeniden yükleyin.",
+    "action": "Temizle ve yeniden yükle",
+    "confirm": "Bu sitenin yerel taslakları, arayüz durumu ve erişilebilir önbellekleri silinir, ardından sayfa yeniden yüklenir. Sunucudaki çalışma alanları, dosyalar ve ayarlar ile oturum çerezleri korunur. Anlık bildirimleri yeniden etkinleştirmek gerekebilir. HTTP önbelleğinin temizlenmesi tarayıcı desteğine bağlıdır. Devam edilsin mi?",
+    "clearing": "Temizleniyor…",
+    "failed": "Bazı veriler temizlenemedi. Bu sitenin diğer sekmelerini kapatıp tekrar deneyin veya şimdi yeniden yükleyin.",
+    "reload": "Yeniden yükle"
+  },
   "general": {
     "theme": "Tema",
     "themeDescription": "Görüntüleme temasını seçin.",

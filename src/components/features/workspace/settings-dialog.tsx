@@ -53,6 +53,7 @@ import QuickPromptsSettings from '@/components/features/settings/quick-prompts-s
 import SidebarItemsSettings from '@/components/features/settings/sidebar-items-settings';
 import TailscaleSettings from '@/components/features/settings/tailscale-settings';
 import CodexEnvironmentSettings from '@/components/features/settings/codex-environment-settings';
+import BrowserStorageSettings from '@/components/features/settings/browser-storage-settings';
 
 type TSettingsTab = 'general' | 'appearance' | 'terminal' | 'notification' | 'editor' | 'claude' | 'auth' | 'tailscale' | 'quick-prompts' | 'sidebar-items' | 'system';
 
@@ -274,6 +275,8 @@ const GeneralTab = () => {
           <ChevronRight className="h-3.5 w-3.5" />
         </Button>
       </div>
+
+      <BrowserStorageSettings />
 
       <a
         href="https://github.com/stirp/purplemux-improved/releases"

@@ -14,6 +14,15 @@
     "notification": "Notification",
     "system": "Système"
   },
+  "browserStorage": {
+    "title": "Stockage du site dans le navigateur",
+    "description": "Effacez les données locales et rechargez si les pages ou traductions semblent anciennes.",
+    "action": "Effacer et recharger",
+    "confirm": "Les brouillons locaux, l’état de l’interface et les caches accessibles de ce site seront effacés, puis la page sera rechargée. Les espaces de travail, fichiers et paramètres du serveur ainsi que les cookies de connexion seront conservés. Les notifications push pourront nécessiter une réactivation. L’effacement du cache HTTP dépend du navigateur. Continuer ?",
+    "clearing": "Effacement…",
+    "failed": "Certaines données n’ont pas pu être effacées. Fermez les autres onglets de ce site et réessayez, ou rechargez la page.",
+    "reload": "Recharger"
+  },
   "general": {
     "theme": "Thème",
     "themeDescription": "Sélectionnez le thème d'affichage.",
