@@ -55,7 +55,6 @@ export const getWorktreeOverview = async (source: IWorkspace, only?: { repositor
         if (!item.status || item.sessions === null) item.blockers.push('unknown');
         if (!item.branch) item.blockers.push('detached');
         if (item.status && (item.status.modified || item.status.staged || item.status.untracked || item.status.conflicts)) item.blockers.push('dirty');
-        if (item.status?.ignored) item.blockers.push('ignored');
         if (item.status?.operation) item.blockers.push('operation');
         if (item.sessions?.length) item.blockers.push('sessions');
         if (associated.some(({ directories }) => directories.some((dir) => !inside(root, dir)))
@@ -102,6 +101,8 @@ export const removeManagedWorktree = async (source: IWorkspace, options: IRemove
   const { repository, item } = await resolveWorktreeItem(source, options.repositoryId, options.directory);
   if (item.blockers.length) throw new WorktreeError(item.blockers[0]);
   if (item.head !== options.head || item.branch !== options.branch) throw new WorktreeError('changed');
+  const confirmed = new Set(options.confirmedIgnoredPaths ?? []);
+  if (item.status!.ignoredPaths.some((name) => !confirmed.has(name))) throw new WorktreeError('ignored');
   // Run from the common Git directory so deleting the source worktree is supported.
   const git = (args: string[]) => worktreeGit(repository.id, args);
   if (options.deleteBranch) {

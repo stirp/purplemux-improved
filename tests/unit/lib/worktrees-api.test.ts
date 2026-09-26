@@ -24,6 +24,11 @@ beforeEach(() => {
   mocks.remove.mockResolvedValue({ removedWorkspaceIds: [], warnings: [] });
 });
 describe('worktree management API', () => {
+  it('validates and forwards the confirmed ignored paths', async () => {
+    await call('DELETE', { ...body, confirmedIgnoredPaths: ['node_modules/', '.env'] });
+    expect(mocks.remove).toHaveBeenCalledWith(source, { ...body, confirmedIgnoredPaths: ['node_modules/', '.env'] });
+    expect((await call('DELETE', { ...body, confirmedIgnoredPaths: true })).status).toHaveBeenCalledWith(400);
+  });
   it('lists without mutations and disables caching', async () => {
     const res = await call('GET');
     expect(res.status).toHaveBeenCalledWith(200);

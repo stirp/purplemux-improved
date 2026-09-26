@@ -4,6 +4,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Button } from '@/components/ui/button';
 import { requestWorktreeAction } from '@/lib/worktree-action-client';
 import useWorkspaceStore from '@/hooks/use-workspace-store';
+import WorktreeIgnoredNotice from '@/components/features/workspace/worktree-ignored-notice';
 import type { ICleanupCandidate, ICleanupResult, TWorktreeSnapshot } from '@/types/worktree';
 
 export default function WorktreeCleanupDialog({ workspaceId, items, onClose }: {
@@ -26,7 +27,7 @@ export default function WorktreeCleanupDialog({ workspaceId, items, onClose }: {
     if (busy || !eligible.length) return;
     setBusy(true);
     setError('');
-    try { setResult(await useWorkspaceStore.getState().cleanupWorktrees(workspaceId, eligible)); }
+    try { setResult(await useWorkspaceStore.getState().cleanupWorktrees(workspaceId, eligible.map((item) => ({ ...item, confirmedIgnoredPaths: item.ignoredPaths })))); }
     catch (error) { setError(error instanceof Error ? error.message : String(error)); }
     finally { setBusy(false); }
   };
@@ -47,6 +48,7 @@ export default function WorktreeCleanupDialog({ workspaceId, items, onClose }: {
         {preview?.map((item) => <div key={item.directory} className="rounded border p-3">
           <p className="break-all font-mono text-xs">{item.directory}</p>
           <p className="text-sm">{item.branch}</p>
+          <WorktreeIgnoredNotice paths={item.ignoredPaths} />
           <p className="text-xs text-muted-foreground">{item.blockers.length ? item.blockers.map((reason) => t(`reasons.${reason}`)).join(' · ') : t('eligible')}</p>
           {item.workspaces.length > 0 && <p className="text-xs">{t('associatedWorkspaces')}: {item.workspaces.map((item) => item.name).join(', ')}</p>}
         </div>)}

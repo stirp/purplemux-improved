@@ -10,6 +10,7 @@ import { refreshWorktreeReview, saveWorktreeReview } from '@/lib/worktree-delive
 const snapshot = z.object({
   repositoryId: z.string().min(1).max(4096), directory: z.string().min(1).max(4096),
   head: z.string().regex(/^[a-f0-9]{40,64}$/), branch: z.string().min(1).max(1024).nullable(),
+  confirmedIgnoredPaths: z.array(z.string().min(1)).optional(),
 });
 const common = z.object({ workspaceId: z.string().regex(/^ws-[a-zA-Z0-9_-]+$/) });
 const target = z.string().trim().min(1).max(1024);

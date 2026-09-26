@@ -50,7 +50,7 @@ export const previewWorktreeCleanup = async (source: IWorkspace, snapshots: TWor
     const blockers = item ? [...item.blockers] : ['notFound'];
     if (item?.workspaces.some((workspace) => workspace.id === source.id)) blockers.push('batchSource');
     if (item && (item.head !== snapshot.head || item.branch !== snapshot.branch)) blockers.push('changed');
-    return { ...snapshot, blockers, workspaces: item?.workspaces ?? [] };
+    return { ...snapshot, blockers, ignoredPaths: item?.status?.ignoredPaths ?? [], workspaces: item?.workspaces ?? [] };
   });
 };
 

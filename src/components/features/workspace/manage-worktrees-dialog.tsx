@@ -12,6 +12,7 @@ import { filterWorktrees, type IWorktreeFilter } from '@/lib/worktree-filter';
 import { requestWorktreeAction } from '@/lib/worktree-action-client';
 import WorktreeCleanupDialog from '@/components/features/workspace/worktree-cleanup-dialog';
 import WorktreeDeliveryDialog from '@/components/features/workspace/worktree-delivery-dialog';
+import WorktreeIgnoredNotice from '@/components/features/workspace/worktree-ignored-notice';
 
 interface ISelection { repositoryId: string; item: IManagedWorktree }
 
@@ -83,6 +84,7 @@ export default function ManageWorktreesDialog({ workspace, onClose, onSelect }: 
         const data = await store.removeWorktree(workspace.id, {
           repositoryId: chosen.repositoryId, directory: chosen.item.directory,
           head: chosen.item.head, branch: chosen.item.branch, deleteBranch,
+          confirmedIgnoredPaths: chosen.item.status?.ignoredPaths ?? [],
           ...(deleteBranch ? { targetRef: targetRef.trim() } : {}),
         });
         for (const warning of data.warnings) toast.warning(t(warning));
@@ -111,6 +113,7 @@ export default function ManageWorktreesDialog({ workspace, onClose, onSelect }: 
         <p className="font-medium">{t('confirmDelete')}</p>
         <p className="break-all font-mono text-xs">{selection.item.directory}</p>
         <p>{t('deleteNotice', { count: selection.item.workspaces.length })}</p>
+        <WorktreeIgnoredNotice paths={selection.item.status?.ignoredPaths ?? []} />
         <label className="flex items-center gap-2">
           <input type="checkbox" checked={deleteBranch} disabled={busy} onChange={(event) => setDeleteBranch(event.target.checked)} />
           {t('deleteBranch', { branch: selection.item.branch ?? 'HEAD' })}

@@ -58,6 +58,19 @@ beforeEach(async () => {
 afterEach(async () => { vi.restoreAllMocks(); await fs.rm(root, { recursive: true, force: true }); });
 
 describe('organization helpers', () => {
+  it('previews ignored files and directories and deletes them after batch confirmation', async () => {
+    await fs.mkdir(path.join(directory, 'node_modules'));
+    await fs.writeFile(path.join(directory, 'node_modules', 'cache'), 'cached');
+    await fs.writeFile(path.join(directory, '.env'), 'secret');
+    const items = [await snapshot()];
+    const preview = await previewWorktreeCleanup(source, items);
+    expect(preview[0].blockers).toEqual([]);
+    expect(preview[0].ignoredPaths).toEqual(['.env', 'node_modules/']);
+    expect((await cleanupWorktrees(source, items)).results[0]).toMatchObject({ ok: false, code: 'ignored' });
+    const result = await cleanupWorktrees(source, preview.map((item) => ({ ...item, confirmedIgnoredPaths: item.ignoredPaths })));
+    expect(result.results[0]).toMatchObject({ ok: true });
+    await expect(fs.stat(directory)).rejects.toThrow();
+  });
   it('keeps unknown opening times out of idle candidates and searches branches and workspace names', async () => {
     const initial = await getWorktreeOverview(source);
     const items = initial.repositories[0].worktrees;

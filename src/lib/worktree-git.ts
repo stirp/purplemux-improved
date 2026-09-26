@@ -43,7 +43,7 @@ export const readWorktreeOperation = async (directory: string): Promise<IWorktre
 
 export const readWorktreeStatus = async (directory: string): Promise<IWorktreeStatus> => {
   const output = await worktreeGit(directory, ['status', '--porcelain=v2', '--branch', '-z', '--untracked-files=all', '--ignored=matching']);
-  const status: IWorktreeStatus = { modified: 0, staged: 0, untracked: 0, ignored: 0, conflicts: 0, upstream: null, ahead: null, behind: null, operation: await readWorktreeOperation(directory) };
+  const status: IWorktreeStatus = { modified: 0, staged: 0, untracked: 0, ignored: 0, ignoredPaths: [], conflicts: 0, upstream: null, ahead: null, behind: null, operation: await readWorktreeOperation(directory) };
   const records = output.split('\0');
   for (let i = 0; i < records.length; i++) {
     const record = records[i];
@@ -52,7 +52,7 @@ export const readWorktreeStatus = async (directory: string): Promise<IWorktreeSt
       const counts = /^# branch\.ab \+(\d+) -(\d+)$/.exec(record);
       if (counts) { status.ahead = Number(counts[1]); status.behind = Number(counts[2]); }
     } else if (record.startsWith('? ')) status.untracked++;
-    else if (record.startsWith('! ')) status.ignored++;
+    else if (record.startsWith('! ')) { status.ignored++; status.ignoredPaths.push(record.slice(2)); }
     else if (/^[12u] /.test(record)) {
       const xy = record.slice(2, 4);
       if (record[0] === 'u') status.conflicts++;

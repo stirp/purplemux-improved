@@ -118,12 +118,28 @@ describe('safe removal', () => {
     expect(mocks.remove).not.toHaveBeenCalled();
   });
 
-  it('protects ignored files even though Git considers the tree clean', async () => {
+  it('lists ignored paths and removes them only after confirmation', async () => {
     await fs.mkdir(path.join(child.directories[0], 'ignored'));
     await fs.writeFile(path.join(child.directories[0], 'ignored', 'secret'), 'precious');
     const { item, options } = await selection();
-    expect(item.status).toMatchObject({ ignored: 1, untracked: 0 });
+    expect(item.status).toMatchObject({ ignored: 1, ignoredPaths: ['ignored/'], untracked: 0 });
+    expect(item.blockers).toEqual([]);
     await expect(removeManagedWorktree(source, options)).rejects.toMatchObject({ code: 'ignored' });
+    expect(await fs.readFile(path.join(child.directories[0], 'ignored', 'secret'), 'utf8')).toBe('precious');
+    await removeManagedWorktree(source, { ...options, confirmedIgnoredPaths: item.status!.ignoredPaths });
+    await expect(fs.stat(child.directories[0])).rejects.toThrow();
+  });
+
+  it('requires confirmation for newly discovered ignored paths and still protects dirty files', async () => {
+    const cwd = child.directories[0];
+    const { repository, options } = await selection();
+    await fs.appendFile(path.join(repository.id, 'info', 'exclude'), '\n*.local\n');
+    await fs.writeFile(path.join(cwd, '配置\nsecret.local'), 'precious');
+    expect((await selection()).item.status!.ignoredPaths).toEqual(['配置\nsecret.local']);
+    await expect(removeManagedWorktree(source, { ...options, confirmedIgnoredPaths: [] })).rejects.toMatchObject({ code: 'ignored' });
+    await fs.writeFile(path.join(cwd, 'file.txt'), 'modified');
+    await expect(removeManagedWorktree(source, { ...options, confirmedIgnoredPaths: ['配置\nsecret.local'] })).rejects.toMatchObject({ code: 'dirty' });
+    expect(await fs.readFile(path.join(cwd, 'file.txt'), 'utf8')).toBe('modified');
   });
 
   it('protects sessions belonging to the workspace even after they cd elsewhere', async () => {
