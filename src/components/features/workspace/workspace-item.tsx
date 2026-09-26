@@ -18,6 +18,7 @@ import useWorkspaceStore from '@/hooks/use-workspace-store';
 import useInlineEdit from '@/hooks/use-inline-edit';
 import WorkspaceStatusIndicator from '@/components/features/workspace/workspace-status-indicator';
 import CreateWorktreeDialog from './create-worktree-dialog';
+import ManageWorktreesDialog from './manage-worktrees-dialog';
 
 interface IWorkspaceItemProps {
   workspace: IWorkspace;
@@ -48,6 +49,8 @@ const WorkspaceItem = ({
   const groups = useWorkspaceStore((s) => s.groups);
   const tw = useTranslations('workspace.worktree');
   const [creatingWorktree, setCreatingWorktree] = useState(false);
+  const [managingWorktrees, setManagingWorktrees] = useState(false);
+  const tm = useTranslations('workspace.worktreeManager');
   const depth = useWorkspaceStore((s) => {
     let parent = workspace.parentWorkspaceId;
     let count = 0;
@@ -164,6 +167,9 @@ const WorkspaceItem = ({
         <WorkspaceStatusIndicator workspaceId={workspace.id} tabs={tabs} />
       </ContextMenuTrigger>
       <ContextMenuContent>
+        <ContextMenuItem onClick={() => setManagingWorktrees(true)}>
+          <GitBranch className="mr-2 h-3.5 w-3.5" />{tm('title')}
+        </ContextMenuItem>
         <ContextMenuItem onClick={() => setCreatingWorktree(true)}>
           <GitBranch className="mr-2 h-3.5 w-3.5" />{tw('create')}
         </ContextMenuItem>
@@ -209,12 +215,14 @@ const WorkspaceItem = ({
           onClick={() => onDelete(workspace.id)}
         >
           <Trash2 className="mr-2 h-3.5 w-3.5" />
-          {tc('delete')}
+          {workspace.worktree ? tm('removeWorkspace') : tc('delete')}
         </ContextMenuItem>
       </ContextMenuContent>
     </ContextMenu>
     {creatingWorktree && <CreateWorktreeDialog workspace={workspace}
       onClose={() => setCreatingWorktree(false)} onCreated={onSelect} />}
+    {managingWorktrees && <ManageWorktreesDialog workspace={workspace}
+      onClose={() => setManagingWorktrees(false)} onSelect={onSelect} />}
     </>
   );
 };

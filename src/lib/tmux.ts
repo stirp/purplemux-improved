@@ -261,7 +261,7 @@ export interface IPaneInfo {
   windowActivity: number;
 }
 
-export const getAllPanesInfo = async (): Promise<Map<string, IPaneInfo>> => {
+export const getAllPanesInfo = async (options?: { strict?: boolean }): Promise<Map<string, IPaneInfo>> => {
   try {
     const { stdout } = await execFile(
       'tmux',
@@ -272,10 +272,11 @@ export const getAllPanesInfo = async (): Promise<Map<string, IPaneInfo>> => {
     for (const line of stdout.trim().split('\n')) {
       if (!line) continue;
       const [session, command, path, pidStr, activityStr] = line.split('\t');
+      if (options?.strict && (!session || !command || !path || !pidStr)) throw new Error('Invalid tmux pane information');
       if (session && command) {
         const pid = parseInt(pidStr, 10);
         const windowActivity = parseInt(activityStr, 10);
-        result.set(session, {
+        result.set(options?.strict && result.has(session) ? `${session}:${pidStr}` : session, {
           command,
           path: path || '',
           pid: Number.isNaN(pid) ? 0 : pid,
@@ -284,7 +285,11 @@ export const getAllPanesInfo = async (): Promise<Map<string, IPaneInfo>> => {
       }
     }
     return result;
-  } catch {
+  } catch (error) {
+    // Destructive callers must distinguish an absent server from a failed query.
+    const stderr = (error as { stderr?: string }).stderr ?? '';
+    const noServer = /^(?:no server running on .+|error connecting to .+(?: \(No such file or directory\)|: No such file or directory))$/m.test(stderr);
+    if (options?.strict && !noServer) throw error;
     return new Map();
   }
 };
