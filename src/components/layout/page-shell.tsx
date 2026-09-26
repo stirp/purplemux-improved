@@ -1,6 +1,8 @@
 import type { ReactElement, ReactNode } from 'react';
 import dynamic from 'next/dynamic';
 import useIsMobile from '@/hooks/use-is-mobile';
+import useIsMobileDevice from '@/hooks/use-is-mobile-device';
+import useVisualViewport from '@/hooks/use-visual-viewport';
 import MobileLayout from '@/components/features/mobile/mobile-layout';
 import Sidebar from '@/components/layout/sidebar';
 import useSync from '@/hooks/use-sync';
@@ -30,10 +32,12 @@ const PageShell = ({ children }: IPageShellProps) => {
   useGlobalShortcuts();
 
   const isMobile = useIsMobile();
+  const isTouchDevice = useIsMobileDevice();
+  const viewportStyle = useVisualViewport(isTouchDevice);
 
   if (isMobile) {
     return (
-      <div className="flex h-dvh w-full flex-col overflow-hidden bg-background">
+      <div className="flex h-dvh w-full flex-col overflow-hidden bg-background" style={viewportStyle}>
         <MobileLayout>
           {children}
         </MobileLayout>
@@ -42,7 +46,7 @@ const PageShell = ({ children }: IPageShellProps) => {
   }
 
   return (
-    <div className="flex h-dvh w-full overflow-hidden bg-background max-md:hidden">
+    <div className="flex h-dvh w-full overflow-hidden bg-background max-md:hidden" style={viewportStyle}>
       <Sidebar />
       <div className="relative flex min-w-0 flex-1 flex-col">
         <PageContent>{children}</PageContent>

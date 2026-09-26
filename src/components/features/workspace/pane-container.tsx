@@ -1125,7 +1125,7 @@ const PaneContainer = memo(({ paneId, paneNumber }: IPaneContainerProps) => {
     (!isReady || !hasEverConnected);
 
   const showKeyBar =
-    activePanelType === 'terminal' &&
+    (activePanelType === 'terminal' || isAgentPanel) &&
     !noTabs &&
     (keyBarMode === 'always' || (keyBarMode === 'auto' && isTouchDevice));
 
@@ -1340,21 +1340,35 @@ const PaneContainer = memo(({ paneId, paneNumber }: IPaneContainerProps) => {
           </Separator>
 
           {isAgentPanel && (
-            <button
-              className="flex h-6 w-full shrink-0 cursor-pointer items-center gap-1.5 border-t border-border bg-black/3 px-2 text-muted-foreground transition-colors hover:bg-black/5 dark:bg-white/3 dark:hover:bg-white/5"
-              onClick={handleToggleTerminal}
-            >
-              <TerminalSquare className="h-3 w-3" />
-              <span className="text-[11px] font-medium">Terminal</span>
-              {activeTabCwd && (
-                <span className="min-w-0 truncate text-[11px] opacity-60">
-                  {activeTabCwd.replace(/^\/Users\/[^/]+/, '~')}
+            <div className="flex w-full shrink-0 items-center gap-1.5 border-t border-border bg-black/3 pr-2 text-muted-foreground dark:bg-white/3">
+              <button
+                type="button"
+                aria-expanded={!isTerminalCollapsed}
+                className="flex min-h-6 min-w-0 flex-1 cursor-pointer items-center gap-1.5 px-2 text-muted-foreground transition-colors hover:bg-black/5 dark:hover:bg-white/5"
+                onClick={handleToggleTerminal}
+              >
+                <TerminalSquare className="h-3 w-3 shrink-0" />
+                <span className="text-[11px] font-medium">Terminal</span>
+                {activeTabCwd && (
+                  <span className="min-w-0 truncate text-[11px] opacity-60">
+                    {activeTabCwd.replace(/^\/Users\/[^/]+/, '~')}
+                  </span>
+                )}
+                <span className="ml-auto flex h-4 w-4 shrink-0 items-center justify-center">
+                  {isTerminalCollapsed ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
                 </span>
+              </button>
+              {showKeyBar && !isTerminalCollapsed && (
+                <TerminalKeyBar
+                  inline
+                  sendStdin={sendStdin}
+                  ctrlActive={ctrlArmed}
+                  shiftActive={shiftArmed}
+                  setCtrlActive={setCtrlArmed}
+                  setShiftActive={setShiftArmed}
+                />
               )}
-              <span className="ml-auto flex h-4 w-4 shrink-0 items-center justify-center">
-                {isTerminalCollapsed ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
-              </span>
-            </button>
+            </div>
           )}
 
           <Panel id="terminal-area" minSize={0} collapsible collapsedSize={0}>
@@ -1362,14 +1376,14 @@ const PaneContainer = memo(({ paneId, paneNumber }: IPaneContainerProps) => {
               {isAgentPanel && nativeCommands.active && <NativeCommandToolbar onClose={nativeCommands.close} />}
               <TerminalContainer
                 ref={terminalRef}
-                minHeight={isAgentPanel ? 256 : undefined}
+                minHeight={isAgentPanel && isTerminalCollapsed ? 256 : undefined}
                 className={cn(
                   'min-h-0 flex-1',
                   ready ? 'opacity-100' : 'opacity-0',
                   isAgentPanel && 'py-0 pl-2 pr-0.5',
                 )}
               />
-              {showKeyBar && (
+              {showKeyBar && !isAgentPanel && (
                 <TerminalKeyBar
                   sendStdin={sendStdin}
                   ctrlActive={ctrlArmed}
