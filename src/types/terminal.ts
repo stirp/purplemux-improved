@@ -80,6 +80,7 @@ export interface IWorkspace {
   directories: string[];
   groupId?: string | null;
   parentWorkspaceId?: string;
+  lastOpenedAt?: string;
   worktree?: { repository: string; branch: string; baseCommit: string };
 }
 

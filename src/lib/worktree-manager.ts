@@ -14,14 +14,14 @@ export class WorktreeError extends Error {
   constructor(public code: string, public status = 409) { super(code); }
 }
 
-let mutation: Promise<unknown> = Promise.resolve();
+const mutations = globalThis as typeof globalThis & { __worktreeMutationLock?: Promise<unknown> };
 export const withWorktreeMutation = <T>(action: () => Promise<T>): Promise<T> => {
-  const next = mutation.then(action, action);
-  mutation = next.catch(() => undefined);
+  const next = (mutations.__worktreeMutationLock ?? Promise.resolve()).then(action, action);
+  mutations.__worktreeMutationLock = next.catch(() => undefined);
   return next;
 };
 
-export const getWorktreeOverview = async (source: IWorkspace): Promise<IWorktreeOverview> => {
+export const getWorktreeOverview = async (source: IWorkspace, only?: { repositoryId: string; directory: string }): Promise<IWorktreeOverview> => {
   const result: IWorktreeOverview = { repositories: [], errors: [] };
   const { workspaces } = await getWorkspaces();
   const normalized = await Promise.all(workspaces.map(async (workspace) => ({
@@ -34,15 +34,19 @@ export const getWorktreeOverview = async (source: IWorkspace): Promise<IWorktree
   for (const directory of sources) {
     try {
       const id = await canonicalPath((await worktreeGit(directory, ['rev-parse', '--path-format=absolute', '--git-common-dir'])).trim());
+      if (only && id !== only.repositoryId) continue;
       if (result.repositories.some((repository) => repository.id === id)) continue;
       const items = parseWorktreeList(await worktreeGit(directory, ['worktree', 'list', '--porcelain', '-z']));
       const repository: IWorktreeRepository = { id, directory, worktrees: [] };
       // Limit concurrent Git processes even when a repository contains many worktrees.
       for (const entry of items) {
+        if (only && entry.directory !== only.directory) continue;
         const item = await inspectManagedWorktree(entry, id);
         const root = await canonicalPath(item.directory);
         const associated = normalized.filter(({ directories }) => directories.some((dir) => inside(root, dir)));
         item.workspaces = associated.map(({ workspace }) => ({ id: workspace.id, name: workspace.name }));
+        item.lastOpenedAt = associated.map(({ workspace }) => workspace.lastOpenedAt)
+          .filter((value): value is string => !!value && Number.isFinite(Date.parse(value))).sort((a, b) => Date.parse(a) - Date.parse(b)).at(-1) ?? null;
         item.sessions = panePaths ? [...new Set(panePaths.filter((pane) => inside(root, pane.directory)
           || associated.some(({ workspace }) => pane.name.startsWith(`pt-${workspace.id}-`))).map((pane) => pane.name.split(':')[0]))] : null;
         if (item.main) item.blockers.push('main');
@@ -52,6 +56,7 @@ export const getWorktreeOverview = async (source: IWorkspace): Promise<IWorktree
         if (!item.branch) item.blockers.push('detached');
         if (item.status && (item.status.modified || item.status.staged || item.status.untracked || item.status.conflicts)) item.blockers.push('dirty');
         if (item.status?.ignored) item.blockers.push('ignored');
+        if (item.status?.operation) item.blockers.push('operation');
         if (item.sessions?.length) item.blockers.push('sessions');
         if (associated.some(({ directories }) => directories.some((dir) => !inside(root, dir)))
           || items.some((other) => other.directory !== item.directory && inside(item.directory, other.directory))) item.blockers.push('sharedWorkspace');
@@ -65,8 +70,8 @@ export const getWorktreeOverview = async (source: IWorkspace): Promise<IWorktree
   return result;
 };
 
-const resolveItem = async (source: IWorkspace, repositoryId: string, directory: string) => {
-  const overview = await getWorktreeOverview(source);
+export const resolveWorktreeItem = async (source: IWorkspace, repositoryId: string, directory: string) => {
+  const overview = await getWorktreeOverview(source, { repositoryId, directory });
   const repository = overview.repositories.find((item) => item.id === repositoryId);
   const item = repository?.worktrees.find((item) => item.directory === directory);
   if (!repository || !item) throw new WorktreeError('notFound', 404);
@@ -74,7 +79,7 @@ const resolveItem = async (source: IWorkspace, repositoryId: string, directory: 
 };
 
 export const adoptWorktree = async (source: IWorkspace, repositoryId: string, directory: string) => {
-  const { repository, item } = await resolveItem(source, repositoryId, directory);
+  const { repository, item } = await resolveWorktreeItem(source, repositoryId, directory);
   if (item.workspaces.length) {
     const { workspaces } = await getWorkspaces();
     const existing = workspaces.find((workspace) => workspace.id === item.workspaces[0].id);
@@ -94,7 +99,7 @@ export const adoptWorktree = async (source: IWorkspace, repositoryId: string, di
 };
 
 export const removeManagedWorktree = async (source: IWorkspace, options: IRemoveWorktreeOptions) => {
-  const { repository, item } = await resolveItem(source, options.repositoryId, options.directory);
+  const { repository, item } = await resolveWorktreeItem(source, options.repositoryId, options.directory);
   if (item.blockers.length) throw new WorktreeError(item.blockers[0]);
   if (item.head !== options.head || item.branch !== options.branch) throw new WorktreeError('changed');
   // Run from the common Git directory so deleting the source worktree is supported.

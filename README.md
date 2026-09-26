@@ -23,6 +23,11 @@ These additions and enhancements build on commit [`52140216`](https://github.com
 
 “Manage Worktrees” refreshes every 10 seconds while viewing and discovers worktrees created in a terminal. Removal checks changes, untracked and ignored files, associated Purplemux sessions, and worktree status; branches are kept by default. Optionally delete a local branch after verifying it is merged into a selected target branch. Main, locked, or unverifiable worktrees cannot be deleted directly. Upstream counts use local refs without automatic fetch.
 
+Organization tools record explicit workspace opens, filter by inactivity (7/30/90 days), search and sort worktrees, and measure disk usage on demand. Measurements exclude shared Git data, do not follow symlinks, and show a lower bound when a scan reaches its limit. Batch cleanup previews up to 50 selections, rechecks each worktree before removal, keeps branches, and reports individual failures; the workspace hosting the panel must be removed separately.
+
+“Sync and Deliver” compares a selected target branch, then merges or rebases it into the selected worktree without changing the target branch. Fetch is explicit. Conflicts remain visible with continue/abort actions after manual resolution. PR/MR links can be associated and refreshed through authenticated `gh` (GitHub) or `glab` (GitLab). Draft creation supports a remote, source/target branches, title and Markdown description, checks for an existing open PR/MR, and requires the current commit to be published first. A separate confirmed push sends the exact previewed commit without force. Drafts currently use branches in the same remote repository; cross-repository/fork drafts are not supported. Remote failures are shown as unknown or unconfirmed, and a successfully created link remains visible if saving its local association fails.
+
+
 ---
 
 **Claude Code and Codex, many tasks at once. Faster.**
