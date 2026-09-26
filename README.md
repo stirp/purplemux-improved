@@ -8,7 +8,7 @@ These additions and enhancements build on commit [`52140216`](https://github.com
 
 | Area | Improvements |
 | --- | --- |
-| **Git worktree subtasks** | Create a branch and worktree from a workspace context menu, shown as a child workspace. Run agents in separate directories to develop multiple changes in parallel. |
+| **Git worktree subtasks** | Create a branch and worktree from a workspace context menu, or open “Manage Worktrees” to inspect repository worktrees and live status, add existing directories, and clean up safely. Run agents in separate directories to develop changes in parallel. |
 | **Workspaces and tabs** | Browse directories and create multiple workspaces, rename tabs from their context menu, reorder workspace groups by dragging, and restore layouts for empty workspaces. |
 | **Queued and immediate input** | Choose between queued and immediate submission, with queuing as the default. Messages wait while the agent is busy and are sent in order when it becomes idle; “Submit now” sends them sooner. |
 | **Session history management** | Remove historical sessions from workspace lists and the global Sessions view, with an option to delete the original Claude / Codex session records. Active original sessions are protected from deletion. |
@@ -20,6 +20,8 @@ These additions and enhancements build on commit [`52140216`](https://github.com
 | **Attachments, translations, and development** | Improve attachment drafts and Codex message parsing, translate new controls and fix client translation loading, and configure development hot-reload origins through `PURPLEMUX_ALLOWED_DEV_ORIGINS`. |
 
 > Status lines require actual CLI output; todo and plan displays require the corresponding tools to be available and called in the session. Removing a child workspace does not automatically delete its on-disk worktree or Git branch.
+
+“Manage Worktrees” refreshes every 10 seconds while viewing and discovers worktrees created in a terminal. Removal checks changes, untracked and ignored files, associated Purplemux sessions, and worktree status; branches are kept by default. Optionally delete a local branch after verifying it is merged into a selected target branch. Main, locked, or unverifiable worktrees cannot be deleted directly. Upstream counts use local refs without automatic fetch.
 
 ---
 

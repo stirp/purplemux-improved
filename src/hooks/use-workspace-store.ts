@@ -3,6 +3,7 @@ import { toast } from 'sonner';
 import { t } from '@/lib/i18n';
 import { getVisuallyOrderedWorkspaces } from '@/lib/workspace-order';
 import type { IWorkspace, IWorkspaceGroup, TPanelType } from '@/types/terminal';
+import type { IRemoveWorktreeOptions, IRemoveWorktreeResult } from '@/types/worktree';
 
 const reorderToVisual = (
   workspaces: IWorkspace[],
@@ -41,6 +42,8 @@ interface IWorkspaceState {
   syncWorkspaces: () => Promise<void>;
   createWorkspace: (directory: string, name?: string, resumeSessionId?: string, panelType?: TPanelType) => Promise<IWorkspace | null>;
   createWorktree: (workspaceId: string, options: { directoryIndex: number; name: string; branch: string; baseRef: string }) => Promise<IWorkspace>;
+  adoptWorktree: (workspaceId: string, repositoryId: string, directory: string) => Promise<IWorkspace>;
+  removeWorktree: (workspaceId: string, options: IRemoveWorktreeOptions) => Promise<IRemoveWorktreeResult>;
   deleteWorkspace: (workspaceId: string) => Promise<boolean>;
   removeWorkspace: (workspaceId: string) => void;
   markPendingDelete: (workspaceId: string) => void;
@@ -130,6 +133,15 @@ let mutationFenceTicket = 0;
 
 const bumpMutationFence = () => {
   mutationFenceTicket = syncTicketCounter;
+};
+
+const requestWorktreeMutation = async <T>(method: 'POST' | 'DELETE', body: object): Promise<T> => {
+  const res = await fetch('/api/workspace/worktrees', {
+    method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
+  });
+  const data = await res.json();
+  if (!res.ok) throw Object.assign(new Error(data.error), { code: data.code });
+  return data;
 };
 
 const useWorkspaceStore = create<IWorkspaceState>((set, get) => ({
@@ -269,6 +281,22 @@ const useWorkspaceStore = create<IWorkspaceState>((set, get) => ({
       ...state.workspaces.filter((item) => item.id !== workspace.id), workspace,
     ], state.groups) }));
     return workspace;
+  },
+
+  adoptWorktree: async (workspaceId, repositoryId, directory) => {
+    const workspace = await requestWorktreeMutation<IWorkspace>('POST', { workspaceId, repositoryId, directory });
+    bumpMutationFence();
+    set((state) => ({ workspaces: reorderToVisual([
+      ...state.workspaces.filter((item) => item.id !== workspace.id), workspace,
+    ], state.groups) }));
+    return workspace;
+  },
+
+  removeWorktree: async (workspaceId, options) => {
+    const result = await requestWorktreeMutation<IRemoveWorktreeResult>('DELETE', { workspaceId, ...options });
+    bumpMutationFence();
+    for (const id of result.removedWorkspaceIds) get().removeWorkspace(id);
+    return result;
   },
 
   deleteWorkspace: async (workspaceId) => {
