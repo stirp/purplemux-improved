@@ -14,6 +14,15 @@
     "notification": "Notification",
     "system": "System"
   },
+  "browserStorage": {
+    "title": "Browser site storage",
+    "description": "Clear local data and reload when pages or translations appear outdated.",
+    "action": "Clear and reload",
+    "confirm": "This clears local drafts, interface state and accessible caches for this site, then reloads the page. Server workspaces, files and settings are preserved, as are login cookies. Push notifications may need to be enabled again. HTTP cache clearing depends on browser support. Continue?",
+    "clearing": "Clearing…",
+    "failed": "Some data could not be cleared. Close other tabs for this site and retry, or reload now.",
+    "reload": "Reload"
+  },
   "general": {
     "theme": "Theme",
     "themeDescription": "Select the display theme.",

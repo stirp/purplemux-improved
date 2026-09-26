@@ -14,9 +14,8 @@ const resolveLocale = (locale: string | undefined): string =>
 
 const messagesDir = path.join(process.cwd(), 'messages');
 
-export const loadMessagesServer = async (): Promise<TMessages> => {
-  const config = await getConfig();
-  const locale = resolveLocale(config.locale);
+export const loadMessagesServer = async (requestedLocale?: string): Promise<TMessages> => {
+  const locale = resolveLocale(requestedLocale ?? (await getConfig()).locale);
   const entries = await Promise.all(
     MESSAGE_NAMESPACES.map(async (ns) => {
       const raw = await fs.readFile(path.join(messagesDir, locale, `${ns}.json`), 'utf-8');

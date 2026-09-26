@@ -14,6 +14,15 @@
     "notification": "Benachrichtigung",
     "system": "System"
   },
+  "browserStorage": {
+    "title": "Browser-Speicher der Website",
+    "description": "Lokale Daten löschen und neu laden, wenn Seiten oder Übersetzungen veraltet erscheinen.",
+    "action": "Löschen und neu laden",
+    "confirm": "Lokale Entwürfe, Oberflächenzustand und zugängliche Caches dieser Website werden gelöscht. Danach wird die Seite neu geladen. Arbeitsbereiche, Dateien und Einstellungen auf dem Server sowie Anmelde-Cookies bleiben erhalten. Push-Benachrichtigungen müssen eventuell erneut aktiviert werden. Das Löschen des HTTP-Caches hängt vom Browser ab. Fortfahren?",
+    "clearing": "Wird gelöscht…",
+    "failed": "Einige Daten konnten nicht gelöscht werden. Schließen Sie andere Tabs dieser Website und versuchen Sie es erneut, oder laden Sie die Seite neu.",
+    "reload": "Neu laden"
+  },
   "general": {
     "theme": "Theme",
     "themeDescription": "Wähle das Anzeige-Theme.",

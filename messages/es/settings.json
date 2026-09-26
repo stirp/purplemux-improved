@@ -14,6 +14,15 @@
     "notification": "Notificaciones",
     "system": "Sistema"
   },
+  "browserStorage": {
+    "title": "Almacenamiento del sitio en el navegador",
+    "description": "Borra los datos locales y recarga si las páginas o traducciones parecen desactualizadas.",
+    "action": "Borrar y recargar",
+    "confirm": "Se borrarán los borradores locales, el estado de la interfaz y las cachés accesibles de este sitio, y se recargará la página. Se conservarán los espacios de trabajo, archivos y ajustes del servidor, así como las cookies de inicio de sesión. Puede ser necesario reactivar las notificaciones push. El borrado de la caché HTTP depende del navegador. ¿Continuar?",
+    "clearing": "Borrando…",
+    "failed": "No se pudieron borrar algunos datos. Cierra las otras pestañas de este sitio y vuelve a intentarlo, o recarga ahora.",
+    "reload": "Recargar"
+  },
   "general": {
     "theme": "Tema",
     "themeDescription": "Selecciona el tema de visualización.",
