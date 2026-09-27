@@ -1,8 +1,13 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-const mocks = vi.hoisted(() => ({ exec: vi.fn(), write: vi.fn(), end: vi.fn(), read: vi.fn(), unlink: vi.fn(), mkdtemp: vi.fn(), rm: vi.fn() }));
-vi.mock('child_process', () => ({ execFile: mocks.exec }));
+import { EventEmitter } from 'node:events';
+const mocks = vi.hoisted(() => ({ exec: vi.fn(), spawn: vi.fn(), write: vi.fn(), end: vi.fn(), read: vi.fn(), unlink: vi.fn(), mkdtemp: vi.fn(), rm: vi.fn() }));
+vi.mock('child_process', () => ({ execFile: mocks.exec, spawn: mocks.spawn }));
 vi.mock('fs/promises', () => ({ default: { readFile: mocks.read, unlink: mocks.unlink, mkdtemp: mocks.mkdtemp, rm: mocks.rm } }));
 vi.mock('@/lib/preflight', () => ({ getShellPath: async () => '/shell/bin' }));
+vi.mock('@/lib/shell-env', () => ({
+  defaultShell: () => '/usr/bin/fish',
+  buildShellEnv: () => ({ PATH: '/original/bin', HOME: '/home/test' }),
+}));
 import { callAgentText } from '@/lib/agent-text';
 
 beforeEach(() => {
@@ -12,6 +17,17 @@ beforeEach(() => {
     return { stdin: { write: mocks.write, end: mocks.end } };
   });
   mocks.read.mockResolvedValue(' file answer\n');
+  mocks.spawn.mockImplementation(() => {
+    const child = Object.assign(new EventEmitter(), {
+      stdin: Object.assign(new EventEmitter(), { end: mocks.end }),
+      stdout: new EventEmitter(), stderr: new EventEmitter(), kill: vi.fn(),
+    });
+    queueMicrotask(() => {
+      child.stdout.emit('data', Buffer.from(' answer\n'));
+      child.emit('close', 0, null);
+    });
+    return child;
+  });
   mocks.unlink.mockResolvedValue(undefined);
   mocks.mkdtemp.mockResolvedValue('/tmp/purplemux-text-only-test');
   mocks.rm.mockResolvedValue(undefined);
@@ -21,8 +37,7 @@ describe('single-response agent execution', () => {
   it('preserves existing Claude summary calls and sends prompts on stdin', async () => {
     expect(await callAgentText('claude', 'data', 'instructions')).toBe('answer');
     expect(mocks.exec).toHaveBeenCalledWith('claude', ['-p'], expect.objectContaining({ timeout: 120000 }), expect.any(Function));
-    expect(mocks.write).toHaveBeenCalledWith('instructions\n\ndata');
-    expect(mocks.end).toHaveBeenCalled();
+    expect(mocks.end).toHaveBeenCalledWith('instructions\n\ndata');
   });
   it('disables tools, MCP, context discovery, and session persistence outside the repository', async () => {
     await callAgentText('claude', 'title', 'instructions', { textOnly: true, cwd: '/repo' });
@@ -40,6 +55,37 @@ describe('single-response agent execution', () => {
     expect(mocks.mkdtemp).not.toHaveBeenCalled();
     expect(mocks.read).not.toHaveBeenCalled();
     expect(mocks.unlink).not.toHaveBeenCalled();
+  });
+  it('falls back to the login shell for a Claude function without putting input in the command', async () => {
+    mocks.exec.mockImplementationOnce((_command, _args, _options, callback) => {
+      queueMicrotask(() => callback(Object.assign(new Error('spawn claude ENOENT'), { code: 'ENOENT' }), '', ''));
+      return { stdin: { write: mocks.write, end: mocks.end } };
+    });
+    const input = 'title $(touch /tmp/unwanted); `whoami`';
+    expect(await callAgentText('claude', input, 'instructions', {
+      textOnly: true, environment: { HTTPS_PROXY: 'proxy' },
+    })).toBe('answer');
+    expect(mocks.exec).toHaveBeenCalledOnce();
+    expect(mocks.spawn).toHaveBeenCalledWith('/usr/bin/fish', ['-ilc',
+      `claude '-p' '--bare' '--tools' '' '--disallowedTools' '*' '--strict-mcp-config' '--mcp-config' '{"mcpServers":{}}' '--no-session-persistence' '--output-format' 'text'`,
+    ], expect.objectContaining({
+      cwd: '/tmp/purplemux-text-only-test',
+      detached: process.platform !== 'win32',
+      env: expect.objectContaining({ SHELL: '/usr/bin/fish', PATH: '/original/bin', HTTPS_PROXY: 'proxy' }),
+    }));
+    expect(mocks.end).toHaveBeenLastCalledWith(`instructions\n\n${input}`);
+    expect(mocks.rm).toHaveBeenCalledOnce();
+  });
+  it('reports a failed shell fallback and still cleans the isolated directory', async () => {
+    mocks.spawn.mockImplementationOnce(() => { throw new Error('shell not found'); });
+    mocks.exec.mockImplementation((_command, _args, _options, callback) => {
+      queueMicrotask(() => callback(Object.assign(new Error('not found'), { code: 'ENOENT' }), '', ''));
+      return { stdin: { write: mocks.write, end: mocks.end } };
+    });
+    await expect(callAgentText('claude', 'title', 'instructions', { textOnly: true })).rejects.toThrow('claude -p failed');
+    expect(mocks.exec).toHaveBeenCalledOnce();
+    expect(mocks.spawn).toHaveBeenCalledOnce();
+    expect(mocks.rm).toHaveBeenCalledOnce();
   });
   it.each(['callback', 'spawn'])('cleans the isolated directory after a %s failure without retrying unrestricted', async (failure) => {
     mocks.exec.mockImplementation((_command, _args, _options, callback) => {
