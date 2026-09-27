@@ -103,7 +103,9 @@
       "targetNotPublished": "The target branch does not exist on the selected remote.",
       "pushFailed": "Push failed. Check authentication and remote history; force push is not used.",
       "draftCreateFailed": "Creation was not confirmed. Check the remote before retrying; the next attempt checks for existing open PRs/MRs.",
-      "draftAssociationFailed": "The PR/MR exists, but its local association could not be saved. Keep this link and associate it again."
+      "draftAssociationFailed": "The PR/MR exists, but its local association could not be saved. Keep this link and associate it again.",
+      "noDraftCommits": "There are no new commits relative to the target branch.",
+      "draftGenerationInvalid": "The generated content is invalid. Please try again."
     },
     "searchWorktrees": "Search branch, path, or workspace",
     "idleFilter": "Last opened filter",
@@ -181,6 +183,10 @@
     "draftBody": "Description (Markdown)",
     "pushBranch": "Push current branch",
     "pushConfirm": "Push this exact commit to the selected remote branch? This is a normal push; a non-fast-forward update will be rejected.",
-    "draftConfirm": "Create a draft with the following repository, branches, title and description? This action will not push commits."
+    "draftConfirm": "Create a draft with the following repository, branches, title and description? This action will not push commits.",
+    "generateDraft": "Generate title and description from commits",
+    "generatingDraft": "Generating title and description…",
+    "generateDraftHint": "Uses Claude Code to summarize committed changes against the target branch. You can edit the result.",
+    "replaceDraftConfirm": "Replace the existing title and description with newly generated content?"
   }
 }

@@ -5,9 +5,12 @@ import path from 'node:path';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 import type { IWorkspace } from '@/types/terminal';
-const mocks = vi.hoisted(() => ({ list: vi.fn(), remove: vi.fn(), panes: vi.fn() }));
+const mocks = vi.hoisted(() => ({ list: vi.fn(), remove: vi.fn(), panes: vi.fn(), agent: vi.fn() }));
 vi.mock('@/lib/workspace-store', () => ({ getWorkspaces: mocks.list, createWorkspace: vi.fn(), deleteWorkspace: mocks.remove }));
 vi.mock('@/lib/tmux', () => ({ getAllPanesInfo: mocks.panes }));
+vi.mock('@/lib/agent-text', () => ({ callAgentText: mocks.agent }));
+import { generateWorktreeDraft } from '@/lib/worktree-draft-generation';
+import { createGitWorktree } from '@/lib/git-worktree';
 import { getWorktreeOverview } from '@/lib/worktree-manager';
 import { measureDirectory, previewWorktreeCleanup, cleanupWorktrees } from '@/lib/worktree-organization';
 import { filterWorktrees } from '@/lib/worktree-filter';
@@ -198,5 +201,76 @@ describe('sync and delivery Git operations', () => {
     expect(await fetchWorktreeRemotes(source, item)).toEqual({ ok: true });
     expect(await git(directory, 'rev-parse', 'HEAD')).toBe(item.head);
     await expect(git(remote, 'rev-parse', '--verify', 'task/one')).rejects.toThrow();
+  });
+});
+
+
+describe('delivery defaults and draft generation', () => {
+  it('defaults to the resolved creation branch and preserves an explicit sync choice', async () => {
+    const created = await createGitWorktree(source, 0, 'task/new', 'HEAD');
+    directory = created.directory;
+    const item = await snapshot();
+    expect((await inspectWorktreeSync(source, item)).targetRef).toBe('refs/heads/main');
+    await git(repo, 'branch', 'release');
+    expect((await inspectWorktreeSync(source, item, 'refs/heads/release')).targetRef).toBe('refs/heads/release');
+    await git(repo, 'update-ref', 'refs/remotes/origin/release', item.head);
+    directory = (await createGitWorktree(source, 0, 'task/remote', 'refs/remotes/origin/release')).directory;
+    expect((await inspectWorktreeSync(source, await snapshot())).targetRef).toBe('refs/remotes/origin/release');
+    await git(repo, 'update-ref', '-d', 'refs/remotes/origin/release');
+    expect((await inspectWorktreeSync(source, await snapshot())).targetRef).toBeNull();
+  });
+  it('does not guess a branch for a commit-based worktree', async () => {
+    const head = await git(repo, 'rev-parse', 'HEAD');
+    directory = (await createGitWorktree(source, 0, 'task/commit', head)).directory;
+    expect((await inspectWorktreeSync(source, await snapshot())).targetRef).toBeNull();
+  });
+  it('generates from committed changes against the selected target and excludes dirty content', async () => {
+    await commit(directory, 'feature.txt', 'new feature');
+    await fs.writeFile(path.join(directory, 'feature.txt'), 'uncommitted secret');
+    mocks.agent.mockResolvedValue(JSON.stringify({ title: 'Add feature', body: 'Introduces a feature.' }));
+    const options = { remote: 'origin', targetBranch: 'main', locale: 'zh-CN' };
+    expect(await generateWorktreeDraft(source, await snapshot(), options)).toEqual({ title: 'Add feature', body: 'Introduces a feature.' });
+    const [provider, prompt, , settings] = mocks.agent.mock.calls[0];
+    expect(provider).toBe('claude'); expect(settings).toEqual({ textOnly: true });
+    expect(JSON.parse(prompt)).toMatchObject({ locale: 'zh-CN', targetBranch: 'main' });
+    expect(prompt).toContain('new feature'); expect(prompt).not.toContain('uncommitted secret');
+    expect(await fs.readFile(path.join(directory, 'feature.txt'), 'utf8')).toBe('uncommitted secret');
+    await git(repo, 'update-ref', 'refs/remotes/origin/main', await git(directory, 'rev-parse', 'HEAD'));
+    await expect(generateWorktreeDraft(source, await snapshot(), options)).rejects.toMatchObject({ code: 'noDraftCommits' });
+    expect(mocks.agent).toHaveBeenCalledTimes(1);
+  });
+  it('marks commit history as truncated only when there are more than 100 commits, even with short logs', async () => {
+    const tree = await git(directory, 'rev-parse', 'HEAD^{tree}');
+    let head = await git(directory, 'rev-parse', 'HEAD');
+    for (let index = 1; index <= 100; index++) {
+      head = await git(directory, 'commit-tree', tree, '-p', head, '-m', `history-${index}`);
+    }
+    await git(directory, 'update-ref', 'refs/heads/task/one', head);
+    mocks.agent.mockResolvedValue(JSON.stringify({ title: 'History', body: 'Summary' }));
+    const options = { remote: 'origin', targetBranch: 'main', locale: 'zh-CN' };
+    await generateWorktreeDraft(source, await snapshot(), options);
+    expect(JSON.parse(mocks.agent.mock.calls[0][1])).toMatchObject({ commitHistoryTruncated: false, truncated: false });
+
+    head = await git(directory, 'commit-tree', tree, '-p', head, '-m', 'history-101');
+    await git(directory, 'update-ref', 'refs/heads/task/one', head);
+    await generateWorktreeDraft(source, await snapshot(), options);
+    const evidence = JSON.parse(mocks.agent.mock.calls[1][1]);
+    expect(evidence).toMatchObject({ commitHistoryTruncated: true, truncated: true, stat: '', diff: '' });
+    expect(evidence.commits.length).toBeLessThan(16000);
+    expect(evidence.commits.match(/\bhistory-\d+\b/g)).toHaveLength(100);
+    expect(evidence.commits).toContain('history-101');
+    expect(evidence.commits).not.toMatch(/\bhistory-1\b/);
+    expect(mocks.agent.mock.calls[1][2]).toContain('explicitly mention in the description that only the latest 100 commits');
+  }, 15000);
+  it('rejects stale snapshots, missing targets, empty ranges, and invalid model output', async () => {
+    const options = { remote: 'origin', targetBranch: 'main', locale: 'en' };
+    await expect(generateWorktreeDraft(source, await snapshot(), options)).rejects.toMatchObject({ code: 'noDraftCommits' });
+    await expect(generateWorktreeDraft(source, await snapshot(), { ...options, targetBranch: 'missing' })).rejects.toMatchObject({ code: 'targetRequired' });
+    const stale = await snapshot();
+    await commit(directory, 'feature.txt', 'new feature');
+    await expect(generateWorktreeDraft(source, stale, options)).rejects.toMatchObject({ code: 'changed' });
+    expect(mocks.agent).not.toHaveBeenCalled();
+    mocks.agent.mockResolvedValue('{"title":"","body":"oops"}');
+    await expect(generateWorktreeDraft(source, await snapshot(), options)).rejects.toMatchObject({ code: 'draftGenerationInvalid' });
   });
 });

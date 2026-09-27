@@ -94,7 +94,9 @@
       "targetNotPublished": "Hedef dal bu uzak depoda yok.",
       "pushFailed": "Gönderim başarısız. Kimlik doğrulamayı ve geçmişi kontrol edin; zorla gönderim yapılmaz.",
       "draftCreateFailed": "Oluşturma doğrulanamadı. Yeniden denemeden önce uzak depoyu kontrol edin; mevcut açık PR/MR aranır.",
-      "draftAssociationFailed": "PR/MR mevcut ancak yerel bağlantı kaydedilemedi. Bağlantıyı saklayıp yeniden ilişkilendirin."
+      "draftAssociationFailed": "PR/MR mevcut ancak yerel bağlantı kaydedilemedi. Bağlantıyı saklayıp yeniden ilişkilendirin.",
+      "noDraftCommits": "Hedef dala göre yeni commit yok.",
+      "draftGenerationInvalid": "Oluşturulan içerik geçersiz. Lütfen tekrar deneyin."
     },
     "searchWorktrees": "Worktree ara",
     "idleFilter": "Son açılışa göre filtrele",
@@ -172,6 +174,10 @@
     "draftBody": "Açıklama (Markdown)",
     "pushBranch": "Geçerli dalı gönder",
     "pushConfirm": "Bu commit seçilen uzak dala gönderilsin mi? Fast-forward olmayan güncellemeler reddedilir.",
-    "draftConfirm": "Bu depo, dallar, başlık ve açıklamayla taslak oluşturulsun mu? Commit gönderilmeyecek."
+    "draftConfirm": "Bu depo, dallar, başlık ve açıklamayla taslak oluşturulsun mu? Commit gönderilmeyecek.",
+    "generateDraft": "Commitlerden başlık ve açıklama oluştur",
+    "generatingDraft": "Başlık ve açıklama oluşturuluyor…",
+    "generateDraftHint": "Claude Code, hedef dala göre commitlenmiş değişiklikleri özetler. Sonucu düzenleyebilirsiniz.",
+    "replaceDraftConfirm": "Mevcut başlık ve açıklama, oluşturulan içerikle değiştirilsin mi?"
   }
 }

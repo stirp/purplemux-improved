@@ -5,6 +5,7 @@ import path from 'node:path';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 import { createGitWorktree, inspectWorktreeSource } from '@/lib/git-worktree';
+import { readWorktreeMetadata, updateWorktreeMetadata, worktreeMetadataKey } from '@/lib/worktree-metadata';
 import { getVisuallyOrderedWorkspaces } from '@/lib/workspace-order';
 import type { IWorkspace } from '@/types/terminal';
 const exec = promisify(execFile);
@@ -55,6 +56,24 @@ describe('isolated Git worktrees', () => {
     const child = { ...workspace, id: 'ws-child', directories: [created.directory] };
     expect((await inspectWorktreeSource(child, 0)).branch).toBe('task/one');
     expect((await createGitWorktree(child, 0, 'task/nested', 'HEAD')).baseCommit).toBe(created.baseCommit);
+  });
+  it('clears delivery metadata when recreating the same worktree from a commit', async () => {
+    const created = await createGitWorktree(workspace, 0, 'task/recreated', 'HEAD');
+    const repositoryId = await fs.realpath(await git('rev-parse', '--path-format=absolute', '--git-common-dir'));
+    const key = worktreeMetadataKey(repositoryId, await fs.realpath(created.directory), created.branch);
+    await updateWorktreeMetadata(key, { targetRef: 'refs/heads/old', review: { url: 'https://github.com/a/b/pull/1', provider: 'github', state: 'closed' } });
+    await git('worktree', 'remove', '--', created.directory);
+    await git('branch', '-d', '--', created.branch);
+    await createGitWorktree(workspace, 0, created.branch, created.baseCommit);
+    expect(await readWorktreeMetadata(key)).toEqual({});
+  });
+  it('rolls back the new worktree if saving its creation metadata fails', async () => {
+    await fs.mkdir(path.join(root, '.purplemux'), { recursive: true });
+    await fs.writeFile(path.join(root, '.purplemux', 'worktree-metadata.json'), 'invalid JSON');
+    await expect(createGitWorktree(workspace, 0, 'task/failure', 'HEAD')).rejects.toThrow();
+    expect(await git('branch', '--list', 'task/failure')).toBe('');
+    expect(await git('worktree', 'list')).not.toContain('task-failure');
+    expect(await fs.readFile(path.join(workspace.directories[0], 'file.txt'), 'utf8')).toBe('committed');
   });
   it('rejects duplicates, invalid refs and traversal without replacing data', async () => {
     const created = await createGitWorktree(workspace, 0, 'task/one', 'HEAD');

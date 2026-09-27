@@ -94,7 +94,9 @@
       "targetNotPublished": "La branche cible n’existe pas sur ce distant.",
       "pushFailed": "Échec du push. Vérifiez l’authentification et l’historique ; aucun push forcé.",
       "draftCreateFailed": "Création non confirmée. Vérifiez le distant avant de réessayer ; les PR/MR ouverts existants seront recherchés.",
-      "draftAssociationFailed": "Le PR/MR existe, mais son association locale n’a pas pu être enregistrée. Conservez ce lien pour l’associer à nouveau."
+      "draftAssociationFailed": "Le PR/MR existe, mais son association locale n’a pas pu être enregistrée. Conservez ce lien pour l’associer à nouveau.",
+      "noDraftCommits": "Aucun nouveau commit par rapport à la branche cible.",
+      "draftGenerationInvalid": "Le contenu généré est invalide. Veuillez réessayer."
     },
     "searchWorktrees": "Rechercher des worktrees",
     "idleFilter": "Filtrer par dernière ouverture",
@@ -172,6 +174,10 @@
     "draftBody": "Description (Markdown)",
     "pushBranch": "Pousser la branche actuelle",
     "pushConfirm": "Pousser ce commit vers la branche distante sélectionnée ? Les mises à jour sans avance rapide seront refusées.",
-    "draftConfirm": "Créer un brouillon avec ce dépôt, ces branches, ce titre et cette description ? Aucun commit ne sera poussé."
+    "draftConfirm": "Créer un brouillon avec ce dépôt, ces branches, ce titre et cette description ? Aucun commit ne sera poussé.",
+    "generateDraft": "Générer le titre et la description à partir des commits",
+    "generatingDraft": "Génération du titre et de la description…",
+    "generateDraftHint": "Claude Code résume les modifications commitées par rapport à la branche cible. Le résultat reste modifiable.",
+    "replaceDraftConfirm": "Remplacer le titre et la description existants par le contenu généré ?"
   }
 }

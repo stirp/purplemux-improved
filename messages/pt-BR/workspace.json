@@ -94,7 +94,9 @@
       "targetNotPublished": "O branch de destino não existe nesse remoto.",
       "pushFailed": "Falha no envio. Verifique a autenticação e o histórico; não há envio forçado.",
       "draftCreateFailed": "Criação não confirmada. Verifique o remoto antes de tentar novamente; PRs/MRs abertos existentes serão consultados.",
-      "draftAssociationFailed": "O PR/MR existe, mas o vínculo local não foi salvo. Guarde o link e vincule novamente."
+      "draftAssociationFailed": "O PR/MR existe, mas o vínculo local não foi salvo. Guarde o link e vincule novamente.",
+      "noDraftCommits": "Não há novos commits em relação à branch de destino.",
+      "draftGenerationInvalid": "O conteúdo gerado é inválido. Tente novamente."
     },
     "searchWorktrees": "Buscar worktrees",
     "idleFilter": "Filtrar por última abertura",
@@ -172,6 +174,10 @@
     "draftBody": "Descrição (Markdown)",
     "pushBranch": "Enviar branch atual",
     "pushConfirm": "Enviar este commit ao branch remoto selecionado? Atualizações sem avanço rápido serão rejeitadas.",
-    "draftConfirm": "Criar rascunho com este repositório, branches, título e descrição? Nenhum commit será enviado."
+    "draftConfirm": "Criar rascunho com este repositório, branches, título e descrição? Nenhum commit será enviado.",
+    "generateDraft": "Gerar título e descrição a partir dos commits",
+    "generatingDraft": "Gerando título e descrição…",
+    "generateDraftHint": "O Claude Code resume as alterações commitadas em relação à branch de destino. Você pode editar o resultado.",
+    "replaceDraftConfirm": "Substituir o título e a descrição existentes pelo conteúdo gerado?"
   }
 }

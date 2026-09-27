@@ -4,6 +4,8 @@ import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import type { IWorkspace } from '@/types/terminal';
+import { canonicalPath } from '@/lib/worktree-git';
+import { updateWorktreeMetadata, worktreeMetadataKey } from '@/lib/worktree-metadata';
 
 const exec = promisify(execFile);
 const git = async (cwd: string, args: string[]) => {
@@ -41,6 +43,7 @@ export const createGitWorktree = async (workspace: IWorkspace, directoryIndex: n
   if (!branch || branch.startsWith('-') || branch.length > 80) throw new Error('Invalid branch name');
   await git(info.repository, ['check-ref-format', `refs/heads/${branch}`]);
   const baseCommit = await git(info.repository, ['rev-parse', '--verify', '--end-of-options', `${baseRef}^{commit}`]);
+  const baseBranch = await git(info.repository, ['rev-parse', '--symbolic-full-name', '--verify', '--end-of-options', baseRef]);
   const directory = path.join(info.worktreeRoot, worktreeDirectoryName(branch));
   try {
     await fs.lstat(directory);
@@ -51,5 +54,17 @@ export const createGitWorktree = async (workspace: IWorkspace, directoryIndex: n
   await fs.mkdir(info.worktreeRoot, { recursive: true });
   // Never force, reset an existing branch, or alter the source checkout.
   await git(info.repository, ['worktree', 'add', '-b', branch, '--', directory, baseCommit]);
+  try {
+    const repositoryId = await canonicalPath(await git(info.repository, ['rev-parse', '--path-format=absolute', '--git-common-dir']));
+    // Recreating a deleted worktree must not inherit its previous sync target or review.
+    await updateWorktreeMetadata(worktreeMetadataKey(repositoryId, await canonicalPath(directory), branch), {
+      baseRef: /^refs\/(heads|remotes)\//.test(baseBranch) ? baseBranch : undefined,
+      targetRef: undefined, review: undefined,
+    });
+  } catch (error) {
+    await git(info.repository, ['worktree', 'remove', '--', directory]);
+    await git(info.repository, ['branch', '-D', '--', branch]);
+    throw error;
+  }
   return { directory, repository: info.repository, branch, baseCommit };
 };

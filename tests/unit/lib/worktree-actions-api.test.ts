@@ -1,11 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { NextApiRequest, NextApiResponse } from 'next';
-const mocks = vi.hoisted(() => ({ source: vi.fn(), measure: vi.fn(), preview: vi.fn(), cleanup: vi.fn(), inspect: vi.fn(), sync: vi.fn(), fetch: vi.fn(), save: vi.fn(), review: vi.fn(), draft: vi.fn(), push: vi.fn() }));
+const mocks = vi.hoisted(() => ({ source: vi.fn(), measure: vi.fn(), preview: vi.fn(), cleanup: vi.fn(), inspect: vi.fn(), sync: vi.fn(), fetch: vi.fn(), save: vi.fn(), review: vi.fn(), draft: vi.fn(), push: vi.fn(), generate: vi.fn() }));
 vi.mock('@/lib/workspace-store', () => ({ getWorkspaceById: mocks.source }));
 vi.mock('@/lib/worktree-organization', () => ({ measureWorktree: mocks.measure, previewWorktreeCleanup: mocks.preview, cleanupWorktrees: mocks.cleanup }));
 vi.mock('@/lib/worktree-sync', () => ({ inspectWorktreeSync: mocks.inspect, synchronizeWorktree: mocks.sync, fetchWorktreeRemotes: mocks.fetch }));
 vi.mock('@/lib/worktree-delivery', () => ({ saveWorktreeReview: mocks.save, refreshWorktreeReview: mocks.review }));
 vi.mock('@/lib/worktree-draft', () => ({ createWorktreeDraft: mocks.draft, pushWorktreeBranch: mocks.push }));
+vi.mock('@/lib/worktree-draft-generation', () => ({ generateWorktreeDraft: mocks.generate }));
 import handler from '@/pages/api/workspace/worktree-actions';
 const item = { repositoryId: '/repo/.git', directory: '/task', head: 'a'.repeat(40), branch: 'task/one' };
 const source = { id: 'ws-source', directories: ['/repo'] };
@@ -41,6 +42,16 @@ describe('worktree action API', () => {
     expect(mocks.push).not.toHaveBeenCalled();
     await call({ action: 'pushBranch', item, remote: 'origin' });
     expect(mocks.push).toHaveBeenCalledWith(source, item, 'origin');
+  });
+  it('validates and generates editable content without publishing or creating a review', async () => {
+    const request = { action: 'generateDraft', item, remote: 'origin', targetBranch: 'main', locale: 'zh-CN' };
+    mocks.generate.mockResolvedValue({ title: 'Generated title', body: 'Description' });
+    expect((await call(request)).json).toHaveBeenCalledWith({ title: 'Generated title', body: 'Description' });
+    expect(mocks.generate).toHaveBeenCalledWith(source, item, expect.objectContaining(request));
+    expect((await call({ ...request, locale: 'invalid' })).status).toHaveBeenCalledWith(400);
+    expect((await call({ ...request, targetBranch: '' })).status).toHaveBeenCalledWith(400);
+    expect(mocks.generate).toHaveBeenCalledTimes(1);
+    expect(mocks.push).not.toHaveBeenCalled(); expect(mocks.draft).not.toHaveBeenCalled();
   });
   it('requires both source and target snapshots for merge/rebase', async () => {
     expect((await call({ action: 'merge', item, targetRef: 'main' })).status).toHaveBeenCalledWith(400);
