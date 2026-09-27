@@ -98,7 +98,7 @@ export const CODEX_LAUNCHER_SCRIPT_CONTENT = `#!/usr/bin/env node
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
-const { spawn } = require('node:child_process');
+const { spawn, execFileSync } = require('node:child_process');
 
 const baseDir = path.join(os.homedir(), '.purplemux');
 
@@ -163,7 +163,18 @@ const fetchArgs = async (payload) => {
 
 const main = async () => {
   const { args, env } = await fetchArgs(parseArgs(process.argv.slice(2)));
-  const child = spawn('codex', args, { stdio: 'inherit', env: { ...process.env, ...env } });
+  const childEnv = { ...process.env, ...env };
+  // Our config overrides require embedded mode; select it explicitly to avoid a fallback warning.
+  // Probe the actual binary so older Codex versions keep working.
+  try {
+    const help = execFileSync('codex', ['--help'], {
+      encoding: 'utf8', timeout: 5000, stdio: ['ignore', 'pipe', 'ignore'], env: childEnv,
+    });
+    if (help.includes('--no-daemon')) args.unshift('--no-daemon');
+  } catch {
+    // A failed capability probe must not prevent launching Codex.
+  }
+  const child = spawn('codex', args, { stdio: 'inherit', env: childEnv });
   child.on('exit', (code, signal) => {
     if (signal) {
       process.kill(process.pid, signal);
