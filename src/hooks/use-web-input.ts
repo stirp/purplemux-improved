@@ -68,7 +68,7 @@ const useWebInput = (
   const [value, setValue] = useState(() => (tabId ? loadDraft(tabId) : ''));
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const mode: TWebInputMode = useMemo(() => {
-    if (isCliIdle(cliState) || cliState === 'unknown') return 'input';
+    if (isCliIdle(cliState)) return 'input';
     if (cliState === 'busy' || cliState === 'needs-input') return 'interrupt';
     return 'disabled';
   }, [cliState]);

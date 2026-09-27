@@ -184,6 +184,33 @@ class StatusManager {
         return;
       }
     }
+
+    // Agent is alive but polling could not locate a finalized session snapshot.
+    // Try to resolve one via detectActiveSession before falling back to idle.
+    if (provider && paneInfo?.pid) {
+      try {
+        const detected = await provider.detectActiveSession(paneInfo.pid, childPids);
+        if (detected.status === 'running' && detected.jsonlPath) {
+          entry.jsonlPath = detected.jsonlPath;
+          const { idle, stale, lastAssistantSnippet } = await provider.readRuntimeSnapshot(detected.jsonlPath);
+          if (idle && !stale && lastAssistantSnippet) {
+            this.applyCliState(tabId, entry, 'ready-for-review', { silent: true });
+            this.persistToLayout(entry);
+            this.broadcastUpdate(tabId, entry);
+            return;
+          }
+        }
+      } catch (err) {
+        log.debug({ tabId, err }, 'resolveUnknown: detectActiveSession failed');
+      }
+    }
+
+    // Agent is running without a known session yet (codex: typically pre-prompt).
+    // Surface idle so the UI does not stay locked on 'unknown' and so the next
+    // hook event can transition away cleanly.
+    this.applyCliState(tabId, entry, 'idle', { silent: true });
+    this.persistToLayout(entry);
+    this.broadcastUpdate(tabId, entry);
   }
 
   private async readTabMetadata(
