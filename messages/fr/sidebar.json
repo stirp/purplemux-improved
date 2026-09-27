@@ -3,7 +3,7 @@
   "addWorkspace": "Ajouter un espace de travail",
   "noWorkspaces": "Aucun espace de travail",
   "deleteWorkspace": "Supprimer l'espace de travail",
-  "deleteWorkspaceConfirm": "Fermer l''espace de travail ''{name}'' ?",
+  "deleteWorkspaceConfirm": "Fermer l''espace de travail ''{name}'' ? Les sessions originales Codex et Claude associées et l’historique des sessions Purplemux seront également supprimés. Cette action est irréversible.",
   "notes": "Notes",
   "stats": "Statistiques d'utilisation",
   "collapseSidebar": "Réduire la barre latérale",

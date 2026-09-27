@@ -5,7 +5,14 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   const workspaceId = req.query.workspaceId as string;
 
   if (req.method === 'DELETE') {
-    const found = await deleteWorkspace(workspaceId);
+    const deleteSessions = req.body?.deleteSessions ?? true;
+    if (typeof deleteSessions !== 'boolean') return res.status(400).json({ error: 'Invalid deleteSessions' });
+    let found: boolean;
+    try {
+      found = await deleteWorkspace(workspaceId, deleteSessions);
+    } catch {
+      return res.status(409).json({ error: 'Workspace or original session cleanup failed; workspace retained for retry' });
+    }
     if (!found) {
       return res.status(404).json({ error: 'Workspace not found' });
     }

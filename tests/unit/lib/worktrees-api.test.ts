@@ -29,6 +29,13 @@ describe('worktree management API', () => {
     expect(mocks.remove).toHaveBeenCalledWith(source, { ...body, confirmedIgnoredPaths: ['node_modules/', '.env'] });
     expect((await call('DELETE', { ...body, confirmedIgnoredPaths: true })).status).toHaveBeenCalledWith(400);
   });
+  it('validates explicit idle-session and unmerged-branch confirmations', async () => {
+    const options = { ...body, closeIdleSessions: true, discardUnmergedBranch: true, deleteBranch: true };
+    await call('DELETE', options);
+    expect(mocks.remove).toHaveBeenCalledWith(source, options);
+    expect((await call('DELETE', { ...body, closeIdleSessions: 'true' })).status).toHaveBeenCalledWith(400);
+    expect((await call('DELETE', { ...body, discardUnmergedBranch: 'true' })).status).toHaveBeenCalledWith(400);
+  });
   it('lists without mutations and disables caching', async () => {
     const res = await call('GET');
     expect(res.status).toHaveBeenCalledWith(200);

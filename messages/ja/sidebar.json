@@ -3,7 +3,7 @@
   "addWorkspace": "ワークスペースを追加",
   "noWorkspaces": "ワークスペースがありません",
   "deleteWorkspace": "ワークスペースを削除",
-  "deleteWorkspaceConfirm": "ワークスペース「{name}」を閉じますか？",
+  "deleteWorkspaceConfirm": "ワークスペース「{name}」を閉じますか？ 関連する Codex と Claude の元のセッション、および Purplemux のセッション履歴も削除されます。この操作は元に戻せません。",
   "notes": "メモ",
   "stats": "使用状況",
   "collapseSidebar": "サイドバーを折りたたむ",

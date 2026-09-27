@@ -3,7 +3,7 @@
   "addWorkspace": "Çalışma alanı ekle",
   "noWorkspaces": "Çalışma alanı yok",
   "deleteWorkspace": "Çalışma alanını sil",
-  "deleteWorkspaceConfirm": "''{name}'' çalışma alanı kapatılsın mı?",
+  "deleteWorkspaceConfirm": "''{name}'' çalışma alanı kapatılsın mı? İlişkili orijinal Codex ve Claude oturumları ile Purplemux oturum geçmişi de silinecek. Bu işlem geri alınamaz.",
   "notes": "Notlar",
   "stats": "Kullanım istatistikleri",
   "collapseSidebar": "Kenar çubuğunu daralt",

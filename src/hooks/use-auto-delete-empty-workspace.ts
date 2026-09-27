@@ -28,10 +28,10 @@ export const useAutoDeleteEmptyWorkspace = (
 
     if (adjacent) {
       removeWorkspace(deletedId);
-      deleteWorkspace(deletedId).finally(() => unmarkPendingDelete(deletedId));
+      deleteWorkspace(deletedId, false).finally(() => unmarkPendingDelete(deletedId));
       switchWorkspace(adjacent.id);
     } else {
-      deleteWorkspace(deletedId)
+      deleteWorkspace(deletedId, false)
         .then(() => removeWorkspace(deletedId))
         .finally(() => unmarkPendingDelete(deletedId));
     }

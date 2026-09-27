@@ -46,7 +46,7 @@ interface IWorkspaceState {
   adoptWorktree: (workspaceId: string, repositoryId: string, directory: string) => Promise<IWorkspace>;
   removeWorktree: (workspaceId: string, options: IRemoveWorktreeOptions) => Promise<IRemoveWorktreeResult>;
   cleanupWorktrees: (workspaceId: string, items: TWorktreeSnapshot[]) => Promise<ICleanupResult>;
-  deleteWorkspace: (workspaceId: string) => Promise<boolean>;
+  deleteWorkspace: (workspaceId: string, deleteSessions?: boolean) => Promise<boolean>;
   removeWorkspace: (workspaceId: string) => void;
   markPendingDelete: (workspaceId: string) => void;
   unmarkPendingDelete: (workspaceId: string) => void;
@@ -308,9 +308,9 @@ const useWorkspaceStore = create<IWorkspaceState>((set, get) => ({
     return result;
   },
 
-  deleteWorkspace: async (workspaceId) => {
+  deleteWorkspace: async (workspaceId, deleteSessions = true) => {
     try {
-      const res = await fetch(`/api/workspace/${workspaceId}`, { method: 'DELETE' });
+      const res = await fetch(`/api/workspace/${workspaceId}`, { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ deleteSessions }) });
       if (!res.ok && res.status !== 404) throw new Error();
       bumpMutationFence();
       return true;
