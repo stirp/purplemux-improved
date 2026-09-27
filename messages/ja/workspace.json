@@ -94,7 +94,9 @@
       "targetNotPublished": "リモートにターゲットブランチがありません。",
       "pushFailed": "プッシュに失敗しました。認証と履歴を確認してください。強制プッシュは行いません。",
       "draftCreateFailed": "作成を確認できませんでした。再試行前にリモートを確認してください。再試行時は既存の PR/MR を検索します。",
-      "draftAssociationFailed": "PR/MR は存在しますが、関連付けを保存できませんでした。リンクを保存して再度関連付けてください。"
+      "draftAssociationFailed": "PR/MR は存在しますが、関連付けを保存できませんでした。リンクを保存して再度関連付けてください。",
+      "noDraftCommits": "対象ブランチに対する新しいコミットがありません。",
+      "draftGenerationInvalid": "生成された内容の形式が無効です。もう一度お試しください。"
     },
     "searchWorktrees": "Worktree を検索",
     "idleFilter": "最終オープンで絞り込み",
@@ -172,6 +174,10 @@
     "draftBody": "説明（Markdown）",
     "pushBranch": "現在のブランチをプッシュ",
     "pushConfirm": "このコミットを選択したリモートブランチにプッシュしますか？非 fast-forward 更新は拒否されます。",
-    "draftConfirm": "以下のリポジトリ、ブランチ、タイトル、説明でドラフトを作成しますか？コミットはプッシュされません。"
+    "draftConfirm": "以下のリポジトリ、ブランチ、タイトル、説明でドラフトを作成しますか？コミットはプッシュされません。",
+    "generateDraft": "コミットからタイトルと説明を生成",
+    "generatingDraft": "タイトルと説明を生成中…",
+    "generateDraftHint": "Claude Code が対象ブランチとの差分をコミット済みコードから要約します。生成後に編集できます。",
+    "replaceDraftConfirm": "現在のタイトルと説明を生成した内容で置き換えますか？"
   }
 }

@@ -1,5 +1,8 @@
 import WorktreeDraftForm from '@/components/features/workspace/worktree-draft-form';
 import { useEffect, useState } from 'react';
+import { ChevronDown } from 'lucide-react';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Command, CommandInput, CommandList, CommandEmpty, CommandItem } from '@/components/ui/command';
 import { useTranslations } from 'next-intl';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -11,6 +14,8 @@ export default function WorktreeDeliveryDialog({ workspaceId, item, onClose }: {
   workspaceId: string; item: TWorktreeSnapshot; onClose: () => void;
 }) {
   const t = useTranslations('workspace.worktreeManager');
+  const tc = useTranslations('common');
+  const [targetOpen, setTargetOpen] = useState(false);
   const [info, setInfo] = useState<IWorktreeSyncInfo | null>(null);
   const [targetRef, setTargetRef] = useState('');
   const [reviewUrl, setReviewUrl] = useState<string | null>(null);
@@ -74,13 +79,26 @@ export default function WorktreeDeliveryDialog({ workspaceId, item, onClose }: {
             <Button disabled={busy || loading} onClick={() => void perform(confirm)}>{busy ? t('working') : t('confirmAction')}</Button>
           </div>
         </div> : <>
-          <label className="flex flex-col gap-2">{t('syncTarget')}
-            <select className="w-full rounded border bg-background p-2" value={targetRef || info.targetRef || ''} disabled={busy || loading || !!info.operation}
-              onChange={(event) => { setLoading(true); setTargetRef(event.target.value); setError(''); }}>
-              <option value="" disabled>{t('chooseTarget')}</option>
-              {info.branches.map((branch) => <option key={branch.ref} value={branch.ref}>{branch.ref}</option>)}
-            </select>
-          </label>
+          <div className="flex min-w-0 flex-col gap-2">
+            <label htmlFor="worktree-sync-target">{t('syncTarget')}</label>
+            <Popover open={targetOpen} onOpenChange={setTargetOpen}>
+              <PopoverTrigger render={<Button id="worktree-sync-target" variant="outline" className="w-full justify-between font-normal" disabled={busy || loading || !!info.operation} />}>
+                <span className="truncate">{targetRef || info.targetRef || t('chooseTarget')}</span><ChevronDown className="size-4 shrink-0" />
+              </PopoverTrigger>
+              <PopoverContent align="start" className="w-[var(--anchor-width)] p-0">
+                <Command filter={(value, search) => value.toLowerCase().includes(search.trim().toLowerCase()) ? 1 : 0}>
+                  <CommandInput placeholder={tc('search')} aria-label={tc('search')} />
+                  <CommandList>
+                    <CommandEmpty>{tc('noResults')}</CommandEmpty>
+                    {info.branches.map((branch) => <CommandItem key={branch.ref} value={branch.ref} data-checked={branch.ref === (targetRef || info.targetRef)}
+                      onSelect={() => { setTargetOpen(false); if (branch.ref !== (targetRef || info.targetRef)) { setLoading(true); setTargetRef(branch.ref); setError(''); } }}>
+                      <span className="truncate" title={branch.ref}>{branch.ref}</span>
+                    </CommandItem>)}
+                  </CommandList>
+                </Command>
+              </PopoverContent>
+            </Popover>
+          </div>
           {info.targetHead && <div className="text-sm">
             <p>{t('targetCounts', { ahead: info.ahead ?? '?', behind: info.behind ?? '?' })}</p>
             {info.ahead === 0 && <p className="text-muted-foreground">{t('integrated')}</p>}

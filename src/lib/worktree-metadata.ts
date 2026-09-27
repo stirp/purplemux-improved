@@ -4,7 +4,7 @@ import path from 'node:path';
 import { randomUUID } from 'node:crypto';
 import type { IWorktreeReview } from '@/types/worktree';
 
-interface IMetadata { targetRef?: string; review?: IWorktreeReview }
+interface IMetadata { baseRef?: string; targetRef?: string; review?: IWorktreeReview }
 type TMetadata = Record<string, IMetadata>;
 const file = () => path.join(os.homedir(), '.purplemux', 'worktree-metadata.json');
 export const worktreeMetadataKey = (repository: string, directory: string, branch: string | null) => JSON.stringify([repository, directory, branch]);

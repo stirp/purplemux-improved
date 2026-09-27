@@ -94,7 +94,9 @@
       "targetNotPublished": "Der Zielbranch existiert dort nicht.",
       "pushFailed": "Push fehlgeschlagen. Anmeldung und Verlauf prüfen. Kein Force-Push.",
       "draftCreateFailed": "Erstellung nicht bestätigt. Vor erneutem Versuch das Remote prüfen; vorhandene offene PRs/MRs werden gesucht.",
-      "draftAssociationFailed": "PR/MR existiert, aber die lokale Verknüpfung konnte nicht gespeichert werden. Link aufbewahren und erneut verknüpfen."
+      "draftAssociationFailed": "PR/MR existiert, aber die lokale Verknüpfung konnte nicht gespeichert werden. Link aufbewahren und erneut verknüpfen.",
+      "noDraftCommits": "Es gibt keine neuen Commits gegenüber dem Zielbranch.",
+      "draftGenerationInvalid": "Der generierte Inhalt ist ungültig. Bitte erneut versuchen."
     },
     "searchWorktrees": "Worktrees durchsuchen",
     "idleFilter": "Nach letzter Nutzung filtern",
@@ -172,6 +174,10 @@
     "draftBody": "Beschreibung (Markdown)",
     "pushBranch": "Aktuellen Branch pushen",
     "pushConfirm": "Diesen Commit zum ausgewählten Remote-Branch pushen? Nicht-Fast-Forward-Updates werden abgelehnt.",
-    "draftConfirm": "Entwurf mit folgendem Repository, Branches, Titel und Beschreibung erstellen? Dabei werden keine Commits gepusht."
+    "draftConfirm": "Entwurf mit folgendem Repository, Branches, Titel und Beschreibung erstellen? Dabei werden keine Commits gepusht.",
+    "generateDraft": "Titel und Beschreibung aus Commits generieren",
+    "generatingDraft": "Titel und Beschreibung werden generiert…",
+    "generateDraftHint": "Claude Code fasst die committeten Änderungen gegenüber dem Zielbranch zusammen. Das Ergebnis ist bearbeitbar.",
+    "replaceDraftConfirm": "Vorhandenen Titel und Beschreibung durch neu generierte Inhalte ersetzen?"
   }
 }

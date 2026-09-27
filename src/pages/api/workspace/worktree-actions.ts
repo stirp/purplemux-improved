@@ -5,6 +5,7 @@ import { withWorktreeMutation, WorktreeError } from '@/lib/worktree-manager';
 import { cleanupWorktrees, measureWorktree, previewWorktreeCleanup } from '@/lib/worktree-organization';
 import { fetchWorktreeRemotes, inspectWorktreeSync, synchronizeWorktree } from '@/lib/worktree-sync';
 import { createWorktreeDraft, pushWorktreeBranch } from '@/lib/worktree-draft';
+import { generateWorktreeDraft } from '@/lib/worktree-draft-generation';
 import { refreshWorktreeReview, saveWorktreeReview } from '@/lib/worktree-delivery';
 
 const snapshot = z.object({
@@ -26,6 +27,8 @@ const schema = z.discriminatedUnion('action', [
   common.extend({ action: z.literal('saveReview'), item: snapshot, url: z.string().trim().min(1).max(2048).nullable() }),
   common.extend({ action: z.literal('refreshReview'), item: snapshot }),
   common.extend({ action: z.literal('pushBranch'), item: snapshot, remote: target }),
+  common.extend({ action: z.literal('generateDraft'), item: snapshot, remote: target, targetBranch: target,
+    locale: z.enum(['en', 'ko', 'ja', 'zh-CN', 'es', 'de', 'fr', 'pt-BR', 'zh-TW', 'ru', 'tr']).default('en') }),
   common.extend({ action: z.literal('createDraft'), item: snapshot, remote: target, provider: z.enum(['github', 'gitlab']),
     targetBranch: target, title: z.string().trim().min(1).max(200), body: z.string().max(20000) }),
 ]);
@@ -51,10 +54,11 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
         case 'saveReview': return saveWorktreeReview(source, data.item, data.url);
         case 'pushBranch': return pushWorktreeBranch(source, data.item, data.remote);
         case 'createDraft': return createWorktreeDraft(source, data.item, data);
+        case 'generateDraft': return generateWorktreeDraft(source, data.item, data);
         case 'refreshReview': return refreshWorktreeReview(source, data.item);
       }
     };
-    const reading = ['measure', 'previewCleanup', 'inspectSync'].includes(data.action);
+    const reading = ['measure', 'previewCleanup', 'inspectSync', 'generateDraft'].includes(data.action);
     return res.status(200).json(reading ? await execute() : await withWorktreeMutation(execute));
   } catch (error) {
     return res.status(error instanceof WorktreeError ? error.status : 500).json({ error: error instanceof Error ? error.message : String(error),

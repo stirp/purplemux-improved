@@ -103,7 +103,9 @@
       "targetNotPublished": "选定远端不存在此目标分支。",
       "pushFailed": "推送失败，请检查认证和远端历史；不会强制推送。",
       "draftCreateFailed": "未确认创建结果。请先检查远端，再重试；重试前会查询已有的开放 PR/MR。",
-      "draftAssociationFailed": "PR/MR 已存在，但本地关联保存失败。请保留此链接并重新关联。"
+      "draftAssociationFailed": "PR/MR 已存在，但本地关联保存失败。请保留此链接并重新关联。",
+      "noDraftCommits": "当前分支没有相对目标分支的新增提交。",
+      "draftGenerationInvalid": "生成结果格式无效，请重试。"
     },
     "searchWorktrees": "搜索分支、路径或工作区",
     "idleFilter": "最近打开时间筛选",
@@ -181,6 +183,10 @@
     "draftBody": "说明（Markdown）",
     "pushBranch": "推送当前分支",
     "pushConfirm": "将此提交推送到选定远端分支？使用普通推送，非快进更新会被拒绝。",
-    "draftConfirm": "按以下仓库、分支、标题和说明创建草稿？此操作不会推送提交。"
+    "draftConfirm": "按以下仓库、分支、标题和说明创建草稿？此操作不会推送提交。",
+    "generateDraft": "根据提交生成标题和说明",
+    "generatingDraft": "正在生成标题和说明…",
+    "generateDraftHint": "使用 Claude Code，根据相对目标分支的已提交代码生成，可继续编辑。",
+    "replaceDraftConfirm": "重新生成将覆盖现有标题和说明，是否继续？"
   }
 }

@@ -22,7 +22,7 @@ export const inspectWorktreeSync = async (source: IWorkspace, snapshot: TWorktre
     const [ref, symbolic] = line.split('\t');
     return symbolic || ref === `refs/heads/${item.branch}` ? [] : [{ ref, name: ref.replace(/^refs\/(heads|remotes)\//, '') }];
   });
-  const selected = targetRef ?? (branches.some((branch) => branch.ref === metadata.targetRef) ? metadata.targetRef : undefined);
+  const selected = targetRef ?? [metadata.targetRef, metadata.baseRef].find((ref) => branches.some((branch) => branch.ref === ref));
   const target = selected ? await resolveTarget(item.directory, item.branch, selected) : null;
   let ahead: number | null = null;
   let behind: number | null = null;

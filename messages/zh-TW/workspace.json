@@ -94,7 +94,9 @@
       "targetNotPublished": "選定遠端不存在此目標分支。",
       "pushFailed": "推送失敗，請檢查認證和遠端歷史；不會強制推送。",
       "draftCreateFailed": "尚未確認建立結果。請先檢查遠端再重試；重試前會查詢已有的開放 PR/MR。",
-      "draftAssociationFailed": "PR/MR 已存在，但本機關聯儲存失敗。請保留此連結並重新關聯。"
+      "draftAssociationFailed": "PR/MR 已存在，但本機關聯儲存失敗。請保留此連結並重新關聯。",
+      "noDraftCommits": "目前分支沒有相對目標分支的新增提交。",
+      "draftGenerationInvalid": "產生結果格式無效，請重試。"
     },
     "searchWorktrees": "搜尋分支、路徑或工作區",
     "idleFilter": "最近開啟時間篩選",
@@ -172,6 +174,10 @@
     "draftBody": "說明（Markdown）",
     "pushBranch": "推送目前分支",
     "pushConfirm": "將此提交推送到選定遠端分支？使用一般推送，非快轉更新會被拒絕。",
-    "draftConfirm": "依以下儲存庫、分支、標題和說明建立草稿？此操作不會推送提交。"
+    "draftConfirm": "依以下儲存庫、分支、標題和說明建立草稿？此操作不會推送提交。",
+    "generateDraft": "根據提交產生標題和說明",
+    "generatingDraft": "正在產生標題和說明…",
+    "generateDraftHint": "使用 Claude Code，根據相對目標分支的已提交程式碼產生，可繼續編輯。",
+    "replaceDraftConfirm": "重新產生將覆蓋現有標題和說明，是否繼續？"
   }
 }

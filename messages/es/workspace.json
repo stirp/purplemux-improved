@@ -94,7 +94,9 @@
       "targetNotPublished": "La rama de destino no existe en ese remoto.",
       "pushFailed": "Falló el envío. Revisa la autenticación y el historial; no se fuerza el envío.",
       "draftCreateFailed": "Creación sin confirmar. Revisa el remoto antes de reintentar; se buscarán PR/MR abiertos existentes.",
-      "draftAssociationFailed": "El PR/MR existe, pero no se guardó el vínculo local. Conserva el enlace y vuelve a vincularlo."
+      "draftAssociationFailed": "El PR/MR existe, pero no se guardó el vínculo local. Conserva el enlace y vuelve a vincularlo.",
+      "noDraftCommits": "No hay commits nuevos respecto a la rama de destino.",
+      "draftGenerationInvalid": "El contenido generado no es válido. Inténtalo de nuevo."
     },
     "searchWorktrees": "Buscar worktrees",
     "idleFilter": "Filtrar por última apertura",
@@ -172,6 +174,10 @@
     "draftBody": "Descripción (Markdown)",
     "pushBranch": "Enviar rama actual",
     "pushConfirm": "¿Enviar este commit a la rama remota seleccionada? Se rechazarán las actualizaciones que no sean de avance rápido.",
-    "draftConfirm": "¿Crear un borrador con este repositorio, ramas, título y descripción? No se enviarán commits."
+    "draftConfirm": "¿Crear un borrador con este repositorio, ramas, título y descripción? No se enviarán commits.",
+    "generateDraft": "Generar título y descripción a partir de los commits",
+    "generatingDraft": "Generando título y descripción…",
+    "generateDraftHint": "Claude Code resume los cambios confirmados respecto a la rama de destino. Puedes editar el resultado.",
+    "replaceDraftConfirm": "¿Reemplazar el título y la descripción existentes por el contenido generado?"
   }
 }
