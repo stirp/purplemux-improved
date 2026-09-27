@@ -11,6 +11,8 @@ import useTabMetadataStore from '@/hooks/use-tab-metadata-store';
 import useConfigStore from '@/hooks/use-config-store';
 import useIsMac from '@/hooks/use-is-mac';
 import useShortcutHints from '@/hooks/use-shortcut-hints';
+import { useResolvedKey } from '@/hooks/use-keybindings-store';
+import { formatHotkeyForDisplay } from '@/lib/keyboard-shortcuts';
 import ShortcutKey from '@/components/shortcut-key';
 import isElectron from '@/hooks/use-is-electron';
 import SystemResources from '@/components/layout/system-resources';
@@ -79,6 +81,10 @@ const ContentHeader = ({
   const isMac = useIsMac();
   const mod = isMac ? '⌘' : 'Ctrl+';
   const showShortcuts = useShortcutHints();
+  const splitRightKey = useResolvedKey('pane.split_right');
+  const splitDownKey = useResolvedKey('pane.split_down');
+  const splitRightDisplay = splitRightKey ? formatHotkeyForDisplay(splitRightKey) : null;
+  const splitDownDisplay = splitDownKey ? formatHotkeyForDisplay(splitDownKey) : null;
 
   const panes = collectPanes(root);
   const focusedPane = panes.find((p) => p.id === activePaneId) ?? panes[0];
@@ -193,16 +199,19 @@ const ContentHeader = ({
                   <SplitVerticalIcon className="h-3.5 w-3.5" />
                 )}
               </TooltipTrigger>
-              <TooltipContent side="bottom">{t('splitVerticalShortcut', { shortcut: `${mod}D` })}</TooltipContent>
+              <TooltipContent side="bottom">{splitRightDisplay
+                ? t('splitVerticalShortcut', { shortcut: isMac ? splitRightDisplay.mac : splitRightDisplay.other })
+                : t('splitVertical')}</TooltipContent>
             </Tooltip>
-            <ShortcutKey
-              mac="⌘D"
-              other="^D"
-              className={cn(
-                'absolute -right-0.5 -top-1.5 rounded bg-muted px-1 py-0.5 text-[10px] font-medium leading-none text-muted-foreground transition-opacity duration-200 pointer-events-none',
-                showShortcuts ? 'opacity-100' : 'opacity-0',
-              )}
-            />
+            {splitRightDisplay && (
+              <ShortcutKey
+                {...splitRightDisplay}
+                className={cn(
+                  'absolute -right-0.5 -top-1.5 rounded bg-muted px-1 py-0.5 text-[10px] font-medium leading-none text-muted-foreground transition-opacity duration-200 pointer-events-none',
+                  showShortcuts ? 'opacity-100' : 'opacity-0',
+                )}
+              />
+            )}
           </div>
 
           <div className="relative">
@@ -224,16 +233,19 @@ const ContentHeader = ({
                   <SplitHorizontalIcon className="h-3.5 w-3.5" />
                 )}
               </TooltipTrigger>
-              <TooltipContent side="bottom">{t('splitHorizontalShortcut', { shortcut: `${mod}⇧D` })}</TooltipContent>
+              <TooltipContent side="bottom">{splitDownDisplay
+                ? t('splitHorizontalShortcut', { shortcut: isMac ? splitDownDisplay.mac : splitDownDisplay.other })
+                : t('splitHorizontal')}</TooltipContent>
             </Tooltip>
-            <ShortcutKey
-              mac="⌘⇧D"
-              other="^⇧D"
-              className={cn(
-                'absolute -right-0.5 -top-1.5 rounded bg-muted px-1 py-0.5 text-[10px] font-medium leading-none text-muted-foreground transition-opacity duration-200 pointer-events-none',
-                showShortcuts ? 'opacity-100' : 'opacity-0',
-              )}
-            />
+            {splitDownDisplay && (
+              <ShortcutKey
+                {...splitDownDisplay}
+                className={cn(
+                  'absolute -right-0.5 -top-1.5 rounded bg-muted px-1 py-0.5 text-[10px] font-medium leading-none text-muted-foreground transition-opacity duration-200 pointer-events-none',
+                  showShortcuts ? 'opacity-100' : 'opacity-0',
+                )}
+              />
+            )}
           </div>
 
           {paneCount >= 2 && (

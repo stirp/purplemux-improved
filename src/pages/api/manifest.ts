@@ -1,14 +1,12 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 
-const handler = (req: NextApiRequest, res: NextApiResponse) => {
-  const proto = req.headers['x-forwarded-proto'] || 'http';
-  const host = req.headers['x-forwarded-host'] || req.headers.host || 'localhost';
-  const startUrl = `${proto}://${host}/`;
-
+const handler = (_req: NextApiRequest, res: NextApiResponse) => {
   const manifest = {
     name: 'purplemux-improved',
     short_name: 'purplemux-improved',
-    start_url: startUrl,
+    id: '/',
+    start_url: '/',
+    scope: '/',
     display: 'standalone',
     theme_color: '#131313',
     background_color: '#131313',
@@ -20,7 +18,7 @@ const handler = (req: NextApiRequest, res: NextApiResponse) => {
 
   res.setHeader('Content-Type', 'application/manifest+json');
   res.setHeader('Cache-Control', 'no-cache');
-  res.json(manifest);
+  res.send(JSON.stringify(manifest));
 };
 
 export default handler;
