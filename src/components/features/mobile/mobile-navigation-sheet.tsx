@@ -139,9 +139,10 @@ const MobileNavigationSheet = ({
 
   const handleToggleWorkspace = useCallback(
     (workspaceId: string) => {
-      setExpandedWsId((prev) => (prev === workspaceId ? null : workspaceId));
+      const parentId = workspaces.find((workspace) => workspace.id === workspaceId)?.parentWorkspaceId;
+      setExpandedWsId(workspaceVisibility.expandedIds.has(workspaceId) ? parentId ?? null : workspaceId);
     },
-    [],
+    [workspaceVisibility.expandedIds, workspaces],
   );
 
   const handleSheetOpenChange = useCallback(
@@ -322,7 +323,7 @@ const MobileNavigationSheet = ({
 
   const renderWorkspaceRow = (ws: IWorkspace) => {
     if (!workspaceVisibility.visibleIds.has(ws.id)) return null;
-    const isExpanded = ws.id === expandedWsId;
+    const isExpanded = workspaceVisibility.expandedIds.has(ws.id);
     const isActive = ws.id === activeWorkspaceId;
     return (
       <div key={ws.id} style={{ marginLeft: (workspaceDepths.get(ws.id) ?? 0) * 12 }}>
@@ -339,6 +340,7 @@ const MobileNavigationSheet = ({
                 : 'text-foreground hover:bg-accent/50',
             )}
             onClick={() => handleToggleWorkspace(ws.id)}
+            aria-expanded={isExpanded}
           >
             {isExpanded ? (
               <ChevronDown size={14} className="shrink-0 text-muted-foreground" />
@@ -352,6 +354,15 @@ const MobileNavigationSheet = ({
                   : <Folder size={14} className="shrink-0 text-muted-foreground" />}
                 <span className="truncate">{ws.name}</span>
               </span>
+              {ws.directories.map((directory, index) => (
+                <span
+                  key={`${index}:${directory}`}
+                  className="mt-0.5 block truncate text-xs text-muted-foreground"
+                  title={directory}
+                >
+                  {directory.replace(/^\/Users\/[^/]+/, '~')}
+                </span>
+              ))}
               {ws.worktree && <span className="mt-0.5 block truncate text-xs text-muted-foreground" title={ws.worktree.branch}>
                 <span className="mr-1 rounded bg-muted px-1 text-[10px]">worktree</span>
                 {ws.worktree.branch}
@@ -368,12 +379,8 @@ const MobileNavigationSheet = ({
             </div>
           </button>
         </MobileWorkspaceActions>
-        <div
-          className="grid transition-[grid-template-rows] duration-200 ease-in-out"
-          style={{ gridTemplateRows: isExpanded ? '1fr' : '0fr' }}
-        >
-          <div className="overflow-hidden">{renderPaneTree(ws.id)}</div>
-        </div>
+        {/* Keep navigation independent of grid-track animation support on iOS 15. */}
+        {isExpanded && <div>{renderPaneTree(ws.id)}</div>}
       </div>
     );
   };
