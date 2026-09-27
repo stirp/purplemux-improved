@@ -36,6 +36,9 @@ const EditWorkspaceDialog = ({
   const ts = useTranslations('sidebar');
   const tc = useTranslations('common');
   const groups = useWorkspaceStore((s) => s.groups);
+  const isChildWorkspace = useWorkspaceStore(
+    (s) => !!s.workspaces.find((w) => w.id === workspaceId)?.parentWorkspaceId,
+  );
   const currentGroupId = useWorkspaceStore(
     (s) => s.workspaces.find((w) => w.id === workspaceId)?.groupId ?? null,
   );
@@ -54,7 +57,7 @@ const EditWorkspaceDialog = ({
 
   const trimmed = name.trim();
   const nameChanged = trimmed.length > 0 && trimmed !== currentName;
-  const groupChanged = selectedGroupId !== currentGroupId;
+  const groupChanged = !isChildWorkspace && selectedGroupId !== currentGroupId;
   const canSubmit = (nameChanged || groupChanged) && !isSubmitting;
 
   const handleSubmit = useCallback(async () => {
@@ -100,7 +103,7 @@ const EditWorkspaceDialog = ({
           autoFocus
         />
 
-        {groups.length > 0 && (
+        {!isChildWorkspace && groups.length > 0 && (
           <Select
             items={groupItems}
             value={selectedGroupId ?? UNGROUPED_VALUE}

@@ -2,6 +2,8 @@ import { useMemo, useState, useCallback, useRef } from 'react';
 import {
   ChevronDown,
   ChevronRight,
+  Folder,
+  GitBranch,
   FolderPlus,
   GitCompareArrows,
   Globe,
@@ -35,6 +37,8 @@ import WorkspaceStatusIndicator from '@/components/features/workspace/workspace-
 import SidebarRateLimits from '@/components/layout/sidebar-rate-limits';
 import MobileWorkspaceGroupHeader from '@/components/features/mobile/mobile-workspace-group-header';
 import RenameGroupDialog from '@/components/features/workspace/rename-group-dialog';
+import MobileWorkspaceActions from './mobile-workspace-actions';
+import { getVisuallyOrderedWorkspaces } from '@/lib/workspace-order';
 
 const WorkspacePortsLabel = ({ workspaceId }: { workspaceId: string }) => {
   const label = useTabStore(
@@ -274,11 +278,28 @@ const MobileNavigationSheet = ({
     | { type: 'group'; group: IWorkspaceGroup; workspaces: IWorkspace[] }
     | { type: 'ungrouped'; workspaces: IWorkspace[] };
 
+  const workspaceDepths = useMemo(() => {
+    const byId = new Map(workspaces.map((ws) => [ws.id, ws]));
+    return new Map(workspaces.map((ws) => {
+      let depth = 0;
+      let parentId = ws.parentWorkspaceId;
+      const seen = new Set([ws.id]);
+      while (parentId && !seen.has(parentId) && depth < 6) {
+        const parent = byId.get(parentId);
+        if (!parent) break;
+        seen.add(parentId);
+        depth++;
+        parentId = parent.parentWorkspaceId;
+      }
+      return [ws.id, depth];
+    }));
+  }, [workspaces]);
+
   const sections = useMemo<TSection[]>(() => {
     const validGroupIds = new Set(groups.map((g) => g.id));
     const byGroup = new Map<string, IWorkspace[]>();
     const ungrouped: IWorkspace[] = [];
-    for (const ws of workspaces) {
+    for (const ws of getVisuallyOrderedWorkspaces(workspaces, groups)) {
       const gid = ws.groupId ?? null;
       if (gid && validGroupIds.has(gid)) {
         const list = byGroup.get(gid) ?? [];
@@ -301,34 +322,48 @@ const MobileNavigationSheet = ({
     const isExpanded = ws.id === expandedWsId;
     const isActive = ws.id === activeWorkspaceId;
     return (
-      <div key={ws.id}>
-        <button
-          className={cn(
-            'flex w-full items-center gap-2 px-4 py-3 text-left text-sm transition-colors',
-            isActive
-              ? 'font-medium text-foreground'
-              : 'text-foreground hover:bg-accent/50',
-          )}
-          onClick={() => handleToggleWorkspace(ws.id)}
-        >
-          {isExpanded ? (
-            <ChevronDown size={14} className="shrink-0 text-muted-foreground" />
-          ) : (
-            <ChevronRight size={14} className="shrink-0 text-muted-foreground" />
-          )}
-          <div className="min-w-0 flex-1">
-            <span className="block truncate">{ws.name}</span>
-            <WorkspacePortsLabel workspaceId={ws.id} />
-            {!isExpanded && (
-              <WorkspaceStatusIndicator
-                workspaceId={ws.id}
-                tabs={(workspaceLayouts[ws.id] ?? []).flatMap((pane) =>
-                  [...pane.tabs].sort((a, b) => a.order - b.order),
-                )}
-              />
+      <div key={ws.id} style={{ marginLeft: (workspaceDepths.get(ws.id) ?? 0) * 12 }}>
+        <div className="flex items-center pr-1">
+          <button
+            className={cn(
+              'flex min-w-0 flex-1 items-center gap-2 py-3 pl-4 pr-1 text-left text-sm transition-colors',
+              isActive
+                ? 'font-medium text-foreground'
+                : 'text-foreground hover:bg-accent/50',
             )}
-          </div>
-        </button>
+            onClick={() => handleToggleWorkspace(ws.id)}
+          >
+            {isExpanded ? (
+              <ChevronDown size={14} className="shrink-0 text-muted-foreground" />
+            ) : (
+              <ChevronRight size={14} className="shrink-0 text-muted-foreground" />
+            )}
+            <div className="min-w-0 flex-1">
+              <span className="flex items-center gap-1.5">
+                {ws.worktree ? <GitBranch size={14} className="shrink-0 text-ui-blue" />
+                  : <Folder size={14} className="shrink-0 text-muted-foreground" />}
+                <span className="truncate">{ws.name}</span>
+              </span>
+              {ws.worktree && <span className="mt-0.5 block truncate text-xs text-muted-foreground" title={ws.worktree.branch}>
+                <span className="mr-1 rounded bg-muted px-1 text-[10px]">worktree</span>
+                {ws.worktree.branch}
+              </span>}
+              <WorkspacePortsLabel workspaceId={ws.id} />
+              {!isExpanded && (
+                <WorkspaceStatusIndicator
+                  workspaceId={ws.id}
+                  tabs={(workspaceLayouts[ws.id] ?? []).flatMap((pane) =>
+                    [...pane.tabs].sort((a, b) => a.order - b.order),
+                  )}
+                />
+              )}
+            </div>
+          </button>
+          <MobileWorkspaceActions workspace={ws} onCreated={(id) => {
+            useWorkspaceStore.getState().switchWorkspace(id);
+            setExpandedWsId(id);
+          }} />
+        </div>
         <div
           className="grid transition-[grid-template-rows] duration-200 ease-in-out"
           style={{ gridTemplateRows: isExpanded ? '1fr' : '0fr' }}
