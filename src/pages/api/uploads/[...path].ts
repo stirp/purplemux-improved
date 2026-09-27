@@ -3,6 +3,8 @@ import { stat } from 'fs/promises';
 import { pipeline } from 'stream/promises';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { getImageMimeForPath, resolveUploadImagePath } from '@/lib/uploads-store';
+import { verifyRequestSession } from '@/lib/auth';
+import { verifyCliToken } from '@/lib/cli-token';
 import { createLogger } from '@/lib/logger';
 
 const log = createLogger('uploads');
@@ -17,6 +19,11 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   if (req.method !== 'GET') {
     res.setHeader('Allow', 'GET');
     return res.status(405).json({ error: 'Method not allowed' });
+  }
+
+  if (!verifyCliToken(req) && !(await verifyRequestSession(req.headers.cookie))) {
+    res.setHeader('Cache-Control', 'no-store');
+    return res.status(401).json({ error: 'Unauthorized' });
   }
 
   const parts = Array.isArray(req.query.path)

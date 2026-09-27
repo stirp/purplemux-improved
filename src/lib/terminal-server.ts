@@ -412,14 +412,17 @@ export const handleConnection = async (ws: WebSocket, request: IncomingMessage, 
   const ptyPid = ptyProcess.pid;
 
   const sendStdout = (data: string) => {
-    ws.send(encodeStdout(data));
+    ws.send(encodeStdout(data), (error) => {
+      if (error || conn.cleaned || ws.readyState !== WebSocket.OPEN) return;
+      if (conn.backpressurePaused && ws.bufferedAmount < BACKPRESSURE_LOW) {
+        conn.backpressurePaused = false;
+        ptyProcess!.resume();
+      }
+    });
 
     if (ws.bufferedAmount > BACKPRESSURE_HIGH && !conn.backpressurePaused) {
       conn.backpressurePaused = true;
       ptyProcess!.pause();
-    } else if (ws.bufferedAmount < BACKPRESSURE_LOW && conn.backpressurePaused) {
-      conn.backpressurePaused = false;
-      ptyProcess!.resume();
     }
   };
 

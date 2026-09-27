@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { z } from 'zod';
 import { getSessionCwd, hasSession } from '@/lib/tmux';
-import { commitMessageSchema, commitStagedChanges, generateCommitMessage, GitCommitError, inspectCommit } from '@/lib/git-commit';
+import { commitMessageSchema, commitWorkingChanges, generateCommitMessage, GitCommitError, inspectCommit } from '@/lib/git-commit';
 
 const oid = z.string().regex(/^[a-f0-9]{40,64}$/);
 const common = z.object({ session: z.string().min(1).max(200) });
@@ -24,7 +24,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (!cwd) return res.status(404).json({ error: 'Session directory not found' });
     const result = data.action === 'inspect' ? await inspectCommit(cwd)
       : data.action === 'generate' ? await generateCommitMessage(cwd, data.locale)
-        : await commitStagedChanges(cwd, data.snapshot, data.message);
+        : await commitWorkingChanges(cwd, data.snapshot, data.message);
     return res.status(200).json(result);
   } catch (error) {
     return res.status(error instanceof GitCommitError ? error.status : 500).json({

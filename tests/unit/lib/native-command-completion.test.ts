@@ -9,7 +9,7 @@ afterEach(() => vi.useRealTimers());
 
 describe('native command completion', () => {
   it.each([['claude', claude], ['codex', codex]] as const)('keeps %s command menus active, then returns after the composer is restored', (provider, idle) => {
-    let screen = idle;
+    let screen: string = idle;
     const complete = vi.fn();
     const completion = new NativeCommandCompletion(provider, () => screen, complete);
     completion.parsed(screen);

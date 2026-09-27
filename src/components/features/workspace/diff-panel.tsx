@@ -9,11 +9,12 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { copyToClipboard } from '@/lib/clipboard';
 import useIsMobile from '@/hooks/use-is-mobile';
+import useDiffViewMode from '@/hooks/use-diff-view-mode';
 import useConfigStore, { type TGitAskProvider } from '@/hooks/use-config-store';
 import DiffHistoryView from '@/components/features/workspace/diff-history-view';
 import DiffFileList from '@/components/features/workspace/diff-file-list';
 import GitCommitDialog from '@/components/features/workspace/git-commit-dialog';
-import type { IDiffSettings, TDiffTab, TDiffViewMode } from '@/types/terminal';
+import type { IDiffSettings, TDiffTab } from '@/types/terminal';
 
 interface IDiffPanelProps {
   sessionName: string;
@@ -108,7 +109,7 @@ const DiffPanel = ({ sessionName, onSendToAgent, onClose, settings, onSettingsCh
   const [stash, setStash] = useState(0);
   const [headCommit, setHeadCommit] = useState<IHeadCommit | null>(null);
   const [repoRoot, setRepoRoot] = useState('');
-  const viewMode: TDiffViewMode = settings?.viewMode ?? 'split';
+  const [viewMode, setViewMode] = useDiffViewMode();
   const activeTab: TDiffTab = settings?.activeTab ?? 'changes';
   const [historyRefreshToken, setHistoryRefreshToken] = useState(0);
   const [syncing, setSyncing] = useState(false);
@@ -341,7 +342,7 @@ const DiffPanel = ({ sessionName, onSendToAgent, onClose, settings, onSettingsCh
                         className="h-7 w-7 text-muted-foreground"
                       />
                     }
-                    onClick={() => onSettingsChange?.({ viewMode: viewMode === 'split' ? 'unified' : 'split' })}
+                    onClick={() => setViewMode(viewMode === 'split' ? 'unified' : 'split')}
                     aria-label={viewMode === 'split' ? t('lineByLine') : t('sideBySide')}
                   >
                     {viewMode === 'split' ? <Rows2 className="h-3.5 w-3.5" /> : <Columns2 className="h-3.5 w-3.5" />}
