@@ -2,6 +2,7 @@ import { useMemo, useState, useCallback } from 'react';
 import {
   ChevronDown,
   ChevronRight,
+  CornerDownRight,
   Folder,
   GitBranch,
   FolderPlus,
@@ -38,7 +39,7 @@ import SidebarRateLimits from '@/components/layout/sidebar-rate-limits';
 import MobileWorkspaceGroupHeader from '@/components/features/mobile/mobile-workspace-group-header';
 import RenameGroupDialog from '@/components/features/workspace/rename-group-dialog';
 import MobileWorkspaceActions from './mobile-workspace-actions';
-import { getVisuallyOrderedWorkspaces } from '@/lib/workspace-order';
+import { getVisuallyOrderedWorkspaces, getWorkspaceVisibility } from '@/lib/workspace-order';
 import useTouchDrag from '@/hooks/use-touch-drag';
 import useNavigationDrag, { reorderNavigationIds } from '@/hooks/use-navigation-drag';
 
@@ -91,6 +92,10 @@ const MobileNavigationSheet = ({
   const { attentionCount, busyCount } = useNotificationCount();
   const sessionsBadge = attentionCount + busyCount;
   const [expandedWsId, setExpandedWsId] = useState<string | null>(activeWorkspaceId);
+  const workspaceVisibility = useMemo(
+    () => getWorkspaceVisibility(workspaces, expandedWsId),
+    [workspaces, expandedWsId],
+  );
   const [renameGroupId, setRenameGroupId] = useState<string | null>(null);
   const [prevOpen, setPrevOpen] = useState(open);
   if (open !== prevOpen) {
@@ -316,6 +321,7 @@ const MobileNavigationSheet = ({
   }, [workspaces, groups]);
 
   const renderWorkspaceRow = (ws: IWorkspace) => {
+    if (!workspaceVisibility.visibleIds.has(ws.id)) return null;
     const isExpanded = ws.id === expandedWsId;
     const isActive = ws.id === activeWorkspaceId;
     return (
@@ -341,6 +347,7 @@ const MobileNavigationSheet = ({
             )}
             <div className="min-w-0 flex-1">
               <span className="flex items-center gap-1.5">
+                {(workspaceDepths.get(ws.id) ?? 0) > 0 && <CornerDownRight aria-hidden="true" size={14} className="shrink-0 text-accent-color" />}
                 {ws.worktree ? <GitBranch size={14} className="shrink-0 text-ui-blue" />
                   : <Folder size={14} className="shrink-0 text-muted-foreground" />}
                 <span className="truncate">{ws.name}</span>

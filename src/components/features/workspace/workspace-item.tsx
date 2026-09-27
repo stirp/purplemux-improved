@@ -1,6 +1,6 @@
 import ContextMenuSettingsButton from "@/components/ui/context-menu-settings-button";
 import { useCallback, useEffect, useState, memo } from 'react';
-import { Pencil, Trash2, FolderPlus, FolderMinus, Folder, GitBranch } from 'lucide-react';
+import { Pencil, Trash2, FolderPlus, FolderMinus, Folder, GitBranch, ChevronDown, ChevronRight, CornerDownRight } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
 import {
@@ -25,6 +25,7 @@ interface IWorkspaceItemProps {
   workspace: IWorkspace;
   isActive: boolean;
   isDeleting: boolean;
+  childrenExpanded?: boolean;
   shortcutLabel?: string;
   showShortcut: boolean;
   tabs?: ITab[];
@@ -37,6 +38,7 @@ const WorkspaceItem = ({
   workspace,
   isActive,
   isDeleting,
+  childrenExpanded,
   shortcutLabel,
   showShortcut,
   tabs,
@@ -126,6 +128,13 @@ const WorkspaceItem = ({
         onDoubleClick={startEditing}
         role="button"
         aria-current={isActive ? 'true' : undefined}
+        aria-expanded={childrenExpanded}
+        onKeyDown={(event) => {
+          if (event.target === event.currentTarget && (event.key === 'Enter' || event.key === ' ')) {
+            event.preventDefault();
+            handleClick();
+          }
+        }}
         tabIndex={0}
         render={<div />}
       >
@@ -139,20 +148,28 @@ const WorkspaceItem = ({
             {shortcutLabel}
           </span>
         )}
-        {isEditing ? (
-          <input
-            ref={inputRef}
-            className="w-full border-b border-accent-color bg-transparent p-0 text-sm font-medium leading-tight text-foreground outline-none"
-            value={draft}
-            onChange={(e) => setDraft(e.target.value)}
-            onKeyDown={handleKeyDown}
-            onBlur={commit}
-          />
-        ) : (
-          <span className="truncate border-b border-transparent text-sm font-medium leading-tight">
-            {workspace.name}
-          </span>
-        )}
+        <div className="flex min-w-0 items-center gap-1.5">
+          {depth > 0 && <CornerDownRight aria-hidden="true" className="h-3.5 w-3.5 shrink-0 text-accent-color" />}
+          {childrenExpanded !== undefined ? (
+            childrenExpanded
+              ? <ChevronDown aria-hidden="true" className="h-3.5 w-3.5 shrink-0 text-accent-color" />
+              : <ChevronRight aria-hidden="true" className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+          ) : <Folder aria-hidden="true" className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />}
+          {isEditing ? (
+            <input
+              ref={inputRef}
+              className="min-w-0 w-full border-b border-accent-color bg-transparent p-0 text-sm font-medium leading-tight text-foreground outline-none"
+              value={draft}
+              onChange={(e) => setDraft(e.target.value)}
+              onKeyDown={handleKeyDown}
+              onBlur={commit}
+            />
+          ) : (
+            <span className="truncate border-b border-transparent text-sm font-medium leading-tight">
+              {workspace.name}
+            </span>
+          )}
+        </div>
         {displayDirs.map((dir, i) => (
           <span key={dir} className={cn('truncate text-xs leading-tight text-muted-foreground/70', i === 0 && 'mt-1')}>
             {dir}

@@ -16,6 +16,7 @@ import ShortcutKey from '@/components/shortcut-key';
 import useShortcutHints from '@/hooks/use-shortcut-hints';
 import { useRouter } from 'next/router';
 import { cn } from '@/lib/utils';
+import { getWorkspaceVisibility } from '@/lib/workspace-order';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   AlertDialog,
@@ -67,6 +68,10 @@ const Sidebar = () => {
   const workspaces = useWorkspaceStore((s) => s.workspaces);
   const groups = useWorkspaceStore((s) => s.groups);
   const activeWorkspaceId = useWorkspaceStore((s) => s.activeWorkspaceId);
+  const workspaceVisibility = useMemo(
+    () => getWorkspaceVisibility(workspaces, activeWorkspaceId),
+    [workspaces, activeWorkspaceId],
+  );
   const collapsed = useWorkspaceStore((s) => s.sidebarCollapsed);
   const width = useWorkspaceStore((s) => s.sidebarWidth);
   const isLoading = useWorkspaceStore((s) => s.isLoading);
@@ -426,6 +431,7 @@ const Sidebar = () => {
 
   const renderWorkspaceRow = (entry: TRenderEntry) => {
     const { ws, flatIdx } = entry;
+    if (!workspaceVisibility.visibleIds.has(ws.id)) return null;
     const isDropBefore =
       dropTarget?.position === flatIdx &&
       dropTarget.edge === 'before' &&
@@ -457,6 +463,7 @@ const Sidebar = () => {
           workspace={ws}
           isActive={ws.id === activeWorkspaceId && router.pathname === '/' && !activeWebviewId}
           isDeleting={deletingIds.has(ws.id)}
+          childrenExpanded={workspaceVisibility.parentIds.has(ws.id) ? workspaceVisibility.expandedIds.has(ws.id) : undefined}
           shortcutLabel={flatIdx < 8 ? `⌘${flatIdx + 1}` : flatIdx === workspaces.length - 1 ? '⌘9' : undefined}
           showShortcut={showShortcuts}
           tabs={workspaceTabs[ws.id]}
