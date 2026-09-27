@@ -114,6 +114,9 @@ const scanCodexLines = (lines: string[], elapsed: number): IAgentRuntimeSnapshot
     staleMs: 0,
   };
   const completedCalls = new Set<string>();
+  let workStateEvent: IAgentRuntimeSnapshot['workStateEvent'];
+  let sawLifecycle = false;
+  let pastTurnStart = false;
 
   for (let i = lines.length - 1; i >= 0; i--) {
     const parsed = tryParseJson(lines[i]);
@@ -127,25 +130,37 @@ const scanCodexLines = (lines: string[], elapsed: number): IAgentRuntimeSnapshot
 
     if (item.type === 'event_msg') {
       const eventType = safeString(payload.type);
-      if (isCompletionEvent(eventType)) {
-        state.terminalIdle = true;
-        state.needsStaleRecheck = false;
-        state.staleMs = 0;
+      const turnItem = payload.item as { type?: string } | undefined;
+      const startsTurn = eventType === 'task_started' || eventType === 'TurnStarted'
+        || eventType === 'user_message' || eventType === 'entered_review_mode'
+        || eventType === 'EnteredReviewMode'
+        || (eventType === 'item_completed' && turnItem?.type === 'EnteredReviewMode');
+      const completesTurn = isCompletionEvent(eventType);
+      const interruptsTurn = isInterruptEvent(eventType);
+      // Review forwards child starts but completes with the outer turn ID.
+      // Use the newest lifecycle record in this transcript, not ID equality.
+      if (!sawLifecycle && (startsTurn || completesTurn || interruptsTurn)) {
+        sawLifecycle = true;
+        if (Number.isFinite(timestamp)) {
+          workStateEvent = { name: startsTurn ? 'prompt-submit' : interruptsTurn ? 'interrupt' : 'stop', at: timestamp };
+        }
+        state.terminalIdle = completesTurn || interruptsTurn;
+        state.interrupted = interruptsTurn;
+      }
+      if (startsTurn && eventType !== 'user_message') {
+        pastTurnStart = true;
         continue;
       }
-      if (isInterruptEvent(eventType)) {
-        state.terminalIdle = true;
-        state.interrupted = true;
-        state.needsStaleRecheck = false;
-        state.staleMs = 0;
+      if (completesTurn || interruptsTurn) {
         continue;
       }
       if (eventType === 'user_message') {
-        if (!state.lastAssistantSnippet && !state.currentAction) state.reset = true;
-        if (!state.terminalIdle) {
+        if (!pastTurnStart && !state.lastAssistantSnippet && !state.currentAction) state.reset = true;
+        if (!pastTurnStart && !state.terminalIdle) {
           state.needsStaleRecheck = elapsed <= STALE_MS_AWAITING_API;
           state.staleMs = STALE_MS_AWAITING_API;
         }
+        pastTurnStart = true;
         continue;
       }
       if (eventType === 'agent_message') {
@@ -153,10 +168,10 @@ const scanCodexLines = (lines: string[], elapsed: number): IAgentRuntimeSnapshot
         if (message && !state.lastAssistantSnippet) {
           state.lastAssistantSnippet = compact(message);
         }
-        if (!state.reset && !state.terminalIdle && !state.currentAction && message) {
+        if (!pastTurnStart && !state.reset && !state.terminalIdle && !state.currentAction && message) {
           state.currentAction = { toolName: null, summary: compact(message) };
         }
-        if (!state.terminalIdle) {
+        if (!pastTurnStart && !state.terminalIdle) {
           state.needsStaleRecheck = elapsed <= STALE_MS_INTERRUPTED;
           state.staleMs = STALE_MS_INTERRUPTED;
         }
@@ -168,7 +183,7 @@ const scanCodexLines = (lines: string[], elapsed: number): IAgentRuntimeSnapshot
       }
       if ((eventType === 'exec_command_begin' || eventType === 'ExecCommandBegin') && payload.call_id) {
         const callId = String(payload.call_id);
-        if (!state.reset && !state.terminalIdle && !completedCalls.has(callId) && !state.currentAction) {
+        if (!pastTurnStart && !state.reset && !state.terminalIdle && !completedCalls.has(callId) && !state.currentAction) {
           state.currentAction = commandAction(payload);
           state.needsStaleRecheck = false;
           state.staleMs = 0;
@@ -187,14 +202,14 @@ const scanCodexLines = (lines: string[], elapsed: number): IAgentRuntimeSnapshot
       if (responseType === 'function_call' || responseType === 'custom_tool_call') {
         const name = safeString(payload.name);
         if (callId && completedCalls.has(callId)) continue;
-        if (!state.reset && !state.terminalIdle && name && !state.currentAction) {
+        if (!pastTurnStart && !state.reset && !state.terminalIdle && name && !state.currentAction) {
           state.currentAction = functionCallAction(name, payload.arguments ?? payload.input);
         }
         continue;
       }
       if (responseType === 'web_search_call') {
         const status = safeString(payload.status);
-        if (!state.reset && !state.terminalIdle && status !== 'completed' && status !== 'failed' && !state.currentAction) {
+        if (!pastTurnStart && !state.reset && !state.terminalIdle && status !== 'completed' && status !== 'failed' && !state.currentAction) {
           state.currentAction = {
             toolName: 'WebSearch',
             summary: safeString(payload.query) ? `WebSearch "${safeString(payload.query)}"` : 'WebSearch',
@@ -215,6 +230,7 @@ const scanCodexLines = (lines: string[], elapsed: number): IAgentRuntimeSnapshot
     lastEntryTs: state.lastEntryTs,
     staleMs: state.staleMs,
     interrupted: state.interrupted,
+    workStateEvent,
     needsStaleRecheck: state.needsStaleRecheck,
   };
 };

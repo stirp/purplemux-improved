@@ -62,6 +62,18 @@ describe('codex active session detection fallback', () => {
     mockHome.value = await fs.mkdtemp(path.join(os.tmpdir(), 'purplemux-codex-home-'));
   });
 
+  it('never selects a newer review child as the root cwd fallback', async () => {
+    const cwd = '/tmp/project-review';
+    const root = await writeCodexSession(mockHome.value, 'root-session', cwd);
+    const child = await writeCodexSession(mockHome.value, 'review-session', cwd);
+    const meta = JSON.parse(await fs.readFile(child, 'utf8'));
+    meta.payload.source = { subagent: 'review' };
+    await fs.writeFile(child, JSON.stringify(meta) + '\n');
+    await fs.utimes(root, new Date(0), new Date(0));
+    const { findLatestCodexSessionForCwd } = await import('@/lib/providers/codex/session-detection');
+    expect((await findLatestCodexSessionForCwd(cwd))?.sessionId).toBe('root-session');
+  });
+
   it('does not attach the latest cwd session unless cwd fallback is explicit', async () => {
     const cwd = '/tmp/project-a';
     const sessionId = '55555555-5555-4555-8555-555555555555';

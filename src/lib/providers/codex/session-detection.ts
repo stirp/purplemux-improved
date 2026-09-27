@@ -43,6 +43,7 @@ interface ICodexSessionMeta {
   cwd: string | null;
   startedAt: number | null;
   mtimeMs: number | null;
+  isSubagent: boolean;
 }
 
 type TCodexDetectedSessionMeta = Omit<ICodexSessionMeta, 'jsonlPath'> & {
@@ -77,11 +78,11 @@ const readFirstLine = async (jsonlPath: string): Promise<string | null> => {
   }
 };
 
-const readCodexSessionMeta = async (jsonlPath: string): Promise<ICodexSessionMeta | null> => {
-  const firstLine = await readFirstLine(jsonlPath);
-  if (!firstLine) return null;
-
+export const readCodexSessionMeta = async (jsonlPath: string): Promise<ICodexSessionMeta | null> => {
   try {
+    const firstLine = await readFirstLine(jsonlPath);
+    if (!firstLine) return null;
+
     const parsed = JSON.parse(firstLine) as {
       type?: string;
       timestamp?: string;
@@ -89,6 +90,7 @@ const readCodexSessionMeta = async (jsonlPath: string): Promise<ICodexSessionMet
         id?: string;
         cwd?: string;
         timestamp?: string;
+        source?: unknown;
       };
     };
     if (parsed.type !== 'session_meta' || !parsed.payload?.id) return null;
@@ -101,6 +103,8 @@ const readCodexSessionMeta = async (jsonlPath: string): Promise<ICodexSessionMet
       cwd: parsed.payload.cwd ?? null,
       startedAt: startedAt !== null && Number.isFinite(startedAt) ? startedAt : null,
       mtimeMs: null,
+      isSubagent: typeof parsed.payload.source === 'object' && parsed.payload.source !== null
+        && 'subagent' in parsed.payload.source,
     };
   } catch {
     return null;
@@ -153,7 +157,7 @@ export const findLatestCodexSessionForCwd = async (
 
   for (const candidate of candidates) {
     const meta = await readCodexSessionMeta(candidate.jsonlPath);
-    if (meta?.cwd === cwd) return { ...meta, mtimeMs: candidate.mtimeMs };
+    if (meta?.cwd === cwd && !meta.isSubagent) return { ...meta, mtimeMs: candidate.mtimeMs };
   }
 
   return null;
@@ -280,6 +284,7 @@ export const detectActiveSession = async (
         cwd: found.cwd,
         startedAt: null,
         mtimeMs: null,
+        isSubagent: false,
       },
     );
   }

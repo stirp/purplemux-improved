@@ -67,6 +67,8 @@ const AGENT_GUARDED_STATES: Set<TCliState> = new Set(['busy', 'idle', 'needs-inp
 const SHELL_TITLE_RE = /^[^|]+\|[^|]+$/;
 const PROCESS_RETRY_COUNT = 3;
 const JSONL_WATCH_DEBOUNCE_MS = 100;
+const shouldWatchCodex = (entry: Pick<ITabStatusEntry, 'panelType' | 'cliState'>): boolean =>
+  entry.panelType === 'codex-cli' && entry.cliState !== 'inactive' && entry.cliState !== 'cancelled';
 const LAUNCH_READY_POLL_DELAYS_MS = [700, 1_500, 3_000, 5_000, 8_000] as const;
 
 const g = globalThis as unknown as { __ptStatusManager?: StatusManager };
@@ -147,7 +149,7 @@ class StatusManager {
           lastEvent: syntheticLastEvent,
           eventSeq: 0,
         });
-        if ((cliState === 'needs-input' || cliState === 'unknown') && detected.jsonlPath) {
+        if ((cliState === 'needs-input' || cliState === 'unknown' || shouldWatchCodex({ panelType: tab.panelType, cliState })) && detected.jsonlPath) {
           this.startJsonlWatch(tab.id, detected.jsonlPath);
         }
         if (cliState === 'unknown') {
@@ -347,6 +349,7 @@ class StatusManager {
             eventSeq: 0,
           };
           this.tabs.set(tab.id, entry);
+          if (shouldWatchCodex(entry) && entry.jsonlPath) this.startJsonlWatch(tab.id, entry.jsonlPath);
           this.persistToLayout(entry);
           this.broadcastUpdate(tab.id, entry);
           if (initialState === 'unknown') {
@@ -368,6 +371,7 @@ class StatusManager {
         existing.agentSessionId = provider?.sessionIdFromJsonlPath(refreshed.jsonlPath)
           ?? provider?.readSessionId(tab) ?? null;
         existing.jsonlPath = refreshed.jsonlPath ?? existing.jsonlPath;
+        if (shouldWatchCodex(existing) && existing.jsonlPath) this.startJsonlWatch(tab.id, existing.jsonlPath);
         existing.lastUserMessage = tab.lastUserMessage;
 
         if (processChanged) {
@@ -557,9 +561,9 @@ class StatusManager {
       });
     }
 
-    const shouldWatch = (newState === 'busy' || newState === 'needs-input') && entry.jsonlPath;
+    const shouldWatch = (newState === 'busy' || newState === 'needs-input' || shouldWatchCodex(entry)) && entry.jsonlPath;
     const keepForFinalRead = newState === 'ready-for-review' && this.jsonlWatchers.has(tabId);
-    if (shouldWatch && !this.jsonlWatchers.has(tabId)) {
+    if (shouldWatch) {
       this.startJsonlWatch(tabId, entry.jsonlPath!);
     } else if (!shouldWatch && !keepForFinalRead && this.jsonlWatchers.has(tabId)) {
       this.stopJsonlWatch(tabId);
@@ -686,7 +690,7 @@ class StatusManager {
     return undefined;
   }
 
-  updateTabFromHook(tmuxSession: string, event: string, notificationType?: string): void {
+  updateTabFromHook(tmuxSession: string, event: string, notificationType?: string, eventAt = Date.now()): void {
     const tabId = this.findTabIdBySession(tmuxSession);
     if (!tabId) {
       hookLog.debug({ tmuxSession, event, notificationType }, 'no tabId for session');
@@ -715,11 +719,10 @@ class StatusManager {
       return;
     }
 
-    const now = Date.now();
     const seq = (entry.eventSeq ?? 0) + 1;
     entry.eventSeq = seq;
-    entry.lastEvent = { name: eventName, at: now, seq };
-    if (eventName === 'session-start') entry.lastResumeOrStartedAt = now;
+    entry.lastEvent = { name: eventName, at: eventAt, seq };
+    if (eventName === 'session-start') entry.lastResumeOrStartedAt = eventAt;
     this.broadcast({ type: 'status:hook-event', tabId, event: entry.lastEvent });
 
     const prevState = entry.cliState;
@@ -796,6 +799,7 @@ class StatusManager {
     providerId: string,
     tmuxSession: string,
     meta: IAgentHookMetaPatch,
+    allowSessionChange = true,
   ): { tabId: string; cliState: TCliState } | null {
     const tabId = this.findTabIdBySession(tmuxSession);
     if (!tabId) return null;
@@ -809,6 +813,8 @@ class StatusManager {
       );
       return null;
     }
+
+    if (!allowSessionChange && entry.agentSessionId && meta.sessionId !== entry.agentSessionId) return null;
 
     let changed = false;
 
@@ -843,6 +849,7 @@ class StatusManager {
     }
 
     if (changed) {
+      if (shouldWatchCodex(entry) && entry.jsonlPath) this.startJsonlWatch(tabId, entry.jsonlPath);
       const provider = expectedProvider ?? getProvider(providerId);
       if (provider) {
         updateTabAgentState(entry.tmuxSession, provider, {
@@ -1158,20 +1165,25 @@ class StatusManager {
       return;
     }
     const isActive = entry.cliState === 'busy' || entry.cliState === 'needs-input' || entry.cliState === 'unknown';
-    if (!isActive && entry.cliState !== 'ready-for-review') {
+    if (!isActive && entry.cliState !== 'ready-for-review' && !shouldWatchCodex(entry)) {
       this.stopJsonlWatch(tabId);
       return;
     }
 
     const provider = getProviderByPanelType(entry.panelType);
     if (!provider) return;
-    const { currentAction, lastAssistantSnippet, reset, interrupted, lastEntryTs } = await provider.readRuntimeSnapshot(jsonlPath);
+    const { currentAction, lastAssistantSnippet, reset, interrupted, lastEntryTs, workStateEvent } = await provider.readRuntimeSnapshot(jsonlPath);
+    if (this.tabs.get(tabId) !== entry || entry.jsonlPath !== jsonlPath) return;
     if (entry.agentProviderId === CODEX_PROVIDER_ID || entry.panelType === 'codex-cli') {
       cacheCodexRateLimitsFromJsonl(jsonlPath).catch(() => {});
+      if (shouldWatchCodex(entry) && workStateEvent && workStateEvent.at > (entry.lastEvent?.at ?? 0)) {
+        this.updateTabFromHook(entry.tmuxSession, workStateEvent.name, undefined, workStateEvent.at);
+      }
     }
 
     if (
       interrupted
+      && !workStateEvent
       && entry.cliState === 'busy'
       && lastEntryTs !== null
       && lastEntryTs > (entry.lastInterruptTs ?? 0)
