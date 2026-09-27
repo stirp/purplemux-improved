@@ -24,7 +24,11 @@
     "notice": "從已提交的版本建立獨立目錄，不複製未提交的變更。刪除工作區時會保留目錄和 Git 分支。",
     "dirty": "來源專案有未提交的變更。",
     "path": "工作樹目錄",
-    "loading": "正在讀取 Git 儲存庫…"
+    "loading": "正在讀取 Git 儲存庫…",
+    "generateBranch": "Generate branch name",
+    "generatingBranch": "Generating branch name…",
+    "generationFailed": "Failed to generate branch name. Please try again.",
+    "codexTextOnlyUnavailable": "Codex CLI cannot guarantee tool-free text generation. Select Claude Code in branch name settings."
   },
   "worktreeManager": {
     "closeIdleSessionsNotice": "刪除前會檢查所有關聯終端與 Agent，僅在全部閒置時自動關閉；執行中、等待輸入或狀態未知時禁止刪除。",

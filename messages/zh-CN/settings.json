@@ -287,5 +287,15 @@
     "deleteCancel": "取消",
     "deleteConfirm": "删除"
   },
-  "saveFailed": "无法保存设置"
+  "saveFailed": "无法保存设置",
+  "branchName": {
+    "title": "分支名称生成",
+    "description": "创建 Git 工作树子任务时，根据任务标题一键生成分支名称。",
+    "agent": "使用的智能体",
+    "prompt": "提示词模板",
+    "variables": "运行时变量：title 为任务标题，workspaceName 为父工作区名称，baseRef 为所选基准分支或提交。点击变量可追加占位符。",
+    "invalid": "请输入不超过 10000 字符的提示词，仅支持上方列出的变量。",
+    "reset": "恢复默认提示词",
+    "codexUnavailable": "Codex CLI 暂不支持可保证无工具调用的文本模式，请在分支名称生成设置中选择 Claude Code。"
+  }
 }

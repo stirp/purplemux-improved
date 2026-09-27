@@ -24,7 +24,11 @@
     "notice": "Crée un répertoire indépendant à partir d’un commit. Les modifications non commitées ne sont pas copiées. La suppression de l’espace de travail conserve le répertoire et la branche Git.",
     "dirty": "Le projet source contient des modifications non commitées.",
     "path": "Répertoire du worktree",
-    "loading": "Lecture du dépôt Git…"
+    "loading": "Lecture du dépôt Git…",
+    "generateBranch": "Generate branch name",
+    "generatingBranch": "Generating branch name…",
+    "generationFailed": "Failed to generate branch name. Please try again.",
+    "codexTextOnlyUnavailable": "Codex CLI cannot guarantee tool-free text generation. Select Claude Code in branch name settings."
   },
   "worktreeManager": {
     "closeIdleSessionsNotice": "Tous les terminaux et agents associés seront vérifiés et fermés uniquement s’ils sont inactifs. Une session en cours, en attente de saisie ou d’état inconnu empêche la suppression.",

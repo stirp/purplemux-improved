@@ -287,5 +287,15 @@
     "deleteCancel": "キャンセル",
     "deleteConfirm": "削除"
   },
-  "saveFailed": "設定を保存できません"
+  "saveFailed": "設定を保存できません",
+  "branchName": {
+    "title": "Branch name generation",
+    "description": "Generate a branch name from the title when creating a Git worktree subtask.",
+    "agent": "Agent",
+    "prompt": "Prompt template",
+    "variables": "Runtime variables: title = task title, workspaceName = parent workspace name, baseRef = selected base branch or commit. Click a variable to append its placeholder.",
+    "invalid": "Enter a prompt of up to 10,000 characters using only the listed variables.",
+    "reset": "Restore default prompt",
+    "codexUnavailable": "Codex CLI cannot guarantee tool-free text generation. Select Claude Code in branch name settings."
+  }
 }

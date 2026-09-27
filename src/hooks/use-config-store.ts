@@ -1,3 +1,4 @@
+import { DEFAULT_BRANCH_NAME_PROMPT } from '@/lib/branch-name-prompt';
 import { create } from 'zustand';
 import type { TEditorPreset } from '@/lib/editor-url';
 import type { TToastPosition } from '@/lib/toast-position';
@@ -24,6 +25,8 @@ export interface IConfigInitialData {
   claudeShowTerminal?: boolean;
   gitAskProvider?: TGitAskProvider;
   noteSummaryProvider?: TNoteSummaryProvider;
+  branchNameProvider?: TGitAskProvider;
+  branchNamePrompt?: string;
   editorUrl?: string;
   editorPreset?: TEditorPreset;
   notificationsEnabled?: boolean;
@@ -50,6 +53,9 @@ interface IConfigState {
   claudeShowTerminal: boolean;
   gitAskProvider: TGitAskProvider;
   noteSummaryProvider: TNoteSummaryProvider;
+  branchNameProvider: TGitAskProvider;
+  branchNamePrompt: string;
+  setBranchNameSettings: (provider: TGitAskProvider, prompt: string) => Promise<void>;
   editorUrl: string;
   editorPreset: TEditorPreset;
   notificationsEnabled: boolean;
@@ -128,6 +134,19 @@ const saveConfig = (updates: Record<string, unknown>) => {
 };
 
 const useConfigStore = create<IConfigState>((set, get) => ({
+  branchNameProvider: 'claude',
+  branchNamePrompt: DEFAULT_BRANCH_NAME_PROMPT,
+  setBranchNameSettings: async (provider, prompt) => {
+    const response = await fetch('/api/config', {
+      method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ branchNameProvider: provider, branchNamePrompt: prompt }),
+    });
+    if (!response.ok) {
+      const data = await response.json().catch(() => null);
+      throw new Error(data?.error ?? `HTTP ${response.status}`);
+    }
+    set({ branchNameProvider: provider, branchNamePrompt: prompt });
+  },
   codexEnvironment: {},
   setCodexEnvironment: async (env) => {
     const response = await fetch('/api/config', {
@@ -167,6 +186,8 @@ const useConfigStore = create<IConfigState>((set, get) => ({
 
   hydrate: (data) => {
     set({
+      branchNameProvider: data.branchNameProvider === 'codex' ? 'codex' : 'claude',
+      branchNamePrompt: data.branchNamePrompt ?? DEFAULT_BRANCH_NAME_PROMPT,
       codexEnvironment: data.codexEnvironment ?? {},
       dangerouslySkipPermissions: data.dangerouslySkipPermissions ?? false,
       claudeShowTerminal: data.claudeShowTerminal ?? true,

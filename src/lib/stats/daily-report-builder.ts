@@ -3,8 +3,7 @@ import path from 'path';
 import os from 'os';
 import { createReadStream } from 'fs';
 import readline from 'readline';
-import { execFile } from 'child_process';
-import { getShellPath } from '@/lib/preflight';
+import { callAgentText } from '@/lib/agent-text';
 import { getConfig, type TNoteSummaryProvider } from '@/lib/config-store';
 import { collectJsonlFiles } from './stats-cache';
 import type { IDailyReportDay } from '@/types/stats';
@@ -271,73 +270,6 @@ const buildPromptData = (sessions: ISessionData[]): string => {
     .join('\n');
 };
 
-const callClaudeCli = async (input: string, systemPrompt: string): Promise<string> => {
-  const resolvedPath = await getShellPath();
-  return new Promise((resolve, reject) => {
-    const child = execFile(
-      'claude',
-      ['-p'],
-      { timeout: 120_000, maxBuffer: 1024 * 1024, env: { ...process.env, PATH: resolvedPath } },
-      (error, stdout) => {
-        if (error) {
-          reject(new Error(`claude -p failed: ${error.message}`));
-          return;
-        }
-        resolve(stdout.trim());
-      },
-    );
-    child.stdin?.write(`${systemPrompt}\n\n${input}`);
-    child.stdin?.end();
-  });
-};
-
-const callCodexCli = async (input: string, systemPrompt: string): Promise<string> => {
-  const resolvedPath = await getShellPath();
-  const prompt = `${systemPrompt}\n\n${input}`;
-  const outputPath = path.join(
-    os.tmpdir(),
-    `purplemux-daily-report-${Date.now()}-${Math.random().toString(36).slice(2)}.txt`,
-  );
-  return new Promise((resolve, reject) => {
-    const child = execFile(
-      'codex',
-      [
-        'exec',
-        '--skip-git-repo-check',
-        '--ephemeral',
-        '--sandbox',
-        'read-only',
-        '-c',
-        'approval_policy="never"',
-        '-o',
-        outputPath,
-        prompt,
-      ],
-      { timeout: 120_000, maxBuffer: 1024 * 1024, env: { ...process.env, PATH: resolvedPath } },
-      async (error, stdout, stderr) => {
-        if (error) {
-          await fs.unlink(outputPath).catch(() => {});
-          reject(new Error(`codex exec failed: ${error.message}${stderr ? `: ${stderr.trim()}` : ''}`));
-          return;
-        }
-        const output = await fs.readFile(outputPath, 'utf-8').catch(() => stdout);
-        await fs.unlink(outputPath).catch(() => {});
-        resolve(output.trim());
-      },
-    );
-    child.stdin?.end();
-  });
-};
-
-const callSummaryCli = (
-  provider: TNoteSummaryProvider,
-  input: string,
-  systemPrompt: string,
-): Promise<string> =>
-  provider === 'codex'
-    ? callCodexCli(input, systemPrompt)
-    : callClaudeCli(input, systemPrompt);
-
 const LOCALE_LANGUAGE_NAMES: Record<string, string> = {
   en: 'English',
   ko: 'Korean (한국어)',
@@ -429,7 +361,7 @@ export const generateDailyReport = async (
   }
 
   const promptData = buildPromptData(sessions);
-  const response = await callSummaryCli(summaryProvider, promptData, SUMMARY_PROMPT(date, locale));
+  const response = await callAgentText(summaryProvider, promptData, SUMMARY_PROMPT(date, locale));
   const { brief, detail } = parseSummaryResponse(response);
 
   const report: IDailyReportDay = {

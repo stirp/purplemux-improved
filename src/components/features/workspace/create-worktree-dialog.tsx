@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { WandSparkles, Loader2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
@@ -26,6 +27,32 @@ export default function CreateWorktreeDialog({ workspace, onClose, onCreated }: 
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const busy = useRef(false);
+  const [generating, setGenerating] = useState(false);
+  const generation = useRef<AbortController | null>(null);
+  useEffect(() => () => generation.current?.abort(), []);
+
+  const generateBranch = async () => {
+    if (generation.current || busy.current || !source || !name.trim()) return;
+    const controller = new AbortController();
+    generation.current = controller;
+    setGenerating(true);
+    setError('');
+    try {
+      const response = await fetch('/api/workspace/generate-branch-name', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ workspaceId: workspace.id, directoryIndex, title: name.trim(), baseRef: selectedBaseRef }),
+        signal: controller.signal,
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.code === 'codexTextOnlyUnavailable' ? t('codexTextOnlyUnavailable') : data.error || t('generationFailed'));
+      if (!controller.signal.aborted) setBranch(data.branch);
+    } catch (error) {
+      if (!controller.signal.aborted) setError(error instanceof Error ? error.message : t('generationFailed'));
+    } finally {
+      if (!controller.signal.aborted) setGenerating(false);
+      generation.current = null;
+    }
+  };
   useEffect(() => {
     const controller = new AbortController();
     setSource(null);
@@ -42,7 +69,7 @@ export default function CreateWorktreeDialog({ workspace, onClose, onCreated }: 
   }, [workspace.id, directoryIndex]);
 
   const submit = async () => {
-    if (busy.current || !source) return;
+    if (busy.current || generation.current || !source) return;
     busy.current = true;
     setSubmitting(true);
     setError('');
@@ -63,20 +90,29 @@ export default function CreateWorktreeDialog({ workspace, onClose, onCreated }: 
         <DialogHeader><DialogTitle>{t('create')}</DialogTitle></DialogHeader>
         {workspace.directories.length > 1 && <label className="flex flex-col gap-1 text-sm">
           {t('source')}
-          <select className="rounded border bg-background p-2" value={directoryIndex} disabled={submitting}
+          <select className="rounded border bg-background p-2" value={directoryIndex} disabled={generating || submitting}
             onChange={(event) => setDirectoryIndex(Number(event.target.value))}>
             {workspace.directories.map((directory, index) => <option key={directory} value={index}>{directory}</option>)}
           </select>
         </label>}
         <label className="flex flex-col gap-1 text-sm">{t('name')}
-          <Input value={name} onChange={(event) => setName(event.target.value)} required maxLength={120} disabled={submitting} autoFocus />
+          <Input value={name} onChange={(event) => setName(event.target.value)} required maxLength={120} disabled={generating || submitting} autoFocus />
         </label>
-        <label className="flex flex-col gap-1 text-sm">{t('branch')}
-          <Input value={branch} onChange={(event) => setBranch(event.target.value)} placeholder="task/my-feature" required maxLength={80} disabled={submitting} />
-        </label>
+        <div className="flex flex-col gap-1 text-sm">
+          <label htmlFor="worktree-branch">{t('branch')}</label>
+          <div className="flex gap-2">
+            <Input id="worktree-branch" value={branch} onChange={(event) => setBranch(event.target.value)} placeholder="task/my-feature" required maxLength={80} disabled={generating || submitting} />
+            <Button type="button" variant="outline" size="icon" className="shrink-0" onClick={() => void generateBranch()}
+              disabled={generating || submitting || !source || !name.trim() || !selectedBaseRef}
+              aria-label={t(generating ? 'generatingBranch' : 'generateBranch')} title={t('generateBranch')}>
+              {generating ? <Loader2 className="h-4 w-4 animate-spin" /> : <WandSparkles className="h-4 w-4" />}
+            </Button>
+          </div>
+          {generating && <p role="status" className="text-xs text-muted-foreground">{t('generatingBranch')}</p>}
+        </div>
         <label className="flex flex-col gap-1 text-sm">{t('base')}{source && ` (${source.branch})`}
           <select className="rounded border bg-background p-2" value={baseRef}
-            onChange={(event) => setBaseRef(event.target.value)} disabled={submitting || !source}>
+            onChange={(event) => setBaseRef(event.target.value)} disabled={generating || submitting || !source}>
             <option value="HEAD">HEAD{source && ` (${source.branch})`}</option>
             <optgroup label={t('localBranches')}>
               {source?.branches.filter((item) => !item.remote).map((item) =>
@@ -90,7 +126,7 @@ export default function CreateWorktreeDialog({ workspace, onClose, onCreated }: 
           </select>
         </label>
         {baseRef === 'custom' && <label className="flex flex-col gap-1 text-sm">{t('customRef')}
-          <Input value={customRef} onChange={(event) => setCustomRef(event.target.value)} required maxLength={200} disabled={submitting} placeholder="HEAD~1" />
+          <Input value={customRef} onChange={(event) => setCustomRef(event.target.value)} required maxLength={200} disabled={generating || submitting} placeholder="HEAD~1" />
         </label>}
         <p className="text-xs text-muted-foreground">{t('notice')}</p>
         {source?.dirty && <p className="text-xs text-muted-foreground">{t('dirty')}</p>}
@@ -98,8 +134,8 @@ export default function CreateWorktreeDialog({ workspace, onClose, onCreated }: 
           : !error && <p className="text-sm text-muted-foreground">{t('loading')}</p>}
         {error && <p role="alert" className="break-all text-sm text-ui-red">{error}</p>}
         <DialogFooter>
-          <Button type="button" variant="outline" disabled={submitting} onClick={onClose}>{tc('cancel')}</Button>
-          <Button type="submit" disabled={submitting || !source || !name.trim() || !branch.trim() || !selectedBaseRef}>{t('create')}{submitting && '…'}</Button>
+          <Button type="button" variant="outline" disabled={generating || submitting} onClick={onClose}>{tc('cancel')}</Button>
+          <Button type="submit" disabled={generating || submitting || !source || !name.trim() || !branch.trim() || !selectedBaseRef}>{t('create')}{submitting && '…'}</Button>
         </DialogFooter>
       </form>
     </DialogContent>

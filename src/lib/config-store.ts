@@ -26,6 +26,8 @@ export interface IConfigData {
   codexEnvironment?: TAgentEnvironment;
   gitAskProvider?: TGitAskProvider;
   noteSummaryProvider?: TNoteSummaryProvider;
+  branchNameProvider?: TAgentProvider;
+  branchNamePrompt?: string;
   editorUrl?: string;
   editorPreset?: TEditorPreset;
   notificationsEnabled?: boolean;
