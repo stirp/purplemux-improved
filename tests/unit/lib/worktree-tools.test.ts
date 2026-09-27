@@ -5,10 +5,11 @@ import path from 'node:path';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 import type { IWorkspace } from '@/types/terminal';
-const mocks = vi.hoisted(() => ({ list: vi.fn(), remove: vi.fn(), panes: vi.fn(), agent: vi.fn() }));
+const mocks = vi.hoisted(() => ({ list: vi.fn(), remove: vi.fn(), panes: vi.fn(), agent: vi.fn(), config: vi.fn() }));
 vi.mock('@/lib/workspace-store', () => ({ getWorkspaces: mocks.list, createWorkspace: vi.fn(), deleteWorkspace: mocks.remove }));
 vi.mock('@/lib/tmux', () => ({ getAllPanesInfo: mocks.panes }));
 vi.mock('@/lib/agent-text', () => ({ callAgentText: mocks.agent }));
+vi.mock('@/lib/config-store', () => ({ getConfig: mocks.config }));
 import { generateWorktreeDraft } from '@/lib/worktree-draft-generation';
 import { createGitWorktree } from '@/lib/git-worktree';
 import { getWorktreeOverview } from '@/lib/worktree-manager';
@@ -43,6 +44,7 @@ const previewSync = async () => {
 };
 beforeEach(async () => {
   vi.resetAllMocks();
+  mocks.config.mockResolvedValue({});
   root = await fs.mkdtemp(path.join(os.tmpdir(), 'pmux-tools-'));
   vi.spyOn(os, 'homedir').mockReturnValue(root);
   repo = path.join(root, 'repo'); directory = path.join(root, 'task');
@@ -206,6 +208,19 @@ describe('sync and delivery Git operations', () => {
 
 
 describe('delivery defaults and draft generation', () => {
+  it('uses the saved PR/MR prompt while retaining code evidence and truncation instructions', async () => {
+    await commit(directory, 'feature.txt', 'new feature');
+    mocks.config.mockResolvedValue({ reviewDescriptionPrompt: 'Custom {{sourceBranch}} to {{targetBranch}} in {{locale}}.' });
+    mocks.agent.mockResolvedValue(JSON.stringify({ title: 'Feature', body: 'Details' }));
+    await generateWorktreeDraft(source, await snapshot(), { remote: 'origin', targetBranch: 'main', locale: 'zh-CN' });
+    expect(mocks.agent.mock.calls[0][2]).toContain('Custom task/one to main in zh-CN.');
+    expect(mocks.agent.mock.calls[0][2]).toContain('explicitly mention in the description that only the latest 100 commits');
+    expect(mocks.agent.mock.calls[0][2]).toContain('Return only a JSON object');
+    expect(JSON.parse(mocks.agent.mock.calls[0][1]).diff).toContain('new feature');
+    mocks.config.mockResolvedValue({ reviewDescriptionPrompt: 'Updated review style.' });
+    await generateWorktreeDraft(source, await snapshot(), { remote: 'origin', targetBranch: 'main', locale: 'en' });
+    expect(mocks.agent.mock.calls[1][2]).toContain('Updated review style.');
+  });
   it('defaults to the resolved creation branch and preserves an explicit sync choice', async () => {
     const created = await createGitWorktree(source, 0, 'task/new', 'HEAD');
     directory = created.directory;

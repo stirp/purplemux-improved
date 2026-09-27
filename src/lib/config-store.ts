@@ -28,6 +28,8 @@ export interface IConfigData {
   noteSummaryProvider?: TNoteSummaryProvider;
   branchNameProvider?: TAgentProvider;
   branchNamePrompt?: string;
+  commitMessagePrompt?: string;
+  reviewDescriptionPrompt?: string;
   editorUrl?: string;
   editorPreset?: TEditorPreset;
   notificationsEnabled?: boolean;

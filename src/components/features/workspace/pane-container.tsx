@@ -433,7 +433,10 @@ const PaneContainer = memo(({ paneId, paneNumber }: IPaneContainerProps) => {
     wsActionsRef.current.sendResize(size.cols, size.rows);
   }, [normalizeTerminalSize]);
 
+  const nativeCommandEventsRef = useRef<Pick<ReturnType<typeof useNativeCommands>, 'onInput' | 'onParsed'> | null>(null);
+
   const { terminalRef, write, clear, reset, fit, focus, focusAtBottom, isReady, getBufferText } = useTerminal({
+    onWriteParsed: () => nativeCommandEventsRef.current?.onParsed(),
     theme: terminalTheme.colors,
     fontSize: (TERMINAL_FONT_SIZES[configFontSize] ?? TERMINAL_FONT_SIZES.normal)[isAgentPanel ? 'claudeCode' : 'normal'],
     lineHeight: resolveLineHeight(configLineHeight, configLineHeightCustom),
@@ -548,6 +551,7 @@ const PaneContainer = memo(({ paneId, paneNumber }: IPaneContainerProps) => {
     sendWebStdin,
     sendResize,
   } = useTerminalWebSocket({
+    onStdin: (data) => nativeCommandEventsRef.current?.onInput(data),
     onData: (data) => {
       termActionsRef.current.write(data);
       onTrustData();
@@ -1073,12 +1077,15 @@ const PaneContainer = memo(({ paneId, paneNumber }: IPaneContainerProps) => {
   }, [isTerminalCollapsed, isReady, status, fit, isAgentPanel, activeTabId, paneId, activeTab?.terminalRatio, updateTabTerminalLayout, sendEffectiveResize]);
 
   const nativeCommands = useNativeCommands({
+    provider: isCodex ? 'codex' : 'claude',
+    getBufferText,
     scopeKey: `${activeTabId}:${claudeSessionId}`,
     sendStdin,
     focusTerminal: focusAtBottom,
     focusInput: () => focusInputRef.current?.(),
     revealTerminal: () => { if (isTerminalCollapsed) handleToggleTerminal(); },
   });
+  useEffect(() => { nativeCommandEventsRef.current = nativeCommands; });
 
   useEffect(() => {
     if (!splitGroupRef.current) return;

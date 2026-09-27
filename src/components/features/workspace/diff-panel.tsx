@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
-import { RefreshCw, GitBranch, Columns2, Rows2, ArrowUp, ArrowDown, ArrowDownUp, Archive, X, Folder } from 'lucide-react';
+import { RefreshCw, GitBranch, Columns2, Rows2, ArrowUp, ArrowDown, ArrowDownUp, Archive, X, Folder, WandSparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import Spinner from '@/components/ui/spinner';
 import { Button } from '@/components/ui/button';
@@ -12,6 +12,7 @@ import useIsMobile from '@/hooks/use-is-mobile';
 import useConfigStore, { type TGitAskProvider } from '@/hooks/use-config-store';
 import DiffHistoryView from '@/components/features/workspace/diff-history-view';
 import DiffFileList from '@/components/features/workspace/diff-file-list';
+import GitCommitDialog from '@/components/features/workspace/git-commit-dialog';
 import type { IDiffSettings, TDiffTab, TDiffViewMode } from '@/types/terminal';
 
 interface IDiffPanelProps {
@@ -111,6 +112,7 @@ const DiffPanel = ({ sessionName, onSendToAgent, onClose, settings, onSettingsCh
   const activeTab: TDiffTab = settings?.activeTab ?? 'changes';
   const [historyRefreshToken, setHistoryRefreshToken] = useState(0);
   const [syncing, setSyncing] = useState(false);
+  const [commitOpen, setCommitOpen] = useState(false);
 
   const pollTimerRef = useRef(0);
   const currentHashRef = useRef('');
@@ -321,6 +323,13 @@ const DiffPanel = ({ sessionName, onSendToAgent, onClose, settings, onSettingsCh
 
           <TooltipProvider>
             <div className="ml-auto flex items-center gap-1">
+              {activeTab === 'changes' && <Tooltip>
+                <TooltipTrigger render={<Button type="button" variant="ghost" size="icon-sm" className="h-7 w-7 text-muted-foreground" />}
+                  disabled={syncing || loading || isDetached} onClick={() => setCommitOpen(true)} aria-label={t('commit.title')}>
+                  <WandSparkles className="h-3.5 w-3.5" />
+                </TooltipTrigger>
+                <TooltipContent side="bottom">{t('commit.title')}</TooltipContent>
+              </Tooltip>}
               {activeTab === 'changes' && !isMobile && (
                 <Tooltip>
                   <TooltipTrigger
@@ -494,6 +503,8 @@ const DiffPanel = ({ sessionName, onSendToAgent, onClose, settings, onSettingsCh
 
       </div>
 
+      {commitOpen && <GitCommitDialog key={sessionName} sessionName={sessionName} onClose={() => setCommitOpen(false)}
+        onCommitted={() => { void fetchDiff(); setHistoryRefreshToken((value) => value + 1); }} />}
       <div className="min-h-0 flex-1 overflow-auto">
         {activeTab === 'history' ? (
           <DiffHistoryView repoRoot={repoRoot} sessionName={sessionName} refreshToken={historyRefreshToken} viewMode={viewMode} />

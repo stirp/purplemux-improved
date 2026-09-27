@@ -297,5 +297,20 @@
     "invalid": "Enter a prompt of up to 10,000 characters using only the listed variables.",
     "reset": "Restore default prompt",
     "codexUnavailable": "Codex CLI недоступен для этой функции: генерация имён веток требует отключения вызовов инструментов, а текущая интеграция Codex этого пока не обеспечивает. Используйте Claude Code. На работу вкладок Codex это не влияет."
+  },
+  "gitGenerationPrompts": {
+    "commitMessagePrompt": {
+      "title": "AI commit message prompt",
+      "description": "Customize how Claude Code writes a commit title and description from staged changes."
+    },
+    "reviewDescriptionPrompt": {
+      "title": "AI PR/MR title and description prompt",
+      "description": "Customize how Claude Code summarizes committed changes against the target branch."
+    },
+    "prompt": "Prompt template",
+    "variables": "Click to append a variable. locale is the interface language; branch, sourceBranch, and targetBranch are the relevant branch names.",
+    "evidenceHint": "Code diffs and commit evidence are attached automatically. JSON output validation, tool restrictions, and PR/MR truncation notices remain enforced. Save to apply the template to the next generation.",
+    "invalid": "Enter a non-empty prompt of at most 10000 characters, using only the variables shown above with complete double braces.",
+    "reset": "Restore default"
   }
 }
