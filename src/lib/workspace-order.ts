@@ -1,5 +1,46 @@
 import type { IWorkspace, IWorkspaceGroup } from '@/types/terminal';
 
+export const getWorkspaceVisibility = (workspaces: IWorkspace[], activeWorkspaceId: string | null) => {
+  const byId = new Map(workspaces.map((workspace) => [workspace.id, workspace]));
+  const expandedIds = new Set<string>();
+  let current = activeWorkspaceId ? byId.get(activeWorkspaceId) : undefined;
+  while (current && !expandedIds.has(current.id)) {
+    expandedIds.add(current.id);
+    current = current.parentWorkspaceId ? byId.get(current.parentWorkspaceId) : undefined;
+  }
+
+  // Keep cycle members reachable even when no workspace in their branch is selected.
+  const cycleIds = new Set<string>();
+  const visited = new Set<string>();
+  for (const workspace of workspaces) {
+    const path = new Map<string, number>();
+    let ancestor: IWorkspace | undefined = workspace;
+    while (ancestor && !visited.has(ancestor.id)) {
+      const cycleStart = path.get(ancestor.id);
+      if (cycleStart !== undefined) {
+        for (const [id, index] of path) {
+          if (index >= cycleStart) cycleIds.add(id);
+        }
+        break;
+      }
+      path.set(ancestor.id, path.size);
+      ancestor = ancestor.parentWorkspaceId ? byId.get(ancestor.parentWorkspaceId) : undefined;
+    }
+    for (const id of path.keys()) visited.add(id);
+  }
+
+  const parentIds = new Set<string>();
+  const visibleIds = new Set<string>();
+  for (const workspace of workspaces) {
+    const parentId = workspace.parentWorkspaceId;
+    if (parentId && byId.has(parentId)) parentIds.add(parentId);
+    if (!parentId || !byId.has(parentId) || expandedIds.has(parentId) || cycleIds.has(workspace.id)) {
+      visibleIds.add(workspace.id);
+    }
+  }
+  return { expandedIds, parentIds, visibleIds };
+};
+
 export const getVisuallyOrderedWorkspaces = (
   workspaces: IWorkspace[],
   groups: IWorkspaceGroup[],
