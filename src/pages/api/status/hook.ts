@@ -6,6 +6,7 @@ import { isRequestAllowed } from '@/lib/access-filter';
 import { translateClaudeHookEvent } from '@/lib/providers/claude/hook-handler';
 import { processCodexHookPayload, shouldEmitCodexHookEvent } from '@/lib/providers/codex/hook-handler';
 import { codexHookEvents } from '@/lib/providers/codex/hook-events';
+import { isRootCodexHook } from '@/lib/providers/codex/hook-session';
 
 const log = createLogger('hooks');
 
@@ -29,13 +30,17 @@ const handleClaudeHook = (req: NextApiRequest, res: NextApiResponse) => {
   return res.status(204).end();
 };
 
-const handleCodexHook = (req: NextApiRequest, res: NextApiResponse) => {
+const handleCodexHook = async (req: NextApiRequest, res: NextApiResponse) => {
   const tmuxSession = req.query.tmuxSession;
   if (typeof tmuxSession !== 'string' || !tmuxSession) {
     log.warn({ event: req.body?.hook_event_name }, 'codex hook missing tmuxSession');
     return res.status(400).json({ error: 'missing tmuxSession' });
   }
   const payload = req.body ?? {};
+  if (!await isRootCodexHook(payload)) {
+    log.debug({ tmuxSession, event: payload.hook_event_name }, 'ignoring unverified or subagent codex hook');
+    return res.status(204).end();
+  }
   log.debug(
     { tmuxSession, event: payload.hook_event_name, source: payload.source },
     `codex ${payload.hook_event_name ?? 'unknown'}`,
@@ -43,7 +48,7 @@ const handleCodexHook = (req: NextApiRequest, res: NextApiResponse) => {
   const statusManager = getStatusManager();
   const { result, translation } = processCodexHookPayload(payload);
   const applied = translation.meta
-    ? statusManager.applyAgentHookMeta('codex', tmuxSession, translation.meta)
+    ? statusManager.applyAgentHookMeta('codex', tmuxSession, translation.meta, payload.hook_event_name === 'SessionStart')
     : null;
   if (!applied) {
     log.debug({ tmuxSession, event: payload.hook_event_name, reason: 'unknown-session' }, 'codex hook skipped');

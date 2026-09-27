@@ -42,6 +42,7 @@ export interface IAgentRuntimeSnapshot {
   lastEntryTs: number | null;
   staleMs: number;
   interrupted: boolean;
+  workStateEvent?: { name: 'prompt-submit' | 'stop' | 'interrupt'; at: number };
 }
 
 export interface IAgentSessionHistoryStats {
