@@ -30,12 +30,12 @@ export default function BranchNameSettings() {
     <legend className="text-sm font-medium">{t('title')}</legend>
     <p className="text-sm text-muted-foreground">{t('description')}</p>
     <label className="flex flex-col gap-1 text-sm">{t('agent')}
-      <select className="rounded-md border bg-background p-2" value={value.provider}
+      <select className="rounded-md border bg-background p-2" value={value.provider} aria-describedby="branch-name-provider-help"
         onChange={(event) => setDraft({ ...value, provider: event.target.value as TGitAskProvider })}>
         <option value="claude">Claude Code</option><option value="codex" disabled>Codex CLI</option>
       </select>
     </label>
-    <p className="text-xs text-muted-foreground">{t('codexUnavailable')}</p>
+    <p id="branch-name-provider-help" className="rounded-md border bg-muted/50 p-3 text-sm text-muted-foreground">{t('codexUnavailable')}</p>
     <label className="flex flex-col gap-1 text-sm">{t('prompt')}
       <textarea className="min-h-48 w-full rounded-md border border-input bg-transparent px-3 py-2 font-mono text-sm"
         value={value.prompt} maxLength={10000} spellCheck={false} aria-invalid={!valid} aria-describedby="branch-name-variables"

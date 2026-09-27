@@ -296,6 +296,6 @@
     "variables": "运行时变量：title 为任务标题，workspaceName 为父工作区名称，baseRef 为所选基准分支或提交。点击变量可追加占位符。",
     "invalid": "请输入不超过 10000 字符的提示词，仅支持上方列出的变量。",
     "reset": "恢复默认提示词",
-    "codexUnavailable": "Codex CLI 暂不支持可保证无工具调用的文本模式，请在分支名称生成设置中选择 Claude Code。"
+    "codexUnavailable": "Codex CLI 在此功能中暂不可选：分支名称生成要求禁用工具调用，当前 Codex 接入方式尚未满足这一要求。请使用 Claude Code；这不影响正常使用 Codex 标签页。"
   }
 }

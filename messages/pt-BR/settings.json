@@ -296,6 +296,6 @@
     "variables": "Runtime variables: title = task title, workspaceName = parent workspace name, baseRef = selected base branch or commit. Click a variable to append its placeholder.",
     "invalid": "Enter a prompt of up to 10,000 characters using only the listed variables.",
     "reset": "Restore default prompt",
-    "codexUnavailable": "Codex CLI cannot guarantee tool-free text generation. Select Claude Code in branch name settings."
+    "codexUnavailable": "O Codex CLI não está disponível para este recurso: a geração de nomes de branches exige desativar chamadas de ferramentas, o que a integração atual do Codex ainda não garante. Use o Claude Code. As abas do Codex não são afetadas."
   }
 }
