@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import { GitBranch, Pencil, Settings, Trash2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -12,9 +12,10 @@ import CreateWorktreeDialog from '@/components/features/workspace/create-worktre
 import useWorkspaceStore from '@/hooks/use-workspace-store';
 import type { IWorkspace } from '@/types/terminal';
 
-export default function MobileWorkspaceActions({ workspace, onCreated }: {
+export default function MobileWorkspaceActions({ workspace, onCreated, children }: {
   workspace: IWorkspace;
   onCreated: (workspaceId: string) => void;
+  children: ReactNode;
 }) {
   const tc = useTranslations('common');
   const ts = useTranslations('sidebar');
@@ -46,25 +47,42 @@ export default function MobileWorkspaceActions({ workspace, onCreated }: {
   const itemClass = 'flex min-h-11 w-full items-center gap-2 rounded px-2 py-2 text-left text-sm hover:bg-accent';
 
   return <>
-    <Popover open={menuOpen} onOpenChange={setMenuOpen}>
-      <PopoverTrigger render={<button
-        className="flex h-11 w-11 shrink-0 items-center justify-center rounded text-muted-foreground hover:bg-accent"
-        aria-label={`${tc('settings')}: ${workspace.name}`}
-      />}>
-        <Settings size={16} />
-      </PopoverTrigger>
-      <PopoverContent side="bottom" align="end" className="w-56 gap-0 p-1">
-        <button className={itemClass} onClick={() => openAction('edit')}>
-          <Pencil size={16} />{tw('editTitle')}
-        </button>
-        <button className={itemClass} onClick={() => openAction('create')}>
-          <GitBranch size={16} />{tw('worktree.create')}
-        </button>
-        <button className={`${itemClass} text-ui-red`} onClick={() => openAction('delete')}>
-          <Trash2 size={16} />{tc('delete')}
-        </button>
-      </PopoverContent>
-    </Popover>
+    <div
+      className="flex items-center pr-1"
+      onContextMenu={(event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        setMenuOpen(true);
+      }}
+      onKeyDown={(event) => {
+        if (event.key === 'ContextMenu' || (event.shiftKey && event.key === 'F10')) {
+          event.preventDefault();
+          event.stopPropagation();
+          setMenuOpen(true);
+        }
+      }}
+    >
+      {children}
+      <Popover open={menuOpen} onOpenChange={setMenuOpen}>
+        <PopoverTrigger render={<button
+          className="flex h-11 w-11 shrink-0 items-center justify-center rounded text-muted-foreground hover:bg-accent"
+          aria-label={`${tc('settings')}: ${workspace.name}`}
+        />}>
+          <Settings size={16} />
+        </PopoverTrigger>
+        <PopoverContent side="bottom" align="end" className="w-56 gap-0 p-1">
+          <button className={itemClass} onClick={() => openAction('edit')}>
+            <Pencil size={16} />{tw('editTitle')}
+          </button>
+          <button className={itemClass} onClick={() => openAction('create')}>
+            <GitBranch size={16} />{tw('worktree.create')}
+          </button>
+          <button className={`${itemClass} text-ui-red`} onClick={() => openAction('delete')}>
+            <Trash2 size={16} />{tc('delete')}
+          </button>
+        </PopoverContent>
+      </Popover>
+    </div>
     {action === 'edit' && <EditWorkspaceDialog
       open onOpenChange={(open) => { if (!open) setAction(null); }}
       workspaceId={workspace.id} currentName={workspace.name}

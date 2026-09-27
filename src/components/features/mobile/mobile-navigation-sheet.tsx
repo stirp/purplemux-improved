@@ -323,7 +323,10 @@ const MobileNavigationSheet = ({
     const isActive = ws.id === activeWorkspaceId;
     return (
       <div key={ws.id} style={{ marginLeft: (workspaceDepths.get(ws.id) ?? 0) * 12 }}>
-        <div className="flex items-center pr-1">
+        <MobileWorkspaceActions workspace={ws} onCreated={(id) => {
+          useWorkspaceStore.getState().switchWorkspace(id);
+          setExpandedWsId(id);
+        }}>
           <button
             className={cn(
               'flex min-w-0 flex-1 items-center gap-2 py-3 pl-4 pr-1 text-left text-sm transition-colors',
@@ -359,11 +362,7 @@ const MobileNavigationSheet = ({
               )}
             </div>
           </button>
-          <MobileWorkspaceActions workspace={ws} onCreated={(id) => {
-            useWorkspaceStore.getState().switchWorkspace(id);
-            setExpandedWsId(id);
-          }} />
-        </div>
+        </MobileWorkspaceActions>
         <div
           className="grid transition-[grid-template-rows] duration-200 ease-in-out"
           style={{ gridTemplateRows: isExpanded ? '1fr' : '0fr' }}
