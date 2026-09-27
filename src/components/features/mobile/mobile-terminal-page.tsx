@@ -295,6 +295,8 @@ const MobileTerminalPage = () => {
           key={selectedTabId}
           tabId={selectedTabId}
           tabName={currentTabName}
+          customTabName={currentTab?.name ?? ''}
+          onRename={(name) => layout.renameTabInPane(currentPane.id, selectedTabId, name)}
           sessionName={currentTab?.sessionName ?? null}
           cwdKey={tabMetadata?.cwd || currentTab?.cwd || currentTab?.sessionName || null}
           panelType={currentPanelType}

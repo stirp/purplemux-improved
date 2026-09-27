@@ -102,7 +102,7 @@ interface ILayoutState {
   deleteTabInPane: (paneId: string, tabId: string) => Promise<void>;
   restartTabInPane: (paneId: string, tabId: string, command?: string) => Promise<boolean>;
   switchTabInPane: (paneId: string, tabId: string) => void;
-  renameTabInPane: (paneId: string, tabId: string, name: string) => Promise<void>;
+  renameTabInPane: (paneId: string, tabId: string, name: string) => Promise<boolean>;
   reorderTabsInPane: (paneId: string, tabIds: string[]) => void;
   removeTabLocally: (paneId: string, tabId: string) => void;
   equalizeRatios: () => void;
@@ -543,17 +543,14 @@ const useLayoutStore = create<ILayoutState>((set, get) => ({
   },
 
   renameTabInPane: async (paneId, tabId, name) => {
-    applyPaneUpdate(set, get, paneId, (pane) => ({
-      ...pane,
-      tabs: pane.tabs.map((t) => (t.id === tabId ? { ...t, name } : t)),
-    }));
-
     const { workspaceId } = get();
     const data = await patchApi(wsQuery(`/api/layout/pane/${paneId}/tabs/${tabId}`, workspaceId), { name });
     if (data) {
-      applyLayoutPreserveFocus(set, get, data);
+      if (get().workspaceId === workspaceId) applyLayoutPreserveFocus(set, get, data);
+      return true;
     } else {
       toast.error(t('terminal', 'tabRenameFailed'));
+      return false;
     }
   },
 
