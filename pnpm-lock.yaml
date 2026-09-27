@@ -13,6 +13,9 @@ overrides:
   picomatch@>=4.0.0 <5.0.0: '>=4.0.4'
   postcss: 8.5.14
 
+patchedDependencies:
+  mdast-util-gfm-autolink-literal@2.0.1: 0bcf6d80e05a9a39d7680d396c0240f0a9ee2c0296c98c26f2e1ca8142be76f0
+
 importers:
 
   .:
@@ -10865,7 +10868,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  mdast-util-gfm-autolink-literal@2.0.1:
+  mdast-util-gfm-autolink-literal@2.0.1(patch_hash=0bcf6d80e05a9a39d7680d396c0240f0a9ee2c0296c98c26f2e1ca8142be76f0):
     dependencies:
       '@types/mdast': 4.0.4
       ccount: 2.0.1
@@ -10913,7 +10916,7 @@ snapshots:
   mdast-util-gfm@3.1.0:
     dependencies:
       mdast-util-from-markdown: 2.0.3
-      mdast-util-gfm-autolink-literal: 2.0.1
+      mdast-util-gfm-autolink-literal: 2.0.1(patch_hash=0bcf6d80e05a9a39d7680d396c0240f0a9ee2c0296c98c26f2e1ca8142be76f0)
       mdast-util-gfm-footnote: 2.1.0
       mdast-util-gfm-strikethrough: 2.0.0
       mdast-util-gfm-table: 2.0.0

@@ -1,0 +1,52 @@
+diff --git a/lib/index.js b/lib/index.js
+--- a/lib/index.js
++++ b/lib/index.js
+@@ -132,7 +132,8 @@
+     tree,
+     [
+       [/(https?:\/\/|www(?=\.))([-.\w]+)([^ \t\r\n]*)/gi, findUrl],
+-      [/(?<=^|\s|\p{P}|\p{S})([-.\w+]+)@([-\w]+(?:\.[-\w]+)+)/gu, findEmail]
++      // previous() checks UTF-16 code units, so do not consume a surrogate pair.
++      [/(^|(?=[\u0000-\uFFFF])[\s\p{P}\p{S}])([-.\w+]+)@([-\w]+(?:\.[-\w]+)+)/gu, findEmail]
+     ],
+     {ignore: ['link', 'linkReference']}
+   )
+@@ -189,27 +190,33 @@
+ /**
+  * @type {ReplaceFunction}
+  * @param {string} _
++ * @param {string} prefix
+  * @param {string} atext
+  * @param {string} label
+  * @param {RegExpMatchObject} match
+- * @returns {Link | false}
+- */
+-function findEmail(_, atext, label, match) {
++ * @returns {Array<PhrasingContent> | Link | false}
++ */
++function findEmail(_, prefix, atext, label, match) {
++  // Capture the boundary instead of using lookbehind (unsupported before Safari 16.4).
++  const emailMatch = {...match, index: match.index + prefix.length}
+   if (
+     // Not an expected previous character.
+-    !previous(match, true) ||
++    !previous(emailMatch, true) ||
+     // Label ends in not allowed character.
+     /[-\d_]$/.test(label)
+   ) {
+     return false
+   }
+ 
+-  return {
++  /** @type {Link} */
++  const result = {
+     type: 'link',
+     title: null,
+     url: 'mailto:' + atext + '@' + label,
+     children: [{type: 'text', value: atext + '@' + label}]
+   }
++
++  return prefix ? [{type: 'text', value: prefix}, result] : result
+ }
+ 
+ /**
