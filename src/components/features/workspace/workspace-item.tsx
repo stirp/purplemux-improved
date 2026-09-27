@@ -109,6 +109,7 @@ const WorkspaceItem = ({
     <>
     <ContextMenu>
       <ContextMenuTrigger
+        touchDrag
         className={cn(
           'relative flex cursor-pointer flex-col justify-center overflow-hidden border-l-2 px-3 py-2 transition-colors duration-75',
           isActive

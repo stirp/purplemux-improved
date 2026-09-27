@@ -16,13 +16,40 @@ function ContextMenuPortal({ ...props }: ContextMenuPrimitive.Portal.Props) {
 
 function ContextMenuTrigger({
   className,
+  touchDrag = false,
+  onPointerDown,
+  onKeyDown,
+  onTouchStart,
+  onContextMenu,
   ...props
-}: ContextMenuPrimitive.Trigger.Props) {
+}: ContextMenuPrimitive.Trigger.Props & { touchDrag?: boolean }) {
+  const touchOrigin = React.useRef(false)
   return (
     <ContextMenuPrimitive.Trigger
       data-slot="context-menu-trigger"
       className={cn("select-none", className)}
       {...props}
+      onPointerDown={(event) => {
+        touchOrigin.current = event.pointerType === "touch"
+        onPointerDown?.(event)
+      }}
+      onKeyDown={(event) => {
+        touchOrigin.current = false
+        onKeyDown?.(event)
+      }}
+      onTouchStart={(event) => {
+        touchOrigin.current = true
+        onTouchStart?.(event)
+        if (touchDrag) event.preventBaseUIHandler()
+      }}
+      onContextMenu={(event) => {
+        if (touchDrag && touchOrigin.current) {
+          event.preventDefault()
+          event.preventBaseUIHandler()
+          return
+        }
+        onContextMenu?.(event)
+      }}
     />
   )
 }

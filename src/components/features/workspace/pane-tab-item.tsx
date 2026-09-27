@@ -80,6 +80,7 @@ const PaneTabItem = ({
   return (
     <ContextMenu>
       <ContextMenuTrigger
+        touchDrag={!isEditing}
         render={<div />}
         data-tab-id={tab.id}
         role="tab"
