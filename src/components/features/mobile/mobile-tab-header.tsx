@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { X, Plus, GitCompareArrows, Copy, History, MessageSquare, TerminalSquare } from 'lucide-react';
+import { X, Plus, Pencil, GitCompareArrows, Copy, History, MessageSquare, TerminalSquare } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import ClaudeCodeIcon from '@/components/icons/claude-code-icon';
 import OpenAIIcon from '@/components/icons/openai-icon';
@@ -8,6 +8,9 @@ import CopyPaneDrawer from '@/components/features/workspace/copy-pane-drawer';
 import useTabStore from '@/hooks/use-tab-store';
 import ProcessIcon from '@/components/icons/process-icon';
 import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import useGitStatusStore, {
   formatGitStatusSummary,
   getGitStatusIndicators,
@@ -71,6 +74,8 @@ const processMatchesAgent = (panelType: TPanelType | undefined, process: string 
 interface IMobileTabHeaderProps {
   tabId: string;
   tabName: string;
+  customTabName: string;
+  onRename: (name: string) => Promise<boolean>;
   sessionName: string | null;
   cwdKey: string | null;
   panelType: TPanelType;
@@ -83,6 +88,8 @@ interface IMobileTabHeaderProps {
 const MobileTabHeader = ({
   tabId,
   tabName,
+  customTabName,
+  onRename,
   sessionName,
   cwdKey,
   panelType,
@@ -96,6 +103,10 @@ const MobileTabHeader = ({
   const tt = useTranslations('terminal');
   const [copyOpen, setCopyOpen] = useState(false);
   const [modeDrawerOpen, setModeDrawerOpen] = useState(false);
+  const [renameOpen, setRenameOpen] = useState(false);
+  const [nameDraft, setNameDraft] = useState('');
+  const [savingName, setSavingName] = useState(false);
+  const canSaveName = !savingName && nameDraft.trim() !== customTabName;
   const showCopy = panelType === 'terminal' && !!sessionName;
   const tabEntry = useTabStore((s) => s.tabs[tabId]);
   const gitPhase = useGitStatusStore((state) => state.phase);
@@ -195,7 +206,19 @@ const MobileTabHeader = ({
         <div className="flex min-w-0 flex-1 items-center gap-2 px-1.5 py-1">
           <TabStatusIndicator tabId={tabId} panelType={panelType} />
           {renderTabIcon()}
-          <span className="min-w-0 flex-1 truncate text-xs text-foreground">{tabName}</span>
+          <button
+            type="button"
+            className="flex h-11 min-w-0 flex-1 items-center gap-1 text-left text-xs text-foreground"
+            aria-label={`${tt('rename')}: ${tabName}`}
+            title={tt('rename')}
+            onClick={() => {
+              setNameDraft(customTabName);
+              setRenameOpen(true);
+            }}
+          >
+            <span className="truncate">{tabName}</span>
+            <Pencil className="h-3 w-3 shrink-0 text-muted-foreground" />
+          </button>
           {switchable && (
             <button
               type="button"
@@ -284,6 +307,39 @@ const MobileTabHeader = ({
           </AlertDialogContent>
         </AlertDialog>
       </div>
+
+      <Dialog open={renameOpen} onOpenChange={(open) => {
+        if (!savingName) setRenameOpen(open);
+      }}>
+        <DialogContent className="sm:max-w-md">
+          <form className="flex flex-col gap-4" onSubmit={async (event) => {
+            event.preventDefault();
+            if (!canSaveName) return;
+            setSavingName(true);
+            try {
+              if (await onRename(nameDraft.trim())) setRenameOpen(false);
+            } finally {
+              setSavingName(false);
+            }
+          }}>
+            <DialogHeader><DialogTitle>{tt('rename')}</DialogTitle></DialogHeader>
+            <Input
+              value={nameDraft}
+              onChange={(event) => setNameDraft(event.target.value)}
+              aria-label={tt('rename')}
+              placeholder={tabName}
+              disabled={savingName}
+              autoFocus
+            />
+            <DialogFooter>
+              <Button type="button" variant="outline" disabled={savingName} onClick={() => setRenameOpen(false)}>
+                {tc('cancel')}
+              </Button>
+              <Button type="submit" disabled={!canSaveName}>{tc('save')}</Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
 
       <CopyPaneDrawer
         open={copyOpen}
