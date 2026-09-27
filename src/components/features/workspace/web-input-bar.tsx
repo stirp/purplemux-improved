@@ -404,7 +404,8 @@ const WebInputBar = ({
     await uploadAndAttach(Array.from(e.dataTransfer.files));
   }, [uploadAndAttach]);
 
-  const isDisabled = mode === 'disabled' || nativeCommandsActive;
+  const isConnecting = mode === 'disabled';
+  const isDisabled = isConnecting || nativeCommandsActive;
   const hasValue = value.trim().length > 0;
   const hasAttachments = attachments.length > 0;
   const canDispatch = canSend && !nativeCommandsActive && (hasValue || hasAttachments) && !isDispatching && !isUploading;
@@ -420,9 +421,9 @@ const WebInputBar = ({
         <div
           className={cn(
             'pointer-events-none absolute bottom-full left-0 right-0 transition-opacity duration-300',
-            isDisabled && visible ? 'opacity-100' : 'opacity-0',
+            isConnecting && visible ? 'opacity-100' : 'opacity-0',
           )}
-          aria-hidden={!isDisabled || !visible}
+          aria-hidden={!isConnecting || !visible}
         >
           <div className="mx-auto w-full max-w-content px-3 pb-1">
             <div className="grid grid-cols-[1fr_auto_1fr] items-center px-2 text-[11px] text-muted-foreground/70">
