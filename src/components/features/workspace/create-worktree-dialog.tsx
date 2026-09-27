@@ -1,9 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
-import { WandSparkles, Loader2 } from 'lucide-react';
+import { WandSparkles, Loader2, ChevronDown } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Command, CommandInput, CommandList, CommandEmpty, CommandGroup, CommandItem } from '@/components/ui/command';
 import useWorkspaceStore from '@/hooks/use-workspace-store';
 import type { IWorkspace } from '@/types/terminal';
 
@@ -21,6 +23,7 @@ export default function CreateWorktreeDialog({ workspace, onClose, onCreated }: 
   const [name, setName] = useState('');
   const [branch, setBranch] = useState('');
   const [baseRef, setBaseRef] = useState('HEAD');
+  const [baseOpen, setBaseOpen] = useState(false);
   const [customRef, setCustomRef] = useState('');
   const selectedBaseRef = baseRef === 'custom' ? customRef.trim() : baseRef;
   const [source, setSource] = useState<ISource | null>(null);
@@ -57,6 +60,7 @@ export default function CreateWorktreeDialog({ workspace, onClose, onCreated }: 
     const controller = new AbortController();
     setSource(null);
     setBaseRef('HEAD');
+    setBaseOpen(false);
     setCustomRef('');
     setError('');
     fetch(`/api/workspace/worktree?workspaceId=${encodeURIComponent(workspace.id)}&directoryIndex=${directoryIndex}`, { signal: controller.signal })
@@ -110,21 +114,42 @@ export default function CreateWorktreeDialog({ workspace, onClose, onCreated }: 
           </div>
           {generating && <p role="status" className="text-xs text-muted-foreground">{t('generatingBranch')}</p>}
         </div>
-        <label className="flex flex-col gap-1 text-sm">{t('base')}{source && ` (${source.branch})`}
-          <select className="rounded border bg-background p-2" value={baseRef}
-            onChange={(event) => setBaseRef(event.target.value)} disabled={generating || submitting || !source}>
-            <option value="HEAD">HEAD{source && ` (${source.branch})`}</option>
-            <optgroup label={t('localBranches')}>
-              {source?.branches.filter((item) => !item.remote).map((item) =>
-                <option key={item.ref} value={item.ref}>{item.name}</option>)}
-            </optgroup>
-            <optgroup label={t('remoteBranches')}>
-              {source?.branches.filter((item) => item.remote).map((item) =>
-                <option key={item.ref} value={item.ref}>{item.name}</option>)}
-            </optgroup>
-            <option value="custom">{t('customRef')}</option>
-          </select>
-        </label>
+        <div className="flex min-w-0 flex-col gap-1 text-sm">
+          <label htmlFor="worktree-base">{t('base')}{source && ` (${source.branch})`}</label>
+          <Popover open={baseOpen} onOpenChange={setBaseOpen}>
+            <PopoverTrigger render={<Button id="worktree-base" type="button" variant="outline"
+              className="w-full justify-between font-normal" disabled={generating || submitting || !source} />}>
+              <span className="truncate">{baseRef === 'HEAD' ? `HEAD${source ? ` (${source.branch})` : ''}`
+                : baseRef === 'custom' ? t('customRef') : source?.branches.find((item) => item.ref === baseRef)?.name ?? baseRef}</span>
+              <ChevronDown className="size-4 shrink-0" />
+            </PopoverTrigger>
+            <PopoverContent align="start" className="w-[var(--anchor-width)] p-0"
+              onKeyDown={(event) => { if (event.key === 'Enter') event.preventDefault(); }}>
+              <Command filter={(value, search, keywords) =>
+                [value, ...(keywords ?? [])].some((text) => text.toLowerCase().includes(search.trim().toLowerCase())) ? 1 : 0}>
+                <CommandInput placeholder={tc('search')} aria-label={tc('search')} />
+                <CommandList>
+                  <CommandEmpty>{tc('noResults')}</CommandEmpty>
+                  <CommandItem value="HEAD" keywords={[source?.branch ?? '']} data-checked={baseRef === 'HEAD'}
+                    onSelect={() => { setBaseRef('HEAD'); setBaseOpen(false); }}>
+                    HEAD{source && ` (${source.branch})`}
+                  </CommandItem>
+                  {[false, true].map((remote) => <CommandGroup key={String(remote)} heading={t(remote ? 'remoteBranches' : 'localBranches')}>
+                    {source?.branches.filter((item) => item.remote === remote).map((item) =>
+                      <CommandItem key={item.ref} value={item.ref} keywords={[item.name]} data-checked={baseRef === item.ref}
+                        onSelect={() => { setBaseRef(item.ref); setBaseOpen(false); }}>
+                        <span className="truncate" title={item.name}>{item.name}</span>
+                      </CommandItem>)}
+                  </CommandGroup>)}
+                  <CommandItem value="custom" keywords={[t('customRef')]} data-checked={baseRef === 'custom'}
+                    onSelect={() => { setBaseRef('custom'); setBaseOpen(false); }}>
+                    {t('customRef')}
+                  </CommandItem>
+                </CommandList>
+              </Command>
+            </PopoverContent>
+          </Popover>
+        </div>
         {baseRef === 'custom' && <label className="flex flex-col gap-1 text-sm">{t('customRef')}
           <Input value={customRef} onChange={(event) => setCustomRef(event.target.value)} required maxLength={200} disabled={generating || submitting} placeholder="HEAD~1" />
         </label>}
