@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import type { ITab, TPanelType } from '@/types/terminal';
 import useTabDrag from '@/hooks/use-tab-drag';
+import useTouchDrag from '@/hooks/use-touch-drag';
 import PaneTabItem from '@/components/features/workspace/pane-tab-item';
 import PaneNewTabMenu from '@/components/features/workspace/pane-new-tab-menu';
 import AgentModeSwitcher from '@/components/features/workspace/agent-mode-switcher';
@@ -58,6 +59,7 @@ const PaneTabBar = ({
   const t = useTranslations('terminal');
   const tc = useTranslations('common');
   const scrollRef = useRef<HTMLDivElement>(null);
+  const onTouchDragStart = useTouchDrag();
   const sortedTabs = useMemo(() => [...tabs].sort((a, b) => a.order - b.order), [tabs]);
   const canSwitchMode = (panelType: TPanelType | undefined) =>
     !panelType || panelType === 'terminal' || panelType === 'claude-code' || panelType === 'codex-cli';
@@ -159,6 +161,7 @@ const PaneTabBar = ({
         isDragOverFromOther ? 'bg-accent-color/10' : 'bg-background',
       )}
       onDragEnter={handleTabBarDragEnter}
+      onTouchStartCapture={onTouchDragStart}
       onDragLeave={handleTabBarDragLeave}
       onDragOver={(e) => e.preventDefault()}
       onDrop={handleDrop}

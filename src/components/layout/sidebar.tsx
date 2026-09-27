@@ -9,6 +9,7 @@ import {
   LogOut,
 } from 'lucide-react';
 import useTabStore from '@/hooks/use-tab-store';
+import useTouchDrag from '@/hooks/use-touch-drag';
 import { useNotificationCount, NotificationPanel } from '@/components/features/workspace/notification-sheet';
 import AppLogo from '@/components/layout/app-logo';
 import ShortcutKey from '@/components/shortcut-key';
@@ -59,6 +60,7 @@ const handleLogout = async () => {
 };
 
 const Sidebar = () => {
+  const onTouchDragStart = useTouchDrag();
   const t = useTranslations('sidebar');
   const tc = useTranslations('common');
   const router = useRouter();
@@ -438,6 +440,7 @@ const Sidebar = () => {
     return (
       <div
         key={ws.id}
+        onTouchStartCapture={onTouchDragStart}
         draggable
         onDragStart={(e) => handleDragStart(e, flatIdx)}
         onDragEnd={handleDragEnd}
