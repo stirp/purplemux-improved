@@ -24,7 +24,11 @@
     "notice": "Создаёт отдельный каталог из зафиксированной версии. Незакоммиченные изменения не копируются. При удалении рабочего пространства каталог и ветка Git сохраняются.",
     "dirty": "В исходном проекте есть незакоммиченные изменения.",
     "path": "Каталог рабочего дерева",
-    "loading": "Чтение репозитория Git…"
+    "loading": "Чтение репозитория Git…",
+    "generateBranch": "Generate branch name",
+    "generatingBranch": "Generating branch name…",
+    "generationFailed": "Failed to generate branch name. Please try again.",
+    "codexTextOnlyUnavailable": "Codex CLI cannot guarantee tool-free text generation. Select Claude Code in branch name settings."
   },
   "worktreeManager": {
     "title": "Управление worktree",

@@ -24,7 +24,11 @@
     "notice": "Cria um diretório independente a partir de um commit. Alterações não commitadas não são copiadas. Remover o espaço de trabalho mantém o diretório e a branch do Git.",
     "dirty": "O projeto de origem tem alterações não commitadas.",
     "path": "Diretório do worktree",
-    "loading": "Lendo repositório Git…"
+    "loading": "Lendo repositório Git…",
+    "generateBranch": "Generate branch name",
+    "generatingBranch": "Generating branch name…",
+    "generationFailed": "Failed to generate branch name. Please try again.",
+    "codexTextOnlyUnavailable": "Codex CLI cannot guarantee tool-free text generation. Select Claude Code in branch name settings."
   },
   "worktreeManager": {
     "title": "Gerenciar worktrees",

@@ -33,7 +33,11 @@
     "notice": "Creates an independent directory from a committed version. Uncommitted changes are not copied. Removing the workspace keeps its directory and Git branch.",
     "dirty": "The source has uncommitted changes.",
     "path": "Worktree directory",
-    "loading": "Reading Git repository…"
+    "loading": "Reading Git repository…",
+    "generateBranch": "Generate branch name",
+    "generatingBranch": "Generating branch name…",
+    "generationFailed": "Failed to generate branch name. Please try again.",
+    "codexTextOnlyUnavailable": "Codex CLI cannot guarantee tool-free text generation. Select Claude Code in branch name settings."
   },
   "worktreeManager": {
     "title": "Manage Worktrees",

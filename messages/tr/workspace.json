@@ -24,7 +24,11 @@
     "notice": "Commit edilmiş bir sürümden bağımsız bir dizin oluşturur. Commit edilmemiş değişiklikler kopyalanmaz. Çalışma alanı kaldırıldığında dizin ve Git dalı korunur.",
     "dirty": "Kaynak projede commit edilmemiş değişiklikler var.",
     "path": "Worktree dizini",
-    "loading": "Git deposu okunuyor…"
+    "loading": "Git deposu okunuyor…",
+    "generateBranch": "Generate branch name",
+    "generatingBranch": "Generating branch name…",
+    "generationFailed": "Failed to generate branch name. Please try again.",
+    "codexTextOnlyUnavailable": "Codex CLI cannot guarantee tool-free text generation. Select Claude Code in branch name settings."
   },
   "worktreeManager": {
     "title": "Worktree yönetimi",

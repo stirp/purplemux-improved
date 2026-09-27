@@ -52,6 +52,7 @@ import type { ITerminalThemeColors } from '@/lib/terminal-themes';
 import QuickPromptsSettings from '@/components/features/settings/quick-prompts-settings';
 import SidebarItemsSettings from '@/components/features/settings/sidebar-items-settings';
 import TailscaleSettings from '@/components/features/settings/tailscale-settings';
+import BranchNameSettings from '@/components/features/settings/branch-name-settings';
 import CodexEnvironmentSettings from '@/components/features/settings/codex-environment-settings';
 import BrowserStorageSettings from '@/components/features/settings/browser-storage-settings';
 
@@ -679,6 +680,7 @@ const AgentTab = () => {
   return (
     <div className="space-y-4">
       <CodexEnvironmentSettings />
+      <BranchNameSettings />
       <div className="flex items-center justify-between">
         <div className="space-y-0.5">
           <Label htmlFor="skip-permissions" className="text-sm font-medium">

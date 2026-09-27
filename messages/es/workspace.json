@@ -24,7 +24,11 @@
     "notice": "Crea un directorio independiente a partir de una versión confirmada. No copia cambios sin confirmar. Al eliminar el espacio de trabajo se conservan el directorio y la rama de Git.",
     "dirty": "El proyecto de origen tiene cambios sin confirmar.",
     "path": "Directorio del worktree",
-    "loading": "Leyendo repositorio Git…"
+    "loading": "Leyendo repositorio Git…",
+    "generateBranch": "Generate branch name",
+    "generatingBranch": "Generating branch name…",
+    "generationFailed": "Failed to generate branch name. Please try again.",
+    "codexTextOnlyUnavailable": "Codex CLI cannot guarantee tool-free text generation. Select Claude Code in branch name settings."
   },
   "worktreeManager": {
     "title": "Gestionar worktrees",

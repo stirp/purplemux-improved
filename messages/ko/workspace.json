@@ -24,7 +24,11 @@
     "notice": "커밋된 버전에서 독립된 디렉터리를 만듭니다. 커밋하지 않은 변경 사항은 복사되지 않습니다. 워크스페이스를 삭제해도 디렉터리와 Git 브랜치는 유지됩니다.",
     "dirty": "원본 프로젝트에 커밋하지 않은 변경 사항이 있습니다.",
     "path": "워크트리 디렉터리",
-    "loading": "Git 저장소 읽는 중…"
+    "loading": "Git 저장소 읽는 중…",
+    "generateBranch": "Generate branch name",
+    "generatingBranch": "Generating branch name…",
+    "generationFailed": "Failed to generate branch name. Please try again.",
+    "codexTextOnlyUnavailable": "Codex CLI cannot guarantee tool-free text generation. Select Claude Code in branch name settings."
   },
   "worktreeManager": {
     "title": "Worktree 관리",

@@ -7,8 +7,10 @@ import { isValidEditorPreset } from '@/lib/editor-url';
 import { isValidToastPosition } from '@/lib/toast-position';
 import { isValidAgentEnvironment } from '@/lib/agent-environment';
 
+import { isValidBranchNamePrompt } from '@/lib/branch-name-prompt';
+
 const ALLOWED_FIELDS: (keyof Omit<IConfigData, 'updatedAt' | 'authSecret'>)[] = [
-  'codexEnvironment',
+  'codexEnvironment', 'branchNameProvider', 'branchNamePrompt',
   'appTheme', 'terminalTheme', 'customCSS', 'dangerouslySkipPermissions', 'claudeShowTerminal', 'gitAskProvider', 'noteSummaryProvider', 'editorUrl', 'editorPreset', 'authPassword', 'notificationsEnabled', 'toastOnCompleteEnabled', 'toastDuration', 'toastPositionDesktop', 'toastPositionMobile', 'locale', 'fontSize', 'lineHeight', 'lineHeightCustom', 'terminalKeyBar', 'systemResourcesEnabled', 'networkAccess',
 ];
 
@@ -67,6 +69,13 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
 
     if ('gitAskProvider' in updates && !isValidGitAskProvider(updates.gitAskProvider)) {
       return res.status(400).json({ error: 'gitAskProvider must be one of: claude, codex.' });
+    }
+
+    if ('branchNameProvider' in updates && updates.branchNameProvider !== 'claude') {
+      return res.status(400).json({ error: 'Branch name generation requires a tool-free provider. Only Claude Code is currently supported.' });
+    }
+    if ('branchNamePrompt' in updates && !isValidBranchNamePrompt(updates.branchNamePrompt)) {
+      return res.status(400).json({ error: 'Invalid branch name prompt. Use title, workspaceName, or baseRef variables and at most 10000 characters.' });
     }
 
     if ('noteSummaryProvider' in updates && !isValidNoteSummaryProvider(updates.noteSummaryProvider)) {
