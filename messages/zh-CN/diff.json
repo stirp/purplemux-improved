@@ -31,5 +31,38 @@
   "agentPromptNoUpstream": "The {branch} branch has no upstream. Please push to origin and set up the tracking branch.",
   "agentPromptLocalChanges": "Git pull failed because local uncommitted changes would be overwritten by merge. Please stash or commit the changes, pull from {upstream}, and reapply the stash if you stashed.",
   "agentPromptTimeout": "Git sync timed out. Please check the network connection and retry.",
-  "agentPromptGeneric": "Git sync failed. Please review the error below and resolve it."
+  "agentPromptGeneric": "Git sync failed. Please review the error below and resolve it.",
+  "commit": {
+    "title": "AI 生成提交信息",
+    "description": "使用 Claude Code 根据暂存区生成说明，编辑后可采用并创建本地提交。未暂存改动保持原样，不会推送远端。",
+    "branch": "分支",
+    "stagedFiles": "已暂存文件：{count} 个",
+    "subject": "提交标题",
+    "body": "提交正文（可选）",
+    "generate": "生成提交信息",
+    "loading": "正在读取暂存区…",
+    "generating": "正在生成提交信息…",
+    "committing": "正在提交暂存区改动…",
+    "adoptAndCommit": "采用并提交",
+    "copy": "复制提交信息",
+    "copied": "提交信息已复制。",
+    "copyFailed": "复制失败，请手动选中并复制提交信息。",
+    "close": "关闭",
+    "cancel": "取消",
+    "replaceConfirm": "重新生成将覆盖现有提交信息，是否继续？",
+    "truncated": "变更超过 AI 输入上限，仅发送了部分证据。提交前请结合全部已暂存文件核对生成内容。",
+    "success": "已创建本地提交：{hash}",
+    "errors": {
+      "noStagedChanges": "暂无已暂存的变更。请先在终端暂存要提交的文件，再点击生成。",
+      "changed": "仓库、分支、HEAD 或暂存内容已变化，请重新生成后再提交。",
+      "detached": "当前处于分离 HEAD 状态，请先切换到分支。",
+      "operation": "正在进行合并、变基、挑选或撤销提交，请先在终端完成当前操作。",
+      "conflicts": "暂存区存在冲突，请先解决冲突。",
+      "locked": "其他 Git 操作正在占用暂存区，请等待其完成后重试。",
+      "invalidGeneration": "生成的提交信息格式无效，请重试。",
+      "commitFailed": "提交失败。请查看下方 Git 错误，处理身份、签名或 hooks 问题后重试。",
+      "indexUpdateFailed": "提交已创建，但暂存区更新失败。请在终端检查 git status，不要重复提交。",
+      "commitHookWarning": "提交已创建，但 Git 随后报告错误。请检查仓库 hooks，不要重复提交。"
+    }
+  }
 }

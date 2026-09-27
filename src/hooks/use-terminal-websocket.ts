@@ -32,12 +32,14 @@ const getOrCreateClientId = (sessionName: string): string => {
 
 interface IUseTerminalWebSocketOptions {
   onData?: (data: Uint8Array) => void;
+  onStdin?: (data: string) => void;
   onConnected?: () => void;
   onSessionEnded?: () => void;
 }
 
 const useTerminalWebSocket = ({
   onData,
+  onStdin,
   onConnected,
   onSessionEnded,
 }: IUseTerminalWebSocketOptions = {}) => {
@@ -53,12 +55,12 @@ const useTerminalWebSocket = ({
   const sessionNameRef = useRef('');
   const connectIdRef = useRef(0);
   const initialSizeRef = useRef<{ cols: number; rows: number } | null>(null);
-  const callbacksRef = useRef({ onData, onConnected, onSessionEnded });
+  const callbacksRef = useRef({ onData, onStdin, onConnected, onSessionEnded });
   const doConnectRef = useRef<(sessionName: string, connectId: number) => void>(() => {});
 
   useEffect(() => {
-    callbacksRef.current = { onData, onConnected, onSessionEnded };
-  }, [onData, onConnected, onSessionEnded]);
+    callbacksRef.current = { onData, onStdin, onConnected, onSessionEnded };
+  }, [onData, onStdin, onConnected, onSessionEnded]);
 
   const clearTimers = useCallback(() => {
     if (heartbeatRef.current) {
@@ -204,6 +206,7 @@ const useTerminalWebSocket = ({
     const ws = wsRef.current;
     if (ws?.readyState === WebSocket.OPEN) {
       ws.send(encodeStdin(data));
+      callbacksRef.current.onStdin?.(data);
     }
   }, []);
 

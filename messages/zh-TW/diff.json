@@ -31,5 +31,38 @@
   "agentPromptNoUpstream": "The {branch} branch has no upstream. Please push to origin and set up the tracking branch.",
   "agentPromptLocalChanges": "Git pull failed because local uncommitted changes would be overwritten by merge. Please stash or commit the changes, pull from {upstream}, and reapply the stash if you stashed.",
   "agentPromptTimeout": "Git sync timed out. Please check the network connection and retry.",
-  "agentPromptGeneric": "Git sync failed. Please review the error below and resolve it."
+  "agentPromptGeneric": "Git sync failed. Please review the error below and resolve it.",
+  "commit": {
+    "title": "AI commit message",
+    "description": "Generate with Claude Code from staged changes, edit the message, then adopt it to create a local commit. Unstaged changes stay untouched; nothing is pushed.",
+    "branch": "Branch",
+    "stagedFiles": "Staged files: {count}",
+    "subject": "Commit title",
+    "body": "Description (optional)",
+    "generate": "Generate message",
+    "loading": "Reading staged changes…",
+    "generating": "Generating commit message…",
+    "committing": "Committing staged changes…",
+    "adoptAndCommit": "Adopt and commit",
+    "copy": "Copy message",
+    "copied": "Commit message copied.",
+    "copyFailed": "Copy failed. Please select and copy the message manually.",
+    "close": "Close",
+    "cancel": "Cancel",
+    "replaceConfirm": "Replace the existing message with a newly generated one?",
+    "truncated": "The changes exceed the AI input limit. Only part of the evidence was sent; review the message against all staged files before committing.",
+    "success": "Local commit created: {hash}",
+    "errors": {
+      "noStagedChanges": "No staged changes. Stage the files you want to commit in the terminal, then generate again.",
+      "changed": "The repository, branch, HEAD, or staged changes have changed. Generate again before committing.",
+      "detached": "Switch to a branch before committing.",
+      "operation": "A merge, rebase, cherry-pick, or revert is in progress. Complete it in the terminal first.",
+      "conflicts": "Resolve staged conflicts before generating or committing.",
+      "locked": "Another Git operation holds the index lock. Wait for it to finish and retry.",
+      "invalidGeneration": "The generated message is invalid. Please try again.",
+      "commitFailed": "Commit failed. Review the Git error below; resolve identity, signing, or hook issues before retrying.",
+      "indexUpdateFailed": "The commit was created, but the index could not be updated. Inspect git status in the terminal; do not repeat this commit.",
+      "commitHookWarning": "The commit was created, but Git reported an error afterward. Check the repository hooks; do not repeat this commit."
+    }
+  }
 }

@@ -297,5 +297,20 @@
     "invalid": "请输入不超过 10000 字符的提示词，仅支持上方列出的变量。",
     "reset": "恢复默认提示词",
     "codexUnavailable": "Codex CLI 在此功能中暂不可选：分支名称生成要求禁用工具调用，当前 Codex 接入方式尚未满足这一要求。请使用 Claude Code；这不影响正常使用 Codex 标签页。"
+  },
+  "gitGenerationPrompts": {
+    "commitMessagePrompt": {
+      "title": "AI 生成提交信息提示词",
+      "description": "自定义 Claude Code 根据暂存区生成提交标题和正文时的写作要求。"
+    },
+    "reviewDescriptionPrompt": {
+      "title": "AI 生成 PR/MR 标题和说明提示词",
+      "description": "自定义 Claude Code 根据相对目标分支的提交与代码差异生成标题和说明时的写作要求。"
+    },
+    "prompt": "提示词模板",
+    "variables": "点击插入变量。locale 表示界面语言；branch、sourceBranch、targetBranch 分别表示当前分支、源分支和目标分支，请使用下方列出的变量。",
+    "evidenceHint": "代码差异和提交证据由系统自动附带。JSON 结果校验、工具使用限制和 PR/MR 截断提示会保留。保存后，下次生成即生效。",
+    "invalid": "请输入非空提示词，最多 10000 字符，只能使用上方列出的变量，变量需使用完整的双花括号。",
+    "reset": "恢复默认"
   }
 }

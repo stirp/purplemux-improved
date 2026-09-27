@@ -20,6 +20,7 @@ interface IUseTerminalOptions {
   onInput?: (data: string) => void;
   onResize?: (cols: number, rows: number) => void;
   onTitleChange?: (title: string) => void;
+  onWriteParsed?: () => void;
   customKeyEventHandler?: (event: KeyboardEvent) => boolean;
 }
 
@@ -69,7 +70,7 @@ const loadFonts = () => {
   return fontLoadPromise;
 };
 
-const useTerminal = ({ theme, fontSize = DEFAULT_FONT_SIZE, lineHeight = DEFAULT_LINE_HEIGHT, onInput, onResize, onTitleChange, customKeyEventHandler }: IUseTerminalOptions = {}) => {
+const useTerminal = ({ theme, fontSize = DEFAULT_FONT_SIZE, lineHeight = DEFAULT_LINE_HEIGHT, onInput, onResize, onTitleChange, onWriteParsed, customKeyEventHandler }: IUseTerminalOptions = {}) => {
   const [containerNode, setContainerNode] = useState<HTMLDivElement | null>(null);
   const terminalRef = useCallback((node: HTMLDivElement | null) => {
     setContainerNode(node);
@@ -81,11 +82,11 @@ const useTerminal = ({ theme, fontSize = DEFAULT_FONT_SIZE, lineHeight = DEFAULT
   const [isReady, setIsReady] = useState(false);
   const t = useTranslations('terminal');
 
-  const callbacksRef = useRef({ theme, fontSize, lineHeight, onInput, onResize, onTitleChange, customKeyEventHandler, t });
+  const callbacksRef = useRef({ theme, fontSize, lineHeight, onInput, onResize, onTitleChange, onWriteParsed, customKeyEventHandler, t });
 
   useEffect(() => {
-    callbacksRef.current = { theme, fontSize, lineHeight, onInput, onResize, onTitleChange, customKeyEventHandler, t };
-  }, [theme, fontSize, lineHeight, onInput, onResize, onTitleChange, customKeyEventHandler, t]);
+    callbacksRef.current = { theme, fontSize, lineHeight, onInput, onResize, onTitleChange, onWriteParsed, customKeyEventHandler, t };
+  }, [theme, fontSize, lineHeight, onInput, onResize, onTitleChange, onWriteParsed, customKeyEventHandler, t]);
 
   const write = useCallback((data: Uint8Array) => {
     writeQueueRef.current.push(data);
@@ -229,6 +230,7 @@ const useTerminal = ({ theme, fontSize = DEFAULT_FONT_SIZE, lineHeight = DEFAULT
       terminal.onTitleChange((title) => {
         callbacksRef.current.onTitleChange?.(title);
       });
+      terminal.onWriteParsed(() => callbacksRef.current.onWriteParsed?.());
 
       terminal.attachCustomKeyEventHandler((event) => {
         // IME 조합 단계의 keydown(keyCode 229)은 가로채지 않는다. 같은 키가 조합용으로 한 번,

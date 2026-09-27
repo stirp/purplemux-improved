@@ -53,6 +53,7 @@ import QuickPromptsSettings from '@/components/features/settings/quick-prompts-s
 import SidebarItemsSettings from '@/components/features/settings/sidebar-items-settings';
 import TailscaleSettings from '@/components/features/settings/tailscale-settings';
 import BranchNameSettings from '@/components/features/settings/branch-name-settings';
+import GitGenerationPromptSettings from '@/components/features/settings/git-generation-prompt-settings';
 import CodexEnvironmentSettings from '@/components/features/settings/codex-environment-settings';
 import BrowserStorageSettings from '@/components/features/settings/browser-storage-settings';
 
@@ -681,6 +682,8 @@ const AgentTab = () => {
     <div className="space-y-4">
       <CodexEnvironmentSettings />
       <BranchNameSettings />
+      <GitGenerationPromptSettings promptKey="commitMessagePrompt" />
+      <GitGenerationPromptSettings promptKey="reviewDescriptionPrompt" />
       <div className="flex items-center justify-between">
         <div className="space-y-0.5">
           <Label htmlFor="skip-permissions" className="text-sm font-medium">

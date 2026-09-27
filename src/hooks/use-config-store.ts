@@ -1,4 +1,5 @@
 import { DEFAULT_BRANCH_NAME_PROMPT } from '@/lib/branch-name-prompt';
+import { GIT_GENERATION_PROMPTS, type TGitGenerationPromptKey } from '@/lib/git-generation-prompts';
 import { create } from 'zustand';
 import type { TEditorPreset } from '@/lib/editor-url';
 import type { TToastPosition } from '@/lib/toast-position';
@@ -27,6 +28,8 @@ export interface IConfigInitialData {
   noteSummaryProvider?: TNoteSummaryProvider;
   branchNameProvider?: TGitAskProvider;
   branchNamePrompt?: string;
+  commitMessagePrompt?: string;
+  reviewDescriptionPrompt?: string;
   editorUrl?: string;
   editorPreset?: TEditorPreset;
   notificationsEnabled?: boolean;
@@ -55,6 +58,9 @@ interface IConfigState {
   noteSummaryProvider: TNoteSummaryProvider;
   branchNameProvider: TGitAskProvider;
   branchNamePrompt: string;
+  commitMessagePrompt: string;
+  reviewDescriptionPrompt: string;
+  setGitGenerationPrompt: (key: TGitGenerationPromptKey, prompt: string) => Promise<void>;
   setBranchNameSettings: (provider: TGitAskProvider, prompt: string) => Promise<void>;
   editorUrl: string;
   editorPreset: TEditorPreset;
@@ -134,6 +140,18 @@ const saveConfig = (updates: Record<string, unknown>) => {
 };
 
 const useConfigStore = create<IConfigState>((set, get) => ({
+  commitMessagePrompt: GIT_GENERATION_PROMPTS.commitMessagePrompt.defaultPrompt,
+  reviewDescriptionPrompt: GIT_GENERATION_PROMPTS.reviewDescriptionPrompt.defaultPrompt,
+  setGitGenerationPrompt: async (key, prompt) => {
+    const response = await fetch('/api/config', {
+      method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ [key]: prompt }),
+    });
+    if (!response.ok) {
+      const data = await response.json().catch(() => null);
+      throw new Error(data?.error ?? `HTTP ${response.status}`);
+    }
+    set({ [key]: prompt });
+  },
   branchNameProvider: 'claude',
   branchNamePrompt: DEFAULT_BRANCH_NAME_PROMPT,
   setBranchNameSettings: async (provider, prompt) => {
@@ -188,6 +206,8 @@ const useConfigStore = create<IConfigState>((set, get) => ({
     set({
       branchNameProvider: data.branchNameProvider === 'codex' ? 'codex' : 'claude',
       branchNamePrompt: data.branchNamePrompt ?? DEFAULT_BRANCH_NAME_PROMPT,
+      commitMessagePrompt: data.commitMessagePrompt ?? GIT_GENERATION_PROMPTS.commitMessagePrompt.defaultPrompt,
+      reviewDescriptionPrompt: data.reviewDescriptionPrompt ?? GIT_GENERATION_PROMPTS.reviewDescriptionPrompt.defaultPrompt,
       codexEnvironment: data.codexEnvironment ?? {},
       dangerouslySkipPermissions: data.dangerouslySkipPermissions ?? false,
       claudeShowTerminal: data.claudeShowTerminal ?? true,

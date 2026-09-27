@@ -8,9 +8,10 @@ import { isValidToastPosition } from '@/lib/toast-position';
 import { isValidAgentEnvironment } from '@/lib/agent-environment';
 
 import { isValidBranchNamePrompt } from '@/lib/branch-name-prompt';
+import { isValidGitGenerationPrompt } from '@/lib/git-generation-prompts';
 
 const ALLOWED_FIELDS: (keyof Omit<IConfigData, 'updatedAt' | 'authSecret'>)[] = [
-  'codexEnvironment', 'branchNameProvider', 'branchNamePrompt',
+  'codexEnvironment', 'branchNameProvider', 'branchNamePrompt', 'commitMessagePrompt', 'reviewDescriptionPrompt',
   'appTheme', 'terminalTheme', 'customCSS', 'dangerouslySkipPermissions', 'claudeShowTerminal', 'gitAskProvider', 'noteSummaryProvider', 'editorUrl', 'editorPreset', 'authPassword', 'notificationsEnabled', 'toastOnCompleteEnabled', 'toastDuration', 'toastPositionDesktop', 'toastPositionMobile', 'locale', 'fontSize', 'lineHeight', 'lineHeightCustom', 'terminalKeyBar', 'systemResourcesEnabled', 'networkAccess',
 ];
 
@@ -76,6 +77,11 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     }
     if ('branchNamePrompt' in updates && !isValidBranchNamePrompt(updates.branchNamePrompt)) {
       return res.status(400).json({ error: 'Invalid branch name prompt. Use title, workspaceName, or baseRef variables and at most 10000 characters.' });
+    }
+    for (const key of ['commitMessagePrompt', 'reviewDescriptionPrompt'] as const) {
+      if (key in updates && !isValidGitGenerationPrompt(key, updates[key])) {
+        return res.status(400).json({ error: `Invalid ${key}. Use the supported variables and at most 10000 characters.` });
+      }
     }
 
     if ('noteSummaryProvider' in updates && !isValidNoteSummaryProvider(updates.noteSummaryProvider)) {
