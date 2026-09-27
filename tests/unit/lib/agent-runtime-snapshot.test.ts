@@ -3,7 +3,7 @@ import os from 'os';
 import path from 'path';
 import { describe, expect, it } from 'vitest';
 import { readClaudeRuntimeSnapshot } from '@/lib/providers/claude/runtime-snapshot';
-import { readCodexRuntimeSnapshot } from '@/lib/providers/codex/runtime-snapshot';
+import { readCodexRuntimeSnapshot, __testing } from '@/lib/providers/codex/runtime-snapshot';
 
 const writeJsonl = async (lines: unknown[]): Promise<string> => {
   const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'purplemux-runtime-snapshot-'));
@@ -13,6 +13,45 @@ const writeJsonl = async (lines: unknown[]): Promise<string> => {
 };
 
 describe('agent runtime snapshots', () => {
+  const event = (seconds: number, payload: object) => JSON.stringify({
+    timestamp: new Date(seconds * 1000).toISOString(), type: 'event_msg', payload,
+  });
+
+  it('tracks review start and outer completion despite forwarded child turn IDs', () => {
+    const review = [
+      event(1, { type: 'task_complete', turn_id: 'previous' }),
+      event(2, { type: 'item_completed', turn_id: 'parent', item: { type: 'EnteredReviewMode' } }),
+      event(3, { type: 'task_started', turn_id: 'child' }),
+    ];
+    expect(__testing.scanCodexLines(review.slice(0, 2), 0)).toMatchObject({
+      idle: false, workStateEvent: { name: 'prompt-submit', at: 2000 },
+    });
+    expect(__testing.scanCodexLines(review, 0)).toMatchObject({
+      idle: false, workStateEvent: { name: 'prompt-submit', at: 3000 },
+    });
+    review.push(event(4, { type: 'item_completed', item: { type: 'ExitedReviewMode' } }));
+    expect(__testing.scanCodexLines(review, 0).workStateEvent?.name).toBe('prompt-submit');
+    review.push(event(5, { type: 'task_complete', turn_id: 'parent' }));
+    expect(__testing.scanCodexLines(review, 0)).toMatchObject({
+      idle: true, interrupted: false, workStateEvent: { name: 'stop', at: 5000 },
+    });
+  });
+
+  it.each(['task_started', 'user_message'])('does not reuse an old completion after a new %s', (type) => {
+    const snapshot = __testing.scanCodexLines([
+      event(1, { type: 'turn_aborted' }),
+      event(2, { type: 'task_complete' }),
+      event(3, { type }),
+    ], 0);
+    expect(snapshot).toMatchObject({ idle: false, interrupted: false, workStateEvent: { name: 'prompt-submit', at: 3000 } });
+  });
+
+  it('does not mistake trailing token usage for a new completion timestamp', () => {
+    expect(__testing.scanCodexLines([
+      event(1, { type: 'task_complete' }), event(5, { type: 'token_count' }),
+    ], 0).workStateEvent).toEqual({ name: 'stop', at: 1000 });
+  });
+
   it('keeps Claude JSONL snapshot behavior behind the Claude provider', async () => {
     const jsonlPath = await writeJsonl([
       {
