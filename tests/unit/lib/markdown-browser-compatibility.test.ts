@@ -25,7 +25,7 @@ describe('Markdown on Safari before 16.4', () => {
     const source = readFileSync(join(dirname(autolinkEntry), 'lib/index.js'), 'utf8');
     for (const token of tokenizer(source, { ecmaVersion: 'latest', sourceType: 'module' })) {
       if (token.type.label === 'regexp') {
-        expect(token.value.pattern).not.toMatch(/\(\?<([=!])/);
+        expect(source.slice(token.start, token.end)).not.toMatch(/\(\?<([=!])/);
       }
     }
   });

@@ -8,9 +8,11 @@ import {
   encodeWebStdin,
   encodeResize,
   encodeHeartbeat,
+  encodeStdoutAck,
   decodeMessage,
 } from '@/lib/terminal-protocol';
 import { shouldPromptMobileReloadRecovery } from '@/lib/ws-reload-recovery';
+import type { TTerminalWriteCallback } from '@/lib/terminal-write-queue';
 
 const RECONNECT_DELAYS = [1000, 2000, 4000, 8000, 16000];
 const MAX_RETRIES = 5;
@@ -31,7 +33,7 @@ const getOrCreateClientId = (sessionName: string): string => {
 };
 
 interface IUseTerminalWebSocketOptions {
-  onData?: (data: Uint8Array) => void;
+  onData?: (data: Uint8Array, onParsed: TTerminalWriteCallback) => void;
   onStdin?: (data: string) => void;
   onConnected?: () => void;
   onSessionEnded?: () => void;
@@ -89,13 +91,13 @@ const useTerminalWebSocket = ({
       const size = initialSizeRef.current;
       const sizeParams = size ? `&cols=${size.cols}&rows=${size.rows}` : '';
       const ws = new WebSocket(
-        `${protocol}//${location.host}/api/terminal?clientId=${clientId}&session=${sessionName}${sizeParams}`,
+        `${protocol}//${location.host}/api/terminal?clientId=${clientId}&session=${sessionName}&flowControl=1${sizeParams}`,
       );
       ws.binaryType = 'arraybuffer';
       wsRef.current = ws;
 
       ws.onopen = () => {
-        if (connectIdRef.current !== connectId) return;
+        if (connectIdRef.current !== connectId || wsRef.current !== ws) return;
         setStatus('connected');
         retryCountRef.current = 0;
         setRetryCount(0);
@@ -109,20 +111,35 @@ const useTerminalWebSocket = ({
       };
 
       ws.onmessage = (event: MessageEvent) => {
-        if (connectIdRef.current !== connectId) return;
+        if (connectIdRef.current !== connectId || wsRef.current !== ws) return;
         const { type, payload } = decodeMessage(event.data as ArrayBuffer);
 
         switch (type) {
-          case MSG_STDOUT:
-            callbacksRef.current.onData?.(payload);
+          case MSG_STDOUT: {
+            let acknowledged = false;
+            callbacksRef.current.onData?.(payload, (error) => {
+              // A delayed parser callback must never credit a replacement connection.
+              if (acknowledged || wsRef.current !== ws || connectIdRef.current !== connectId || ws.readyState !== WebSocket.OPEN) return;
+              acknowledged = true;
+              if (error) {
+                ws.close(4000, 'Terminal output processing failed');
+                return;
+              }
+              try {
+                ws.send(encodeStdoutAck(payload.byteLength));
+              } catch {
+                ws.close(4000, 'Terminal output acknowledgement failed');
+              }
+            });
             break;
+          }
           case MSG_HEARTBEAT:
             break;
         }
       };
 
       ws.onclose = (event: CloseEvent) => {
-        if (connectIdRef.current !== connectId) return;
+        if (connectIdRef.current !== connectId || wsRef.current !== ws) return;
         clearTimers();
         wsRef.current = null;
 

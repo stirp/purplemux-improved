@@ -19,15 +19,16 @@ import useBrowserTitle from '@/hooks/use-browser-title';
 import { getPageShellLayout } from '@/components/layout/page-shell';
 import { requireAuth } from '@/lib/require-auth';
 import { loadMessagesServer } from '@/lib/load-messages';
+import WorkspacePageLoading from '@/components/features/workspace/workspace-page-loading';
 
 const TerminalPage = dynamic(
   () => import('@/components/features/workspace/terminal-page'),
-  { ssr: false },
+  { ssr: false, loading: WorkspacePageLoading },
 );
 
 const MobileTerminalPage = dynamic(
   () => import('@/components/features/mobile/mobile-terminal-page'),
-  { ssr: false },
+  { ssr: false, loading: WorkspacePageLoading },
 );
 
 interface IIndexProps {

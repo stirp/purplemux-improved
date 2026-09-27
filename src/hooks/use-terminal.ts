@@ -12,6 +12,7 @@ import { createMultilineUrlLinkProvider } from "@/lib/multiline-url-link-provide
 import { copyToClipboard } from "@/lib/clipboard";
 import { DEFAULT_LINE_HEIGHT } from "@/lib/terminal-line-height";
 import isElectron from "@/hooks/use-is-electron";
+import { TerminalWriteQueue, type TTerminalWriteCallback } from '@/lib/terminal-write-queue';
 
 interface IUseTerminalOptions {
   theme?: ITerminalThemeColors;
@@ -77,8 +78,7 @@ const useTerminal = ({ theme, fontSize = DEFAULT_FONT_SIZE, lineHeight = DEFAULT
   }, []);
   const terminalInstance = useRef<Terminal | null>(null);
   const fitAddonRef = useRef<FitAddon | null>(null);
-  const writeQueueRef = useRef<Uint8Array[]>([]);
-  const isWritingRef = useRef(false);
+  const writeQueueRef = useRef<TerminalWriteQueue | null>(null);
   const [isReady, setIsReady] = useState(false);
   const t = useTranslations('terminal');
 
@@ -88,37 +88,13 @@ const useTerminal = ({ theme, fontSize = DEFAULT_FONT_SIZE, lineHeight = DEFAULT
     callbacksRef.current = { theme, fontSize, lineHeight, onInput, onResize, onTitleChange, onWriteParsed, customKeyEventHandler, t };
   }, [theme, fontSize, lineHeight, onInput, onResize, onTitleChange, onWriteParsed, customKeyEventHandler, t]);
 
-  const write = useCallback((data: Uint8Array) => {
-    writeQueueRef.current.push(data);
-    if (!isWritingRef.current) {
-      isWritingRef.current = true;
-      const flush = () => {
-        requestAnimationFrame(() => {
-          const terminal = terminalInstance.current;
-          const queue = writeQueueRef.current;
-          if (!terminal || queue.length === 0) {
-            isWritingRef.current = false;
-            return;
-          }
-
-          const startTime = performance.now();
-          let consumed = 0;
-          while (consumed < queue.length && performance.now() - startTime < 12) {
-            terminal.write(queue[consumed]);
-            consumed++;
-          }
-
-          if (consumed >= queue.length) {
-            queue.length = 0;
-            isWritingRef.current = false;
-          } else {
-            writeQueueRef.current = queue.slice(consumed);
-            flush();
-          }
-        });
-      };
-      flush();
+  const write = useCallback((data: Uint8Array, callback?: TTerminalWriteCallback) => {
+    const queue = writeQueueRef.current;
+    if (!queue) {
+      callback?.(new Error('Terminal writer is unavailable'));
+      return;
     }
+    queue.write(data, callback);
   }, []);
 
   const clear = useCallback(() => {
@@ -148,9 +124,7 @@ const useTerminal = ({ theme, fontSize = DEFAULT_FONT_SIZE, lineHeight = DEFAULT
   }, []);
 
   const reset = useCallback(() => {
-    writeQueueRef.current = [];
-    isWritingRef.current = false;
-    terminalInstance.current?.reset();
+    writeQueueRef.current?.reset();
   }, []);
 
   const focus = useCallback(() => {
@@ -220,6 +194,7 @@ const useTerminal = ({ theme, fontSize = DEFAULT_FONT_SIZE, lineHeight = DEFAULT
       terminal.open(containerNode);
 
       terminalInstance.current = terminal;
+      writeQueueRef.current = new TerminalWriteQueue(terminal);
       fitAddonRef.current = fitAddon;
 
       terminal.onData((data) => {
@@ -325,6 +300,8 @@ const useTerminal = ({ theme, fontSize = DEFAULT_FONT_SIZE, lineHeight = DEFAULT
       clearTimeout(reFitTimer);
       resizeObserver?.disconnect();
       cleanupTouch?.();
+      writeQueueRef.current?.dispose();
+      writeQueueRef.current = null;
       terminalInstance.current?.dispose();
       terminalInstance.current = null;
       fitAddonRef.current = null;

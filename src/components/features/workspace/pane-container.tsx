@@ -57,7 +57,7 @@ import {
 
 
 interface ITermActions {
-  write: (data: Uint8Array) => void;
+  write: ReturnType<typeof useTerminal>['write'];
   reset: () => void;
   fit: () => { cols: number; rows: number };
   focus: () => void;
@@ -552,12 +552,13 @@ const PaneContainer = memo(({ paneId, paneNumber }: IPaneContainerProps) => {
     sendResize,
   } = useTerminalWebSocket({
     onStdin: (data) => nativeCommandEventsRef.current?.onInput(data),
-    onData: (data) => {
-      termActionsRef.current.write(data);
+    onData: (data, onParsed) => {
+      termActionsRef.current.write(data, onParsed);
       onTrustData();
       onCodexUpdateData();
     },
     onConnected: () => {
+      termActionsRef.current.reset();
       setHasEverConnected(true);
       prevConnectedTabIdRef.current = activeTabIdRef.current;
       const tabId = activeTabIdRef.current;
