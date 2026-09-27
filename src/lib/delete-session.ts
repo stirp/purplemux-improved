@@ -10,9 +10,9 @@ export class SessionInUseError extends Error {
   constructor() { super('Session is in use'); }
 }
 
-const assertNotInUse = (provider: 'claude' | 'codex', sessionId: string) => {
+const assertNotInUse = (provider: 'claude' | 'codex', sessionId: string, closedWorkspaceId?: string) => {
   const active = Object.values(getStatusManager().getAllForClient()).some((tab) =>
-    (tab.agentProviderId ?? (tab.panelType === 'codex-cli' ? 'codex' : 'claude')) === provider
+    (!closedWorkspaceId || tab.workspaceId !== closedWorkspaceId) && (tab.agentProviderId ?? (tab.panelType === 'codex-cli' ? 'codex' : 'claude')) === provider
       && tab.agentSessionId === sessionId && tab.cliState !== 'inactive',
   );
   if (active) throw new SessionInUseError();
@@ -34,7 +34,7 @@ const assertClaudeNotRunning = async (claudeRoot: string, sessionId: string) => 
   }
 };
 
-const removeClaudeSession = async (sessionId: string) => {
+const removeClaudeSession = async (sessionId: string, closedWorkspaceId?: string) => {
   const claudeRoot = path.join(os.homedir(), '.claude');
   await assertClaudeNotRunning(claudeRoot, sessionId);
   let root: string;
@@ -62,19 +62,19 @@ const removeClaudeSession = async (sessionId: string) => {
       if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error;
     }
     if (sessionStat && (!sessionStat.isDirectory() || sessionStat.isSymbolicLink())) throw new Error('Unsafe session directory');
-    assertNotInUse('claude', sessionId);
+    assertNotInUse('claude', sessionId, closedWorkspaceId);
     if (sessionStat) await fs.rm(sessionDirectory, { recursive: true });
     await fs.unlink(transcript);
   }
 };
 
-export const deleteOriginalSession = async (provider: 'claude' | 'codex', sessionId: string): Promise<void> => {
+export const deleteOriginalSession = async (provider: 'claude' | 'codex', sessionId: string, closedWorkspaceId?: string): Promise<void> => {
   if (!/^[a-zA-Z0-9_-]{1,128}$/.test(sessionId)) throw new Error('Invalid session ID');
-  assertNotInUse(provider, sessionId);
+  assertNotInUse(provider, sessionId, closedWorkspaceId);
   if (provider === 'codex') {
     await deleteCodexSession(sessionId);
     clearCodexSessionListCache();
   } else {
-    await removeClaudeSession(sessionId);
+    await removeClaudeSession(sessionId, closedWorkspaceId);
   }
 };

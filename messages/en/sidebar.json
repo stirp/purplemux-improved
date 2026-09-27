@@ -3,7 +3,7 @@
   "addWorkspace": "Add workspace",
   "noWorkspaces": "No workspaces",
   "deleteWorkspace": "Delete workspace",
-  "deleteWorkspaceConfirm": "Close workspace ''{name}''?",
+  "deleteWorkspaceConfirm": "Close workspace ''{name}''? Associated original Codex and Claude sessions and Purplemux session history will also be deleted. This cannot be undone.",
   "notes": "Notes",
   "stats": "Usage stats",
   "collapseSidebar": "Collapse sidebar",

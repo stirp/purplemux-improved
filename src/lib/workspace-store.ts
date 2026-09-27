@@ -2,7 +2,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import os from 'os';
 import { nanoid } from 'nanoid';
-import { listSessions, killSession } from '@/lib/tmux';
+import { listSessions, killSession, getAllPanesInfo } from '@/lib/tmux';
 import { createLogger } from '@/lib/logger';
 import { broadcastSync } from '@/lib/sync-server';
 import {
@@ -340,7 +340,7 @@ export const createWorkspace = async (directory: string, name?: string, layoutOp
     return workspace;
   });
 
-export const deleteWorkspace = async (workspaceId: string): Promise<boolean> =>
+export const deleteWorkspace = async (workspaceId: string, deleteSessions = true): Promise<boolean> =>
   withLock(async () => {
     const data = (await readWorkspacesFile()) ?? emptyState();
     const idx = data.workspaces.findIndex((w) => w.id === workspaceId);
@@ -349,18 +349,21 @@ export const deleteWorkspace = async (workspaceId: string): Promise<boolean> =>
     const ws = data.workspaces[idx];
 
     const layout = await readLayoutFile(resolveLayoutFile(workspaceId));
-    if (layout) {
-      const tabs = collectAllTabs(layout.root);
-      for (const tab of tabs) {
-        try {
-          await killSession(tab.sessionName);
-        } catch {}
-      }
+    const tabs = layout ? collectAllTabs(layout.root) : [];
+    const { collectWorkspaceSessions, deleteWorkspaceSessions } = await import('@/lib/workspace-sessions');
+    const sessions = deleteSessions ? await collectWorkspaceSessions(workspaceId, tabs) : [];
+    const panes = await getAllPanesInfo({ strict: true });
+    const terminalNames = new Set([
+      ...tabs.map((tab) => tab.sessionName),
+      ...[...panes.keys()].filter((name) => name.startsWith(`pt-${workspaceId}-`)).map((name) => name.split(':')[0]),
+    ]);
+    for (const name of terminalNames) await killSession(name);
+    const remaining = await getAllPanesInfo({ strict: true });
+    if ([...remaining.keys()].some((name) => terminalNames.has(name.split(':')[0]) || name.startsWith(`pt-${workspaceId}-`))) {
+      throw new Error('Workspace sessions are still running');
     }
-
-    try {
-      await removeLayoutFile(workspaceId);
-    } catch {}
+    if (deleteSessions) await deleteWorkspaceSessions(workspaceId, sessions);
+    await removeLayoutFile(workspaceId);
 
     data.workspaces.splice(idx, 1);
     for (const child of data.workspaces) {

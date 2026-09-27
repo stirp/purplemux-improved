@@ -3,7 +3,7 @@
   "addWorkspace": "新增工作區",
   "noWorkspaces": "沒有工作區",
   "deleteWorkspace": "刪除工作區",
-  "deleteWorkspaceConfirm": "關閉工作區「{name}」？",
+  "deleteWorkspaceConfirm": "關閉工作區「{name}」？ 同時刪除關聯的 Codex 與 Claude 原始會話及 Purplemux 會話歷史，此操作無法復原。",
   "notes": "筆記",
   "stats": "使用統計",
   "collapseSidebar": "收合側邊欄",

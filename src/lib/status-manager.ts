@@ -483,6 +483,19 @@ class StatusManager {
     }
   }
 
+  areSessionsIdle(sessions: string[]): boolean {
+    return sessions.every((session) => {
+      const entries = [...this.tabs.values()].filter((entry) => entry.tmuxSession === session);
+      return entries.length > 0 && entries.every((entry) => {
+        if (entry.permissionRequest || entry.compactingSince) return false;
+        if (entry.panelType === 'terminal' || !entry.panelType) return entry.terminalStatus === 'idle';
+        if (!getProviderByPanelType(entry.panelType)) return false;
+        return ['idle', 'ready-for-review', 'cancelled'].includes(entry.cliState)
+          || (entry.cliState === 'inactive' && entry.terminalStatus === 'idle');
+      });
+    });
+  }
+
   getAllForClient(): Record<string, IClientTabStatusEntry> {
     const result: Record<string, IClientTabStatusEntry> = {};
     for (const [tabId, entry] of this.tabs) {
@@ -874,9 +887,9 @@ class StatusManager {
     }
   }
 
-  removeTab(tabId: string): void {
+  removeTab(tabId: string, saveHistory = true): void {
     const entry = this.tabs.get(tabId);
-    if (entry && (entry.cliState === 'busy' || entry.cliState === 'needs-input') && entry.lastUserMessage) {
+    if (saveHistory && entry && (entry.cliState === 'busy' || entry.cliState === 'needs-input') && entry.lastUserMessage) {
       this.saveSessionHistory(tabId, entry, entry.busySince, true).catch((err) => {
         log.warn('Failed to save cancelled session history: %s', err);
       });
@@ -900,10 +913,10 @@ class StatusManager {
     }
   }
 
-  removeWorkspaceTabs(wsId: string): void {
+  removeWorkspaceTabs(wsId: string, saveHistory = true): void {
     for (const [tabId, entry] of this.tabs) {
       if (entry.workspaceId === wsId) {
-        this.removeTab(tabId);
+        this.removeTab(tabId, saveHistory);
       }
     }
   }

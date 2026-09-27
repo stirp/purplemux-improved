@@ -3,7 +3,7 @@
   "addWorkspace": "Adicionar workspace",
   "noWorkspaces": "Nenhum workspace",
   "deleteWorkspace": "Excluir workspace",
-  "deleteWorkspaceConfirm": "Fechar o workspace ''{name}''?",
+  "deleteWorkspaceConfirm": "Fechar o workspace ''{name}''? As sessões originais associadas do Codex e Claude e o histórico de sessões do Purplemux também serão excluídos. Esta ação não pode ser desfeita.",
   "notes": "Notas",
   "stats": "Estatisticas de uso",
   "collapseSidebar": "Recolher barra lateral",

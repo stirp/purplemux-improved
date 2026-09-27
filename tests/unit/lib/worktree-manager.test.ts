@@ -5,9 +5,10 @@ import path from 'node:path';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 import type { IWorkspace } from '@/types/terminal';
-const mocks = vi.hoisted(() => ({ list: vi.fn(), create: vi.fn(), remove: vi.fn(), panes: vi.fn() }));
+const mocks = vi.hoisted(() => ({ list: vi.fn(), create: vi.fn(), remove: vi.fn(), panes: vi.fn(), kill: vi.fn(), poll: vi.fn(), idle: vi.fn() }));
 vi.mock('@/lib/workspace-store', () => ({ getWorkspaces: mocks.list, createWorkspace: mocks.create, deleteWorkspace: mocks.remove }));
-vi.mock('@/lib/tmux', () => ({ getAllPanesInfo: mocks.panes }));
+vi.mock('@/lib/tmux', () => ({ getAllPanesInfo: mocks.panes, killSession: mocks.kill }));
+vi.mock('@/lib/status-manager', () => ({ getStatusManager: () => ({ poll: mocks.poll, areSessionsIdle: mocks.idle }) }));
 import { adoptWorktree, getWorktreeOverview, removeManagedWorktree, withWorktreeMutation } from '@/lib/worktree-manager';
 import { parseWorktreeList, readWorktreeStatus } from '@/lib/worktree-git';
 
@@ -157,6 +158,73 @@ describe('safe removal', () => {
     mocks.panes.mockRejectedValue(new Error('tmux permission denied'));
     expect((await selection()).item.sessions).toBeNull();
     await expect(removeManagedWorktree(source, options)).rejects.toMatchObject({ code: 'unknown' });
+  });
+
+  it('closes confirmed idle sessions before removing the worktree', async () => {
+    workspaces.push(child);
+    const panes = new Map([['pt-ws-child-pane-tab', { path: root }]]);
+    mocks.panes.mockResolvedValue(panes);
+    mocks.idle.mockReturnValue(true);
+    mocks.kill.mockImplementation(async (name) => { panes.delete(name); });
+    const { options } = await selection();
+    await removeManagedWorktree(source, { ...options, closeIdleSessions: true });
+    expect(mocks.poll).toHaveBeenCalledTimes(1);
+    expect(mocks.kill).toHaveBeenCalledWith('pt-ws-child-pane-tab');
+    expect(mocks.remove).toHaveBeenCalledWith(child.id);
+    await expect(fs.stat(child.directories[0])).rejects.toThrow();
+  });
+
+  it('leaves every session open when any session is not idle', async () => {
+    mocks.panes.mockResolvedValue(new Map([['pt-other', { path: child.directories[0] }]]));
+    mocks.idle.mockReturnValue(false);
+    const { options } = await selection();
+    await expect(removeManagedWorktree(source, { ...options, closeIdleSessions: true })).rejects.toMatchObject({ code: 'sessions' });
+    expect(mocks.kill).not.toHaveBeenCalled();
+    expect(mocks.remove).not.toHaveBeenCalled();
+    expect((await fs.stat(child.directories[0])).isDirectory()).toBe(true);
+  });
+
+  it('keeps the worktree when session shutdown fails or leaves a session alive', async () => {
+    mocks.panes.mockResolvedValue(new Map([['pt-other', { path: child.directories[0] }]]));
+    mocks.idle.mockReturnValue(true);
+    const { options } = await selection();
+    mocks.kill.mockRejectedValueOnce(new Error('shutdown failed'));
+    await expect(removeManagedWorktree(source, { ...options, closeIdleSessions: true })).rejects.toThrow('shutdown failed');
+    await expect(removeManagedWorktree(source, { ...options, closeIdleSessions: true })).rejects.toMatchObject({ code: 'sessions' });
+    expect(mocks.remove).not.toHaveBeenCalled();
+  });
+
+  it('rechecks files written while sessions are closing', async () => {
+    const panes = new Map([['pt-other', { path: child.directories[0] }]]);
+    mocks.panes.mockResolvedValue(panes);
+    mocks.idle.mockReturnValue(true);
+    mocks.kill.mockImplementation(async () => {
+      panes.clear();
+      await fs.writeFile(path.join(child.directories[0], 'late.txt'), 'keep');
+    });
+    const { options } = await selection();
+    await expect(removeManagedWorktree(source, { ...options, closeIdleSessions: true })).rejects.toMatchObject({ code: 'dirty' });
+    expect(mocks.remove).not.toHaveBeenCalled();
+  });
+
+  it('does not close sessions with additional untracked tmux panes', async () => {
+    mocks.panes.mockResolvedValue(new Map([
+      ['pt-other', { path: child.directories[0] }], ['pt-other:123', { path: root }],
+    ]));
+    mocks.idle.mockReturnValue(true);
+    const { options } = await selection();
+    await expect(removeManagedWorktree(source, { ...options, closeIdleSessions: true })).rejects.toMatchObject({ code: 'sessions' });
+    expect(mocks.kill).not.toHaveBeenCalled();
+  });
+
+  it('deletes an unmerged branch only with explicit discard confirmation', async () => {
+    await fs.writeFile(path.join(child.directories[0], 'file.txt'), 'abandoned');
+    await commit(child.directories[0]);
+    const { options } = await selection();
+    await expect(removeManagedWorktree(source, { ...options, deleteBranch: true, targetRef: 'main' })).rejects.toMatchObject({ code: 'notMerged' });
+    await removeManagedWorktree(source, { ...options, deleteBranch: true, discardUnmergedBranch: true });
+    await expect(git(source.directories[0], 'rev-parse', '--verify', 'refs/heads/task/one')).rejects.toThrow();
+    await expect(fs.stat(child.directories[0])).rejects.toThrow();
   });
 
   it('protects main, locked, missing, and detached worktrees', async () => {

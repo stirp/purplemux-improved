@@ -28,6 +28,7 @@ export default function ManageWorktreesDialog({ workspace, onClose, onSelect }: 
   const [selection, setSelection] = useState<ISelection | null>(null);
   const [deleteBranch, setDeleteBranch] = useState(false);
   const [targetRef, setTargetRef] = useState('');
+  const [discardUnmergedBranch, setDiscardUnmergedBranch] = useState(false);
   const [filter, setFilter] = useState<IWorktreeFilter>({ query: '', idleDays: 0, state: 'all', sort: 'recent' });
   const [sizes, setSizes] = useState<Record<string, IWorktreeSize>>({});
   const [selected, setSelected] = useState<TWorktreeSnapshot[]>([]);
@@ -84,8 +85,9 @@ export default function ManageWorktreesDialog({ workspace, onClose, onSelect }: 
         const data = await store.removeWorktree(workspace.id, {
           repositoryId: chosen.repositoryId, directory: chosen.item.directory,
           head: chosen.item.head, branch: chosen.item.branch, deleteBranch,
+          closeIdleSessions: true, discardUnmergedBranch: deleteBranch && discardUnmergedBranch,
           confirmedIgnoredPaths: chosen.item.status?.ignoredPaths ?? [],
-          ...(deleteBranch ? { targetRef: targetRef.trim() } : {}),
+          ...(deleteBranch && !discardUnmergedBranch ? { targetRef: targetRef.trim() } : {}),
         });
         for (const warning of data.warnings) toast.warning(t(warning));
         toast.success(t('deleted'));
@@ -97,7 +99,7 @@ export default function ManageWorktreesDialog({ workspace, onClose, onSelect }: 
       const code = (error as { code?: string }).code;
       setError(code ? t(`reasons.${code}`) : error instanceof Error ? error.message : String(error));
     } finally { setBusy(false); }
-  }, [busy, workspace.id, deleteBranch, targetRef, t, onSelect, onClose]);
+  }, [busy, workspace.id, deleteBranch, discardUnmergedBranch, targetRef, t, onSelect, onClose]);
 
   if (delivery) return <WorktreeDeliveryDialog workspaceId={workspace.id} item={delivery} onClose={() => { setDelivery(null); setRefresh((value) => value + 1); }} />;
   if (batch) return <WorktreeCleanupDialog workspaceId={workspace.id} items={selected} onClose={() => { setBatch(false); setSelected([]); setRefresh((value) => value + 1); }} />;
@@ -114,17 +116,22 @@ export default function ManageWorktreesDialog({ workspace, onClose, onSelect }: 
         <p className="break-all font-mono text-xs">{selection.item.directory}</p>
         <p>{t('deleteNotice', { count: selection.item.workspaces.length })}</p>
         <WorktreeIgnoredNotice paths={selection.item.status?.ignoredPaths ?? []} />
+        <p>{t('closeIdleSessionsNotice')}</p>
         <label className="flex items-center gap-2">
           <input type="checkbox" checked={deleteBranch} disabled={busy} onChange={(event) => setDeleteBranch(event.target.checked)} />
           {t('deleteBranch', { branch: selection.item.branch ?? 'HEAD' })}
         </label>
-        {deleteBranch && <label className="flex flex-col gap-2">{t('targetRef')}
+        {deleteBranch && <label className="flex items-center gap-2 text-ui-red">
+          <input type="checkbox" checked={discardUnmergedBranch} disabled={busy} onChange={(event) => setDiscardUnmergedBranch(event.target.checked)} />
+          {t('discardUnmergedBranch')}
+        </label>}
+        {deleteBranch && !discardUnmergedBranch && <label className="flex flex-col gap-2">{t('targetRef')}
           <Input value={targetRef} onChange={(event) => setTargetRef(event.target.value)} placeholder="refs/heads/main" disabled={busy} />
           <span className="text-xs text-muted-foreground">{t('mergeNotice')}</span>
         </label>}
         <div className="flex justify-end gap-2">
           <Button variant="outline" disabled={busy} onClick={() => { setSelection(null); setError(''); }}>{tc('cancel')}</Button>
-          <Button variant="destructive" disabled={busy || (deleteBranch && !targetRef.trim())} onClick={() => void mutate('DELETE', selection)}>{busy ? t('working') : t('delete')}</Button>
+          <Button variant="destructive" disabled={busy || (deleteBranch && !discardUnmergedBranch && !targetRef.trim())} onClick={() => void mutate('DELETE', selection)}>{busy ? t('working') : t('delete')}</Button>
         </div>
       </div> : <>
         <div className="flex items-center justify-between gap-3">
@@ -172,7 +179,7 @@ export default function ManageWorktreesDialog({ workspace, onClose, onSelect }: 
                 </Button>)}
                 {!item.workspaces.length && <Button variant="outline" size="sm" disabled={busy || !item.status || item.missing} onClick={() => void mutate('POST', { repositoryId: repository.id, item })}>{t('adopt')}</Button>}
                 <Button variant="outline" size="sm" disabled={busy || !item.status} onClick={() => setDelivery(snapshot(repository.id, item))}>{t('deliveryTitle')}</Button>
-                {!item.main && <Button variant="outline" size="sm" disabled={busy || item.blockers.length > 0} onClick={() => { setSelection({ repositoryId: repository.id, item }); setDeleteBranch(false); setTargetRef(''); setError(''); }}>{t('delete')}</Button>}
+                {!item.main && <Button variant="outline" size="sm" disabled={busy || item.blockers.some((reason) => reason !== 'sessions')} onClick={() => { setSelection({ repositoryId: repository.id, item }); setDeleteBranch(false); setDiscardUnmergedBranch(false); setTargetRef(''); setError(''); }}>{t('delete')}</Button>}
               </div>
             </div>
             <p className="mt-2 break-all font-mono text-xs text-muted-foreground">{item.directory}</p>

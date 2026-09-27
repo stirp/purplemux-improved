@@ -46,6 +46,8 @@ export interface IRemoveWorktreeOptions {
   head: string;
   branch: string | null;
   deleteBranch: boolean;
+  closeIdleSessions?: boolean;
+  discardUnmergedBranch?: boolean;
   confirmedIgnoredPaths?: string[];
   targetRef?: string;
 }

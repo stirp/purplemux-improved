@@ -1,9 +1,9 @@
 import path from 'node:path';
-import { getAllPanesInfo } from '@/lib/tmux';
+import { getAllPanesInfo, killSession } from '@/lib/tmux';
 import { createWorkspace, deleteWorkspace, getWorkspaces } from '@/lib/workspace-store';
 import { canonicalPath, inspectManagedWorktree, parseWorktreeList, worktreeGit } from '@/lib/worktree-git';
 import type { IWorkspace } from '@/types/terminal';
-import type { IWorktreeOverview, IWorktreeRepository, IRemoveWorktreeOptions } from '@/types/worktree';
+import type { IWorktreeOverview, IWorktreeRepository, IRemoveWorktreeOptions, IRemoveWorktreeResult } from '@/types/worktree';
 
 const inside = (parent: string, child: string) => {
   const relative = path.relative(parent, child);
@@ -97,15 +97,16 @@ export const adoptWorktree = async (source: IWorkspace, repositoryId: string, di
   }
 };
 
-export const removeManagedWorktree = async (source: IWorkspace, options: IRemoveWorktreeOptions) => {
+export const removeManagedWorktree = async (source: IWorkspace, options: IRemoveWorktreeOptions): Promise<IRemoveWorktreeResult> => {
   const { repository, item } = await resolveWorktreeItem(source, options.repositoryId, options.directory);
-  if (item.blockers.length) throw new WorktreeError(item.blockers[0]);
+  const blocker = item.blockers.find((reason) => reason !== 'sessions' || !options.closeIdleSessions);
+  if (blocker) throw new WorktreeError(blocker);
   if (item.head !== options.head || item.branch !== options.branch) throw new WorktreeError('changed');
   const confirmed = new Set(options.confirmedIgnoredPaths ?? []);
   if (item.status!.ignoredPaths.some((name) => !confirmed.has(name))) throw new WorktreeError('ignored');
   // Run from the common Git directory so deleting the source worktree is supported.
   const git = (args: string[]) => worktreeGit(repository.id, args);
-  if (options.deleteBranch) {
+  if (options.deleteBranch && !options.discardUnmergedBranch) {
     if (!options.targetRef || options.targetRef.startsWith('-')) throw new WorktreeError('targetRequired', 400);
     const target = (await git(['rev-parse', '--symbolic-full-name', '--verify', '--end-of-options', options.targetRef])).trim();
     if (!/^refs\/(heads|remotes)\//.test(target) || target === `refs/heads/${item.branch}`) throw new WorktreeError('targetRequired', 400);
@@ -113,7 +114,23 @@ export const removeManagedWorktree = async (source: IWorkspace, options: IRemove
     try { await git(['merge-base', '--is-ancestor', item.head, targetCommit]); }
     catch { throw new WorktreeError('notMerged'); }
   }
-  // Git performs its own final dirty/locked check. Never use --force.
+  if (item.sessions?.length) {
+    const panes = await getAllPanesInfo({ strict: true });
+    if ([...panes.keys()].some((name) => name.includes(':') && item.sessions!.includes(name.split(':')[0]))) {
+      throw new WorktreeError('sessions');
+    }
+    const { getStatusManager } = await import('@/lib/status-manager');
+    const manager = getStatusManager();
+    await manager.poll();
+    if (!manager.areSessionsIdle(item.sessions)) throw new WorktreeError('sessions');
+    for (const [index, session] of item.sessions.entries()) {
+      if (!manager.areSessionsIdle(item.sessions.slice(index))) throw new WorktreeError('sessions');
+      await killSession(session);
+    }
+    // Revalidate Git state and sessions after closing terminals, before deleting files.
+    return removeManagedWorktree(source, { ...options, closeIdleSessions: false });
+  }
+  // Git performs its own final dirty/locked check. Never force worktree removal.
   await git(['worktree', 'remove', '--', item.directory]);
   const removedWorkspaceIds: string[] = [];
   const warnings: string[] = [];
@@ -125,7 +142,7 @@ export const removeManagedWorktree = async (source: IWorkspace, options: IRemove
     try {
       const head = (await git(['rev-parse', '--verify', '--end-of-options', `refs/heads/${item.branch}`])).trim();
       if (head !== item.head) throw new WorktreeError('changed');
-      await git(['branch', '-d', '--', item.branch!]);
+      await git(['branch', options.discardUnmergedBranch ? '-D' : '-d', '--', item.branch!]);
     } catch { warnings.push('branchRetained'); }
   }
   return { removedWorkspaceIds, warnings: [...new Set(warnings)] };

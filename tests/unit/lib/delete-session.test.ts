@@ -42,6 +42,14 @@ describe('delete original tool session', () => {
     await expect(deleteOriginalSession('codex', 'id-1')).rejects.toBeInstanceOf(SessionInUseError);
     expect(mocks.codex).not.toHaveBeenCalled();
   });
+  it('ignores stale state only for the closed workspace and still protects other workspaces', async () => {
+    mocks.statuses = { tab: { workspaceId: 'ws-closed', agentProviderId: 'codex', agentSessionId: 'id-1', cliState: 'idle' } };
+    await deleteOriginalSession('codex', 'id-1', 'ws-closed');
+    expect(mocks.codex).toHaveBeenCalledOnce();
+    mocks.statuses.other = { workspaceId: 'ws-other', agentProviderId: 'codex', agentSessionId: 'id-1', cliState: 'idle' };
+    await expect(deleteOriginalSession('codex', 'id-1', 'ws-closed')).rejects.toBeInstanceOf(SessionInUseError);
+    expect(mocks.codex).toHaveBeenCalledOnce();
+  });
   it('removes only the selected Claude transcript and its own subdirectory', async () => {
     await deleteOriginalSession('claude', 'id-1');
     expect(mocks.rm).toHaveBeenCalledExactlyOnceWith('/test-home/.claude/projects/project/id-1', { recursive: true });
