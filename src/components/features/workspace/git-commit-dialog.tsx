@@ -73,7 +73,7 @@ export default function GitCommitDialog({ sessionName, onClose, onCommitted }: {
     } catch (error) {
       if (mounted.current) {
         setError(error as Error);
-        if (['changed', 'noStagedChanges', 'operation', 'conflicts', 'detached'].includes((error as { code?: string }).code ?? '')) setPreview(null);
+        if (['changed', 'noChanges', 'operation', 'conflicts', 'detached'].includes((error as { code?: string }).code ?? '')) setPreview(null);
       }
     } finally { pending.current = false; if (mounted.current) setBusy(null); }
   };
@@ -86,7 +86,7 @@ export default function GitCommitDialog({ sessionName, onClose, onCommitted }: {
       {preview && <div className="min-w-0 rounded border p-3 text-sm">
         <p className="break-all font-mono text-xs">{preview.snapshot.directory}</p>
         <p className="mt-1 break-all">{t('branch')}: {preview.snapshot.branch.replace(/^refs\/heads\//, '')}</p>
-        <details className="mt-2"><summary>{t('stagedFiles', { count: preview.files.length })}</summary>
+        <details className="mt-2"><summary>{t('changedFiles', { count: preview.files.length })}</summary>
           <ul className="mt-2 max-h-32 overflow-auto text-xs">{preview.files.map((file) => <li key={file} className="break-all font-mono">{file}</li>)}</ul>
         </details>
       </div>}

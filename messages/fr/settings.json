@@ -301,7 +301,7 @@
   "gitGenerationPrompts": {
     "commitMessagePrompt": {
       "title": "AI commit message prompt",
-      "description": "Customize how Claude Code writes a commit title and description from staged changes."
+      "description": "Customize how Claude Code writes a commit title and description from all committable working tree changes."
     },
     "reviewDescriptionPrompt": {
       "title": "AI PR/MR title and description prompt",

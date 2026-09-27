@@ -301,7 +301,7 @@
   "gitGenerationPrompts": {
     "commitMessagePrompt": {
       "title": "AI 生成提交信息提示词",
-      "description": "自定义 Claude Code 根据暂存区生成提交标题和正文时的写作要求。"
+      "description": "自定义 Claude Code 根据工作区全部待提交改动生成提交标题和正文时的写作要求。"
     },
     "reviewDescriptionPrompt": {
       "title": "AI 生成 PR/MR 标题和说明提示词",

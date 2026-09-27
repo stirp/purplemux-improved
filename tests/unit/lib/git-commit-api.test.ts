@@ -4,7 +4,7 @@ const mocks = vi.hoisted(() => ({ exists: vi.fn(), cwd: vi.fn(), inspect: vi.fn(
 vi.mock('@/lib/tmux', () => ({ hasSession: mocks.exists, getSessionCwd: mocks.cwd }));
 vi.mock('@/lib/git-commit', async (original) => ({
   ...await original<typeof import('@/lib/git-commit')>(),
-  inspectCommit: mocks.inspect, generateCommitMessage: mocks.generate, commitStagedChanges: mocks.commit,
+  inspectCommit: mocks.inspect, generateCommitMessage: mocks.generate, commitWorkingChanges: mocks.commit,
 }));
 import handler from '@/pages/api/git/commit';
 import { GitCommitError } from '@/lib/git-commit';

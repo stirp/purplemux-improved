@@ -42,6 +42,7 @@ export const proxy = async (request: NextRequest) => {
 
 export const config = {
   matcher: [
+    '/api/uploads/:path*',
     '/((?!login|api/auth|api/install|api/cli/|api/status/hook|api/health|api/manifest|_next|favicon\\.ico|fonts|.*\\.(?:svg|png|ico|jpg|jpeg|webp|webmanifest|ttf|woff|woff2)).*)',
   ],
 };

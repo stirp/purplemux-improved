@@ -430,6 +430,7 @@ export interface IReorderItem {
 
 export const reorderWorkspaces = async (items: IReorderItem[]): Promise<boolean> =>
   withLock(async () => {
+    if (new Set(items.map((item) => item.id)).size !== items.length) return false;
     const data = (await readWorkspacesFile()) ?? emptyState();
     const byId = new Map(data.workspaces.map((w) => [w.id, w]));
     const validGroupIds = new Set((data.groups ?? []).map((g) => g.id));

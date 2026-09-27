@@ -1,9 +1,9 @@
 export const GIT_GENERATION_PROMPTS = {
   commitMessagePrompt: {
     variables: ['locale', 'branch'],
-    defaultPrompt: `Generate a Git commit message in {{locale}} for the staged changes on branch {{branch}}.
+    defaultPrompt: `Generate a Git commit message in {{locale}} for all committable working tree changes on branch {{branch}}, including staged, unstaged, and untracked files.
 Use a concise title and a Markdown body describing the concrete changes and their purpose.
-The staged file list and code diff are supplied separately as JSON evidence.`,
+The changed file list and code diff are supplied separately as JSON evidence.`,
   },
   reviewDescriptionPrompt: {
     variables: ['locale', 'sourceBranch', 'targetBranch'],
