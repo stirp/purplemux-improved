@@ -1,3 +1,4 @@
+import ContextMenuSettingsButton from "@/components/ui/context-menu-settings-button";
 import { useState, useRef, useEffect } from 'react';
 import type { ReactNode } from 'react';
 import { X, Globe, GitCompareArrows, History, Pencil } from 'lucide-react';
@@ -13,7 +14,6 @@ import {
   ContextMenuContent,
   ContextMenuItem,
   ContextMenuTrigger,
-  ContextMenuSettingsButton,
 } from '@/components/ui/context-menu';
 
 interface IPaneTabItemProps {

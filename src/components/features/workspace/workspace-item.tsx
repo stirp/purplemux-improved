@@ -1,3 +1,4 @@
+import ContextMenuSettingsButton from "@/components/ui/context-menu-settings-button";
 import { useCallback, useEffect, useState, memo } from 'react';
 import { Pencil, Trash2, FolderPlus, FolderMinus, Folder, GitBranch } from 'lucide-react';
 import { useTranslations } from 'next-intl';
@@ -11,7 +12,6 @@ import {
   ContextMenuSubContent,
   ContextMenuSubTrigger,
   ContextMenuTrigger,
-  ContextMenuSettingsButton,
 } from '@/components/ui/context-menu';
 import type { ITab, IWorkspace } from '@/types/terminal';
 import useTabStore, { selectWorkspacePortsLabel } from '@/hooks/use-tab-store';

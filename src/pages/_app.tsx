@@ -32,6 +32,7 @@ import useWorkspaceStore from "@/hooks/use-workspace-store";
 import useConfigStore from "@/hooks/use-config-store";
 import { setMessages } from "@/lib/i18n";
 import { loadClientMessages } from "@/lib/load-client-messages";
+import AppErrorBoundary, { getRecoveryLabels } from "@/components/layout/app-error-boundary";
 
 export type TNextPageWithLayout<P = object, IP = P> = NextPage<P, IP> & {
   getLayout?: (page: ReactElement) => ReactNode;
@@ -214,21 +215,23 @@ export default function App({ Component, pageProps }: TAppPropsWithLayout) {
   if (!messages) return null;
 
   return (
-    <NextIntlClientProvider locale={locale} timeZone={Intl.DateTimeFormat().resolvedOptions().timeZone} messages={messages}>
-      <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
-        <Head>
-          <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
-        </Head>
-        <main className="font-sans antialiased">
-          <ElectronTitlebar isElectron={!!pageProps.isElectron} />
-          {getLayout(<Component {...pageProps} />)}
-          <TerminalThemeSync />
-          <FontSizeSync />
-          <CustomCSSSync />
-          <AgentStatusProvider />
-          <ThemedToaster />
-        </main>
-      </ThemeProvider>
-    </NextIntlClientProvider>
+    <AppErrorBoundary labels={getRecoveryLabels(messages)}>
+      <NextIntlClientProvider locale={locale} timeZone={Intl.DateTimeFormat().resolvedOptions().timeZone} messages={messages}>
+        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
+          <Head>
+            <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
+          </Head>
+          <main className="font-sans antialiased">
+            <ElectronTitlebar isElectron={!!pageProps.isElectron} />
+            {getLayout(<Component {...pageProps} />)}
+            <TerminalThemeSync />
+            <FontSizeSync />
+            <CustomCSSSync />
+            <AgentStatusProvider />
+            <ThemedToaster />
+          </main>
+        </ThemeProvider>
+      </NextIntlClientProvider>
+    </AppErrorBoundary>
   );
 }

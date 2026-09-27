@@ -2,7 +2,7 @@ import * as React from "react"
 import { ContextMenu as ContextMenuPrimitive } from "@base-ui/react/context-menu"
 
 import { cn } from "@/lib/utils"
-import { ChevronRightIcon, CheckIcon, Settings } from "lucide-react"
+import { ChevronRightIcon, CheckIcon } from "lucide-react"
 
 function ContextMenu({ ...props }: ContextMenuPrimitive.Root.Props) {
   return <ContextMenuPrimitive.Root data-slot="context-menu" {...props} />
@@ -54,22 +54,6 @@ function ContextMenuTrigger({
   )
 }
 
-function ContextMenuSettingsButton({ className, label }: { className?: string; label: string }) {
-  return <button
-    type="button"
-    aria-label={label}
-    title={label}
-    className={cn("flex shrink-0 items-center justify-center rounded text-muted-foreground hover:bg-accent hover:text-foreground", className)}
-    onDoubleClick={(event) => event.stopPropagation()}
-    onClick={(event) => {
-      event.stopPropagation()
-      const rect = event.currentTarget.getBoundingClientRect()
-      event.currentTarget.dispatchEvent(new MouseEvent("contextmenu", {
-        bubbles: true, cancelable: true, clientX: rect.left, clientY: rect.bottom,
-      }))
-    }}
-  ><Settings className="h-3.5 w-3.5" /></button>
-}
 
 function ContextMenuContent({
   className,
@@ -297,7 +281,6 @@ function ContextMenuShortcut({
 export {
   ContextMenu,
   ContextMenuTrigger,
-  ContextMenuSettingsButton,
   ContextMenuContent,
   ContextMenuItem,
   ContextMenuCheckboxItem,
