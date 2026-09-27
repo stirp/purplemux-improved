@@ -194,8 +194,8 @@ const WebInputBar = ({
       if (trimmed && !trimmed.startsWith('/')) addHistory(trimmed);
       if (agentSessionId) registerPushTarget(agentSessionId);
       onSend?.();
-    } catch {
-      toast.error(t('queueRequestFailed'));
+    } catch (error) {
+      toast.error(error instanceof Error && error.message ? error.message : t('queueRequestFailed'));
     } finally {
       dispatchingRef.current = false;
       setIsDispatching(false);
@@ -209,8 +209,8 @@ const WebInputBar = ({
     try {
       await queue.submitNow();
       onSend?.();
-    } catch {
-      toast.error(t('queueRequestFailed'));
+    } catch (error) {
+      toast.error(error instanceof Error && error.message ? error.message : t('queueRequestFailed'));
     } finally {
       dispatchingRef.current = false;
       setIsDispatching(false);
@@ -604,7 +604,7 @@ const WebInputBar = ({
                         className="p-1 hover:text-foreground disabled:opacity-30"
                         disabled={queue.sending && index === 0}
                         aria-label={t('cancelQueuedMessage')}
-                        onClick={() => { void queue.remove(message.id).catch(() => toast.error(t('queueRequestFailed'))); }}
+                        onClick={() => { void queue.remove(message.id).catch((error) => toast.error(error instanceof Error && error.message ? error.message : t('queueRequestFailed'))); }}
                       >
                         <X size={12} />
                       </button>

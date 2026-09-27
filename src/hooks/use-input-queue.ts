@@ -8,9 +8,18 @@ interface IQueueData {
 }
 
 const EMPTY: IQueueData = { messages: [], sending: false, error: null };
+const parseErrorMessage = async (response: Response): Promise<string> => {
+  try {
+    const body = await response.json();
+    if (body && typeof body.error === 'string' && body.error.length > 0) return body.error;
+  } catch {
+    // non-json response
+  }
+  return `${response.status} ${response.statusText || 'request failed'}`;
+};
 const request = async (url: string, init?: RequestInit): Promise<IQueueData> => {
   const response = await fetch(url, init);
-  if (!response.ok) throw new Error('Input queue request failed');
+  if (!response.ok) throw new Error(await parseErrorMessage(response));
   return response.json();
 };
 
