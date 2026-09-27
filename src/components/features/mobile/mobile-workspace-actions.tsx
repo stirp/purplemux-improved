@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from 'react';
+import { useRef, useState, type ReactNode } from 'react';
 import { GitBranch, Pencil, Settings, Trash2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -21,6 +21,7 @@ export default function MobileWorkspaceActions({ workspace, onCreated, children 
   const ts = useTranslations('sidebar');
   const tw = useTranslations('workspace');
   const [menuOpen, setMenuOpen] = useState(false);
+  const touchOrigin = useRef(false);
   const [action, setAction] = useState<'edit' | 'create' | 'delete' | null>(null);
   const [deleting, setDeleting] = useState(false);
 
@@ -49,12 +50,15 @@ export default function MobileWorkspaceActions({ workspace, onCreated, children 
   return <>
     <div
       className="flex items-center pr-1"
+      onPointerDown={(event) => { touchOrigin.current = event.pointerType === 'touch'; }}
       onContextMenu={(event) => {
         event.preventDefault();
         event.stopPropagation();
+        if (touchOrigin.current) return;
         setMenuOpen(true);
       }}
       onKeyDown={(event) => {
+        touchOrigin.current = false;
         if (event.key === 'ContextMenu' || (event.shiftKey && event.key === 'F10')) {
           event.preventDefault();
           event.stopPropagation();

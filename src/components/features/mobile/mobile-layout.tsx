@@ -9,12 +9,15 @@ import { navigateToTab } from '@/hooks/use-layout';
 import SettingsDialog from '@/components/features/workspace/settings-dialog';
 import useMobileLayoutActions from '@/hooks/use-mobile-layout-actions';
 import type { ILayoutData, IPaneNode } from '@/types/terminal';
+import { toast } from 'sonner';
+import { useTranslations } from 'next-intl';
 
 interface IMobileLayoutProps {
   children: ReactNode;
 }
 
 const MobileLayout = ({ children }: IMobileLayoutProps) => {
+  const tt = useTranslations('terminal');
   const router = useRouter();
   const [menuOpen, setMenuOpen] = useState(false);
   const settingsOpen = useWorkspaceStore((s) => s.isSettingsDialogOpen);
@@ -30,6 +33,20 @@ const MobileLayout = ({ children }: IMobileLayoutProps) => {
   const registeredSelectWorkspace = useMobileLayoutActions((s) => s.onSelectWorkspace);
 
   const [layoutCache, setLayoutCache] = useState<Record<string, ILayoutData>>({});
+  const handleReorderTabs = useCallback(async (workspaceId: string, paneId: string, tabIds: string[]) => {
+    try {
+      const res = await fetch(`/api/layout/pane/${encodeURIComponent(paneId)}/tabs/order?workspace=${encodeURIComponent(workspaceId)}`, {
+        method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ tabIds }),
+      });
+      if (!res.ok) throw new Error();
+      const data: ILayoutData = await res.json();
+      setLayoutCache((previous) => ({ ...previous, [workspaceId]: data }));
+      const store = useLayoutStore.getState();
+      if (store.workspaceId === workspaceId) await store.fetchLayout();
+    } catch {
+      toast.error(tt('tabReorderFailed'));
+    }
+  }, [tt]);
 
   useEffect(() => {
     if (workspaces.length === 0) {
@@ -171,6 +188,7 @@ const MobileLayout = ({ children }: IMobileLayoutProps) => {
         selectedPaneId={activePaneId}
         selectedTabId={activeTabId}
         onSelect={handleSelectSurface}
+        onReorderTabs={handleReorderTabs}
       />
       <MobileNavigationSheet
         open={menuOpen}
@@ -183,6 +201,7 @@ const MobileLayout = ({ children }: IMobileLayoutProps) => {
         onSelectSurface={handleSelectSurface}
         onCreateWorkspace={handleCreateWorkspace}
         onOpenSettings={() => setSettingsOpen(true)}
+        onReorderTabs={handleReorderTabs}
       />
       <SettingsDialog open={settingsOpen} onOpenChange={setSettingsOpen} />
     </>

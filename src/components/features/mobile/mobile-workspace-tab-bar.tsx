@@ -1,10 +1,10 @@
 import { useRef, useEffect, useMemo } from 'react';
-import { Globe, GitCompareArrows, History } from 'lucide-react';
 import useTabStore, { selectTabDisplayStatus } from '@/hooks/use-tab-store';
 import { cn } from '@/lib/utils';
-import ProcessIcon from '@/components/icons/process-icon';
-import Spinner from '@/components/ui/spinner';
+import CompactTabIcon from '@/components/features/workspace/compact-tab-icon';
 import type { IWorkspace, IPaneNode, TPanelType } from '@/types/terminal';
+import useTouchDrag from '@/hooks/use-touch-drag';
+import useNavigationDrag, { reorderNavigationIds } from '@/hooks/use-navigation-drag';
 
 interface IMobileWorkspaceTabBarProps {
   workspaces: IWorkspace[];
@@ -13,6 +13,7 @@ interface IMobileWorkspaceTabBarProps {
   selectedPaneId: string | null;
   selectedTabId: string | null;
   onSelect: (workspaceId: string, paneId: string, tabId: string) => void;
+  onReorderTabs: (workspaceId: string, paneId: string, tabIds: string[]) => Promise<void>;
 }
 
 interface ITabDot {
@@ -29,8 +30,17 @@ const MobileWorkspaceTabBar = ({
   selectedPaneId,
   selectedTabId,
   onSelect,
+  onReorderTabs,
 }: IMobileWorkspaceTabBarProps) => {
   const activeRef = useRef<HTMLButtonElement>(null);
+  const onTouchDragStart = useTouchDrag();
+  const dragProps = useNavigationDrag((source, target, after) => {
+    if (source.kind !== 'tab' || target.kind !== 'tab') return;
+    const pane = workspaceLayouts[source.workspaceId]?.find((item) => item.id === source.paneId);
+    if (!pane) return;
+    const ids = [...pane.tabs].sort((a, b) => a.order - b.order).map((tab) => tab.id);
+    void onReorderTabs(source.workspaceId, source.paneId, reorderNavigationIds(ids, source.id, target.id, after));
+  }, 'x');
   const statusTabs = useTabStore((s) => s.tabs);
   const items = useMemo(() => {
     const result: (ITabDot | 'divider')[] = [];
@@ -67,6 +77,7 @@ const MobileWorkspaceTabBar = ({
       <div
         className="flex h-10 items-center justify-center overflow-x-auto px-4"
         style={{ scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch' }}
+        onTouchStartCapture={onTouchDragStart}
       >
         {items.map((item, i) => {
           if (item === 'divider') {
@@ -82,19 +93,16 @@ const MobileWorkspaceTabBar = ({
             item.workspaceId === activeWorkspaceId &&
             item.paneId === selectedPaneId &&
             item.tabId === selectedTabId;
-          const isAgent = item.panelType === 'claude-code' || item.panelType === 'codex-cli';
           const status = selectTabDisplayStatus(statusTabs, item.tabId);
           const termStatus = statusTabs[item.tabId]?.terminalStatus;
           const currentProcess = statusTabs[item.tabId]?.currentProcess;
-          const iconColorClass = termStatus === 'server'
-            ? 'text-ui-green'
-            : termStatus === 'running'
-              ? 'text-ui-blue'
-              : 'text-muted-foreground/50';
+
 
           return (
             <button
               key={item.tabId}
+              {...dragProps({ kind: 'tab', id: item.tabId, workspaceId: item.workspaceId, paneId: item.paneId })}
+              onContextMenu={(event) => event.preventDefault()}
               ref={isActive ? activeRef : undefined}
               className="flex h-8 w-8 shrink-0 items-center justify-center"
               onClick={() => onSelect(item.workspaceId, item.paneId, item.tabId)}
@@ -106,25 +114,7 @@ const MobileWorkspaceTabBar = ({
                   isActive && 'bg-foreground/15',
                 )}
               >
-                {isAgent && status === 'busy' ? (
-                  <Spinner className="h-2 w-2 text-muted-foreground" />
-                ) : isAgent && status === 'ready-for-review' ? (
-                  <span className="h-2 w-2 animate-pulse rounded-full bg-claude-active" />
-                ) : isAgent && status === 'needs-input' ? (
-                  <span className="h-2 w-2 animate-pulse rounded-full bg-ui-amber" />
-                ) : isAgent && status === 'unknown' ? (
-                  <span className="h-2 w-2 rounded-full bg-muted-foreground/50" />
-                ) : isAgent ? (
-                  <span className="h-2 w-2 rounded-full border border-muted-foreground/40" />
-                ) : item.panelType === 'web-browser' ? (
-                  <Globe className="h-2.5 w-2.5 text-muted-foreground/50" />
-                ) : item.panelType === 'diff' ? (
-                  <GitCompareArrows className="h-2.5 w-2.5 text-muted-foreground/50" />
-                ) : item.panelType === 'agent-sessions' ? (
-                  <History className="h-2.5 w-2.5 text-muted-foreground/50" />
-                ) : (
-                  <ProcessIcon process={currentProcess} className={cn('h-3 w-3', iconColorClass)} />
-                )}
+                <CompactTabIcon panelType={item.panelType} status={status} terminalStatus={termStatus} process={currentProcess} />
               </span>
             </button>
           );

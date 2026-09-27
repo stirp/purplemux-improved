@@ -11,6 +11,7 @@ import {
   ContextMenuSubContent,
   ContextMenuSubTrigger,
   ContextMenuTrigger,
+  ContextMenuSettingsButton,
 } from '@/components/ui/context-menu';
 import type { ITab, IWorkspace } from '@/types/terminal';
 import useTabStore, { selectWorkspacePortsLabel } from '@/hooks/use-tab-store';
@@ -111,7 +112,7 @@ const WorkspaceItem = ({
       <ContextMenuTrigger
         touchDrag
         className={cn(
-          'relative flex cursor-pointer flex-col justify-center overflow-hidden border-l-2 px-3 py-2 transition-colors duration-75',
+          'relative flex cursor-pointer flex-col justify-center overflow-hidden border-l-2 py-2 pl-3 pr-12 transition-colors duration-75',
           isActive
             ? 'border-l-focus-indicator bg-accent text-foreground'
             : 'border-l-transparent text-muted-foreground hover:bg-sidebar-accent',
@@ -131,7 +132,7 @@ const WorkspaceItem = ({
         {shortcutLabel && (
           <span
             className={cn(
-              'absolute right-1.5 top-1.5 rounded bg-muted px-1 py-0.5 text-[10px] font-medium leading-none text-muted-foreground transition-opacity duration-200',
+              'absolute right-12 top-1.5 rounded bg-muted px-1 py-0.5 text-[10px] font-medium leading-none text-muted-foreground transition-opacity duration-200',
               showShortcut ? 'opacity-100' : 'opacity-0',
             )}
           >
@@ -166,6 +167,7 @@ const WorkspaceItem = ({
           </span>
         )}
         <WorkspaceStatusIndicator workspaceId={workspace.id} tabs={tabs} />
+        <ContextMenuSettingsButton className="absolute right-0 top-0 h-11 w-11" label={`${tc('settings')}: ${workspace.name}`} />
       </ContextMenuTrigger>
       <ContextMenuContent>
         <ContextMenuItem onClick={() => setManagingWorktrees(true)}>

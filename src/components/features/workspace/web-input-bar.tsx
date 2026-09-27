@@ -461,10 +461,20 @@ const WebInputBar = ({
                     <button
                       type="button"
                       onClick={() => removeAttachment(a.id)}
-                      className="absolute right-0.5 top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-foreground/70 text-background opacity-0 transition-opacity hover:bg-foreground group-hover:opacity-100 focus:opacity-100"
-                      aria-label={tc('delete')}
+                      className={cn(
+                        'absolute flex text-background transition-opacity group-hover:opacity-100 focus:opacity-100',
+                        isMobileDevice
+                          ? 'right-0 top-0 h-11 w-11 items-start justify-end p-1 opacity-100'
+                          : 'right-0.5 top-0.5 h-4 w-4 items-center justify-center opacity-0',
+                      )}
+                      aria-label={`${tc('delete')}: ${a.filename}`}
                     >
-                      <X size={10} />
+                      <span className={cn(
+                        'flex items-center justify-center rounded-full bg-foreground/70 hover:bg-foreground',
+                        isMobileDevice ? 'h-6 w-6' : 'h-4 w-4',
+                      )}>
+                        <X size={isMobileDevice ? 14 : 10} />
+                      </span>
                     </button>
                   </div>
                 ))}

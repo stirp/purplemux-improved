@@ -1,4 +1,4 @@
-import { useMemo, useState, useCallback, useRef } from 'react';
+import { useMemo, useState, useCallback } from 'react';
 import {
   ChevronDown,
   ChevronRight,
@@ -39,6 +39,8 @@ import MobileWorkspaceGroupHeader from '@/components/features/mobile/mobile-work
 import RenameGroupDialog from '@/components/features/workspace/rename-group-dialog';
 import MobileWorkspaceActions from './mobile-workspace-actions';
 import { getVisuallyOrderedWorkspaces } from '@/lib/workspace-order';
+import useTouchDrag from '@/hooks/use-touch-drag';
+import useNavigationDrag, { reorderNavigationIds } from '@/hooks/use-navigation-drag';
 
 const WorkspacePortsLabel = ({ workspaceId }: { workspaceId: string }) => {
   const label = useTabStore(
@@ -59,6 +61,7 @@ interface IMobileNavigationSheetProps {
   onSelectSurface: (workspaceId: string, paneId: string, tabId: string) => void;
   onCreateWorkspace: () => Promise<void>;
   onOpenSettings: () => void;
+  onReorderTabs: (workspaceId: string, paneId: string, tabIds: string[]) => Promise<void>;
 }
 
 const MobileNavigationSheet = ({
@@ -72,6 +75,7 @@ const MobileNavigationSheet = ({
   onSelectSurface,
   onCreateWorkspace,
   onOpenSettings,
+  onReorderTabs,
 }: IMobileNavigationSheetProps) => {
   const t = useTranslations('mobile');
   const tt = useTranslations('terminal');
@@ -93,8 +97,21 @@ const MobileNavigationSheet = ({
     setPrevOpen(open);
     if (open) setExpandedWsId(activeWorkspaceId);
   }
-  const [longPressTabId, setLongPressTabId] = useState<string | null>(null);
-  const longPressTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const onTouchDragStart = useTouchDrag();
+  const dragProps = useNavigationDrag((source, target, after) => {
+    if (source.kind === 'workspace' && target.kind === 'workspace') {
+      const store = useWorkspaceStore.getState();
+      const ids = store.workspaces.map((ws) => ws.id);
+      const ordered = reorderNavigationIds(ids, source.id, target.id, after);
+      const destination = store.workspaces.find((ws) => ws.id === target.id);
+      if (destination) store.reorderWorkspaces(ids.indexOf(source.id), ordered.indexOf(source.id), destination.groupId ?? null);
+    } else if (source.kind === 'tab' && target.kind === 'tab') {
+      const pane = workspaceLayouts[source.workspaceId]?.find((item) => item.id === source.paneId);
+      if (!pane) return;
+      const ids = [...pane.tabs].sort((a, b) => a.order - b.order).map((tab) => tab.id);
+      void onReorderTabs(source.workspaceId, source.paneId, reorderNavigationIds(ids, source.id, target.id, after));
+    }
+  });
   const metadata = useTabMetadataStore((s) => s.metadata);
   const { items: sidebarItems } = useSidebarItems();
 
@@ -122,23 +139,9 @@ const MobileNavigationSheet = ({
     [],
   );
 
-  const handleLongPressStart = useCallback((tabId: string) => {
-    longPressTimerRef.current = setTimeout(() => {
-      setLongPressTabId(tabId);
-    }, 500);
-  }, []);
-
-  const handleLongPressEnd = useCallback(() => {
-    if (longPressTimerRef.current) {
-      clearTimeout(longPressTimerRef.current);
-      longPressTimerRef.current = null;
-    }
-  }, []);
-
   const handleSheetOpenChange = useCallback(
     (v: boolean) => {
       onOpenChange(v);
-      if (!v) setLongPressTabId(null);
       if (v) setExpandedWsId(activeWorkspaceId);
     },
     [onOpenChange, activeWorkspaceId],
@@ -199,22 +202,16 @@ const MobileNavigationSheet = ({
       <div key={tab.id} className="relative flex items-center">
         <button
           className={cn(
-            'flex w-full items-center gap-2 py-2.5 pr-4 text-left text-sm transition-colors',
+            'flex w-full select-none items-center gap-2 py-2.5 pr-4 text-left text-sm transition-colors',
             indent,
             isTabActive
               ? 'bg-accent font-medium text-foreground'
               : 'text-muted-foreground hover:bg-accent/50',
           )}
           onClick={() => {
-            if (longPressTabId) {
-              setLongPressTabId(null);
-              return;
-            }
             onSelectSurface(workspaceId, pane.id, tab.id);
           }}
-          onTouchStart={() => handleLongPressStart(tab.id)}
-          onTouchEnd={handleLongPressEnd}
-          onTouchCancel={handleLongPressEnd}
+          {...dragProps({ kind: 'tab', id: tab.id, workspaceId, paneId: pane.id })}
           onContextMenu={(e) => e.preventDefault()}
         >
           <TabStatusIndicator
@@ -328,8 +325,9 @@ const MobileNavigationSheet = ({
           setExpandedWsId(id);
         }}>
           <button
+            {...dragProps({ kind: 'workspace', id: ws.id })}
             className={cn(
-              'flex min-w-0 flex-1 items-center gap-2 py-3 pl-4 pr-1 text-left text-sm transition-colors',
+              'flex min-w-0 flex-1 select-none items-center gap-2 py-3 pl-4 pr-1 text-left text-sm transition-colors',
               isActive
                 ? 'font-medium text-foreground'
                 : 'text-foreground hover:bg-accent/50',
@@ -412,7 +410,8 @@ const MobileNavigationSheet = ({
 
         {mobileTab === 'workspace' ? (
           <div
-            className="flex-1 overflow-y-auto"
+            className="flex-1 overflow-y-auto overscroll-contain"
+            onTouchStartCapture={onTouchDragStart}
             style={{ scrollbarWidth: 'none' }}
           >
             {sections.map((section) => {

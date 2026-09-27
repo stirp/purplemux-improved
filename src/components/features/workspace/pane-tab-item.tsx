@@ -13,6 +13,7 @@ import {
   ContextMenuContent,
   ContextMenuItem,
   ContextMenuTrigger,
+  ContextMenuSettingsButton,
 } from '@/components/ui/context-menu';
 
 interface IPaneTabItemProps {
@@ -51,6 +52,7 @@ const PaneTabItem = ({
   onDragLeave,
 }: IPaneTabItemProps) => {
   const t = useTranslations('terminal');
+  const tc = useTranslations('common');
   const [isEditing, setIsEditing] = useState(false);
   const [editName, setEditName] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
@@ -156,6 +158,7 @@ const PaneTabItem = ({
           </>
         )}
 
+        <ContextMenuSettingsButton className="h-8 w-8" label={`${tc('settings')}: ${displayName}`} />
         <button
           className={cn(
             '-mr-0.5 flex h-6 w-6 shrink-0 items-center justify-center text-muted-foreground hover:text-foreground',

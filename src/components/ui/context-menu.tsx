@@ -2,7 +2,7 @@ import * as React from "react"
 import { ContextMenu as ContextMenuPrimitive } from "@base-ui/react/context-menu"
 
 import { cn } from "@/lib/utils"
-import { ChevronRightIcon, CheckIcon } from "lucide-react"
+import { ChevronRightIcon, CheckIcon, Settings } from "lucide-react"
 
 function ContextMenu({ ...props }: ContextMenuPrimitive.Root.Props) {
   return <ContextMenuPrimitive.Root data-slot="context-menu" {...props} />
@@ -43,7 +43,7 @@ function ContextMenuTrigger({
         if (touchDrag) event.preventBaseUIHandler()
       }}
       onContextMenu={(event) => {
-        if (touchDrag && touchOrigin.current) {
+        if (touchDrag && touchOrigin.current && event.nativeEvent.isTrusted) {
           event.preventDefault()
           event.preventBaseUIHandler()
           return
@@ -52,6 +52,23 @@ function ContextMenuTrigger({
       }}
     />
   )
+}
+
+function ContextMenuSettingsButton({ className, label }: { className?: string; label: string }) {
+  return <button
+    type="button"
+    aria-label={label}
+    title={label}
+    className={cn("flex shrink-0 items-center justify-center rounded text-muted-foreground hover:bg-accent hover:text-foreground", className)}
+    onDoubleClick={(event) => event.stopPropagation()}
+    onClick={(event) => {
+      event.stopPropagation()
+      const rect = event.currentTarget.getBoundingClientRect()
+      event.currentTarget.dispatchEvent(new MouseEvent("contextmenu", {
+        bubbles: true, cancelable: true, clientX: rect.left, clientY: rect.bottom,
+      }))
+    }}
+  ><Settings className="h-3.5 w-3.5" /></button>
 }
 
 function ContextMenuContent({
@@ -280,6 +297,7 @@ function ContextMenuShortcut({
 export {
   ContextMenu,
   ContextMenuTrigger,
+  ContextMenuSettingsButton,
   ContextMenuContent,
   ContextMenuItem,
   ContextMenuCheckboxItem,

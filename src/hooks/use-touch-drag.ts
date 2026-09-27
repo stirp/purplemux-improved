@@ -101,9 +101,10 @@ export default function useTouchDrag() {
     cleanup.current?.();
     if (event.touches.length !== 1) return;
     const target = event.target as HTMLElement;
-    if (target.closest('input, textarea, button, a, [contenteditable="true"]')) return;
     const source = target.closest<HTMLElement>('[draggable="true"]');
     if (!source || !event.currentTarget.contains(source)) return;
+    const control = target.closest('input, textarea, button, a, [contenteditable="true"]');
+    if (control && control !== source) return;
     // ContextMenuTrigger의 별도 길게 누르기 타이머와 충돌하지 않도록 한다.
     event.stopPropagation();
     cleanup.current = startTouchDrag(source, event.touches[0]);
