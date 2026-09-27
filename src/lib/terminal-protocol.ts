@@ -4,6 +4,15 @@ export const MSG_RESIZE = 0x02;
 export const MSG_HEARTBEAT = 0x03;
 export const MSG_KILL_SESSION = 0x04;
 export const MSG_WEB_STDIN = 0x05;
+export const MSG_STDOUT_ACK = 0x06;
+
+export const encodeStdoutAck = (bytes: number): ArrayBuffer => {
+  const frame = new ArrayBuffer(5);
+  const view = new DataView(frame);
+  view.setUint8(0, MSG_STDOUT_ACK);
+  view.setUint32(1, bytes);
+  return frame;
+};
 
 const encoder = new TextEncoder();
 const decoder = new TextDecoder();

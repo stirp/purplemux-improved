@@ -10,7 +10,7 @@ import {
 } from './tmux';
 import { buildShellEnv } from '@/lib/shell-env';
 import { PRISTINE_ENV } from '@/lib/pristine-env';
-import { encodeStdout } from '@/lib/terminal-protocol';
+import { encodeStdout, MSG_STDOUT_ACK } from '@/lib/terminal-protocol';
 import { reconcileTabCwd } from '@/lib/layout-store';
 import { createLogger } from '@/lib/logger';
 
@@ -27,6 +27,9 @@ const HEARTBEAT_INTERVAL = 30_000;
 const HEARTBEAT_TIMEOUT = 90_000;
 const BACKPRESSURE_HIGH = 1024 * 1024;
 const BACKPRESSURE_LOW = 256 * 1024;
+const PARSER_HIGH = 256 * 1024;
+const PARSER_LOW = 64 * 1024;
+const THROTTLE_MAX_BYTES = 64 * 1024;
 const THROTTLE_WINDOW_MS = 500;
 const THROTTLE_FLUSH_INTERVAL_MS = 250;
 
@@ -43,11 +46,14 @@ interface IActiveConnection {
   detaching: boolean;
   disposables: pty.IDisposable[];
   backpressurePaused: boolean;
+  flowControl: boolean;
+  unacknowledgedBytes: number;
   capturePaused: boolean;
   currentCols: number;
   currentRows: number;
   throttleUntil: number;
   throttleBuffer: string;
+  throttleBufferBytes: number;
   throttleInterval: ReturnType<typeof setInterval> | null;
 }
 
@@ -82,6 +88,7 @@ const cleanup = (conn: IActiveConnection, sessionExited = false) => {
     conn.throttleInterval = null;
   }
   conn.throttleBuffer = '';
+  conn.throttleBufferBytes = 0;
 
   for (const d of conn.disposables) {
     d.dispose();
@@ -255,6 +262,18 @@ export const handleConnection = async (ws: WebSocket, request: IncomingMessage, 
   let currentCols = 80;
   let currentRows = 24;
 
+  const updateBackpressure = () => {
+    if (!conn || conn.cleaned || ws.readyState !== WebSocket.OPEN) return;
+    const parserBacklog = conn.flowControl ? conn.unacknowledgedBytes + conn.throttleBufferBytes : 0;
+    if (!conn.backpressurePaused && (ws.bufferedAmount > BACKPRESSURE_HIGH || parserBacklog >= PARSER_HIGH)) {
+      conn.backpressurePaused = true;
+      conn.pty.pause();
+    } else if (conn.backpressurePaused && ws.bufferedAmount < BACKPRESSURE_LOW && parserBacklog < PARSER_LOW) {
+      conn.backpressurePaused = false;
+      conn.pty.resume();
+    }
+  };
+
   const parseMessage = (raw: Buffer | ArrayBuffer) => {
     const data = new Uint8Array(
       raw instanceof ArrayBuffer ? raw : raw.buffer.slice(raw.byteOffset, raw.byteOffset + raw.byteLength),
@@ -276,6 +295,14 @@ export const handleConnection = async (ws: WebSocket, request: IncomingMessage, 
     }
 
     switch (msg.type) {
+      case MSG_STDOUT_ACK: {
+        if (!conn || conn.cleaned || !conn.flowControl || msg.payload.length !== 4) break;
+        const bytes = new DataView(msg.payload.buffer, msg.payload.byteOffset, 4).getUint32(0);
+        if (bytes === 0 || bytes > conn.unacknowledgedBytes) break;
+        conn.unacknowledgedBytes -= bytes;
+        updateBackpressure();
+        break;
+      }
       case MSG_STDIN: {
         ptyProcess.write(textDecoder.decode(msg.payload));
         break;
@@ -399,11 +426,14 @@ export const handleConnection = async (ws: WebSocket, request: IncomingMessage, 
     detaching: false,
     disposables: [],
     backpressurePaused: false,
+    flowControl: url.searchParams.get('flowControl') === '1',
+    unacknowledgedBytes: 0,
     capturePaused: false,
     currentCols,
     currentRows,
     throttleUntil: 0,
     throttleBuffer: '',
+    throttleBufferBytes: 0,
     throttleInterval: null,
   };
 
@@ -412,24 +442,21 @@ export const handleConnection = async (ws: WebSocket, request: IncomingMessage, 
   const ptyPid = ptyProcess.pid;
 
   const sendStdout = (data: string) => {
-    ws.send(encodeStdout(data), (error) => {
+    const frame = encodeStdout(data);
+    if (conn.flowControl) conn.unacknowledgedBytes += frame.byteLength - 1;
+    ws.send(frame, (error) => {
       if (error || conn.cleaned || ws.readyState !== WebSocket.OPEN) return;
-      if (conn.backpressurePaused && ws.bufferedAmount < BACKPRESSURE_LOW) {
-        conn.backpressurePaused = false;
-        ptyProcess!.resume();
-      }
+      updateBackpressure();
     });
-
-    if (ws.bufferedAmount > BACKPRESSURE_HIGH && !conn.backpressurePaused) {
-      conn.backpressurePaused = true;
-      ptyProcess!.pause();
-    }
+    updateBackpressure();
   };
 
   const flushThrottleBuffer = () => {
     if (conn.throttleBuffer.length === 0) return;
-    sendStdout(conn.throttleBuffer);
+    const data = conn.throttleBuffer;
     conn.throttleBuffer = '';
+    conn.throttleBufferBytes = 0;
+    sendStdout(data);
   };
 
   // tmux pane reflow는 새 사이즈로 재렌더링하면서 중간 frame들을 빠르게 보냄.
@@ -463,8 +490,12 @@ export const handleConnection = async (ws: WebSocket, request: IncomingMessage, 
 
       if (Date.now() < conn.throttleUntil) {
         conn.throttleBuffer += data;
+        conn.throttleBufferBytes += Buffer.byteLength(data, 'utf8');
+        if (conn.throttleBufferBytes >= THROTTLE_MAX_BYTES) flushThrottleBuffer();
         return;
       }
+      // Older reflow output must precede data arriving as the throttle window ends.
+      flushThrottleBuffer();
       sendStdout(data);
     }),
   );

@@ -45,7 +45,7 @@ import { reloadForReconnectRecovery } from '@/lib/ws-reload-recovery';
 
 
 interface ITermActions {
-  write: (data: Uint8Array) => void;
+  write: ReturnType<typeof useTerminal>['write'];
   reset: () => void;
   fit: () => { cols: number; rows: number };
   focus: () => void;
@@ -343,18 +343,20 @@ const MobileSurfaceView = ({
     retryCount,
     disconnectReason,
     connect,
+    disconnect,
     reconnect,
     sendStdin,
     sendWebStdin,
     sendResize,
   } = useTerminalWebSocket({
     onStdin: (data) => nativeCommandEventsRef.current?.onInput(data),
-    onData: (data) => {
-      termActionsRef.current.write(data);
+    onData: (data, onParsed) => {
+      termActionsRef.current.write(data, onParsed);
       onTrustData();
       onCodexUpdateData();
     },
     onConnected: () => {
+      termActionsRef.current.reset();
       setHasEverConnected(true);
       setAttemptedTabId(activeTabIdRef.current);
       prevConnectedTabIdRef.current = activeTabIdRef.current;
@@ -373,8 +375,11 @@ const MobileSurfaceView = ({
   });
 
   useEffect(() => {
-    if (!isReady) connectedSessionRef.current = null;
-  }, [isReady]);
+    if (!isReady) {
+      connectedSessionRef.current = null;
+      disconnect();
+    }
+  }, [isReady, disconnect]);
 
   useEffect(() => {
     if (!isReady || !activeTabId) return;
@@ -888,7 +893,7 @@ const MobileSurfaceView = ({
       )}
 
 
-      {!noTabs && !isWebBrowser && status === 'disconnected' && !isFirstConnectionForTab && (
+      {!noTabs && !isWebBrowser && !isDiff && status === 'disconnected' && !isFirstConnectionForTab && (
         <div className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-3">
           <WifiOff className="h-5 w-5 text-muted-foreground" />
           <span className="text-sm text-muted-foreground">
