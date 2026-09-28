@@ -20,6 +20,7 @@ import useInlineEdit from '@/hooks/use-inline-edit';
 import WorkspaceStatusIndicator from '@/components/features/workspace/workspace-status-indicator';
 import CreateWorktreeDialog from './create-worktree-dialog';
 import ManageWorktreesDialog from './manage-worktrees-dialog';
+import WorkspaceDeliveryButton from './workspace-delivery-button';
 
 interface IWorkspaceItemProps {
   workspace: IWorkspace;
@@ -169,6 +170,7 @@ const WorkspaceItem = ({
               {workspace.name}
             </span>
           )}
+          {!isEditing && <WorkspaceDeliveryButton workspaceId={workspace.id} />}
         </div>
         {displayDirs.map((dir, i) => (
           <span key={dir} className={cn('truncate text-xs leading-tight text-muted-foreground/70', i === 0 && 'mt-1')}>
