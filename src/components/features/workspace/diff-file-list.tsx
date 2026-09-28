@@ -34,10 +34,10 @@ const DiffFileList = ({ diff, viewMode, sessionName, repoRoot, oldRef = 'HEAD', 
   const fontSize = useConfigStore((s) => s.fontSize);
   const diffFontSize = DIFF_FONT_SIZE[fontSize] ?? DIFF_FONT_SIZE.normal;
 
-  const [collapsed, setCollapsed] = useState<Set<string>>(() => new Set());
+  const [expanded, setExpanded] = useState<Set<string>>(() => new Set());
 
   const toggle = useCallback((key: string) => {
-    setCollapsed((prev) => {
+    setExpanded((prev) => {
       const next = new Set(prev);
       if (next.has(key)) next.delete(key);
       else next.add(key);
@@ -47,15 +47,15 @@ const DiffFileList = ({ diff, viewMode, sessionName, repoRoot, oldRef = 'HEAD', 
 
   const files = useMemo(() => {
     if (!diff) return [];
-    return parseMultiFileDiff(diff).map((f, i) => {
+    return parseMultiFileDiff(diff).map((f) => {
       const displayName = getDisplayName(f);
       return {
-        key: `${displayName}#${i}`,
+        key: JSON.stringify([repoRoot, oldRef, newRef, f.oldName, f.newName]),
         source: f,
         displayName,
       };
     });
-  }, [diff]);
+  }, [diff, repoRoot, oldRef, newRef]);
 
   const totals = useMemo(() => {
     let add = 0;
@@ -90,7 +90,7 @@ const DiffFileList = ({ diff, viewMode, sessionName, repoRoot, oldRef = 'HEAD', 
             file={f.source}
             repoRoot={repoRoot}
             displayName={f.displayName}
-            isCollapsed={collapsed.has(f.key)}
+            isCollapsed={!expanded.has(f.key)}
             onToggle={() => toggle(f.key)}
             sessionName={sessionName}
             oldRef={oldRef}
@@ -199,6 +199,7 @@ const FileDiffCard = ({
         <button
           type="button"
           onClick={onToggle}
+          aria-expanded={!isCollapsed}
           className="flex min-w-0 flex-1 items-center gap-2 px-3 py-1.5 text-left hover:bg-accent"
         >
           {isCollapsed
