@@ -1,5 +1,4 @@
-import { useState } from 'react';
-import useSWR from 'swr';
+import { useEffect, useState } from 'react';
 import { GitPullRequest } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
@@ -8,35 +7,45 @@ import type { IWorktreeOverview, TWorktreeSnapshot } from '@/types/worktree';
 import WorktreeDeliveryDialog from './worktree-delivery-dialog';
 import { cn } from '@/lib/utils';
 
-const fetchOverview = async (url: string): Promise<IWorktreeOverview> => {
-  const response = await fetch(url);
-  if (!response.ok) throw new Error('Unable to load worktree status');
-  return response.json();
-};
-
 export default function WorkspaceDeliveryButton({ workspaceId, className }: { workspaceId: string; className?: string }) {
   const t = useTranslations('workspace.worktreeManager');
   const [choosing, setChoosing] = useState(false);
   const [delivery, setDelivery] = useState<TWorktreeSnapshot | null>(null);
-  const { data, mutate } = useSWR(
-    `/api/workspace/worktrees?workspaceId=${encodeURIComponent(workspaceId)}`,
-    fetchOverview,
-    { refreshInterval: choosing || delivery ? 0 : 30_000, revalidateOnFocus: true },
-  );
-  const targets = data?.repositories.flatMap((repository) => repository.worktrees
-    .filter((item) => {
-      const status = item.status;
-      return item.workspaces.some((workspace) => workspace.id === workspaceId)
-        && !item.missing && status && (status.modified > 0 || status.staged > 0
-          || status.untracked > 0 || status.conflicts > 0 || (status.ahead ?? 0) > 0 || (status.behind ?? 0) > 0);
-    })
-    .map((item): TWorktreeSnapshot => ({
-      repositoryId: repository.id, directory: item.directory, head: item.head, branch: item.branch,
-    }))) ?? [];
+  const [targets, setTargets] = useState<TWorktreeSnapshot[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    if (!choosing) return;
+    const controller = new AbortController();
+    const load = async () => {
+      try {
+        const response = await fetch(`/api/workspace/worktrees?workspaceId=${encodeURIComponent(workspaceId)}`, { signal: controller.signal });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || t('unknown'));
+        if (controller.signal.aborted) return;
+        const overview = data as IWorktreeOverview;
+        const available = overview.repositories.flatMap((repository) => repository.worktrees
+          .filter((item) => !item.missing && item.workspaces.some((workspace) => workspace.id === workspaceId))
+          .map((item): TWorktreeSnapshot => ({
+            repositoryId: repository.id, directory: item.directory, head: item.head, branch: item.branch,
+          })));
+        setTargets(available);
+        if (available.length === 1) { setDelivery(available[0]); setChoosing(false); }
+        else if (!available.length && overview.errors.length) setError(overview.errors.map((entry) => entry.error).join('\n'));
+      } catch (failure) {
+        if (!controller.signal.aborted) setError(failure instanceof Error ? failure.message : String(failure));
+      } finally {
+        if (!controller.signal.aborted) setLoading(false);
+      }
+    };
+    void load();
+    return () => controller.abort();
+  }, [choosing, workspaceId, t]);
 
   return <span className="contents" onClick={(event) => event.stopPropagation()}
     onDoubleClick={(event) => event.stopPropagation()}>
-    {targets.length > 0 && <button
+    <button
       type="button"
       className={cn('flex h-6 w-6 shrink-0 items-center justify-center rounded text-muted-foreground hover:bg-accent hover:text-foreground', className)}
       title={t('deliveryTitle')}
@@ -44,15 +53,17 @@ export default function WorkspaceDeliveryButton({ workspaceId, className }: { wo
       onDoubleClick={(event) => event.stopPropagation()}
       onClick={(event) => {
         event.stopPropagation();
-        if (targets.length === 1) setDelivery(targets[0]);
-        else setChoosing(true);
+        setTargets([]); setError(''); setLoading(true); setChoosing(true);
       }}
     >
       <GitPullRequest aria-hidden="true" className="h-3.5 w-3.5" />
-    </button>}
+    </button>
     {choosing && <Dialog open onOpenChange={setChoosing}>
       <DialogContent aria-describedby={undefined}>
         <DialogHeader><DialogTitle>{t('deliveryTitle')}</DialogTitle></DialogHeader>
+        {loading && <p role="status">{t('loading')}</p>}
+        {error && <p role="alert" className="whitespace-pre-wrap break-all text-ui-red">{error}</p>}
+        {!loading && !error && !targets.length && <p>{t('empty')}</p>}
         {targets.map((target) => <Button key={target.directory} variant="outline"
           className="h-auto justify-start whitespace-normal break-all text-left"
           onClick={(event) => { event.stopPropagation(); setChoosing(false); setDelivery(target); }}>
@@ -61,6 +72,6 @@ export default function WorkspaceDeliveryButton({ workspaceId, className }: { wo
       </DialogContent>
     </Dialog>}
     {delivery && <WorktreeDeliveryDialog workspaceId={workspaceId} item={delivery}
-      onClose={() => { setDelivery(null); void mutate(); }} />}
+      onClose={() => setDelivery(null)} />}
   </span>;
 }
