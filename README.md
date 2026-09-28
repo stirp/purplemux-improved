@@ -2,6 +2,8 @@
 
 An improved fork of [subicura/purplemux](https://github.com/subicura/purplemux). The `purplemux` / `pmux` aliases and `~/.purplemux` data directory remain compatible. npm installation requires this fork to be published; until then, run from source.
 
+Fork features are also available through the CLI. Run `purplemux features` for the offline command guide, or read the [CLI examples](landing-src/docs/cli-reference.md#fork-feature-commands). From a source checkout, use `node bin/purplemux.js features`.
+
 ## Main improvements in this fork
 
 These additions and enhancements build on commit [`52140216`](https://github.com/stirp/purplemux-improved/commit/52140216d8bb5bfffed30d8d452f77b88339a4ae), focusing on parallel development and the Claude Code / Codex web experience. [简体中文](README.zh-CN.md#fork-后的主要改进)
