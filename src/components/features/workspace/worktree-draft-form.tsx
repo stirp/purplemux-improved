@@ -17,7 +17,7 @@ export default function WorktreeDraftForm({ workspaceId, item, info, disabled, o
   const [replaceConfirm, setReplaceConfirm] = useState(false);
   useEffect(() => () => generation.current?.abort(), []);
   const [remote, setRemote] = useState('');
-  const [provider, setProvider] = useState<'github' | 'gitlab'>('github');
+  const [providerOverride, setProviderOverride] = useState<{ repository: string; provider: 'github' | 'gitlab' } | null>(null);
   const [target, setTarget] = useState('');
   const [title, setTitle] = useState('');
   const [body, setBody] = useState('');
@@ -27,6 +27,9 @@ export default function WorktreeDraftForm({ workspaceId, item, info, disabled, o
   const [notice, setNotice] = useState('');
   const [result, setResult] = useState<IWorktreeDraftResult | null>(null);
   const selected = info.remotes.find((entry) => entry.name === remote) ?? info.remotes[0];
+  const defaultProvider = selected && new URL(selected.repository).hostname !== 'github.com' ? 'gitlab' : 'github';
+  const provider = providerOverride && providerOverride.repository === selected?.repository
+    ? providerOverride.provider : defaultProvider;
   const blocked = info.blockers.some((reason) => !['ignored', 'sessions', 'sharedWorkspace'].includes(reason));
   const targetBranch = target || (info.targetRef?.replace(/^refs\/heads\//, '').replace(/^refs\/remotes\/[^/]+\//, '') ?? '');
   const generate = async () => {
@@ -83,13 +86,15 @@ export default function WorktreeDraftForm({ workspaceId, item, info, disabled, o
       </div>
     </div> : <fieldset disabled={disabled || busy} className="flex min-w-0 flex-col gap-3">
       <label className="flex flex-col gap-1">{t('publishRemote')}
-        <select className="w-full rounded border bg-background p-2" value={selected?.name ?? ''} onChange={(event) => setRemote(event.target.value)}>
+        <select className="w-full rounded border bg-background p-2" value={selected?.name ?? ''} onChange={(event) => { setRemote(event.target.value); setProviderOverride(null); }}>
           {!info.remotes.length && <option value="">{t('noPublishRemote')}</option>}
           {info.remotes.map((entry) => <option key={entry.name} value={entry.name}>{entry.name} · {entry.repository}</option>)}
         </select>
       </label>
       <label className="flex flex-col gap-1">{t('reviewProvider')}
-        <select className="rounded border bg-background p-2" value={provider} onChange={(event) => setProvider(event.target.value as 'github' | 'gitlab')}><option value="github">GitHub</option><option value="gitlab">GitLab</option></select>
+        <select className="rounded border bg-background p-2" value={provider} onChange={(event) => {
+          if (selected) setProviderOverride({ repository: selected.repository, provider: event.target.value as 'github' | 'gitlab' });
+        }}><option value="github">GitHub</option><option value="gitlab">GitLab</option></select>
       </label>
       <label className="flex flex-col gap-1">{t('draftTarget')}<Input value={targetBranch} maxLength={1024} onChange={(event) => setTarget(event.target.value)} /></label>
       <div className="flex flex-col gap-1">
