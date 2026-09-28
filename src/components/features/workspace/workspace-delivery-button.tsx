@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import type { IWorktreeOverview, TWorktreeSnapshot } from '@/types/worktree';
 import WorktreeDeliveryDialog from './worktree-delivery-dialog';
+import { cn } from '@/lib/utils';
 
 const fetchOverview = async (url: string): Promise<IWorktreeOverview> => {
   const response = await fetch(url);
@@ -13,7 +14,7 @@ const fetchOverview = async (url: string): Promise<IWorktreeOverview> => {
   return response.json();
 };
 
-export default function WorkspaceDeliveryButton({ workspaceId }: { workspaceId: string }) {
+export default function WorkspaceDeliveryButton({ workspaceId, className }: { workspaceId: string; className?: string }) {
   const t = useTranslations('workspace.worktreeManager');
   const [choosing, setChoosing] = useState(false);
   const [delivery, setDelivery] = useState<TWorktreeSnapshot | null>(null);
@@ -37,7 +38,7 @@ export default function WorkspaceDeliveryButton({ workspaceId }: { workspaceId: 
     onDoubleClick={(event) => event.stopPropagation()}>
     {targets.length > 0 && <button
       type="button"
-      className="flex h-6 w-6 shrink-0 items-center justify-center rounded text-muted-foreground hover:bg-accent hover:text-foreground"
+      className={cn('flex h-6 w-6 shrink-0 items-center justify-center rounded text-muted-foreground hover:bg-accent hover:text-foreground', className)}
       title={t('deliveryTitle')}
       aria-label={t('deliveryTitle')}
       onDoubleClick={(event) => event.stopPropagation()}
