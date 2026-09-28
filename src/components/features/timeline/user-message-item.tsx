@@ -1,4 +1,5 @@
 import { memo, useEffect, useRef, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
 import type { ITimelineUserMessage } from '@/types/timeline';
 
@@ -24,6 +25,7 @@ interface IUserMessageItemProps {
 }
 
 const UserMessageItem = ({ entry }: IUserMessageItemProps) => {
+  const t = useTranslations('timeline');
   const [delayed, setDelayed] = useState(false);
   const [lastPending, setLastPending] = useState(entry.pending);
   const [expanded, setExpanded] = useState(false);
@@ -100,7 +102,7 @@ const UserMessageItem = ({ entry }: IUserMessageItemProps) => {
             onClick={() => setExpanded((v) => !v)}
             className="text-xs mt-1.5 text-muted-foreground hover:underline"
           >
-            {expanded ? '접기' : '더보기'}
+            {t(expanded ? 'collapseMessage' : 'expandMessage')}
           </button>
         )}
       </div>

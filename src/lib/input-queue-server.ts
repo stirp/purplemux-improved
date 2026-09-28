@@ -1,6 +1,6 @@
 import { InputQueue } from '@/lib/input-queue';
 import { getStatusManager } from '@/lib/status-manager';
-import { capturePaneContent, hasSession, sendRawKeys } from '@/lib/tmux';
+import { capturePaneContent, hasSession, pasteText, sendRawKeys } from '@/lib/tmux';
 import { countImageRefs, waitForImageAttachments } from '@/lib/image-attach-detector';
 
 const delay = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
@@ -14,7 +14,7 @@ export const getInputQueue = (): InputQueue => {
     async (target, message, immediately) => {
       const { sessionName, provider } = target;
       if (!await hasSession(sessionName)) throw new Error('Session not found');
-      const paste = (text: string) => sendRawKeys(sessionName, `\x1b[200~${text}\x1b[201~`);
+      const paste = (text: string) => pasteText(sessionName, text);
       const capture = async () => (await capturePaneContent(sessionName)) ?? '';
       let baselineRefs = provider === 'claude' && message.attachments.length
         ? countImageRefs(await capture()) : 0;
