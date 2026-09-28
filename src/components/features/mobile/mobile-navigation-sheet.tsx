@@ -35,6 +35,7 @@ import { formatTabTitle } from '@/lib/tab-title';
 import ProcessIcon from '@/components/icons/process-icon';
 import TabStatusIndicator from '@/components/features/workspace/tab-status-indicator';
 import WorkspaceStatusIndicator from '@/components/features/workspace/workspace-status-indicator';
+import WorkspaceDeliveryButton from '@/components/features/workspace/workspace-delivery-button';
 import SidebarRateLimits from '@/components/layout/sidebar-rate-limits';
 import MobileWorkspaceGroupHeader from '@/components/features/mobile/mobile-workspace-group-header';
 import RenameGroupDialog from '@/components/features/workspace/rename-group-dialog';
@@ -378,6 +379,7 @@ const MobileNavigationSheet = ({
               )}
             </div>
           </button>
+          <WorkspaceDeliveryButton workspaceId={ws.id} className="h-11 w-11" />
         </MobileWorkspaceActions>
         {/* Keep navigation independent of grid-track animation support on iOS 15. */}
         {isExpanded && <div>{renderPaneTree(ws.id)}</div>}

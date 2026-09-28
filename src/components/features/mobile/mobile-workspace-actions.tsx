@@ -9,6 +9,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import EditWorkspaceDialog from '@/components/features/workspace/edit-workspace-dialog';
 import CreateWorktreeDialog from '@/components/features/workspace/create-worktree-dialog';
+import ManageWorktreesDialog from '@/components/features/workspace/manage-worktrees-dialog';
 import useWorkspaceStore from '@/hooks/use-workspace-store';
 import type { IWorkspace } from '@/types/terminal';
 
@@ -22,7 +23,7 @@ export default function MobileWorkspaceActions({ workspace, onCreated, children 
   const tw = useTranslations('workspace');
   const [menuOpen, setMenuOpen] = useState(false);
   const touchOrigin = useRef(false);
-  const [action, setAction] = useState<'edit' | 'create' | 'delete' | null>(null);
+  const [action, setAction] = useState<'edit' | 'manage' | 'create' | 'delete' | null>(null);
   const [deleting, setDeleting] = useState(false);
 
   const remove = async () => {
@@ -81,6 +82,9 @@ export default function MobileWorkspaceActions({ workspace, onCreated, children 
           <button className={itemClass} onClick={() => openAction('create')}>
             <GitBranch size={16} />{tw('worktree.create')}
           </button>
+          <button className={itemClass} onClick={() => openAction('manage')}>
+            <GitBranch size={16} />{tw('worktreeManager.title')}
+          </button>
           <button className={`${itemClass} text-ui-red`} onClick={() => openAction('delete')}>
             <Trash2 size={16} />{tc('delete')}
           </button>
@@ -93,6 +97,9 @@ export default function MobileWorkspaceActions({ workspace, onCreated, children 
     />}
     {action === 'create' && <CreateWorktreeDialog
       workspace={workspace} onClose={() => setAction(null)} onCreated={onCreated}
+    />}
+    {action === 'manage' && <ManageWorktreesDialog
+      workspace={workspace} onClose={() => setAction(null)} onSelect={onCreated}
     />}
     {action === 'delete' && <AlertDialog open onOpenChange={(open) => {
       if (!open && !deleting) setAction(null);
