@@ -23,7 +23,12 @@ const SessionHistoryActions = ({ provider, sessionId, historyEntryId, label, dis
   const [open, setOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [removed, setRemoved] = useState(false);
-  const [deleteOriginal, setDeleteOriginal] = useState(false);
+  const [deleteOriginal, setDeleteOriginal] = useState(!!sessionId);
+
+  const openDeleteDialog = () => {
+    setDeleteOriginal(!!sessionId);
+    setOpen(true);
+  };
 
   const remove = async () => {
     if (deleting) return;
@@ -56,7 +61,7 @@ const SessionHistoryActions = ({ provider, sessionId, historyEntryId, label, dis
       <ContextMenu>
         <ContextMenuTrigger render={children} />
         <ContextMenuContent>
-          <ContextMenuItem variant="destructive" disabled={disabled} onClick={() => setOpen(true)}>
+          <ContextMenuItem variant="destructive" disabled={disabled} onClick={openDeleteDialog}>
             <Trash2 size={14} />
             {t('deleteHistory')}
           </ContextMenuItem>
@@ -68,7 +73,7 @@ const SessionHistoryActions = ({ provider, sessionId, historyEntryId, label, dis
         aria-label={t('deleteHistory')}
         title={t('deleteHistory')}
         disabled={disabled}
-        onClick={() => setOpen(true)}
+        onClick={openDeleteDialog}
       >
         <Trash2 size={14} />
       </button>

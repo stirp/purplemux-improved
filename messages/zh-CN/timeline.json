@@ -33,5 +33,7 @@
   "closeAria": "关闭",
   "submitAnswer": "提交答案",
   "submitAnswerHint": "立即发送答案，无需排队。提交后将保留本次选择。",
-  "answerSubmitted": "已提交答案"
+  "answerSubmitted": "已提交答案",
+  "expandMessage": "展开更多",
+  "collapseMessage": "收起"
 }

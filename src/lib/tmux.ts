@@ -376,17 +376,31 @@ export const sendRawKeys = async (
   );
 };
 
+export const pasteText = async (sessionName: string, content: string): Promise<void> => {
+  await exitCopyMode(sessionName);
+  const buffer = `purplemux-input-${nanoid()}`;
+  try {
+    // Stream the payload to avoid tmux command and OS argument size limits.
+    await new Promise<void>((resolve, reject) => {
+      const child = execFileCb('tmux', ['-L', TMUX_SOCKET, 'load-buffer', '-b', buffer, '-'],
+        { timeout: CMD_TIMEOUT }, (error) => error ? reject(error) : resolve());
+      child.stdin?.on('error', reject);
+      child.stdin?.end(content);
+    });
+    await execFile('tmux', ['-L', TMUX_SOCKET, 'paste-buffer', '-d', '-p', '-r', '-b', buffer, '-t', sessionName],
+      { timeout: CMD_TIMEOUT });
+  } finally {
+    await execFile('tmux', ['-L', TMUX_SOCKET, 'delete-buffer', '-b', buffer],
+      { timeout: CMD_TIMEOUT }).catch(() => {});
+  }
+};
+
 /** Send text via bracketed paste mode and press Enter twice (handles Claude Code long input confirmation) */
 export const sendBracketedPaste = async (
   sessionName: string,
   content: string,
 ): Promise<void> => {
-  await exitCopyMode(sessionName);
-  await execFile(
-    'tmux',
-    ['-L', TMUX_SOCKET, 'send-keys', '-t', sessionName, '-l', `\x1b[200~${content}\x1b[201~`],
-    { timeout: CMD_TIMEOUT },
-  );
+  await pasteText(sessionName, content);
   await execFile(
     'tmux',
     ['-L', TMUX_SOCKET, 'send-keys', '-t', sessionName, 'Enter'],

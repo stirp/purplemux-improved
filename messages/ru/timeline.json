@@ -33,5 +33,7 @@
   "closeAria": "Закрыть",
   "submitAnswer": "Submit answer now",
   "submitAnswerHint": "Submit answers immediately without adding them to the message queue.",
-  "answerSubmitted": "Answer submitted"
+  "answerSubmitted": "Answer submitted",
+  "expandMessage": "Показать ещё",
+  "collapseMessage": "Свернуть"
 }
