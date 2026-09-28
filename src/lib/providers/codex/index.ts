@@ -220,6 +220,7 @@ export const buildCodexRuntimeArgs = async (workspaceId: string | undefined, res
 
   const parts: string[] = [];
   if (resumeSessionId) parts.push('resume', resumeSessionId);
+  parts.push('-c', 'check_for_update_on_startup=false');
   parts.push(...hookArgs);
   parts.push(...devInstrArgs);
   if (skipPerms) parts.push('--yolo');
