@@ -25,3 +25,16 @@ v20 是现有 fork 功能回补规格。下表的实现状态来自当前源码�
 | [fork-platform](./features/fork-platform/spec.md) | 累计功能回补 | P0（文档覆盖） | 源码已存在；本次未构建 | 规格及引用检查；运行验收未执行 | 2026-09-28 |
 
 详见[实施记录](./result/build.md)和[验证记录](./result/verify-1.md)。
+
+## 新增需求待办
+
+此表单独跟踪历史回补范围之外的新增需求。
+
+| feature | phase | priority | build | verify | updated |
+| --- | --- | --- | --- | --- | --- |
+| [无同步目标时默认当前分支](./requirements/sync-target-current-branch.md) | 已实现 | P2 | 代码完成；未执行生产构建 | 51 项相关测试通过；[验证记录](./result/verify-sync-target-current-branch.md) | 2026-09-29 |
+
+- [x] 服务端支持当前分支候选、默认回退与只读比较，保留同分支同步执行保护。
+- [x] 弹窗展示与候选勾选一致，自身目标时禁用 merge/rebase。
+- [x] 补充默认优先级与边界场景回归测试，验证共享弹窗的交互逻辑。
+- [ ] 桌面和移动端实机验收（本次未执行）。

@@ -61,6 +61,7 @@ export default function WorktreeDeliveryDialog({ workspaceId, item, onClose }: {
   };
 
   const recovering = info?.blockers.filter((reason) => !['dirty', 'operation'].includes(reason) && !(reason === 'detached' && info.operation === 'rebase')) ?? [];
+  const targetsCurrentBranch = !!info?.branch && info.targetRef === `refs/heads/${info.branch}`;
   return <Dialog open onOpenChange={(open) => { if (!open && !busy) onClose(); }}>
     <DialogContent className="max-h-[85dvh] overflow-y-auto sm:max-w-2xl" showCloseButton={!busy}>
       <DialogHeader><DialogTitle>{t('deliveryTitle')}</DialogTitle><DialogDescription>{t('syncDescription')}</DialogDescription></DialogHeader>
@@ -111,8 +112,8 @@ export default function WorktreeDeliveryDialog({ workspaceId, item, onClose }: {
               <Button variant="outline" disabled={busy || loading || recovering.length > 0} onClick={() => setConfirm('abort')}>{t('abortOperation')}</Button>
             </div>
           </div> : <div className="flex flex-wrap gap-2">
-            <Button disabled={busy || loading || !info.targetHead || info.blockers.length > 0} onClick={() => setConfirm('merge')}>{t('mergeTarget')}</Button>
-            <Button variant="outline" disabled={busy || loading || !info.targetHead || info.blockers.length > 0} onClick={() => setConfirm('rebase')}>{t('rebaseTarget')}</Button>
+            <Button disabled={busy || loading || !info.targetHead || targetsCurrentBranch || info.blockers.length > 0} onClick={() => setConfirm('merge')}>{t('mergeTarget')}</Button>
+            <Button variant="outline" disabled={busy || loading || !info.targetHead || targetsCurrentBranch || info.blockers.length > 0} onClick={() => setConfirm('rebase')}>{t('rebaseTarget')}</Button>
           </div>}
           {(info.operation ? recovering : info.blockers).length > 0 && <p className="text-xs text-muted-foreground">{(info.operation ? recovering : info.blockers).map((reason) => t(`reasons.${reason}`)).join(' · ')}</p>}
           <div className="flex flex-wrap gap-2">

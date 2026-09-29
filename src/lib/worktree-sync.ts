@@ -5,10 +5,10 @@ import { readWorktreeMetadata, updateWorktreeMetadata, worktreeMetadataKey } fro
 import type { IWorkspace } from '@/types/terminal';
 import type { IWorktreeSyncInfo, IWorktreeSyncResult, TWorktreeSnapshot } from '@/types/worktree';
 
-const resolveTarget = async (directory: string, branch: string | null, target: string) => {
+const resolveTarget = async (directory: string, target: string) => {
   if (target.startsWith('-')) throw new WorktreeError('targetRequired', 400);
   const ref = (await worktreeGit(directory, ['rev-parse', '--symbolic-full-name', '--verify', '--end-of-options', target])).trim();
-  if (!/^refs\/(heads|remotes)\//.test(ref) || ref === `refs/heads/${branch}`) throw new WorktreeError('targetRequired', 400);
+  if (!/^refs\/(heads|remotes)\//.test(ref)) throw new WorktreeError('targetRequired', 400);
   const head = (await worktreeGit(directory, ['rev-parse', '--verify', '--end-of-options', `${ref}^{commit}`])).trim();
   return { ref, head };
 };
@@ -20,10 +20,11 @@ export const inspectWorktreeSync = async (source: IWorkspace, snapshot: TWorktre
   const refs = await worktreeGit(item.directory, ['for-each-ref', '--sort=refname', '--format=%(refname)%09%(symref)', 'refs/heads/', 'refs/remotes/']);
   const branches = refs.trim().split('\n').filter(Boolean).flatMap((line) => {
     const [ref, symbolic] = line.split('\t');
-    return symbolic || ref === `refs/heads/${item.branch}` ? [] : [{ ref, name: ref.replace(/^refs\/(heads|remotes)\//, '') }];
+    return symbolic ? [] : [{ ref, name: ref.replace(/^refs\/(heads|remotes)\//, '') }];
   });
-  const selected = targetRef ?? [metadata.targetRef, metadata.baseRef].find((ref) => branches.some((branch) => branch.ref === ref));
-  const target = selected ? await resolveTarget(item.directory, item.branch, selected) : null;
+  const selected = targetRef ?? [metadata.targetRef, metadata.baseRef, item.branch ? `refs/heads/${item.branch}` : undefined]
+    .find((ref) => branches.some((branch) => branch.ref === ref));
+  const target = selected ? await resolveTarget(item.directory, selected) : null;
   let ahead: number | null = null;
   let behind: number | null = null;
   if (target) {
@@ -60,7 +61,8 @@ export const synchronizeWorktree = async (source: IWorkspace, snapshot: TWorktre
     args = [item.status.operation, `--${action}`];
   } else {
     if (!targetRef || !targetHead) throw new WorktreeError('targetRequired', 400);
-    const target = await resolveTarget(item.directory, item.branch, targetRef);
+    const target = await resolveTarget(item.directory, targetRef);
+    if (target.ref === `refs/heads/${item.branch}`) throw new WorktreeError('targetRequired', 400);
     if (target.head !== targetHead) throw new WorktreeError('targetChanged');
     await protectIgnoredFiles(item.directory, target.head, action === 'rebase');
     await updateWorktreeMetadata(worktreeMetadataKey(snapshot.repositoryId, item.directory, item.branch), { targetRef: target.ref });
