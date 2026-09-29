@@ -11,7 +11,7 @@ import { isValidBranchNamePrompt } from '@/lib/branch-name-prompt';
 import { isValidGitGenerationPrompt } from '@/lib/git-generation-prompts';
 
 const ALLOWED_FIELDS: (keyof Omit<IConfigData, 'updatedAt' | 'authSecret'>)[] = [
-  'codexEnvironment', 'branchNameProvider', 'branchNamePrompt', 'commitMessagePrompt', 'reviewDescriptionPrompt',
+  'codexEnvironment', 'claudeEnvironment', 'branchNameProvider', 'branchNamePrompt', 'commitMessagePrompt', 'reviewDescriptionPrompt',
   'appTheme', 'terminalTheme', 'customCSS', 'dangerouslySkipPermissions', 'claudeShowTerminal', 'gitAskProvider', 'noteSummaryProvider', 'editorUrl', 'editorPreset', 'authPassword', 'notificationsEnabled', 'toastOnCompleteEnabled', 'toastDuration', 'toastPositionDesktop', 'toastPositionMobile', 'locale', 'fontSize', 'lineHeight', 'lineHeightCustom', 'terminalKeyBar', 'systemResourcesEnabled', 'networkAccess',
 ];
 
@@ -52,8 +52,10 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       if (key in body) updates[key] = body[key];
     }
 
-    if ('codexEnvironment' in updates && !isValidAgentEnvironment(updates.codexEnvironment)) {
-      return res.status(400).json({ error: 'codexEnvironment must contain valid environment variable names and string values without null bytes.' });
+    for (const key of ['codexEnvironment', 'claudeEnvironment'] as const) {
+      if (key in updates && !isValidAgentEnvironment(updates[key])) {
+        return res.status(400).json({ error: `${key} must contain valid environment variable names and string values without null bytes.` });
+      }
     }
 
     if ('editorUrl' in updates && !isValidEditorUrl(updates.editorUrl)) {

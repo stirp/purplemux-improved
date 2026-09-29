@@ -54,3 +54,7 @@
 | `3637a357` | update version | [Fork 标识、旧浏览器兼容与开发配置](../features/fork-platform/spec.md) |
 
 覆盖所有提交表示每次改动均已归类，不表示每个测试场景已运行。功能内的源码与测试索引用于进一步审查。
+
+## 基线之后的未提交需求
+
+2026-09-29：[按代理独立环境配置](./per-agent-environment.md)对应 [agent-runtime](../features/agent-runtime/spec.md)，本次未创建提交，不计入历史 48 个提交覆盖统计。

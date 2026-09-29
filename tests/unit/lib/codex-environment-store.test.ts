@@ -35,6 +35,41 @@ describe('saving Codex environment', () => {
     vi.stubGlobal('fetch', vi.fn(async () => ({
       ok: false, status: 500, json: async () => { throw new Error('Invalid JSON'); },
     })));
-    await expect(useConfigStore.getState().setCodexEnvironment({})).rejects.toThrow('HTTP 500');
+    await expect(useConfigStore.getState().setCodexEnvironment({ NAME: 'new' })).rejects.toThrow('HTTP 500');
   });
+});
+
+it('saves and clears Claude without modifying Codex', async () => {
+  const codex = { HTTPS_PROXY: 'codex' };
+  useConfigStore.getState().hydrate({ codexEnvironment: codex });
+  const fetch = vi.fn(async (_url: string, _options: { body: string }) => ({ ok: true }));
+  vi.stubGlobal('fetch', fetch);
+  const environments: Record<string, string>[] = [{ HTTPS_PROXY: 'claude' }, {}];
+  for (const env of environments) {
+    await useConfigStore.getState().setClaudeEnvironment(env);
+    expect(JSON.parse(fetch.mock.calls.at(-1)![1].body)).toEqual({ claudeEnvironment: env });
+    expect(useConfigStore.getState().claudeEnvironment).toEqual(env);
+    expect(useConfigStore.getState().codexEnvironment).toEqual(codex);
+  }
+});
+
+it('preserves both agents when saving Claude fails', async () => {
+  const previous = { claudeEnvironment: { TOKEN: 'claude' }, codexEnvironment: { TOKEN: 'codex' } };
+  useConfigStore.getState().hydrate(previous);
+  vi.stubGlobal('fetch', vi.fn(async () => ({ ok: false, status: 500, json: async () => ({}) })));
+  await expect(useConfigStore.getState().setClaudeEnvironment({})).rejects.toThrow('HTTP 500');
+  expect(useConfigStore.getState()).toMatchObject(previous);
+});
+
+
+it.each(['claude', 'codex'] as const)('skips unchanged %s environment including reordered keys', async (provider) => {
+  const saved = { FIRST: 'one', SECOND: 'two' };
+  useConfigStore.getState().hydrate({ claudeEnvironment: saved, codexEnvironment: saved });
+  const fetch = vi.fn();
+  vi.stubGlobal('fetch', fetch);
+  await useConfigStore.getState().setAgentEnvironment(provider, { SECOND: 'two', FIRST: 'one' });
+  expect(fetch).not.toHaveBeenCalled();
+  useConfigStore.getState().hydrate({});
+  await useConfigStore.getState().setAgentEnvironment(provider, {});
+  expect(fetch).not.toHaveBeenCalled();
 });

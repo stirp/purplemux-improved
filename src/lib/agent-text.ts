@@ -4,7 +4,7 @@ import os from 'os';
 import { execFile, spawn } from 'child_process';
 import { getShellPath } from '@/lib/preflight';
 import { buildShellEnv, defaultShell } from '@/lib/shell-env';
-import type { TAgentProvider } from '@/lib/config-store';
+import { getAgentEnvironment, type TAgentProvider } from '@/lib/config-store';
 
 interface IAgentTextOptions {
   cwd?: string;
@@ -93,8 +93,6 @@ const callClaudeCli = async (input: string, systemPrompt: string, options: IAgen
 };
 
 const callCodexCli = async (input: string, systemPrompt: string, options: IAgentTextOptions): Promise<string> => {
-  // read-only limits writes, not tool access. Fail before spawning a process.
-  if (options.textOnly) throw new Error('Codex CLI cannot guarantee tool-free text generation. Select Claude Code for this scenario.');
   const resolvedPath = await getShellPath();
   const prompt = `${systemPrompt}\n\n${input}`;
   const outputPath = path.join(
@@ -133,12 +131,20 @@ const callCodexCli = async (input: string, systemPrompt: string, options: IAgent
   });
 };
 
-export const callAgentText = (
+export const callAgentText = async (
   provider: TAgentProvider,
   input: string,
   systemPrompt: string,
   options: IAgentTextOptions = {},
-): Promise<string> =>
-  provider === 'codex'
-    ? callCodexCli(input, systemPrompt, options)
-    : callClaudeCli(input, systemPrompt, options);
+): Promise<string> => {
+  // read-only limits writes, not tool access. Reject before reading configuration.
+  if (provider === 'codex' && options.textOnly) throw new Error('Codex CLI cannot guarantee tool-free text generation. Select Claude Code for this scenario.');
+  const environment = await getAgentEnvironment(provider);
+  const configuredOptions = {
+    ...options,
+    environment: { ...environment, ...options.environment },
+  };
+  return provider === 'codex'
+    ? callCodexCli(input, systemPrompt, configuredOptions)
+    : callClaudeCli(input, systemPrompt, configuredOptions);
+};

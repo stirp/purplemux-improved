@@ -1,4 +1,5 @@
 import fs from 'fs/promises';
+import { watchFile, unwatchFile, type StatWatcher, type Stats } from 'fs';
 import path from 'path';
 import os from 'os';
 import crypto from 'crypto';
@@ -7,7 +8,7 @@ import { createLogger } from '@/lib/logger';
 import type { TNetworkAccess } from '@/lib/network-access';
 import type { TEditorPreset } from '@/lib/editor-url';
 import type { TToastPosition } from '@/lib/toast-position';
-import type { TAgentEnvironment } from '@/lib/agent-environment';
+import { AGENT_ENVIRONMENT_KEYS, isValidAgentEnvironment, MAX_AGENT_CONFIG_BYTES, type TAgentEnvironment } from '@/lib/agent-environment';
 
 export type TAgentProvider = 'claude' | 'codex';
 export type TGitAskProvider = TAgentProvider;
@@ -24,6 +25,7 @@ export interface IConfigData {
   dangerouslySkipPermissions?: boolean;
   claudeShowTerminal?: boolean;
   codexEnvironment?: TAgentEnvironment;
+  claudeEnvironment?: TAgentEnvironment;
   gitAskProvider?: TGitAskProvider;
   noteSummaryProvider?: TNoteSummaryProvider;
   branchNameProvider?: TAgentProvider;
@@ -53,6 +55,8 @@ const CONFIG_FILE = path.join(BASE_DIR, 'config.json');
 const g = globalThis as unknown as {
   __ptConfigLock?: Promise<void>;
   __ptConfigContentCache?: string;
+  __ptAgentConfigCache?: Promise<IConfigData>;
+  __ptAgentConfigWatcher?: StatWatcher;
 };
 if (!g.__ptConfigLock) g.__ptConfigLock = Promise.resolve();
 
@@ -75,11 +79,29 @@ const emptyConfig = (): IConfigData => ({
   updatedAt: new Date().toISOString(),
 });
 
+const configSizeError = () => Object.assign(new Error('config.json exceeds the 4 MiB size limit'), { code: 'CONFIG_TOO_LARGE' });
+
 export const readConfig = async (): Promise<IConfigData | null> => {
   try {
-    const raw = await fs.readFile(CONFIG_FILE, 'utf-8');
-    return JSON.parse(raw) as IConfigData;
-  } catch {
+    const handle = await fs.open(CONFIG_FILE, 'r');
+    try {
+      const stat = await handle.stat();
+      if (stat.size > MAX_AGENT_CONFIG_BYTES) throw configSizeError();
+      if (!stat.isFile()) throw new Error('config.json must be a regular file');
+      const buffer = Buffer.alloc(MAX_AGENT_CONFIG_BYTES + 1);
+      let length = 0;
+      while (length < buffer.length) {
+        const { bytesRead } = await handle.read(buffer, length, buffer.length - length, null);
+        if (bytesRead === 0) break;
+        length += bytesRead;
+      }
+      if (length > MAX_AGENT_CONFIG_BYTES) throw configSizeError();
+      return JSON.parse(buffer.toString('utf8', 0, length)) as IConfigData;
+    } finally {
+      await handle.close();
+    }
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === 'CONFIG_TOO_LARGE') throw error;
     return null;
   }
 };
@@ -90,9 +112,11 @@ export const writeConfig = async (data: IConfigData): Promise<void> => {
   if (g.__ptConfigContentCache === contentKey) return;
 
   data.updatedAt = new Date().toISOString();
+  const serialized = JSON.stringify(data, null, 2);
+  if (Buffer.byteLength(serialized, 'utf8') > MAX_AGENT_CONFIG_BYTES) throw configSizeError();
   const tmpFile = CONFIG_FILE + '.tmp';
   try {
-    await fs.writeFile(tmpFile, JSON.stringify(data, null, 2), { mode: 0o600 });
+    await fs.writeFile(tmpFile, serialized, { mode: 0o600 });
     await fs.rename(tmpFile, CONFIG_FILE);
   } catch (err) {
     await fs.unlink(tmpFile).catch(() => {});
@@ -100,6 +124,7 @@ export const writeConfig = async (data: IConfigData): Promise<void> => {
   }
 
   g.__ptConfigContentCache = contentKey;
+  g.__ptAgentConfigCache = undefined;
   broadcastSync({ type: 'config' });
 };
 
@@ -140,6 +165,43 @@ export const verifyPassword = async (plain: string, stored: string): Promise<boo
 export const getConfig = async (): Promise<IConfigData> => {
   const data = await readConfig();
   return data ?? emptyConfig();
+};
+
+export const getAgentEnvironment = async (provider: TAgentProvider): Promise<TAgentEnvironment> => {
+  if (!g.__ptAgentConfigWatcher) {
+    try {
+      // Poll file metadata to handle atomic replacements without directory event noise.
+      const changed = (current: Stats, previous: Stats) => {
+        if (current.mtimeMs !== previous.mtimeMs || current.ctimeMs !== previous.ctimeMs ||
+            current.ino !== previous.ino || current.size !== previous.size) {
+          g.__ptAgentConfigCache = undefined;
+        }
+      };
+      const watcher = watchFile(CONFIG_FILE, { persistent: false, interval: 1000 }, changed);
+      watcher.on('error', () => {
+        unwatchFile(CONFIG_FILE, changed);
+        g.__ptAgentConfigWatcher = undefined;
+        g.__ptAgentConfigCache = undefined;
+      });
+      g.__ptAgentConfigWatcher = watcher;
+    } catch {
+      // If watching is unavailable, read on every call rather than serving stale data.
+    }
+  }
+  const pending = g.__ptAgentConfigWatcher
+    ? (g.__ptAgentConfigCache ??= getConfig())
+    : getConfig();
+  let config: IConfigData;
+  try {
+    config = await pending;
+  } catch (error) {
+    if (g.__ptAgentConfigCache === pending) g.__ptAgentConfigCache = undefined;
+    throw error;
+  }
+  const configured = config[AGENT_ENVIRONMENT_KEYS[provider]];
+  const env = configured === undefined ? {} : configured;
+  if (!isValidAgentEnvironment(env)) throw new Error(`Invalid ${provider} environment configuration`);
+  return { ...env };
 };
 
 export const updateConfig = async (updates: Partial<Omit<IConfigData, 'updatedAt'>>): Promise<void> =>

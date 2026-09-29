@@ -23,6 +23,9 @@ const CLAUDE_KNOWN_PATHS = [path.join(os.homedir(), '.local', 'bin', 'claude')];
 const PID_POLL_INTERVAL = 10_000;
 const SESSION_DIR_DEBOUNCE = 200;
 const INSTALL_CHECK_INTERVAL = 60_000;
+const MAX_PROCESS_DEPTH = 16;
+const MAX_PROCESS_CANDIDATES = 1024;
+const PROCESS_SCAN_CONCURRENCY = 16;
 
 interface IPidFileData {
   pid: number;
@@ -104,10 +107,37 @@ const isClaudeInstalled = async (): Promise<boolean> => {
 };
 
 const getClaudeCandidatePids = async (panePid: number, preloadedChildPids?: number[]): Promise<number[]> => {
-  const directChildPids = preloadedChildPids ?? await getChildPids(panePid);
-  // Shell wrappers and Claude's resume launcher can add one process level.
-  const grandchildPids = (await Promise.all(directChildPids.map(getChildPids))).flat();
-  return [...new Set([...directChildPids, ...grandchildPids])];
+  const visited = new Set([panePid]);
+  const candidates: number[] = [];
+  let frontier = preloadedChildPids ?? await getChildPids(panePid);
+  // Login shells, the Node launcher and shell functions can each add a level.
+  for (let depth = 0; depth < MAX_PROCESS_DEPTH && frontier.length > 0; depth++) {
+    const next: number[] = [];
+    for (const pid of frontier) {
+      if (visited.has(pid)) continue;
+      visited.add(pid);
+      candidates.push(pid);
+      next.push(pid);
+      if (candidates.length === MAX_PROCESS_CANDIDATES) return candidates;
+    }
+    if (depth === MAX_PROCESS_DEPTH - 1) break;
+    frontier = [];
+    const queued = new Set<number>();
+    const remaining = MAX_PROCESS_CANDIDATES - candidates.length;
+    for (let offset = 0; offset < next.length && frontier.length < remaining; offset += PROCESS_SCAN_CONCURRENCY) {
+      const children = await Promise.all(next.slice(offset, offset + PROCESS_SCAN_CONCURRENCY).map(getChildPids));
+      for (const pids of children) {
+        for (const pid of pids) {
+          if (visited.has(pid) || queued.has(pid)) continue;
+          queued.add(pid);
+          frontier.push(pid);
+          if (frontier.length === remaining) break;
+        }
+        if (frontier.length === remaining) break;
+      }
+    }
+  }
+  return candidates;
 };
 
 export const isClaudeRunning = async (panePid: number, preloadedChildPids?: number[]): Promise<boolean> => {

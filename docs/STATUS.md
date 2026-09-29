@@ -29,6 +29,8 @@ Two detection paths:
 
 Both paths write to the same `agentProcess` field; the `agentProcessCheckedAt` server timestamp prevents stale updates.
 
+Claude process candidates are traversed breadth-first from the pane PID through `getChildPids`, with PID deduplication and limits of 16 levels, 1024 candidates, and 16 concurrent child queries. Both running detection and session binding use this traversal, including preloaded direct children. This covers nested shells, the Node environment launcher, and non-exec shell functions beyond children and grandchildren while bounding polling cost. Descendants beyond these limits are not scanned. PID files outside this descendant tree are not bound to the pane.
+
 The server-side `detectActiveSession` still uses its own `TSessionDetectionStatus` type internally; the client-facing mapping is: `running`/`starting` → `true`, `not-running` → `false`, `not-installed` → `agentInstalled = false`.
 
 ### CLI Work State (`TCliState`)
