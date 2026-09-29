@@ -2,6 +2,8 @@
 
 ## 출처
 
+- `.specs/v19/requirements/workspace-menu-order.md` — 2026-09-28 用户确认的工作区菜单顺序统一需求。
+
 - `.specs/v19/requirements/codex.md` — OpenAI Codex CLI를 두 번째 provider로 도입하기 위한 상세 설계
 
 ## 작업 단위 (도출)
@@ -503,3 +505,14 @@ Claude 파서(`session-parser.ts`, 1092줄)와 **동일 수준 — 자동 테스
 | 2 | UI 1급 시민화. CodexPanel(타임라인 placeholder) + 메뉴 + 단축키 + 세션 목록 + 권한 응답. | 시나리오 4(권한), 5(/clear), UI 흐름 |
 | 3 | jsonl 파서(Codex) + ITimelineEntry 6개 신규 + 컴포넌트 6개 신규 + timeline-server 분기. CodexPanel placeholder 제거 → 정식 timeline 표시. | 시나리오: 풀 turn(reasoning + tool-call + agent-message), exec_command stream, web-search, mcp tool, patch-apply, approval-request 표시 |
 | 4 | session-history Codex 통합 + stats 일반화(token + rate_limits) + observer 정식 구독. | 시나리오: stats 페이지에서 Claude/Codex 합산 + Codex rate_limits 노출, 패널 footer ContextRing |
+
+
+## 追加需求：工作区菜单顺序统一（2026-09-28）
+
+| Feature | 页面 | 优先级 | Phase |
+| --- | --- | --- | --- |
+| workspace-menu-order | `/` 桌面工作区和移动导航菜单 | P2 | 5 |
+
+两端按创建 Git 子任务、管理 Worktree、移动分组、重命名排列。移动端从组合编辑入口拆出分组与名称操作；删除仍在末尾，子工作区分组操作禁用。已有词条、页头编辑功能、API 与工作树行为保持兼容。
+
+用户明确要求按该顺序完成实现，无待确认项。详细验收见 [workspace-menu-order spec](./features/workspace-menu-order/spec.md)。

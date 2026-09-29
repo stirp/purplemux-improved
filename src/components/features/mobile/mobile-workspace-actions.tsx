@@ -1,5 +1,5 @@
 import { useRef, useState, type ReactNode } from 'react';
-import { GitBranch, Pencil, Settings, Trash2 } from 'lucide-react';
+import { Folder, GitBranch, Pencil, Settings, Trash2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Button } from '@/components/ui/button';
@@ -21,9 +21,10 @@ export default function MobileWorkspaceActions({ workspace, onCreated, children 
   const tc = useTranslations('common');
   const ts = useTranslations('sidebar');
   const tw = useTranslations('workspace');
+  const tt = useTranslations('terminal');
   const [menuOpen, setMenuOpen] = useState(false);
   const touchOrigin = useRef(false);
-  const [action, setAction] = useState<'edit' | 'manage' | 'create' | 'delete' | null>(null);
+  const [action, setAction] = useState<'group' | 'rename' | 'manage' | 'create' | 'delete' | null>(null);
   const [deleting, setDeleting] = useState(false);
 
   const remove = async () => {
@@ -46,7 +47,7 @@ export default function MobileWorkspaceActions({ workspace, onCreated, children 
     setMenuOpen(false);
     setAction(next);
   };
-  const itemClass = 'flex min-h-11 w-full items-center gap-2 rounded px-2 py-2 text-left text-sm hover:bg-accent';
+  const itemClass = 'flex min-h-11 w-full items-center gap-2 rounded px-2 py-2 text-left text-sm hover:bg-accent disabled:pointer-events-none disabled:opacity-50';
 
   return <>
     <div
@@ -76,22 +77,27 @@ export default function MobileWorkspaceActions({ workspace, onCreated, children 
           <Settings size={16} />
         </PopoverTrigger>
         <PopoverContent side="bottom" align="end" className="w-56 gap-0 p-1">
-          <button className={itemClass} onClick={() => openAction('edit')}>
-            <Pencil size={16} />{tw('editTitle')}
-          </button>
           <button className={itemClass} onClick={() => openAction('create')}>
             <GitBranch size={16} />{tw('worktree.create')}
           </button>
           <button className={itemClass} onClick={() => openAction('manage')}>
             <GitBranch size={16} />{tw('worktreeManager.title')}
           </button>
+          <button className={itemClass} disabled={!!workspace.parentWorkspaceId} onClick={() => openAction('group')}>
+            <Folder size={16} />{ts('moveToGroup')}
+          </button>
+          <button className={itemClass} onClick={() => openAction('rename')}>
+            <Pencil size={16} />{tt('rename')}
+          </button>
+          <hr className="my-1 border-border" />
           <button className={`${itemClass} text-ui-red`} onClick={() => openAction('delete')}>
             <Trash2 size={16} />{tc('delete')}
           </button>
         </PopoverContent>
       </Popover>
     </div>
-    {action === 'edit' && <EditWorkspaceDialog
+    {(action === 'group' || action === 'rename') && <EditWorkspaceDialog
+      key={action} mode={action}
       open onOpenChange={(open) => { if (!open) setAction(null); }}
       workspaceId={workspace.id} currentName={workspace.name}
     />}

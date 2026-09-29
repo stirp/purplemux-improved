@@ -4,7 +4,7 @@
 
 ## 정렬 규칙
 
-1. Phase 오름차순 (Phase 1 → Phase 4)
+1. Phase 오름차순 (Phase 1 → Phase 5)
 2. 같은 Phase 안에서는 Priority 오름차순 (P0 → P3)
 3. PRD에 없는 공통/인프라 feature는 Phase 0, P0으로 맨 위에 배치 (현재 해당 없음)
 
@@ -24,3 +24,4 @@
 | codex-timeline-integration | Phase 3 | P0 | ✅ | ✅ 2/true | 2026-05-01 22:11 |
 | agent-work-state-observer | Phase 4 | P0 | ✅ | ✅ 1/true | 2026-05-01 22:29 |
 | codex-data-aggregation | Phase 4 | P0 | ✅ | ✅ 1/true | 2026-05-01 23:00 |
+| workspace-menu-order | Phase 5 | P2 | ✅ | ✅ 1/true（全量 lint 既有失败见报告） | 2026-09-28 |

@@ -24,6 +24,7 @@ interface IEditWorkspaceDialogProps {
   onOpenChange: (open: boolean) => void;
   workspaceId: string;
   currentName: string;
+  mode?: 'edit' | 'rename' | 'group';
 }
 
 const EditWorkspaceDialog = ({
@@ -31,10 +32,12 @@ const EditWorkspaceDialog = ({
   onOpenChange,
   workspaceId,
   currentName,
+  mode = 'edit',
 }: IEditWorkspaceDialogProps) => {
   const t = useTranslations('workspace');
   const ts = useTranslations('sidebar');
   const tc = useTranslations('common');
+  const tt = useTranslations('terminal');
   const groups = useWorkspaceStore((s) => s.groups);
   const isChildWorkspace = useWorkspaceStore(
     (s) => !!s.workspaces.find((w) => w.id === workspaceId)?.parentWorkspaceId,
@@ -56,8 +59,8 @@ const EditWorkspaceDialog = ({
   }
 
   const trimmed = name.trim();
-  const nameChanged = trimmed.length > 0 && trimmed !== currentName;
-  const groupChanged = !isChildWorkspace && selectedGroupId !== currentGroupId;
+  const nameChanged = mode !== 'group' && trimmed.length > 0 && trimmed !== currentName;
+  const groupChanged = mode !== 'rename' && !isChildWorkspace && selectedGroupId !== currentGroupId;
   const canSubmit = (nameChanged || groupChanged) && !isSubmitting;
 
   const handleSubmit = useCallback(async () => {
@@ -92,18 +95,18 @@ const EditWorkspaceDialog = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>{t('editTitle')}</DialogTitle>
+          <DialogTitle>{mode === 'rename' ? tt('rename') : mode === 'group' ? ts('moveToGroup') : t('editTitle')}</DialogTitle>
         </DialogHeader>
 
-        <Input
+        {mode !== 'group' && <Input
           placeholder={t('namePlaceholder')}
           value={name}
           onChange={(e) => setName(e.target.value)}
           onKeyDown={handleKeyDown}
           autoFocus
-        />
+        />}
 
-        {!isChildWorkspace && groups.length > 0 && (
+        {mode !== 'rename' && !isChildWorkspace && (groups.length > 0 || mode === 'group') && (
           <Select
             items={groupItems}
             value={selectedGroupId ?? UNGROUPED_VALUE}
