@@ -1,11 +1,12 @@
 import path from 'path';
+import { buildClaudeLauncherCommand } from '@/lib/providers/claude/launcher';
 import {
   detectActiveSession as detectClaudeSession,
   isClaudeRunning,
   watchSessionsDir,
 } from '@/lib/providers/claude/session-detection';
 import {
-  buildClaudeFlags,
+  buildClaudeArgs,
   buildResumeCommand as buildClaudeResumeCommand,
   isValidSessionId as isValidClaudeSessionId,
 } from '@/lib/claude-command';
@@ -85,8 +86,8 @@ export const claudeProvider: IAgentProvider = {
   buildResumeCommand: (sessionId, { workspaceId }) =>
     buildClaudeResumeCommand(sessionId, workspaceId),
   buildLaunchCommand: async ({ workspaceId }) => {
-    const flags = await buildClaudeFlags(workspaceId);
-    return `claude ${flags}`;
+    const args = await buildClaudeArgs(workspaceId);
+    return buildClaudeLauncherCommand(args);
   },
 
   readSessionId: (tab) => readField(tab, 'sessionId'),

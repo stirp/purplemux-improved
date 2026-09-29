@@ -5,7 +5,7 @@ import type { TEditorPreset } from '@/lib/editor-url';
 import type { TToastPosition } from '@/lib/toast-position';
 import type { TGitAskProvider, TNoteSummaryProvider } from '@/lib/config-store';
 import { DEFAULT_LINE_HEIGHT } from '@/lib/terminal-line-height';
-import type { TAgentEnvironment } from '@/lib/agent-environment';
+import { AGENT_ENVIRONMENT_KEYS, type TAgentEnvironment } from '@/lib/agent-environment';
 
 export type { TToastPosition } from '@/lib/toast-position';
 export type { TGitAskProvider, TNoteSummaryProvider } from '@/lib/config-store';
@@ -19,6 +19,7 @@ export const DEFAULT_TOAST_POSITION_MOBILE: TToastPosition = 'top-center';
 
 export interface IConfigInitialData {
   codexEnvironment?: TAgentEnvironment;
+  claudeEnvironment?: TAgentEnvironment;
   appTheme?: string | null;
   terminalTheme?: { light: string; dark: string } | null;
   customCSS?: string;
@@ -50,6 +51,9 @@ export interface IConfigInitialData {
 }
 
 interface IConfigState {
+  claudeEnvironment: TAgentEnvironment;
+  setClaudeEnvironment: (env: TAgentEnvironment) => Promise<void>;
+  setAgentEnvironment: (provider: TGitAskProvider, env: TAgentEnvironment) => Promise<void>;
   codexEnvironment: TAgentEnvironment;
   setCodexEnvironment: (env: TAgentEnvironment) => Promise<void>;
   dangerouslySkipPermissions: boolean;
@@ -166,18 +170,25 @@ const useConfigStore = create<IConfigState>((set, get) => ({
     set({ branchNameProvider: provider, branchNamePrompt: prompt });
   },
   codexEnvironment: {},
-  setCodexEnvironment: async (env) => {
+  claudeEnvironment: {},
+  setCodexEnvironment: (env) => get().setAgentEnvironment('codex', env),
+  setClaudeEnvironment: (env) => get().setAgentEnvironment('claude', env),
+  setAgentEnvironment: async (provider, env) => {
+    const key = AGENT_ENVIRONMENT_KEYS[provider];
+    const current = get()[key];
+    if (Object.keys(current).length === Object.keys(env).length &&
+        Object.entries(env).every(([name, value]) => Object.hasOwn(current, name) && current[name] === value)) return;
     const response = await fetch('/api/config', {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ codexEnvironment: env }),
+      body: JSON.stringify({ [key]: env }),
     });
     if (!response.ok) {
       const data = await response.json().catch(() => null);
       const detail = typeof data?.error === 'string' ? `: ${data.error}` : '';
       throw new Error(`HTTP ${response.status}${detail}`);
     }
-    set({ codexEnvironment: env });
+    set({ [key]: env });
   },
   dangerouslySkipPermissions: initialConfig.dangerouslySkipPermissions,
   claudeShowTerminal: initialConfig.claudeShowTerminal,
@@ -209,6 +220,7 @@ const useConfigStore = create<IConfigState>((set, get) => ({
       commitMessagePrompt: data.commitMessagePrompt ?? GIT_GENERATION_PROMPTS.commitMessagePrompt.defaultPrompt,
       reviewDescriptionPrompt: data.reviewDescriptionPrompt ?? GIT_GENERATION_PROMPTS.reviewDescriptionPrompt.defaultPrompt,
       codexEnvironment: data.codexEnvironment ?? {},
+      claudeEnvironment: data.claudeEnvironment ?? {},
       dangerouslySkipPermissions: data.dangerouslySkipPermissions ?? false,
       claudeShowTerminal: data.claudeShowTerminal ?? true,
       gitAskProvider: data.gitAskProvider === 'codex' ? 'codex' : 'claude',

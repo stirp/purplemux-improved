@@ -59,6 +59,7 @@ App-wide settings. `authPassword` is scrypt-hashed (`scrypt:{salt}:{hash}`); del
 | `fontSize` | `small` / `normal` / `large` |
 | `notificationsEnabled` | System/web-push notification toggle |
 | `dangerouslySkipPermissions` | Pass `--dangerously-skip-permissions` to Claude |
+| `claudeEnvironment` / `codexEnvironment` | Independent environment overrides for newly launched/resumed agents and AI text calls; missing fields inherit the environment |
 | `editorUrl` / `editorPreset` | External editor (e.g. code-server, VS Code) |
 | `networkAccess` | `localhost` / `network` — server bind scope |
 | `systemResourcesEnabled` | CPU/memory stats display toggle |

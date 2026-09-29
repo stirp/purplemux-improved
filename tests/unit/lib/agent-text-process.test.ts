@@ -1,3 +1,4 @@
+vi.mock('@/lib/config-store', () => ({ getAgentEnvironment: async (provider: 'claude' | 'codex') => ({ AGENT_ONLY: provider, SHARED: provider, [`${provider.toUpperCase()}_ONLY_KEY`]: 'private' }) }));
 import { afterEach, expect, it, vi } from 'vitest';
 import fs from 'node:fs/promises';
 import { existsSync } from 'node:fs';

@@ -1,3 +1,4 @@
+vi.mock('@/lib/config-store', () => ({ getAgentEnvironment: async (provider: 'claude' | 'codex') => ({ AGENT_ONLY: provider, SHARED: provider, [`${provider.toUpperCase()}_ONLY_KEY`]: 'private' }) }));
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { EventEmitter } from 'node:events';
 const mocks = vi.hoisted(() => ({ exec: vi.fn(), spawn: vi.fn(), write: vi.fn(), end: vi.fn(), read: vi.fn(), unlink: vi.fn(), mkdtemp: vi.fn(), rm: vi.fn() }));
@@ -74,6 +75,7 @@ describe('single-response agent execution', () => {
       env: expect.objectContaining({ SHELL: '/usr/bin/fish', PATH: '/original/bin', HTTPS_PROXY: 'proxy' }),
     }));
     expect(mocks.end).toHaveBeenLastCalledWith(`instructions\n\n${input}`);
+    expect(mocks.spawn.mock.calls[0][2].env).not.toHaveProperty('CODEX_ONLY_KEY');
     expect(mocks.rm).toHaveBeenCalledOnce();
   });
   it('reports a failed shell fallback and still cleans the isolated directory', async () => {
@@ -111,4 +113,11 @@ describe('single-response agent execution', () => {
     expect(mocks.unlink).toHaveBeenCalledOnce();
     expect(mocks.read).not.toHaveBeenCalled();
   });
+});
+
+it.each(['claude', 'codex'] as const)('applies only %s configuration with explicit overrides taking priority', async (provider) => {
+  await callAgentText(provider, 'input', 'system', { environment: { SHARED: 'explicit' } });
+  const spawnEnv = mocks.exec.mock.calls[0][2].env;
+  expect(spawnEnv).toEqual(expect.objectContaining({ AGENT_ONLY: provider, SHARED: 'explicit', [`${provider.toUpperCase()}_ONLY_KEY`]: 'private' }));
+  expect(spawnEnv).not.toHaveProperty(provider === 'claude' ? 'CODEX_ONLY_KEY' : 'CLAUDE_ONLY_KEY');
 });

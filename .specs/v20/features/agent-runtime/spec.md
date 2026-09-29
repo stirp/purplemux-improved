@@ -7,7 +7,7 @@ complexity: Medium
 depends_on:
   - CLAUDE.md
 created: 2026-09-28
-updated: 2026-09-28
+updated: 2026-09-29
 assignee: ''
 ---
 
@@ -20,7 +20,7 @@ assignee: ''
 ## 主要功能
 
 - 改善嵌套 shell 中的 Claude 进程识别、preflight 和 TUI 就绪检测。
-- 设置页配置 Codex 启动环境变量，由 launcher 应用于新进程。
+- 设置页分别配置 Claude/Codex 环境变量，由对应 launcher 应用于新进程。
 - 启动阶段 unknown 状态恢复与前端输入 gating 对齐。
 - Codex review 子会话不覆盖根会话绑定；launcher 调整受支持的启动参数并禁用启动更新检查。
 - 安装 WebSocket hook 改善连接管理。
@@ -34,7 +34,7 @@ assignee: ''
 ## 验收标准
 
 - 嵌套 shell 下能识别 Claude；初始 unknown 状态正确收敛。
-- Codex 新进程获得环境变量，review 期间保留根会话绑定。
+- Claude/Codex 新启动与恢复进程分别获得各自配置，review 期间保留根会话绑定。
 
 ## 实现依据
 
@@ -70,3 +70,11 @@ assignee: ''
 | 日期 | 内容 | 状态 |
 | --- | --- | --- |
 | 2026-09-28 | 回补 fork 后累计功能；关联提交：`58cd8488`, `88367f86`, `636024b3`, `443d7c0b`, `4a7cc7ac`, `aa1899a1`, `4b42f164`, `d1f8b449` | DETAILED |
+
+## 2026-09-29 增量：按代理环境变量
+
+按[新增需求](../../requirements/per-agent-environment.md)扩展：Claude/Codex 独立编辑与持久化，启动、恢复和 AI 文本生成仅使用对应配置。保留旧 Codex 数据，变量保持字面量，不写入父进程环境或启动命令。
+
+实施与自动化验证见[按代理环境验证记录](../../result/verify-per-agent-environment.md)。
+
+Review 补充验收：嵌套 shell 与 Node 包装层下必须绑定真实 Claude PID；shell 回退时，保存的环境配置优先于 rc 初始化中的同名变量，且不占用标准输入、不暴露变量值到命令行。

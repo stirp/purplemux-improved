@@ -3,7 +3,7 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 vi.mock('@/lib/logger', () => ({ createLogger: () => ({ error: vi.fn(), info: vi.fn(), debug: vi.fn(), warn: vi.fn() }) }));
 
 const mocks = vi.hoisted(() => ({
-  getConfig: vi.fn(async () => ({} as { codexEnvironment?: Record<string, string> })),
+  getConfig: vi.fn(async () => ({} as { codexEnvironment?: Record<string, string>; claudeEnvironment?: Record<string, string> })),
   updateConfig: vi.fn(),
   buildArgs: vi.fn(async () => ['--test']),
 }));
@@ -24,33 +24,33 @@ beforeEach(() => {
   mocks.getConfig.mockResolvedValue({});
 });
 
-describe('Codex environment API', () => {
+describe.each(['codexEnvironment', 'claudeEnvironment'])('%s API', (field) => {
   it.each([{ HTTPS_PROXY: 'http://localhost:7890', EMPTY: '' }, {}])('persists overrides and supports clearing: %j', async (env) => {
     const res = response();
-    await configHandler({ method: 'PATCH', body: { codexEnvironment: env } } as NextApiRequest, res as unknown as NextApiResponse);
-    expect(mocks.updateConfig).toHaveBeenCalledWith({ codexEnvironment: env });
+    await configHandler({ method: 'PATCH', body: { [field]: env } } as NextApiRequest, res as unknown as NextApiResponse);
+    expect(mocks.updateConfig).toHaveBeenCalledWith({ [field]: env });
     expect(res.status).toHaveBeenCalledWith(200);
   });
 
   it.each([null, [], { NAME: 4 }, { 'BAD=NAME': 'value' }, { NAME: '\0' }])('rejects invalid configuration: %j', async (env) => {
     const res = response();
-    await configHandler({ method: 'PATCH', body: { codexEnvironment: env } } as NextApiRequest, res as unknown as NextApiResponse);
+    await configHandler({ method: 'PATCH', body: { [field]: env } } as NextApiRequest, res as unknown as NextApiResponse);
     expect(mocks.updateConfig).not.toHaveBeenCalled();
     expect(res.status).toHaveBeenCalledWith(400);
   });
 
   it('returns persisted configuration on reload', async () => {
     const env = { HTTPS_PROXY: 'proxy' };
-    mocks.getConfig.mockResolvedValue({ codexEnvironment: env });
+    mocks.getConfig.mockResolvedValue({ [field]: env });
     const res = response();
     await configHandler({ method: 'GET' } as NextApiRequest, res as unknown as NextApiResponse);
-    expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ codexEnvironment: env }));
+    expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ [field]: env }));
   });
 
   it('reads the latest environment on each launch or resume', async () => {
     const environments: Record<string, string>[] = [{ HTTPS_PROXY: 'proxy' }, {}];
     for (const env of environments) {
-      mocks.getConfig.mockResolvedValue({ codexEnvironment: env });
+      mocks.getConfig.mockResolvedValue({ codexEnvironment: env, claudeEnvironment: { CLAUDE_ONLY: 'value' } });
       const res = response();
       await launchHandler({ method: 'POST', body: { workspaceId: 'ws', resumeSessionId: 'session' } } as NextApiRequest, res as unknown as NextApiResponse);
       expect(res.json).toHaveBeenCalledWith({ args: ['--test'], env });

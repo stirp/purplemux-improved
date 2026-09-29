@@ -59,3 +59,7 @@ v20 覆盖 `52140216..3637a357` 的 fork 增量，共 48 个非合并提交，�
 ## 状态与后续维护
 
 [任务表](./task.md)区分源码存在、文档完成和运行验收；[验证记录](./result/verify-1.md)说明本次检查范围。后续新增 fork 功能需同步更新本清单、对应规格与覆盖表。
+
+## 按代理环境配置增量
+
+[独立环境变量需求](./requirements/per-agent-environment.md)扩展 agent-runtime，分别保存并应用 Claude/Codex 配置；实施与验证状态见任务表。

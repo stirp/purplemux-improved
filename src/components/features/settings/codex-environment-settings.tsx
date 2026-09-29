@@ -6,11 +6,12 @@ import { Label } from '@/components/ui/label';
 import useConfigStore from '@/hooks/use-config-store';
 import { formatAgentEnvironment, parseAgentEnvironment } from '@/lib/agent-environment';
 
-export default function CodexEnvironmentSettings() {
+export const AgentEnvironmentSettings = ({ provider }: { provider: 'claude' | 'codex' }) => {
+  const id = `${provider}-environment`;
   const t = useTranslations('settings.claude');
   const tc = useTranslations('common');
-  const environment = useConfigStore((state) => state.codexEnvironment);
-  const saveEnvironment = useConfigStore((state) => state.setCodexEnvironment);
+  const environment = useConfigStore((state) => state[`${provider}Environment`]);
+  const saveEnvironment = useConfigStore((state) => provider === 'codex' ? state.setCodexEnvironment : state.setClaudeEnvironment);
   const [draft, setDraft] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [invalid, setInvalid] = useState(false);
@@ -41,13 +42,13 @@ export default function CodexEnvironmentSettings() {
 
   return (
     <div className="space-y-3">
-      <Label htmlFor="codex-environment">{t('environmentTitle')}</Label>
-      <p id="codex-environment-description" className="text-sm text-muted-foreground">
-        {t('environmentDescription')}
+      <Label htmlFor={id}>{t('environmentTitle', { agent: provider === 'codex' ? 'Codex' : 'Claude' })}</Label>
+      <p id={`${id}-description`} className="text-sm text-muted-foreground">
+        {t('environmentDescription', { agent: provider === 'codex' ? 'Codex' : 'Claude' })}
       </p>
       <textarea
-        id="codex-environment"
-        aria-describedby={`codex-environment-description${invalid ? ' codex-environment-error' : ''}`}
+        id={id}
+        aria-describedby={`${id}-description${invalid ? ` ${id}-error` : ''}`}
         aria-invalid={invalid}
         className="min-h-32 w-full rounded-md border border-input bg-transparent px-3 py-2 font-mono text-sm"
         value={value}
@@ -58,10 +59,13 @@ export default function CodexEnvironmentSettings() {
         autoCorrect="off"
         disabled={saving}
       />
-      {invalid && <p id="codex-environment-error" role="alert" className="text-sm text-destructive">{t('environmentInvalid')}</p>}
+      {invalid && <p id={`${id}-error`} role="alert" className="text-sm text-destructive">{t('environmentInvalid')}</p>}
       <Button onClick={save} disabled={saving || value === saved}>
         {saving ? tc('loading') : tc('save')}
       </Button>
     </div>
   );
-}
+};
+
+const CodexEnvironmentSettings = () => <AgentEnvironmentSettings provider="codex" />;
+export default CodexEnvironmentSettings;

@@ -54,7 +54,7 @@ import SidebarItemsSettings from '@/components/features/settings/sidebar-items-s
 import TailscaleSettings from '@/components/features/settings/tailscale-settings';
 import BranchNameSettings from '@/components/features/settings/branch-name-settings';
 import GitGenerationPromptSettings from '@/components/features/settings/git-generation-prompt-settings';
-import CodexEnvironmentSettings from '@/components/features/settings/codex-environment-settings';
+import { AgentEnvironmentSettings } from '@/components/features/settings/codex-environment-settings';
 import BrowserStorageSettings from '@/components/features/settings/browser-storage-settings';
 
 type TSettingsTab = 'general' | 'appearance' | 'terminal' | 'notification' | 'editor' | 'claude' | 'auth' | 'tailscale' | 'quick-prompts' | 'sidebar-items' | 'system';
@@ -680,7 +680,8 @@ const AgentTab = () => {
 
   return (
     <div className="space-y-4">
-      <CodexEnvironmentSettings />
+      <AgentEnvironmentSettings provider="claude" />
+      <AgentEnvironmentSettings provider="codex" />
       <BranchNameSettings />
       <GitGenerationPromptSettings promptKey="commitMessagePrompt" />
       <GitGenerationPromptSettings promptKey="reviewDescriptionPrompt" />

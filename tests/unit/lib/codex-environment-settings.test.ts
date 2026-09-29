@@ -8,7 +8,7 @@ vi.mock('@/hooks/use-config-store', () => ({
 }));
 vi.mock('next-intl', () => ({ useTranslations: () => (key: string) => key }));
 
-import CodexEnvironmentSettings from '@/components/features/settings/codex-environment-settings';
+import CodexEnvironmentSettings, { AgentEnvironmentSettings } from '@/components/features/settings/codex-environment-settings';
 
 beforeEach(() => {
   mocks.state = { setCodexEnvironment: vi.fn() };
@@ -28,4 +28,15 @@ describe('Codex environment settings rendering', () => {
     const html = renderToStaticMarkup(createElement(CodexEnvironmentSettings));
     expect(html).toContain('HTTPS_PROXY=http://localhost:7890</textarea>');
   });
+});
+
+it('renders independent accessible editors with the matching values', () => {
+  mocks.state.claudeEnvironment = { TOKEN: 'claude-value' };
+  mocks.state.codexEnvironment = { TOKEN: 'codex-value' };
+  for (const provider of ['claude', 'codex'] as const) {
+    const html = renderToStaticMarkup(createElement(AgentEnvironmentSettings, { provider }));
+    expect(html).toContain(`id="${provider}-environment"`);
+    expect(html).toContain(`TOKEN=${provider}-value</textarea>`);
+    expect(html).not.toContain(provider === 'claude' ? 'codex-value' : 'claude-value');
+  }
 });
