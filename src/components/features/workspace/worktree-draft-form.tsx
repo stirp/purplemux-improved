@@ -31,7 +31,9 @@ export default function WorktreeDraftForm({ workspaceId, item, info, disabled, o
   const provider = providerOverride && providerOverride.repository === selected?.repository
     ? providerOverride.provider : defaultProvider;
   const blocked = info.blockers.some((reason) => !['ignored', 'sessions', 'sharedWorkspace'].includes(reason));
-  const targetBranch = target || (info.targetRef?.replace(/^refs\/heads\//, '').replace(/^refs\/remotes\/[^/]+\//, '') ?? '');
+  const defaultTarget = info.targetRef === `refs/heads/${info.branch}` ? ''
+    : info.targetRef?.replace(/^refs\/heads\//, '').replace(/^refs\/remotes\/[^/]+\//, '') ?? '';
+  const targetBranch = target || defaultTarget;
   const generate = async () => {
     if (generation.current || disabled || busy || !selected || !targetBranch) return;
     const controller = new AbortController();

@@ -17,7 +17,7 @@ import { measureDirectory, previewWorktreeCleanup, cleanupWorktrees } from '@/li
 import { filterWorktrees } from '@/lib/worktree-filter';
 import { inspectWorktreeSync, synchronizeWorktree, fetchWorktreeRemotes } from '@/lib/worktree-sync';
 import { readWorktreeStatus } from '@/lib/worktree-git';
-import { readWorktreeMetadata, updateWorktreeMetadata } from '@/lib/worktree-metadata';
+import { readWorktreeMetadata, updateWorktreeMetadata, worktreeMetadataKey } from '@/lib/worktree-metadata';
 
 const exec = promisify(execFile);
 let root: string;
@@ -208,6 +208,44 @@ describe('sync and delivery Git operations', () => {
 
 
 describe('delivery defaults and draft generation', () => {
+  it('defaults to the selected worktree branch without saving metadata or allowing self synchronization', async () => {
+    const item = await snapshot();
+    const info = await inspectWorktreeSync(source, item);
+    expect(info).toMatchObject({ branch: 'task/one', targetRef: 'refs/heads/task/one', targetHead: item.head, ahead: 0, behind: 0 });
+    expect(info.branches).toContainEqual({ ref: 'refs/heads/task/one', name: 'task/one' });
+    expect(await readWorktreeMetadata(worktreeMetadataKey(item.repositoryId, item.directory, item.branch))).toEqual({});
+    for (const action of ['merge', 'rebase'] as const) {
+      await expect(synchronizeWorktree(source, item, action, info.targetRef!, info.targetHead!)).rejects.toMatchObject({ code: 'targetRequired' });
+    }
+    expect(await git(directory, 'rev-parse', 'HEAD')).toBe(item.head);
+  });
+  it('prioritizes explicit targets, saved targets, and creation baselines before the current branch', async () => {
+    const item = await snapshot();
+    const key = worktreeMetadataKey(item.repositoryId, item.directory, item.branch);
+    await git(repo, 'branch', 'release');
+    await updateWorktreeMetadata(key, { targetRef: 'refs/heads/release', baseRef: 'refs/heads/main' });
+    expect((await inspectWorktreeSync(source, item)).targetRef).toBe('refs/heads/release');
+    expect((await inspectWorktreeSync(source, item, 'refs/heads/main')).targetRef).toBe('refs/heads/main');
+    await updateWorktreeMetadata(key, { targetRef: 'refs/heads/missing' });
+    expect((await inspectWorktreeSync(source, item)).targetRef).toBe('refs/heads/main');
+    await updateWorktreeMetadata(key, { baseRef: 'refs/heads/missing-base' });
+    expect((await inspectWorktreeSync(source, item)).targetRef).toBe('refs/heads/task/one');
+    await expect(inspectWorktreeSync(source, item, 'refs/heads/missing')).rejects.toThrow();
+    expect((await inspectWorktreeSync(source, item, 'refs/heads/task/one')).ahead).toBe(0);
+  });
+  it('supports a repository with only its current local branch and no remote', async () => {
+    await git(repo, 'checkout', '--detach');
+    await git(repo, 'branch', '-d', 'main');
+    const info = await inspectWorktreeSync(source, await snapshot());
+    expect(info).toMatchObject({ targetRef: 'refs/heads/task/one', ahead: 0, behind: 0, remotes: [] });
+    expect(info.branches).toEqual([{ ref: 'refs/heads/task/one', name: 'task/one' }]);
+  });
+  it('does not invent a default target for a detached HEAD', async () => {
+    await git(directory, 'checkout', '--detach');
+    const info = await inspectWorktreeSync(source, await snapshot());
+    expect(info).toMatchObject({ branch: null, targetRef: null, targetHead: null, ahead: null, behind: null });
+    expect(info.blockers).toContain('detached');
+  });
   it('uses the saved PR/MR prompt while retaining code evidence and truncation instructions', async () => {
     await commit(directory, 'feature.txt', 'new feature');
     mocks.config.mockResolvedValue({ reviewDescriptionPrompt: 'Custom {{sourceBranch}} to {{targetBranch}} in {{locale}}.' });
@@ -232,12 +270,12 @@ describe('delivery defaults and draft generation', () => {
     directory = (await createGitWorktree(source, 0, 'task/remote', 'refs/remotes/origin/release')).directory;
     expect((await inspectWorktreeSync(source, await snapshot())).targetRef).toBe('refs/remotes/origin/release');
     await git(repo, 'update-ref', '-d', 'refs/remotes/origin/release');
-    expect((await inspectWorktreeSync(source, await snapshot())).targetRef).toBeNull();
+    expect((await inspectWorktreeSync(source, await snapshot())).targetRef).toBe('refs/heads/task/remote');
   });
-  it('does not guess a branch for a commit-based worktree', async () => {
+  it('defaults to its own branch for a worktree created from a commit', async () => {
     const head = await git(repo, 'rev-parse', 'HEAD');
     directory = (await createGitWorktree(source, 0, 'task/commit', head)).directory;
-    expect((await inspectWorktreeSync(source, await snapshot())).targetRef).toBeNull();
+    expect((await inspectWorktreeSync(source, await snapshot())).targetRef).toBe('refs/heads/task/commit');
   });
   it('generates from committed changes against the selected target and excludes dirty content', async () => {
     await commit(directory, 'feature.txt', 'new feature');
