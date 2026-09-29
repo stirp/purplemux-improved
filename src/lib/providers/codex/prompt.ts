@@ -29,6 +29,11 @@ so no environment setup is needed.
 ### Commands
 
 \`\`\`bash
+purplemux features                                  # offline guide to fork features
+purplemux worktree --help                            # create, inspect, sync and deliver worktrees
+purplemux queue --help                               # queued input and immediate answers
+purplemux session --help                             # history, entries and live status
+purplemux commit --help                              # inspect, generate and commit
 purplemux workspaces                                # list all workspaces
 purplemux tab list -w ${ws.id}                        # list tabs in this workspace
 purplemux tab create -w ${ws.id} [-n NAME] [-t TYPE]  # create a tab (type: terminal | claude-code | codex-cli | agent-sessions | web-browser | diff)

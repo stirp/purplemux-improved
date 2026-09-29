@@ -16,7 +16,7 @@ permalink: /docs/cli-reference/index.html
 | `purplemux-improved <subcommand>` | Talk to a running server's CLI HTTP API. |
 | `pmux ...` | Alias for `purplemux-improved ...`. |
 
-The dispatcher in `bin/purplemux.js` peels off the first argument: known subcommands route to `bin/cli.js`, anything else (or no argument) launches the server.
+The dispatcher in `bin/purplemux.js` routes known subcommands to `bin/cli.js`. No argument or `start` launches the server; unknown commands fail.
 
 ## Starting the server
 
@@ -44,7 +44,7 @@ If `8022` is already in use the server warns and binds to a random free port ins
 
 ## Subcommands
 
-All subcommands require a running server. They read the port from `~/.purplemux/port` and the auth token from `~/.purplemux/cli-token`, both written automatically at server startup.
+Operations require a running server; `help`, `features`, and command `--help` work offline. Requests read the port from `~/.purplemux/port` and the auth token from `~/.purplemux/cli-token`, both written automatically at server startup.
 
 | Command | Purpose |
 |---|---|
@@ -140,3 +140,78 @@ The CLI token grants full server access. Treat it like a password. Don't paste i
 - **[Ports & env vars](/purplemux-improved/docs/ports-env-vars/)** — `PMUX_PORT` / `PMUX_TOKEN` in the broader env surface.
 - **[Architecture](/purplemux-improved/docs/architecture/)** — what the CLI is actually talking to.
 - **[Troubleshooting](/purplemux-improved/docs/troubleshooting/)** — when the CLI says "is the server running?".
+
+## Fork feature commands
+
+Run `purplemux features` for the complete offline catalog, including required/optional fields and HTTP endpoints. `purplemux worktree --help`, `purplemux worktree create --help`, and `purplemux help commit create` provide scoped help. From an unpublished source checkout, substitute `node bin/purplemux.js` for `purplemux` to use the current code.
+
+| Group | Commands |
+| --- | --- |
+| `workspace` | `list`, `directories`, `create`, `update`, `reorder`, `delete` |
+| `group` | `create`, `update`, `reorder`, `delete` (list via `workspace list`) |
+| `worktree` | `source`, `list`, `create`, `generate-branch`, `adopt`, `remove` |
+| `worktree` | `measure`, `preview-cleanup`, `cleanup` |
+| `worktree` | `inspect-sync`, `fetch`, `merge`, `rebase`, `continue`, `abort` |
+| `worktree` | `save-review`, `refresh-review`, `push`, `generate-draft`, `create-draft` |
+| `commit` | `inspect`, `generate`, `create` |
+| `session` | `claude`, `codex`, `entries`, `claude-status`, `codex-status`, `delete` |
+| `queue` | `list`, `add`, `submit`, `answer`, `remove` |
+| `upload` | `file` |
+| `config` | `get`, `set` |
+| `codex` | `launch-args` |
+| `tab` | `rename` |
+
+### Arguments and output
+
+Use kebab-case flags (`--target-ref`) or camelCase JSON fields (`targetRef`). `-w`, `--workspace` and `--workspace-id` are aliases. Every flag takes a value, including booleans (`true`/`false`). Objects and arrays take JSON. `--data @request.json` reads a complete request object; `--data -` reads stdin. Explicit flags override JSON fields. Unknown fields/options fail before a request. Do not include `action`: the command determines it.
+
+GET fields become query parameters. Other commands use JSON bodies except IDs embedded in paths and queue `workspaceId`/`tabId`, which always use query parameters. Uploads send binary bodies. Requests reuse the existing CLI token authentication and server validation.
+
+Output is JSON. HTTP/argument errors and business failures (sync conflicts or partially failed cleanup) return a nonzero exit code. Business failures preserve the response JSON for inspection. Successful empty responses print `{"ok":true}`.
+
+### Examples
+
+```bash
+purplemux workspace directories --directory "/home/me/projects"
+purplemux workspace create --directory "/home/me/projects/app" --name "App"
+purplemux worktree source -w ws-EXAMPLE
+purplemux worktree generate-branch -w ws-EXAMPLE --title "Fix login"
+purplemux worktree create -w ws-EXAMPLE --name "Fix login" --branch "fix/login"
+purplemux worktree list -w ws-EXAMPLE > "worktrees.json"
+purplemux tab rename -w ws-EXAMPLE TAB_ID "Review"
+purplemux queue add -w ws-EXAMPLE --tab-id TAB_ID --id msg-1 --text "Run tests next"
+purplemux queue list -w ws-EXAMPLE --tab-id TAB_ID
+purplemux queue submit -w ws-EXAMPLE --tab-id TAB_ID
+purplemux upload file --file "./design.pdf" -w ws-EXAMPLE --tab-id TAB_ID
+purplemux session codex --cwd "/home/me/projects/app"
+purplemux session claude --tmux-session "TMUX_SESSION"
+purplemux config set --codex-environment '{"EXAMPLE_VARIABLE":"value"}'
+purplemux codex launch-args -w ws-EXAMPLE
+```
+
+Uploads accept nonempty files up to 50 MiB and return `{path,filename}`. Pass those objects in queue `attachments`. Queue messages require text or attachments. `queue answer` additionally requires `--agent-session-id`, obtained from `tab status`; stale session IDs are rejected.
+
+### Reviewed worktree and commit snapshots
+
+Worktree actions take `item: {repositoryId,directory,head,branch,confirmedIgnoredPaths?}`; cleanup takes `items: [item,...]`. Obtain `repositoryId` from `worktree list`'s `repositories[].id` and the remaining fields from the selected `worktrees[]`. Save the reviewed object as `{"item":{...}}` in `item.json`.
+
+```bash
+purplemux worktree inspect-sync -w ws-EXAMPLE --data @item.json --target-ref refs/remotes/origin/main
+purplemux worktree generate-draft -w ws-EXAMPLE --data @item.json --remote origin --target-branch main --locale en
+purplemux worktree preview-cleanup -w ws-EXAMPLE --data @cleanup.json
+purplemux commit inspect --session TMUX_SESSION
+purplemux commit generate --session TMUX_SESSION --locale en > "commit-preview.json"
+jq '{snapshot,message:{title,body}}' "commit-preview.json" > "commit.json"
+# Review the generated message and files before executing:
+purplemux commit create --session TMUX_SESSION --data @commit.json
+```
+
+`merge` and `rebase` require `targetRef` and `targetHead` from `inspect-sync`. Fetch first if fresh remote refs are needed. Re-read snapshots after HEAD changes, including conflicts, before `continue`/`abort`. `remove` takes flat snapshot fields rather than `item`, and preserves the branch unless `deleteBranch` is explicitly true. Cleanup retains ignored-file and active-session protection.
+
+`generate-draft` only generates title/body. `push` and `create-draft` perform remote writes using the server's Git/hosting CLI authentication. To publish the reviewed draft, add `title`/`body` to the item request and use `create-draft --remote origin --target-branch main --provider github` (or `gitlab`). The [Chinese CLI reference](/purplemux-improved/zh-CN/docs/cli-reference/#fork-新增能力) includes complete `jq` workflows for preparing these files.
+
+`--session` for commits is a tmux `sessionName` from `tab list`, not a tab ID or agent session ID. `workspace delete` deletes original records by default; `--delete-sessions false` retains them. `session delete` hides/removes history by default; `--delete-original true` also deletes original records. Removing a workspace does not remove its disk worktree or branch.
+
+`config set` supports `codexEnvironment`, `branchNameProvider`, `branchNamePrompt`, `commitMessagePrompt`, `reviewDescriptionPrompt`, `editorUrl`, and `editorPreset`. The environment map replaces existing settings and affects newly launched processes. `config get` and `codex launch-args` include configured environment values.
+
+Browser-only features such as automatic child-workspace hiding, touch dragging, message expansion, local storage cleanup, slash-menu presentation and terminal flow control remain UI/runtime behavior. `session entries` exposes underlying tool and plan events without reproducing the UI.

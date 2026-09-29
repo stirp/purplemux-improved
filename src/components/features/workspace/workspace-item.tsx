@@ -189,15 +189,11 @@ const WorkspaceItem = ({
         <ContextMenuSettingsButton className="absolute right-0 top-0 h-11 w-11" label={`${tc('settings')}: ${workspace.name}`} />
       </ContextMenuTrigger>
       <ContextMenuContent>
-        <ContextMenuItem onClick={() => setManagingWorktrees(true)}>
-          <GitBranch className="mr-2 h-3.5 w-3.5" />{tm('title')}
-        </ContextMenuItem>
         <ContextMenuItem onClick={() => setCreatingWorktree(true)}>
           <GitBranch className="mr-2 h-3.5 w-3.5" />{tw('create')}
         </ContextMenuItem>
-        <ContextMenuItem onClick={startEditing}>
-          <Pencil className="mr-2 h-3.5 w-3.5" />
-          {t('rename')}
+        <ContextMenuItem onClick={() => setManagingWorktrees(true)}>
+          <GitBranch className="mr-2 h-3.5 w-3.5" />{tm('title')}
         </ContextMenuItem>
         <ContextMenuSub>
           <ContextMenuSubTrigger disabled={!!workspace.parentWorkspaceId}>
@@ -231,6 +227,10 @@ const WorkspaceItem = ({
             )}
           </ContextMenuSubContent>
         </ContextMenuSub>
+        <ContextMenuItem onClick={startEditing}>
+          <Pencil className="mr-2 h-3.5 w-3.5" />
+          {t('rename')}
+        </ContextMenuItem>
         <ContextMenuSeparator />
         <ContextMenuItem
           className="text-ui-red focus:text-ui-red"

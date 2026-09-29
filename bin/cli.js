@@ -7,6 +7,7 @@
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
+const features = require('./feature-commands');
 
 const readFileOrNull = (file) => {
   try {
@@ -42,7 +43,7 @@ const api = async (method, path, data) => {
   };
   if (data !== undefined) opts.body = JSON.stringify(data);
   const resp = await fetch(url, opts);
-  const body = resp.headers.get('content-type')?.includes('json')
+  const body = resp.status !== 204 && resp.headers.get('content-type')?.includes('json')
     ? await resp.json()
     : null;
   if (!resp.ok) {
@@ -158,6 +159,22 @@ const cmdTabClose = async (args) => {
   if (resp.ok) process.stdout.write('ok\n');
 };
 
+const cmdTabRename = async (args) => {
+  if (args.length === 1 && ['--help', '-h'].includes(args[0])) {
+    process.stdout.write('purplemux tab rename -w WS TAB_ID NAME\nRename a tab in its current pane. An empty name restores its automatic title.\n');
+    return;
+  }
+  const rest = stripFlags(args, ['--workspace', '-w']);
+  if (rest.length !== 2) die('Usage: purplemux tab rename -w WS TAB_ID NAME');
+  const wsId = resolveWsForTab(args);
+  requireEnv();
+  const tabId = encodeURIComponent(rest[0]);
+  const { body: tab } = await api('GET', `/api/cli/tabs/${tabId}?workspaceId=${encodeURIComponent(wsId)}`);
+  if (!tab?.paneId) die('Tab pane not found');
+  const { body } = await api('PATCH', `/api/layout/pane/${encodeURIComponent(tab.paneId)}/tabs/${tabId}?workspace=${encodeURIComponent(wsId)}`, { name: rest[1] });
+  out(body);
+};
+
 const cmdTabBrowser = async (args) => {
   requireEnv();
   const sub = args[0];
@@ -234,6 +251,16 @@ const cmdApiGuide = async () => {
   });
   if (!resp.ok) die(`HTTP ${resp.status}`);
   process.stdout.write((await resp.text()) + '\n');
+  process.stdout.write('\n' + features.help());
+};
+
+const upload = async (endpoint, data, headers) => {
+  const resp = await fetch(`${BASE}${endpoint}`, {
+    method: 'POST', headers: { ...headers, 'X-Pmux-Token': TOKEN }, body: data,
+  });
+  const body = resp.headers.get('content-type')?.includes('json') ? await resp.json() : null;
+  if (!resp.ok) die(body?.error || `HTTP ${resp.status}`);
+  return body;
 };
 
 const flagValue = (args, name) => {
@@ -269,6 +296,7 @@ Commands:
   tab status -w WS TAB_ID                  Tab status
   tab result -w WS TAB_ID                  Capture tab pane content
   tab close -w WS TAB_ID                   Close a tab
+  tab rename -w WS TAB_ID NAME             Rename a tab (empty NAME restores automatic title)
   tab browser url -w WS TAB_ID             Current URL + title of a web-browser tab
   tab browser screenshot -w WS TAB_ID      Capture tab screenshot (PNG). Use -o FILE to save, --full for full page
                           [-o FILE] [--full]
@@ -278,11 +306,14 @@ Commands:
                           [--since MS] [--method M] [--url SUBSTR] [--status CODE] [--request ID]
   tab browser eval -w WS TAB_ID EXPR       Evaluate JS expression inside the tab; returns serialized value
   api-guide                                Print full HTTP API reference
+  features                                 Show all fork feature commands (offline)
+  ${features.groups.join(' | ')}
+                                           Run '<group> --help' for usage
   help                                     Show this usage
 
 Environment:
-  PMUX_PORT       Server port (required)
-  PMUX_TOKEN      CLI token (required)
+  PMUX_PORT       Server port (defaults to ~/.purplemux/port)
+  PMUX_TOKEN      CLI token (defaults to ~/.purplemux/cli-token)
 `);
 };
 
@@ -291,6 +322,12 @@ const main = async () => {
   const cmd = args[0];
   const sub = args[1];
   const rest = args.slice(2);
+
+  if (features.groups.includes(cmd)) return features.run(args, { api, requireEnv, out, upload });
+  if (cmd === 'features') return process.stdout.write(features.help());
+  if (cmd === 'help' && sub && features.groups.includes(sub)) {
+    return process.stdout.write(features.help([sub, ...rest].join(' ')));
+  }
 
   switch (cmd) {
     case 'workspaces':
@@ -303,6 +340,7 @@ const main = async () => {
         case 'status': return cmdTabStatus(rest);
         case 'result': return cmdTabResult(rest);
         case 'close': return cmdTabClose(rest);
+        case 'rename': return cmdTabRename(rest);
         case 'browser': return cmdTabBrowser(rest);
         default: die(`unknown tab command: ${sub || '(none)'}. Run 'purplemux-improved help' for usage.`);
       }
