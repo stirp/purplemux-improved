@@ -5,7 +5,7 @@ import vm from 'node:vm';
 import { execFileSync, spawn as spawnProcess } from 'node:child_process';
 import { describe, expect, it, vi } from 'vitest';
 import { isValidAgentEnvironment, MAX_AGENT_CONFIG_BYTES } from '@/lib/agent-environment';
-import { CLAUDE_LAUNCHER_SCRIPT, buildClaudeLauncherCommand } from '@/lib/providers/claude/launcher';
+import { CLAUDE_LAUNCHER_SCRIPT, CLAUDE_LAUNCHER_BOOTSTRAP, buildClaudeLauncherCommand } from '@/lib/providers/claude/launcher';
 import { buildClaudeLaunchCommand } from '@/lib/providers/claude/client';
 vi.mock('@/lib/config-store', () => ({ getDangerouslySkipPermissions: async () => true }));
 vi.mock('@/lib/hook-settings', () => ({ HOOK_SETTINGS_PATH: '/home/test dir/hooks.json' }));
@@ -135,7 +135,8 @@ describe('Claude environment launcher', () => {
     const output = execFileSync('/bin/sh', ['-c', `node() { printf '%s\\n' "$@"; }; ${command}`], { encoding: 'utf8' });
     const [flag, script, separator, ...args] = output.trim().split('\n');
     expect(flag).toBe('-e');
-    expect(script).toBe(CLAUDE_LAUNCHER_SCRIPT.trim().replace(/\n\s*/g, ' '));
+    expect(script).toBe(CLAUDE_LAUNCHER_BOOTSTRAP);
+    expect(command.length).toBeLessThan(512);
     expect(separator).toBe('--');
     expect(args).toEqual(['--resume', 'session', '--settings', '/tmp/hooks.json']);
   });
@@ -164,7 +165,7 @@ describe('Claude environment launcher', () => {
       const flags = fish ? ['--no-config'] : shell.endsWith('/zsh') ? ['-f'] : shell.endsWith('/bash') ? ['--noprofile', '--norc'] : [];
       for (const [command, args] of cases) {
         const output = execFileSync(shell, [...flags, '-c', capture + command], { encoding: 'utf8' });
-        expect(JSON.parse(output)).toEqual(['-e', CLAUDE_LAUNCHER_SCRIPT.trim().replace(/\n\s*/g, ' '), '--', ...args]);
+        expect(JSON.parse(output)).toEqual(['-e', CLAUDE_LAUNCHER_BOOTSTRAP, '--', ...args]);
       }
     },
   );

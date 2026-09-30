@@ -3,6 +3,7 @@ import path from 'path';
 import os from 'os';
 import { createLogger } from '@/lib/logger';
 import { STATUSLINE_SCRIPT_PATH, STATUSLINE_SCRIPT_CONTENT } from '@/lib/statusline-script';
+import { CLAUDE_LAUNCHER_FILENAME, CLAUDE_LAUNCHER_SCRIPT } from '@/lib/providers/claude/launcher';
 
 const log = createLogger('hooks');
 const codexLog = createLogger('codex-hook');
@@ -105,6 +106,7 @@ export interface IEnsureHookSettingsResult {
 
 export const ensureHookSettings = async (port: number): Promise<IEnsureHookSettingsResult> => {
   await fs.mkdir(BASE_DIR, { recursive: true });
+  await writeManagedScript(path.join(BASE_DIR, CLAUDE_LAUNCHER_FILENAME), CLAUDE_LAUNCHER_SCRIPT, 0o600);
 
   await fs.writeFile(PORT_FILE, String(port), { mode: 0o600 });
 
