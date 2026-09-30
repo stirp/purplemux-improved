@@ -130,6 +130,12 @@ try {
 const quoteShellArgument = (value: string): string =>
   "'" + value.replace(/['\\]/g, (character) => character === "'" ? "'\\''" : "'\\\\'") + "'";
 
+// Keep terminal input short: the server installs the full launcher at startup.
+// Loading from node -e also preserves process.argv.slice(1) in the launcher.
+export const CLAUDE_LAUNCHER_FILENAME = 'claude-launcher.cjs';
+export const CLAUDE_LAUNCHER_BOOTSTRAP =
+  `require(require('node:path').join(require('node:os').homedir(), '.purplemux', '${CLAUDE_LAUNCHER_FILENAME}'))`;
+
 export const buildClaudeLauncherCommand = (args: string[]): string =>
-  ['node', '-e', CLAUDE_LAUNCHER_SCRIPT.trim().replace(/\n\s*/g, ' '), '--', ...args]
+  ['node', '-e', CLAUDE_LAUNCHER_BOOTSTRAP, '--', ...args]
     .map(quoteShellArgument).join(' ');
