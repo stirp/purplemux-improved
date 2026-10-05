@@ -478,7 +478,7 @@ const Sidebar = () => {
   return (
     <div className="relative flex shrink-0">
       <div
-        className="flex shrink-0 flex-col overflow-hidden border-r border-sidebar-border bg-sidebar"
+        className="region-typography-sidebar flex shrink-0 flex-col overflow-hidden border-r border-sidebar-border bg-sidebar"
         suppressHydrationWarning
         style={{
           width: isLoading ? 'var(--initial-sb-w, 200px)' : (collapsed ? 0 : width),

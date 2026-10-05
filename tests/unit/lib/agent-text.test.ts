@@ -35,6 +35,15 @@ beforeEach(() => {
 });
 
 describe('single-response agent execution', () => {
+  it('preserves a typed Claude execution timeout through cleanup', async () => {
+    mocks.exec.mockImplementationOnce((_command, _args, _options, callback) => {
+      queueMicrotask(() => callback(Object.assign(new Error('killed'), { killed: true, signal: 'SIGTERM' }), '', ''));
+      return { stdin: { end: mocks.end } };
+    });
+    const { AgentTextTimeoutError } = await import('@/lib/agent-text');
+    await expect(callAgentText('claude', 'input', 'instructions', { textOnly: true })).rejects.toBeInstanceOf(AgentTextTimeoutError);
+    expect(mocks.rm).toHaveBeenCalledOnce();
+  });
   it('preserves existing Claude summary calls and sends prompts on stdin', async () => {
     expect(await callAgentText('claude', 'data', 'instructions')).toBe('answer');
     expect(mocks.exec).toHaveBeenCalledWith('claude', ['-p'], expect.objectContaining({ timeout: 120000 }), expect.any(Function));

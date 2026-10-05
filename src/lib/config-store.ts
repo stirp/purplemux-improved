@@ -1,9 +1,11 @@
+import type { TRegionTypography } from '@/lib/region-typography';
 import fs from 'fs/promises';
 import { watchFile, unwatchFile, type StatWatcher, type Stats } from 'fs';
 import path from 'path';
 import os from 'os';
 import crypto from 'crypto';
 import { broadcastSync } from '@/lib/sync-server';
+import { toPublicConfig } from '@/lib/public-config';
 import { createLogger } from '@/lib/logger';
 import type { TNetworkAccess } from '@/lib/network-access';
 import type { TEditorPreset } from '@/lib/editor-url';
@@ -22,6 +24,7 @@ export interface IConfigData {
   appTheme?: string;
   terminalTheme?: { light: string; dark: string };
   customCSS?: string;
+  regionTypography?: TRegionTypography;
   dangerouslySkipPermissions?: boolean;
   claudeShowTerminal?: boolean;
   codexEnvironment?: TAgentEnvironment;
@@ -111,7 +114,7 @@ export const writeConfig = async (data: IConfigData): Promise<void> => {
   const contentKey = JSON.stringify(rest);
   if (g.__ptConfigContentCache === contentKey) return;
 
-  data.updatedAt = new Date().toISOString();
+  data.updatedAt = new Date(Math.max(Date.now(), (Date.parse(data.updatedAt) || 0) + 1)).toISOString();
   const serialized = JSON.stringify(data, null, 2);
   if (Buffer.byteLength(serialized, 'utf8') > MAX_AGENT_CONFIG_BYTES) throw configSizeError();
   const tmpFile = CONFIG_FILE + '.tmp';
@@ -125,7 +128,7 @@ export const writeConfig = async (data: IConfigData): Promise<void> => {
 
   g.__ptConfigContentCache = contentKey;
   g.__ptAgentConfigCache = undefined;
-  broadcastSync({ type: 'config' });
+  broadcastSync({ type: 'config', config: toPublicConfig(data) });
 };
 
 const SCRYPT_KEYLEN = 64;
@@ -204,11 +207,12 @@ export const getAgentEnvironment = async (provider: TAgentProvider): Promise<TAg
   return { ...env };
 };
 
-export const updateConfig = async (updates: Partial<Omit<IConfigData, 'updatedAt'>>): Promise<void> =>
+export const updateConfig = async (updates: Partial<Omit<IConfigData, 'updatedAt'>>): Promise<IConfigData> =>
   withLock(async () => {
     const data = (await readConfig()) ?? emptyConfig();
     Object.assign(data, updates);
     await writeConfig(data);
+    return data;
   });
 
 export const needsSetup = async (): Promise<boolean> => {

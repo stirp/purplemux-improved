@@ -312,5 +312,31 @@
     "evidenceHint": "Code diffs and commit evidence are attached automatically. JSON output validation, tool restrictions, and PR/MR truncation notices remain enforced. Save to apply the template to the next generation.",
     "invalid": "Enter a non-empty prompt of at most 10000 characters, using only the variables shown above with complete double braces.",
     "reset": "Restore default"
+  },
+  "typography": {
+    "title": "區域字體",
+    "description": "分別設定各區域的字體、字號和字色。留空使用原有預設值，點擊套用後儲存並同步到所有連線的用戶端。",
+    "fontHelp": "填寫目前檢視裝置已安裝的字體名稱，多個字體用逗號分隔（不加引號）。未安裝的字體使用瀏覽器回退字體。終端機字色覆蓋預設前景色，保留 ANSI 彩色輸出。",
+    "fontFamily": "字體名稱",
+    "fontPlaceholder": "例如：JetBrains Mono, Microsoft JhengHei, monospace",
+    "fontSize": "字號（px）",
+    "color": "字色（#RRGGBB）",
+    "default": "預設",
+    "reset": "恢復預設",
+    "resetAll": "全部恢復預設",
+    "cancel": "放棄修改",
+    "apply": "套用",
+    "saving": "儲存中…",
+    "applied": "區域字體設定已套用。",
+    "failed": "儲存字體設定失敗，請重試。",
+    "invalid": "請使用逗號分隔的字體名稱、8–40 px 的字號，以及 #aabbcc 格式的六位十六進位顏色。",
+    "preview": "字體預覽 Aa Bb 0123",
+    "regions": {
+      "sidebar": "側邊欄",
+      "tabs": "分頁列",
+      "messages": "工作階段訊息",
+      "input": "訊息輸入框",
+      "terminal": "終端機（含 Agent 終端機）"
+    }
   }
 }

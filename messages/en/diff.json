@@ -62,7 +62,11 @@
       "invalidGeneration": "The generated message is invalid. Please try again.",
       "commitFailed": "Commit failed. Review the Git error below; resolve identity, signing, or hook issues before retrying.",
       "indexUpdateFailed": "The commit was created, but the index could not be updated. Inspect git status in the terminal; do not repeat this commit.",
-      "commitHookWarning": "The commit was created, but Git reported an error afterward. Check the repository hooks; do not repeat this commit."
+      "commitHookWarning": "The commit was created, but Git reported an error afterward. Check the repository hooks; do not repeat this commit.",
+      "generateTimeout": "AI generation timed out. Your existing message is preserved. Please try generating again or edit it manually.",
+      "requestTimeout": "The request timed out. Please close and reopen this dialog to try again.",
+      "requestFailed": "The request failed or returned an invalid response. Please try again.",
+      "commitUnknown": "The commit result could not be confirmed. Check git log and git status in the terminal before trying again."
     }
   }
 }

@@ -414,7 +414,7 @@ const WebInputBar = ({
     <>
       <div
         className={cn(
-          'relative grid',
+          'region-typography-input relative grid',
           visible ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]',
         )}
       >

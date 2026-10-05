@@ -5,17 +5,8 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { copyToClipboard } from '@/lib/clipboard';
+import { requestCommit } from '@/lib/git-commit-request';
 import type { ICommitPreview, ICommitResult, IGeneratedCommit } from '@/types/git-commit';
-
-const requestCommit = async <T,>(session: string, action: string, payload: object = {}, signal?: AbortSignal): Promise<T> => {
-  const response = await fetch('/api/git/commit', {
-    method: 'POST', headers: { 'Content-Type': 'application/json' }, signal,
-    body: JSON.stringify({ session, action, ...payload }),
-  });
-  const data = await response.json();
-  if (!response.ok) throw Object.assign(new Error(data.error), { code: data.code });
-  return data;
-};
 
 export default function GitCommitDialog({ sessionName, onClose, onCommitted }: {
   sessionName: string; onClose: () => void; onCommitted: () => void;
@@ -39,7 +30,7 @@ export default function GitCommitDialog({ sessionName, onClose, onCommitted }: {
   }, []);
   const failureText = (error: unknown) => {
     const failure = error as Error & { code?: string };
-    return failure.code ? `${t(`errors.${failure.code}`)}${failure.code === 'commitFailed' ? `\n${failure.message}` : ''}` : failure.message;
+    return failure.code && t.has(`errors.${failure.code}`) ? `${t(`errors.${failure.code}`)}${failure.code === 'commitFailed' ? `\n${failure.message}` : ''}` : failure.message;
   };
 
   useEffect(() => {
@@ -55,7 +46,7 @@ export default function GitCommitDialog({ sessionName, onClose, onCommitted }: {
   const generate = async () => {
     if (pending.current || busy) return;
     pending.current = true;
-    setBusy('generate'); setError(null); setNotice(''); setReplaceConfirm(false); setPreview(null);
+    setBusy('generate'); setError(null); setNotice(''); setReplaceConfirm(false);
     try {
       const data = await requestCommit<IGeneratedCommit>(sessionName, 'generate', { locale });
       if (mounted.current) { setPreview(data); setTitle(data.title); setBody(data.body); setTruncated(data.truncated); }
@@ -73,7 +64,7 @@ export default function GitCommitDialog({ sessionName, onClose, onCommitted }: {
     } catch (error) {
       if (mounted.current) {
         setError(error as Error);
-        if (['changed', 'noChanges', 'operation', 'conflicts', 'detached'].includes((error as { code?: string }).code ?? '')) setPreview(null);
+        if (['changed', 'noChanges', 'operation', 'conflicts', 'detached', 'commitUnknown'].includes((error as { code?: string }).code ?? '')) setPreview(null);
       }
     } finally { pending.current = false; if (mounted.current) setBusy(null); }
   };

@@ -1,5 +1,6 @@
+import { applyTerminalTheme, DEFAULT_TERMINAL_FONT_FAMILY } from '@/lib/terminal-appearance';
 import { useEffect, useRef, useCallback, useState } from "react";
-import { Terminal } from "@xterm/xterm";
+import { Terminal, type ITheme } from "@xterm/xterm";
 import { FitAddon } from "@xterm/addon-fit";
 
 import { WebLinksAddon } from "@xterm/addon-web-links";
@@ -7,7 +8,6 @@ import { Unicode11Addon } from "@xterm/addon-unicode11";
 import { ClipboardAddon, type IClipboardProvider } from "@xterm/addon-clipboard";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
-import type { ITerminalThemeColors } from "@/lib/terminal-themes";
 import { createMultilineUrlLinkProvider } from "@/lib/multiline-url-link-provider";
 import { copyToClipboard } from "@/lib/clipboard";
 import { DEFAULT_LINE_HEIGHT } from "@/lib/terminal-line-height";
@@ -15,8 +15,9 @@ import isElectron from "@/hooks/use-is-electron";
 import { TerminalWriteQueue, type TTerminalWriteCallback } from '@/lib/terminal-write-queue';
 
 interface IUseTerminalOptions {
-  theme?: ITerminalThemeColors;
+  theme?: ITheme;
   fontSize?: number;
+  fontFamily?: string;
   lineHeight?: number;
   onInput?: (data: string) => void;
   onResize?: (cols: number, rows: number) => void;
@@ -45,9 +46,6 @@ const openExternalUrl = (uri: string) => {
   }
 };
 
-const FONT_FAMILY =
-  "'MesloLGLDZ', 'Apple SD Gothic Neo', 'Pretendard', 'Menlo', 'Monaco', 'Courier New', monospace";
-
 let fontLoadPromise: Promise<void> | null = null;
 const loadFonts = () => {
   fontLoadPromise ??= (async () => {
@@ -71,7 +69,7 @@ const loadFonts = () => {
   return fontLoadPromise;
 };
 
-const useTerminal = ({ theme, fontSize = DEFAULT_FONT_SIZE, lineHeight = DEFAULT_LINE_HEIGHT, onInput, onResize, onTitleChange, onWriteParsed, customKeyEventHandler }: IUseTerminalOptions = {}) => {
+const useTerminal = ({ theme, fontSize = DEFAULT_FONT_SIZE, fontFamily = DEFAULT_TERMINAL_FONT_FAMILY, lineHeight = DEFAULT_LINE_HEIGHT, onInput, onResize, onTitleChange, onWriteParsed, customKeyEventHandler }: IUseTerminalOptions = {}) => {
   const [containerNode, setContainerNode] = useState<HTMLDivElement | null>(null);
   const terminalRef = useCallback((node: HTMLDivElement | null) => {
     setContainerNode(node);
@@ -82,11 +80,11 @@ const useTerminal = ({ theme, fontSize = DEFAULT_FONT_SIZE, lineHeight = DEFAULT
   const [isReady, setIsReady] = useState(false);
   const t = useTranslations('terminal');
 
-  const callbacksRef = useRef({ theme, fontSize, lineHeight, onInput, onResize, onTitleChange, onWriteParsed, customKeyEventHandler, t });
+  const callbacksRef = useRef({ theme, fontFamily, fontSize, lineHeight, onInput, onResize, onTitleChange, onWriteParsed, customKeyEventHandler, t });
 
   useEffect(() => {
-    callbacksRef.current = { theme, fontSize, lineHeight, onInput, onResize, onTitleChange, onWriteParsed, customKeyEventHandler, t };
-  }, [theme, fontSize, lineHeight, onInput, onResize, onTitleChange, onWriteParsed, customKeyEventHandler, t]);
+    callbacksRef.current = { theme, fontFamily, fontSize, lineHeight, onInput, onResize, onTitleChange, onWriteParsed, customKeyEventHandler, t };
+  }, [theme, fontFamily, fontSize, lineHeight, onInput, onResize, onTitleChange, onWriteParsed, customKeyEventHandler, t]);
 
   const write = useCallback((data: Uint8Array, callback?: TTerminalWriteCallback) => {
     const queue = writeQueueRef.current;
@@ -149,7 +147,7 @@ const useTerminal = ({ theme, fontSize = DEFAULT_FONT_SIZE, lineHeight = DEFAULT
       if (disposed) return;
 
       const terminal = new Terminal({
-        fontFamily: FONT_FAMILY,
+        fontFamily: callbacksRef.current.fontFamily,
         fontWeight: "400",
         fontWeightBold: "700",
         fontSize: callbacksRef.current.fontSize,
@@ -309,19 +307,28 @@ const useTerminal = ({ theme, fontSize = DEFAULT_FONT_SIZE, lineHeight = DEFAULT
   }, [containerNode]);
 
   useEffect(() => {
-    if (terminalInstance.current && theme) {
-      terminalInstance.current.options.theme = theme;
-    }
-  }, [theme]);
+    const terminal = terminalInstance.current;
+    if (terminal) applyTerminalTheme(terminal, theme);
+  }, [theme, isReady]);
 
   useEffect(() => {
     const terminal = terminalInstance.current;
     if (!terminal || !fontSize || !lineHeight) return;
+    terminal.options.fontFamily = fontFamily;
     terminal.options.fontSize = fontSize;
     terminal.options.lineHeight = lineHeight;
     fitAddonRef.current?.fit();
     callbacksRef.current.onResize?.(terminal.cols, terminal.rows);
-  }, [fontSize, lineHeight]);
+    // Refit once a custom font has loaded, and ignore stale font selections.
+    let cancelled = false;
+    document.fonts.load(`${fontSize}px ${fontFamily}`).then(() => {
+      if (cancelled || terminalInstance.current !== terminal) return;
+      terminal.refresh(0, terminal.rows - 1);
+      fitAddonRef.current?.fit();
+      callbacksRef.current.onResize?.(terminal.cols, terminal.rows);
+    }).catch(() => {});
+    return () => { cancelled = true; };
+  }, [fontFamily, fontSize, lineHeight, isReady]);
 
   return { terminalRef, write, clear, reset, fit, focus, focusAtBottom, isReady, getBufferText };
 };

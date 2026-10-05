@@ -1,5 +1,6 @@
 import { WebSocket } from 'ws';
 import { createLogger } from '@/lib/logger';
+import type { TPublicConfig } from '@/lib/public-config';
 
 const log = createLogger('sync');
 
@@ -24,7 +25,7 @@ export interface ISystemToastEvent {
 type TSyncEvent =
   | { type: 'workspace' }
   | { type: 'layout'; workspaceId: string }
-  | { type: 'config' }
+  | { type: 'config'; config: TPublicConfig }
   | ISystemToastEvent;
 
 const g = globalThis as unknown as {

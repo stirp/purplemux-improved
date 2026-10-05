@@ -5,9 +5,10 @@ import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 const mocks = vi.hoisted(() => ({ agent: vi.fn(), config: vi.fn() }));
-vi.mock('@/lib/agent-text', () => ({ callAgentText: mocks.agent }));
+vi.mock('@/lib/agent-text', async (original) => ({ ...await original<typeof import('@/lib/agent-text')>(), callAgentText: mocks.agent }));
 vi.mock('@/lib/config-store', () => ({ getConfig: mocks.config }));
 import { commitWorkingChanges, generateCommitMessage, inspectCommit } from '@/lib/git-commit';
+import { AgentTextTimeoutError } from '@/lib/agent-text';
 
 const exec = promisify(execFile);
 let directory: string;
@@ -32,6 +33,15 @@ beforeEach(async () => {
 afterEach(async () => { await fs.rm(directory, { recursive: true, force: true }); });
 
 describe('AI commit messages and adopting working tree changes', () => {
+  it('classifies AI timeout without changing HEAD or staging', async () => {
+    await fs.writeFile(path.join(directory, 'file.txt'), 'changed');
+    const head = await git('rev-parse', 'HEAD');
+    const index = await fs.readFile(path.join(directory, '.git', 'index'));
+    mocks.agent.mockRejectedValue(new AgentTextTimeoutError());
+    await expect(generateCommitMessage(directory, 'en')).rejects.toMatchObject({ code: 'generateTimeout', status: 504 });
+    expect(await git('rev-parse', 'HEAD')).toBe(head);
+    expect(await fs.readFile(path.join(directory, '.git', 'index'))).toEqual(index);
+  });
   it('uses the latest saved commit prompt with rendered variables and preserves fixed output requirements', async () => {
     await stage('file.txt', 'one');
     mocks.config.mockResolvedValue({ commitMessagePrompt: 'Custom {{branch}} in {{locale}}: use conventional commits.' });

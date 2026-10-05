@@ -312,5 +312,31 @@
     "evidenceHint": "Code diffs and commit evidence are attached automatically. JSON output validation, tool restrictions, and PR/MR truncation notices remain enforced. Save to apply the template to the next generation.",
     "invalid": "Enter a non-empty prompt of at most 10000 characters, using only the variables shown above with complete double braces.",
     "reset": "Restore default"
+  },
+  "typography": {
+    "title": "Region typography",
+    "description": "Set fonts, sizes and text colors independently for each region. Blank fields use the existing defaults. Apply to save changes for all connected clients.",
+    "fontHelp": "Enter fonts installed on the viewing device, separated by commas (without quotes). Unavailable fonts use browser fallbacks. Terminal colors override the default foreground; ANSI colors remain unchanged.",
+    "fontFamily": "Font family",
+    "fontPlaceholder": "e.g. JetBrains Mono, Microsoft YaHei, monospace",
+    "fontSize": "Font size (px)",
+    "color": "Text color (#RRGGBB)",
+    "default": "Default",
+    "reset": "Restore default",
+    "resetAll": "Restore all defaults",
+    "cancel": "Discard changes",
+    "apply": "Apply",
+    "saving": "Saving…",
+    "applied": "Typography settings applied.",
+    "failed": "Could not save typography settings. Please retry.",
+    "invalid": "Use font names separated by commas, a size from 8 to 40 px, and a six-digit hex color such as #aabbcc.",
+    "preview": "Preview Aa Bb 0123 · 字体预览",
+    "regions": {
+      "sidebar": "Sidebar",
+      "tabs": "Tab bars",
+      "messages": "Session messages",
+      "input": "Message input",
+      "terminal": "Terminal (including agent terminals)"
+    }
   }
 }

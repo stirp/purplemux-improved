@@ -1,3 +1,4 @@
+import { isValidRegionTypography, regionTypographyEqual, type TRegionTypography } from '@/lib/region-typography';
 import { DEFAULT_BRANCH_NAME_PROMPT } from '@/lib/branch-name-prompt';
 import { GIT_GENERATION_PROMPTS, type TGitGenerationPromptKey } from '@/lib/git-generation-prompts';
 import { create } from 'zustand';
@@ -18,11 +19,13 @@ export const DEFAULT_TOAST_POSITION_DESKTOP: TToastPosition = 'top-right';
 export const DEFAULT_TOAST_POSITION_MOBILE: TToastPosition = 'top-center';
 
 export interface IConfigInitialData {
+  updatedAt?: string;
   codexEnvironment?: TAgentEnvironment;
   claudeEnvironment?: TAgentEnvironment;
   appTheme?: string | null;
   terminalTheme?: { light: string; dark: string } | null;
   customCSS?: string;
+  regionTypography?: TRegionTypography;
   dangerouslySkipPermissions?: boolean;
   claudeShowTerminal?: boolean;
   gitAskProvider?: TGitAskProvider;
@@ -51,6 +54,8 @@ export interface IConfigInitialData {
 }
 
 interface IConfigState {
+  appTheme: string | null;
+  terminalTheme: { light: string; dark: string } | null;
   claudeEnvironment: TAgentEnvironment;
   setClaudeEnvironment: (env: TAgentEnvironment) => Promise<void>;
   setAgentEnvironment: (provider: TGitAskProvider, env: TAgentEnvironment) => Promise<void>;
@@ -76,6 +81,9 @@ interface IConfigState {
   hasAuthPassword: boolean;
   locale: string;
   customCSS: string;
+  regionTypography: TRegionTypography;
+  setRegionTypography: (settings: TRegionTypography) => Promise<void>;
+  syncConfig: () => Promise<void>;
   fontSize: string;
   lineHeight: string;
   lineHeightCustom: number;
@@ -123,6 +131,7 @@ const initialConfig = {
   hasAuthPassword: false,
   locale: 'en',
   customCSS: '',
+  regionTypography: {} as TRegionTypography,
   fontSize: 'normal',
   lineHeight: 'normal',
   lineHeightCustom: DEFAULT_LINE_HEIGHT,
@@ -143,7 +152,12 @@ const saveConfig = (updates: Record<string, unknown>) => {
   });
 };
 
+let configSync: Promise<void> | null = null;
+let configUpdatedAt = '';
+
 const useConfigStore = create<IConfigState>((set, get) => ({
+  appTheme: null,
+  terminalTheme: null,
   commitMessagePrompt: GIT_GENERATION_PROMPTS.commitMessagePrompt.defaultPrompt,
   reviewDescriptionPrompt: GIT_GENERATION_PROMPTS.reviewDescriptionPrompt.defaultPrompt,
   setGitGenerationPrompt: async (key, prompt) => {
@@ -204,6 +218,7 @@ const useConfigStore = create<IConfigState>((set, get) => ({
   hasAuthPassword: initialConfig.hasAuthPassword,
   locale: initialConfig.locale,
   customCSS: initialConfig.customCSS,
+  regionTypography: initialConfig.regionTypography,
   fontSize: initialConfig.fontSize,
   lineHeight: initialConfig.lineHeight,
   lineHeightCustom: initialConfig.lineHeightCustom,
@@ -214,7 +229,12 @@ const useConfigStore = create<IConfigState>((set, get) => ({
   bindHostIsLocal: initialConfig.bindHostIsLocal,
 
   hydrate: (data) => {
+    if (data.updatedAt && configUpdatedAt && data.updatedAt <= configUpdatedAt) return;
+    configUpdatedAt = data.updatedAt ?? '';
+
     set({
+      appTheme: data.appTheme ?? null,
+      terminalTheme: data.terminalTheme ?? null,
       branchNameProvider: data.branchNameProvider === 'codex' ? 'codex' : 'claude',
       branchNamePrompt: data.branchNamePrompt ?? DEFAULT_BRANCH_NAME_PROMPT,
       commitMessagePrompt: data.commitMessagePrompt ?? GIT_GENERATION_PROMPTS.commitMessagePrompt.defaultPrompt,
@@ -235,14 +255,15 @@ const useConfigStore = create<IConfigState>((set, get) => ({
       hasAuthPassword: data.hasAuthPassword ?? false,
       locale: data.locale ?? 'en',
       customCSS: data.customCSS ?? '',
+      regionTypography: isValidRegionTypography(data.regionTypography) ? data.regionTypography : {},
       fontSize: data.fontSize ?? 'normal',
       lineHeight: data.lineHeight ?? 'normal',
       lineHeightCustom: data.lineHeightCustom ?? DEFAULT_LINE_HEIGHT,
       terminalKeyBar: data.terminalKeyBar ?? 'auto',
       systemResourcesEnabled: data.systemResourcesEnabled ?? false,
       networkAccess: data.networkAccess ?? 'all',
-      hostEnvLocked: data.hostEnvLocked ?? false,
-      bindHostIsLocal: data.bindHostIsLocal ?? false,
+      hostEnvLocked: data.hostEnvLocked ?? get().hostEnvLocked,
+      bindHostIsLocal: data.bindHostIsLocal ?? get().bindHostIsLocal,
     });
   },
 
@@ -318,6 +339,33 @@ const useConfigStore = create<IConfigState>((set, get) => ({
     if (typeof window !== 'undefined' && (window as unknown as Record<string, unknown>).electronAPI) {
       (window as unknown as { electronAPI: { setLocale: (l: string) => void } }).electronAPI.setLocale(locale);
     }
+  },
+
+  syncConfig: () => {
+    if (configSync) return configSync;
+    configSync = Promise.resolve().then(async () => {
+      try {
+        const response = await fetch('/api/config');
+        if (response.ok) get().hydrate(await response.json());
+      } catch {
+        // Keep the current configuration while offline.
+      } finally {
+        configSync = null;
+      }
+    });
+    return configSync;
+  },
+
+  setRegionTypography: async (regionTypography) => {
+    if (regionTypographyEqual(regionTypography, get().regionTypography)) return;
+    const response = await fetch('/api/config', {
+      method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ regionTypography }),
+    });
+    const data = await response.json().catch(() => null);
+    if (!response.ok) throw new Error(data?.error ?? `HTTP ${response.status}`);
+    if (data?.config) get().hydrate(data.config);
+    else await get().syncConfig();
   },
 
   setCustomCSS: (css) => {

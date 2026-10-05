@@ -129,7 +129,7 @@ const PaneTabBar = ({
 
   if (error) {
     return (
-      <div className="flex h-[36px] shrink-0 items-center gap-2 bg-background px-3">
+      <div className="region-typography-tabs flex min-h-[36px] shrink-0 items-center gap-2 bg-background px-3">
         <AlertTriangle className="h-3.5 w-3.5 text-ui-amber" />
         <span className="text-xs text-muted-foreground">{error}</span>
         <Button
@@ -146,7 +146,7 @@ const PaneTabBar = ({
 
   if (isLoading) {
     return (
-      <div className="flex h-[36px] shrink-0 items-center gap-1.5 bg-background px-2">
+      <div className="region-typography-tabs flex min-h-[36px] shrink-0 items-center gap-1.5 bg-background px-2">
         {[1, 2, 3].map((i) => (
           <div key={i} className="h-4 w-16 animate-pulse rounded bg-muted" />
         ))}
@@ -157,7 +157,7 @@ const PaneTabBar = ({
   return (
     <div
       className={cn(
-        'flex h-[36px] shrink-0 items-stretch border-b border-border transition-colors',
+        'region-typography-tabs flex min-h-[36px] shrink-0 items-stretch py-1 border-b border-border transition-colors',
         isDragOverFromOther ? 'bg-accent-color/10' : 'bg-background',
       )}
       onDragEnter={handleTabBarDragEnter}

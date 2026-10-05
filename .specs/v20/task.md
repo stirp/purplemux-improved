@@ -1,5 +1,7 @@
 # v20 任务进度
 
+2026-10-05：[AI 生成超时兼容](./requirements/ai-git-generation-timeout.md)已实现；6 文件 52 项测试、完整 TypeScript、改动文件 ESLint、Next.js 和服务端构建通过；浏览器/实际网关验收未执行。详见[验证记录](./result/verify-ai-git-generation-timeout.md)。
+
 v20 是现有 fork 功能回补规格。下表的实现状态来自当前源码检查，不代表本次执行了构建或功能测试。
 
 | feature | phase | priority | build | verify | updated |
@@ -53,3 +55,24 @@ v20 是现有 fork 功能回补规格。下表的实现状态来自当前源码�
 - [x] Review 4–10：配置根值与大小防护、共享校验、文本调用缓存、专属键隔离断言、显式字段映射及无变化保存跳过。
 
 - [x] 2026-09-30：fd 3/4 完整性握手与超时、扫描深度/数量/并发限制、Fish 能力探测、配置读写大小对齐及文件元数据缓存失效；全量测试的两项无关失败已记录。
+
+## 区域字体设置（2026-10-03）
+
+| feature | phase | build | verify | updated |
+| --- | --- | --- | --- | --- |
+| [region-typography](./features/region-typography/spec.md) | 新增功能；规格回补完成 | 代码已实现；Next.js 构建通过；完整打包未执行 | 25 项相关测试、完整类型检查及改动文件 lint 通过；实机待验收 | 2026-10-03 |
+
+- [需求](./requirements/region-typography.md)
+- [实施记录](./result/build-region-typography.md)
+- [验证记录与检查边界](./result/verify-region-typography.md)
+- 根目录 [AGENTS.md](../../AGENTS.md)新增强制按 spec 开发的顺序、状态和证据规则。
+
+### 区域字体 Review 修复
+
+2026-10-03：RT-10 至 RT-17 对应修复已实现；5 个相关文件共 38 项测试、完整类型检查、改动文件 lint 和 Next.js 构建通过；真实浏览器视觉验收待执行。
+
+### 区域字体架构复审（2026-10-05）
+
+RT-18 至 RT-23 已实现。11 个相关测试文件共 84 项通过；完整 TypeScript、改动文件 ESLint、Next.js 构建和服务端 tsup 构建通过。
+store 保持扁平结构，配置改为安全快照同步，区域改为 CSS 变量，终端恢复 props 驱动。
+真实浏览器视觉及跨设备验收未执行，详见最新验证记录。

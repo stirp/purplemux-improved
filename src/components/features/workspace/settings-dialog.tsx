@@ -1,3 +1,4 @@
+import RegionTypographySettings from '@/components/features/settings/region-typography-settings';
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
@@ -345,6 +346,7 @@ const AppearanceTab = () => {
 
   return (
     <div className="space-y-4">
+      <RegionTypographySettings />
       <div>
         <p className="text-sm font-medium">{t('customCSS')}</p>
         <p className="text-sm text-muted-foreground">{t('customCSSDescription')}</p>

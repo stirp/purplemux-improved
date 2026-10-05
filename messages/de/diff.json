@@ -62,7 +62,11 @@
       "invalidGeneration": "The generated message is invalid. Please try again.",
       "commitFailed": "Commit failed. Review the Git error below; resolve identity, signing, or hook issues before retrying.",
       "indexUpdateFailed": "The commit was created, but the index could not be updated. Inspect git status in the terminal; do not repeat this commit.",
-      "commitHookWarning": "The commit was created, but Git reported an error afterward. Check the repository hooks; do not repeat this commit."
+      "commitHookWarning": "The commit was created, but Git reported an error afterward. Check the repository hooks; do not repeat this commit.",
+      "generateTimeout": "Die KI-Generierung hat das Zeitlimit überschritten. Die vorhandene Nachricht bleibt erhalten. Erneut generieren oder manuell bearbeiten.",
+      "requestTimeout": "Zeitlimit überschritten. Dialog schließen und erneut öffnen.",
+      "requestFailed": "Anfrage fehlgeschlagen oder ungültige Antwort. Bitte erneut versuchen.",
+      "commitUnknown": "Commit-Ergebnis unklar. Vor einem erneuten Versuch git log und git status im Terminal prüfen."
     }
   }
 }

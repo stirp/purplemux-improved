@@ -62,7 +62,11 @@
       "invalidGeneration": "生成的提交信息格式无效，请重试。",
       "commitFailed": "提交失败。请查看下方 Git 错误，处理身份、签名或 hooks 问题后重试。",
       "indexUpdateFailed": "提交已创建，但暂存区更新失败。请在终端检查 git status，不要重复提交。",
-      "commitHookWarning": "提交已创建，但 Git 随后报告错误。请检查仓库 hooks，不要重复提交。"
+      "commitHookWarning": "提交已创建，但 Git 随后报告错误。请检查仓库 hooks，不要重复提交。",
+      "generateTimeout": "AI 生成超时，已有提交信息已保留。请重新生成，或手动编辑后提交。",
+      "requestTimeout": "请求超时，请关闭并重新打开弹窗后重试。",
+      "requestFailed": "请求失败或响应格式异常，请重试。",
+      "commitUnknown": "无法确认提交结果。请先在终端检查 git log 和 git status，再决定是否重试。"
     }
   }
 }

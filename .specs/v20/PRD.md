@@ -1,5 +1,7 @@
 # v20 需求整理：Fork 后累计新增功能
 
+2026-10-05 增量：[AI 提交信息生成超时兼容](./requirements/ai-git-generation-timeout.md)，补充网关错误解析、有限等待、草稿保留与提交结果不确定时的恢复约束。
+
 ## 来源与版本范围
 
 - [原始需求与基线](./requirements/fork-enhancements.md)
@@ -63,3 +65,13 @@ v20 覆盖 `52140216..3637a357` 的 fork 增量，共 48 个非合并提交，�
 ## 按代理环境配置增量
 
 [独立环境变量需求](./requirements/per-agent-environment.md)扩展 agent-runtime，分别保存并应用 Claude/Codex 配置；实施与验证状态见任务表。
+
+## 区域字体设置增量
+
+[区域字体需求](./requirements/region-typography.md)新增设置 → 外观中的五区域字体、字号与字色调整。
+[功能规格](./features/region-typography/spec.md)记录范围、交互、接口和验收条件。
+此项为 2026-10-03 新增需求，不计入历史提交回补范围；自动化与实机状态见任务表及验证记录。
+
+区域字体 Review 增量补充 RT-10 至 RT-17：重绘、颜色编辑一致性、保存去重、同步竞态、错误反馈、样式生命周期及标签栏行高。
+
+2026-10-05 架构复审补充 RT-18 至 RT-23：完整配置快照广播、通用 hydrate 同步、组件区域 CSS 变量和显式终端 props；替换区域专用同步状态机。

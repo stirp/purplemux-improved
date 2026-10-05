@@ -1,3 +1,4 @@
+import { resolveTerminalTypography } from '@/lib/terminal-appearance';
 import { useState, useRef, useCallback, useEffect, useMemo, memo } from 'react';
 import { useTranslations } from 'next-intl';
 import { Group, Panel, Separator, type GroupImperativeHandle } from 'react-resizable-panels';
@@ -140,6 +141,7 @@ const PaneContainer = memo(({ paneId, paneNumber }: IPaneContainerProps) => {
 
   const { theme: terminalTheme } = useTerminalTheme();
   const configFontSize = useConfigStore((s) => s.fontSize);
+  const terminalTypography = useConfigStore((s) => s.regionTypography.terminal);
   const configLineHeight = useConfigStore((s) => s.lineHeight);
   const configLineHeightCustom = useConfigStore((s) => s.lineHeightCustom);
   const keyBarMode = useConfigStore((s) => s.terminalKeyBar);
@@ -437,8 +439,7 @@ const PaneContainer = memo(({ paneId, paneNumber }: IPaneContainerProps) => {
 
   const { terminalRef, write, clear, reset, fit, focus, focusAtBottom, isReady, getBufferText } = useTerminal({
     onWriteParsed: () => nativeCommandEventsRef.current?.onParsed(),
-    theme: terminalTheme.colors,
-    fontSize: (TERMINAL_FONT_SIZES[configFontSize] ?? TERMINAL_FONT_SIZES.normal)[isAgentPanel ? 'claudeCode' : 'normal'],
+    ...resolveTerminalTypography({ theme: terminalTheme.colors, fontSize: (TERMINAL_FONT_SIZES[configFontSize] ?? TERMINAL_FONT_SIZES.normal)[isAgentPanel ? 'claudeCode' : 'normal'] }, terminalTypography),
     lineHeight: resolveLineHeight(configLineHeight, configLineHeightCustom),
     onInput: (data) => {
       wsActionsRef.current.sendStdin(applyArmedModifier(data));

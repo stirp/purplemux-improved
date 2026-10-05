@@ -1,3 +1,5 @@
+import { isValidRegionTypography } from '@/lib/region-typography';
+import { toPublicConfig } from '@/lib/public-config';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { getConfig, updateConfig, hashPassword, generateSecret } from '@/lib/config-store';
 import type { IConfigData } from '@/lib/config-store';
@@ -12,7 +14,7 @@ import { isValidGitGenerationPrompt } from '@/lib/git-generation-prompts';
 
 const ALLOWED_FIELDS: (keyof Omit<IConfigData, 'updatedAt' | 'authSecret'>)[] = [
   'codexEnvironment', 'claudeEnvironment', 'branchNameProvider', 'branchNamePrompt', 'commitMessagePrompt', 'reviewDescriptionPrompt',
-  'appTheme', 'terminalTheme', 'customCSS', 'dangerouslySkipPermissions', 'claudeShowTerminal', 'gitAskProvider', 'noteSummaryProvider', 'editorUrl', 'editorPreset', 'authPassword', 'notificationsEnabled', 'toastOnCompleteEnabled', 'toastDuration', 'toastPositionDesktop', 'toastPositionMobile', 'locale', 'fontSize', 'lineHeight', 'lineHeightCustom', 'terminalKeyBar', 'systemResourcesEnabled', 'networkAccess',
+  'appTheme', 'terminalTheme', 'customCSS', 'regionTypography', 'dangerouslySkipPermissions', 'claudeShowTerminal', 'gitAskProvider', 'noteSummaryProvider', 'editorUrl', 'editorPreset', 'authPassword', 'notificationsEnabled', 'toastOnCompleteEnabled', 'toastDuration', 'toastPositionDesktop', 'toastPositionMobile', 'locale', 'fontSize', 'lineHeight', 'lineHeightCustom', 'terminalKeyBar', 'systemResourcesEnabled', 'networkAccess',
 ];
 
 const NETWORK_ACCESS_VALUES = ['localhost', 'tailscale', 'all'] as const;
@@ -35,11 +37,10 @@ const isValidToastDuration = (value: unknown): value is number =>
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   if (req.method === 'GET') {
-    const { authPassword, authSecret: _, ...safe } = await getConfig();
+    const safe = toPublicConfig(await getConfig());
     const hostEnvLocked = typeof process.env.HOST === 'string' && process.env.HOST.trim().length > 0;
     return res.status(200).json({
       ...safe,
-      hasAuthPassword: !!authPassword,
       hostEnvLocked,
       bindHostIsLocal: isBoundToLocalhostOnly(),
     });
@@ -56,6 +57,10 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       if (key in updates && !isValidAgentEnvironment(updates[key])) {
         return res.status(400).json({ error: `${key} must contain valid environment variable names and string values without null bytes.` });
       }
+    }
+
+    if ('regionTypography' in updates && !isValidRegionTypography(updates.regionTypography)) {
+      return res.status(400).json({ error: 'Invalid region typography settings.' });
     }
 
     if ('editorUrl' in updates && !isValidEditorUrl(updates.editorUrl)) {
@@ -102,26 +107,27 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       return res.status(400).json({ error: 'toastDuration must be a number between 1000 and 60000.' });
     }
 
+    let saved: IConfigData;
     if (typeof updates.authPassword === 'string' && updates.authPassword) {
       const hashed = await hashPassword(updates.authPassword as string);
       const secret = generateSecret();
       updates.authPassword = hashed;
       updates.authSecret = secret;
 
-      await updateConfig(updates as Partial<Omit<IConfigData, 'updatedAt'>>);
+      saved = await updateConfig(updates as Partial<Omit<IConfigData, 'updatedAt'>>);
 
       process.env.AUTH_PASSWORD = hashed;
       process.env.NEXTAUTH_SECRET = secret;
     } else {
       delete updates.authPassword;
-      await updateConfig(updates as Partial<Omit<IConfigData, 'updatedAt'>>);
+      saved = await updateConfig(updates as Partial<Omit<IConfigData, 'updatedAt'>>);
     }
 
     if ('networkAccess' in updates) {
       updateAccessFromConfig(updates.networkAccess as TNetworkAccess);
     }
 
-    return res.status(200).json({ ok: true });
+    return res.status(200).json({ ok: true, ...(saved ? { config: toPublicConfig(saved) } : {}) });
   }
 
   res.setHeader('Allow', 'GET, PATCH');

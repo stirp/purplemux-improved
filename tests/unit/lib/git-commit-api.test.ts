@@ -19,6 +19,13 @@ const call = async (body: object, method = 'POST') => {
 beforeEach(() => { vi.resetAllMocks(); mocks.exists.mockResolvedValue(true); mocks.cwd.mockResolvedValue('/repo'); });
 
 describe('Git commit API', () => {
+  it('returns a structured generation timeout without committing', async () => {
+    mocks.generate.mockRejectedValue(new GitCommitError('generateTimeout', 504));
+    const res = await call({ action: 'generate', locale: 'en' });
+    expect(res.status).toHaveBeenCalledWith(504);
+    expect(res.json).toHaveBeenCalledWith({ error: 'generateTimeout', code: 'generateTimeout' });
+    expect(mocks.commit).not.toHaveBeenCalled();
+  });
   it('keeps inspection and generation separate from committing', async () => {
     mocks.inspect.mockResolvedValue({ snapshot, files: ['file.txt'] });
     expect((await call({ action: 'inspect' })).json).toHaveBeenCalledWith({ snapshot, files: ['file.txt'] });
