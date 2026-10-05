@@ -30,9 +30,7 @@ const useThemeIdStore = create<IThemeIdState>((set) => ({
 }));
 
 export const initTerminalTheme = (theme?: { light: string; dark: string }) => {
-  if (theme) {
-    useThemeIdStore.getState().hydrate(theme);
-  }
+  useThemeIdStore.getState().hydrate(theme ?? {});
 };
 
 const useTerminalTheme = () => {

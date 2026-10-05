@@ -12,6 +12,10 @@ interface IAgentTextOptions {
   textOnly?: boolean;
 }
 
+export class AgentTextTimeoutError extends Error {
+  constructor() { super('AI text generation timed out after 120000 ms'); }
+}
+
 const runClaudeShell = (shell: string, command: string, prompt: string, cwd: string | undefined, env: NodeJS.ProcessEnv): Promise<string> =>
   new Promise((resolve, reject) => {
     const processGroup = process.platform !== 'win32';
@@ -31,7 +35,7 @@ const runClaudeShell = (shell: string, command: string, prompt: string, cwd: str
         }
       }
     };
-    const timer = setTimeout(() => terminate(new Error('Claude login shell timed out after 120000 ms')), 120_000);
+    const timer = setTimeout(() => terminate(new AgentTextTimeoutError()), 120_000);
     const collect = (chunk: Buffer, stdout: boolean) => {
       if (failure) return;
       outputBytes += chunk.length;
@@ -67,7 +71,7 @@ const callClaudeCli = async (input: string, systemPrompt: string, options: IAgen
       timeout: 120_000, maxBuffer: 1024 * 1024, cwd: directory ?? options.cwd,
       env: { ...process.env, PATH: resolvedPath, ...options.environment },
     }, (error, stdout) => {
-      if (error) reject(error);
+      if (error) reject(error.killed && error.signal === 'SIGTERM' ? new AgentTextTimeoutError() : error);
       else resolve(stdout.trim());
     });
     child.stdin?.end(prompt);
@@ -86,6 +90,7 @@ const callClaudeCli = async (input: string, systemPrompt: string, options: IAgen
       });
     }
   } catch (error) {
+    if (error instanceof AgentTextTimeoutError) throw error;
     throw new Error(`claude -p failed: ${error instanceof Error ? error.message : String(error)}`);
   } finally {
     if (directory) await fs.rm(directory, { recursive: true, force: true });

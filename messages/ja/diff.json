@@ -62,7 +62,11 @@
       "invalidGeneration": "The generated message is invalid. Please try again.",
       "commitFailed": "Commit failed. Review the Git error below; resolve identity, signing, or hook issues before retrying.",
       "indexUpdateFailed": "The commit was created, but the index could not be updated. Inspect git status in the terminal; do not repeat this commit.",
-      "commitHookWarning": "The commit was created, but Git reported an error afterward. Check the repository hooks; do not repeat this commit."
+      "commitHookWarning": "The commit was created, but Git reported an error afterward. Check the repository hooks; do not repeat this commit.",
+      "generateTimeout": "AI 生成がタイムアウトしました。既存のメッセージは保持されています。再生成するか手動で編集してください。",
+      "requestTimeout": "リクエストがタイムアウトしました。ダイアログを閉じて開き直してください。",
+      "requestFailed": "リクエストに失敗したか、応答が無効です。再試行してください。",
+      "commitUnknown": "コミット結果を確認できません。再試行する前に端末で git log と git status を確認してください。"
     }
   }
 }

@@ -312,5 +312,31 @@
     "evidenceHint": "代码差异和提交证据由系统自动附带。JSON 结果校验、工具使用限制和 PR/MR 截断提示会保留。保存后，下次生成即生效。",
     "invalid": "请输入非空提示词，最多 10000 字符，只能使用上方列出的变量，变量需使用完整的双花括号。",
     "reset": "恢复默认"
+  },
+  "typography": {
+    "title": "区域字体",
+    "description": "分别设置各区域的字体、字号和字色。留空使用原有默认值，点击应用后保存并同步到所有连接的客户端。",
+    "fontHelp": "填写当前查看设备已安装的字体名称，多个字体用逗号分隔（不加引号）。未安装的字体使用浏览器回退字体。终端字色覆盖默认前景色，保留 ANSI 彩色输出。",
+    "fontFamily": "字体名称",
+    "fontPlaceholder": "例如：JetBrains Mono, Microsoft YaHei, monospace",
+    "fontSize": "字号（px）",
+    "color": "字色（#RRGGBB）",
+    "default": "默认",
+    "reset": "恢复默认",
+    "resetAll": "全部恢复默认",
+    "cancel": "放弃修改",
+    "apply": "应用",
+    "saving": "保存中…",
+    "applied": "区域字体设置已应用。",
+    "failed": "保存字体设置失败，请重试。",
+    "invalid": "请使用逗号分隔的字体名称、8–40 px 的字号，以及 #aabbcc 格式的六位十六进制颜色。",
+    "preview": "字体预览 Aa Bb 0123",
+    "regions": {
+      "sidebar": "侧边栏",
+      "tabs": "标签栏",
+      "messages": "会话消息",
+      "input": "消息输入框",
+      "terminal": "终端（含 Agent 终端）"
+    }
   }
 }

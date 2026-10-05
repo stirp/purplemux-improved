@@ -869,7 +869,7 @@ const TimelineView = ({
         role="log"
         aria-label={t('timelineAria')}
       >
-        <div ref={contentRef} className="mx-auto max-w-content">
+        <div ref={contentRef} className="region-typography-messages mx-auto max-w-content">
           {hasMore && !isLoadingMore && (
             <div className="flex justify-center py-2">
               <Button variant="ghost" size="sm" className="h-7 text-xs text-muted-foreground" onClick={triggerLoadMore}>

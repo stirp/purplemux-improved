@@ -62,7 +62,11 @@
       "invalidGeneration": "The generated message is invalid. Please try again.",
       "commitFailed": "Commit failed. Review the Git error below; resolve identity, signing, or hook issues before retrying.",
       "indexUpdateFailed": "The commit was created, but the index could not be updated. Inspect git status in the terminal; do not repeat this commit.",
-      "commitHookWarning": "The commit was created, but Git reported an error afterward. Check the repository hooks; do not repeat this commit."
+      "commitHookWarning": "The commit was created, but Git reported an error afterward. Check the repository hooks; do not repeat this commit.",
+      "generateTimeout": "A geração por IA excedeu o tempo limite. A mensagem existente foi preservada. Gere novamente ou edite manualmente.",
+      "requestTimeout": "A solicitação excedeu o tempo limite. Feche e reabra o diálogo.",
+      "requestFailed": "A solicitação falhou ou a resposta é inválida. Tente novamente.",
+      "commitUnknown": "Não foi possível confirmar o commit. Verifique git log e git status no terminal antes de tentar novamente."
     }
   }
 }

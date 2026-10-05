@@ -367,3 +367,29 @@ body {
   --font-heading: "PingFang TC", "Microsoft JhengHei", "Inter", "MesloLGLDZ", "Pretendard", system-ui, sans-serif;
 }
 
+
+/* Unset typography overrides return to the original Tailwind layer. */
+:where(.region-typography-sidebar, .region-typography-sidebar :not(svg, svg *)) {
+  font-family: var(--region-sidebar-font-family, revert-layer);
+  font-size: var(--region-sidebar-font-size, revert-layer);
+  color: var(--region-sidebar-color, revert-layer);
+  line-height: var(--region-sidebar-line-height, revert-layer);
+}
+:where(.region-typography-tabs, .region-typography-tabs :not(svg, svg *)) {
+  font-family: var(--region-tabs-font-family, revert-layer);
+  font-size: var(--region-tabs-font-size, revert-layer);
+  color: var(--region-tabs-color, revert-layer);
+  line-height: var(--region-tabs-line-height, revert-layer);
+}
+:where(.region-typography-messages, .region-typography-messages :not(svg, svg *)) {
+  font-family: var(--region-messages-font-family, revert-layer);
+  font-size: var(--region-messages-font-size, revert-layer);
+  color: var(--region-messages-color, revert-layer);
+  line-height: var(--region-messages-line-height, revert-layer);
+}
+:where(.region-typography-input, .region-typography-input :not(svg, svg *)) {
+  font-family: var(--region-input-font-family, revert-layer);
+  font-size: var(--region-input-font-size, revert-layer);
+  color: var(--region-input-color, revert-layer);
+  line-height: var(--region-input-line-height, revert-layer);
+}

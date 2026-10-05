@@ -62,7 +62,11 @@
       "invalidGeneration": "The generated message is invalid. Please try again.",
       "commitFailed": "Commit failed. Review the Git error below; resolve identity, signing, or hook issues before retrying.",
       "indexUpdateFailed": "The commit was created, but the index could not be updated. Inspect git status in the terminal; do not repeat this commit.",
-      "commitHookWarning": "The commit was created, but Git reported an error afterward. Check the repository hooks; do not repeat this commit."
+      "commitHookWarning": "The commit was created, but Git reported an error afterward. Check the repository hooks; do not repeat this commit.",
+      "generateTimeout": "AI üretimi zaman aşımına uğradı. Mevcut mesaj korundu. Yeniden üretin veya elle düzenleyin.",
+      "requestTimeout": "İstek zaman aşımına uğradı. Pencereyi kapatıp yeniden açın.",
+      "requestFailed": "İstek başarısız oldu veya yanıt geçersiz. Yeniden deneyin.",
+      "commitUnknown": "Commit sonucu doğrulanamadı. Yeniden denemeden önce terminalde git log ve git status kontrol edin."
     }
   }
 }

@@ -1,3 +1,4 @@
+import { resolveTerminalTypography } from '@/lib/terminal-appearance';
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { Plus, WifiOff } from 'lucide-react';
 import { useTranslations } from 'next-intl';
@@ -129,6 +130,7 @@ const MobileSurfaceView = ({
   const diffSettings = useLayoutStore((state) => state.layout?.diffSettings);
 
   const { theme: terminalTheme } = useTerminalTheme();
+  const terminalTypography = useConfigStore((s) => s.regionTypography.terminal);
   const configLineHeight = useConfigStore((s) => s.lineHeight);
   const configLineHeightCustom = useConfigStore((s) => s.lineHeightCustom);
   const [hasEverConnected, setHasEverConnected] = useState(false);
@@ -249,8 +251,7 @@ const MobileSurfaceView = ({
 
   const { terminalRef, write, clear, reset, fit, focus, focusAtBottom, isReady, getBufferText } = useTerminal({
     onWriteParsed: () => nativeCommandEventsRef.current?.onParsed(),
-    theme: terminalTheme.colors,
-    fontSize: isAgentPanel ? undefined : MOBILE_FONT_SIZE,
+    ...resolveTerminalTypography({ theme: terminalTheme.colors, fontSize: isAgentPanel ? undefined : MOBILE_FONT_SIZE }, terminalTypography),
     lineHeight: resolveLineHeight(configLineHeight, configLineHeightCustom),
     onInput: (data) => wsActionsRef.current.sendStdin(data),
     onResize: (cols, rows) => {

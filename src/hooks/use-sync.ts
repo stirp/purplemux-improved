@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { toast } from 'sonner';
 import useWorkspaceStore from '@/hooks/use-workspace-store';
+import useConfigStore from '@/hooks/use-config-store';
 import { useLayoutStore, collectPanes } from '@/hooks/use-layout';
 import useTabStore from '@/hooks/use-tab-store';
 import useWorkspaceLayoutStore from '@/hooks/use-workspace-layout-store';
@@ -84,10 +85,16 @@ const useSync = () => {
       const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
       const ws = new WebSocket(`${protocol}//${location.host}/api/sync`);
       wsRef.current = ws;
+      ws.onopen = () => { void useConfigStore.getState().syncConfig(); };
 
       ws.onmessage = (event) => {
         try {
           const data = JSON.parse(event.data);
+
+          if (data.type === 'config') {
+            if (data.config) useConfigStore.getState().hydrate(data.config);
+            else void useConfigStore.getState().syncConfig();
+          }
 
           if (data.type === 'workspace') {
             useWorkspaceStore.getState().syncWorkspaces();
@@ -137,6 +144,7 @@ const useSync = () => {
 
     const handleVisibilityChange = () => {
       if (document.visibilityState !== 'visible') return;
+      void useConfigStore.getState().syncConfig();
       useWorkspaceStore.getState().syncWorkspaces();
       const activeWsId = useWorkspaceStore.getState().activeWorkspaceId;
       if (activeWsId) {

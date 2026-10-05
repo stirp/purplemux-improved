@@ -1,3 +1,6 @@
+import ConfigThemeSync from '@/components/layout/config-theme-sync';
+import { buildRegionTypographyCSS } from '@/lib/region-typography';
+import useCustomStyle from '@/hooks/use-custom-style';
 import "@/styles/globals.css";
 import "@/styles/pretendard.css";
 import "@xterm/xterm/css/xterm.css";
@@ -72,24 +75,15 @@ const FontSizeSync = () => {
   return null;
 };
 
+const RegionTypographySync = () => {
+  const settings = useConfigStore((s) => s.regionTypography);
+  useCustomStyle('purplemux-region-typography', buildRegionTypographyCSS(settings), 'purplemux-custom-css');
+  return null;
+};
+
 const CustomCSSSync = () => {
   const customCSS = useConfigStore((s) => s.customCSS);
-
-  useEffect(() => {
-    const id = 'purplemux-custom-css';
-    let el = document.getElementById(id) as HTMLStyleElement | null;
-    if (!customCSS) {
-      el?.remove();
-      return;
-    }
-    if (!el) {
-      el = document.createElement('style');
-      el.id = id;
-      document.head.appendChild(el);
-    }
-    el.textContent = customCSS;
-  }, [customCSS]);
-
+  useCustomStyle('purplemux-custom-css', customCSS);
   return null;
 };
 
@@ -224,8 +218,10 @@ export default function App({ Component, pageProps }: TAppPropsWithLayout) {
           <main className="font-sans antialiased">
             <ElectronTitlebar isElectron={!!pageProps.isElectron} />
             {getLayout(<Component {...pageProps} />)}
+            <ConfigThemeSync />
             <TerminalThemeSync />
             <FontSizeSync />
+            <RegionTypographySync />
             <CustomCSSSync />
             <AgentStatusProvider />
             <ThemedToaster />
