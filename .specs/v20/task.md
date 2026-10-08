@@ -76,3 +76,7 @@ v20 是现有 fork 功能回补规格。下表的实现状态来自当前源码�
 RT-18 至 RT-23 已实现。11 个相关测试文件共 84 项通过；完整 TypeScript、改动文件 ESLint、Next.js 构建和服务端 tsup 构建通过。
 store 保持扁平结构，配置改为安全快照同步，区域改为 CSS 变量，终端恢复 props 驱动。
 真实浏览器视觉及跨设备验收未执行，详见最新验证记录。
+
+### Sessions 导航同步侧边栏项目（2026-10-07）
+
+规格和代码已完成；3 文件 24 项测试、完整类型检查及改动文件 ESLint 通过。浏览器/实机验收未执行，构建结果见 [验证记录](./result/verify-session-workspace-navigation.md)。需求见 [session-workspace-navigation](./requirements/session-workspace-navigation.md)，实施见 [实施记录](./result/build-session-workspace-navigation.md)。

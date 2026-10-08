@@ -8,7 +8,9 @@ import type { IDiffSettings, ILayoutData, ITab, IPaneNode, TPanelType } from '@/
 import { clearInputDraft } from '@/hooks/use-web-input';
 import useTabStore from '@/hooks/use-tab-store';
 import useWorkspaceStore from '@/hooks/use-workspace-store';
+import useWebviewStore from '@/hooks/use-webview-store';
 import useTabMetadataStore from '@/hooks/use-tab-metadata-store';
+import { getVisuallyOrderedWorkspaces } from '@/lib/workspace-order';
 import { resolveTabNameForPanelTypeChange } from '@/lib/tab-name';
 import {
   collectPanes,
@@ -739,12 +741,23 @@ export const setOnFetchError = (fn: (() => void) | null): void => {
   _onFetchError = fn;
 };
 
+const revealWorkspace = (workspaceId: string) => {
+  const store = useWorkspaceStore.getState();
+  useWebviewStore.getState().hide();
+  store.setSidebarTab('workspace');
+  if (store.activeWorkspaceId !== workspaceId) store.switchWorkspace(workspaceId);
+  const workspace = getVisuallyOrderedWorkspaces(store.workspaces, store.groups)
+    .find((item) => item.id === workspaceId);
+  const group = store.groups.find((item) => item.id === workspace?.groupId);
+  if (group?.collapsed) store.toggleGroupCollapsed(group.id);
+};
+
 export const navigateToTab = (workspaceId: string, tabId: string) => {
   const store = useLayoutStore.getState();
+  revealWorkspace(workspaceId);
 
   if (Router.pathname !== '/') {
     useLayoutStore.setState({ pendingFocusTabId: tabId });
-    useWorkspaceStore.getState().switchWorkspace(workspaceId);
     Router.push('/');
     return;
   }
@@ -754,7 +767,6 @@ export const navigateToTab = (workspaceId: string, tabId: string) => {
   } else {
     store.clearLayout();
     useLayoutStore.setState({ pendingFocusTabId: tabId });
-    useWorkspaceStore.getState().switchWorkspace(workspaceId);
   }
 };
 
@@ -836,6 +848,7 @@ export const navigateToTabOrCreate = async (
   }
 
   if (targetWsId === useLayoutStore.getState().workspaceId) {
+    revealWorkspace(targetWsId);
     useLayoutStore.setState({ pendingFocusTabId: newTab.id });
     useLayoutStore.getState().fetchLayout();
   } else {

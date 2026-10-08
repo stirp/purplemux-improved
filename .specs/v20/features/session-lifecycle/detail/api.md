@@ -2,6 +2,9 @@
 
 ## 接口或内部通道
 
+- `navigateToTab` 与 `navigateToTabOrCreate` 共用项目定位逻辑，覆盖已有 Tab 和恢复后新 Tab。
+- 使用现有 workspace store 的 `setSidebarTab`、`switchWorkspace`、`toggleGroupCollapsed`，不增加接口、配置字段或历史数据迁移。
+
 - DELETE /api/session-history 负责历史移除及可选原始记录删除。
 - /api/timeline/sessions 与 /api/codex/sessions 查询结果过滤已隐藏记录。
 - /api/workspace/[workspaceId] 删除路径联动 workspace-sessions 与会话清理逻辑。

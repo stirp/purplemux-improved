@@ -1,5 +1,7 @@
 # v20 需求整理：Fork 后累计新增功能
 
+2026-10-07 增量：[Sessions 导航同步侧边栏项目](./requirements/session-workspace-navigation.md)，进入历史会话时显示并选择所属项目。
+
 2026-10-05 增量：[AI 提交信息生成超时兼容](./requirements/ai-git-generation-timeout.md)，补充网关错误解析、有限等待、草稿保留与提交结果不确定时的恢复约束。
 
 ## 来源与版本范围

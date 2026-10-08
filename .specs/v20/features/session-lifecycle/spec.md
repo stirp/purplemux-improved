@@ -7,7 +7,7 @@ complexity: Medium
 depends_on:
   - CLAUDE.md
 created: 2026-09-28
-updated: 2026-09-28
+updated: 2026-10-07
 assignee: ''
 ---
 
@@ -18,6 +18,8 @@ assignee: ''
 记录 fork 基线 `52140216` 之后、截至 `3637a357` 的新增或增强行为。此文档是现有实现的回补规格，不表示本次重新实现或完成运行验收。
 
 ## 主要功能
+
+- [Sessions 导航同步侧边栏项目](../../requirements/session-workspace-navigation.md)：成功进入会话后切换项目列表、高亮工作区并展开目标分组。
 
 - 工作区会话列表和全局 Sessions 支持移除历史项，并可同时删除 Claude/Codex 原始记录。
 - 有原始会话 ID 时，确认框默认勾选同时删除原始记录；用户可取消，只移除历史项。
@@ -30,6 +32,8 @@ assignee: ''
 - 会话记录清理不等于磁盘 Worktree 清理。
 
 ## 验收标准
+
+- 已有会话、历史恢复和工作区重建均同步项目选择；同项目及其他路由入口行为一致，失败不提前切换侧边栏。
 
 - 首次及再次打开确认框都恢复预期默认值，取消勾选仅移除历史。
 - 活动会话删除受阻，空闲工作区清理不残留错误会话关联。
@@ -60,9 +64,12 @@ assignee: ''
 - [使用流程](./detail/flow.md)
 - [接口与数据](./detail/api.md)
 - [统一验证记录](../../result/verify-1.md)
+- [Sessions 项目定位实施记录](../../result/build-session-workspace-navigation.md)
+- [Sessions 项目定位验证记录](../../result/verify-session-workspace-navigation.md)
 
 ## 变更历史
 
 | 日期 | 内容 | 状态 |
 | --- | --- | --- |
 | 2026-09-28 | 回补 fork 后累计功能；关联提交：`6155e1b1`, `554ff421`, `1da87ce5`, `1097835c` | DETAILED |
+| 2026-10-07 | 补充 Sessions 导航同步项目列表、选择与分组展开 | DETAILED |
