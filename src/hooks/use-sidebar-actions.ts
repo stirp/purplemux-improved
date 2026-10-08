@@ -2,6 +2,8 @@ import { create } from 'zustand';
 import { useRouter } from 'next/router';
 import useWorkspaceStore from '@/hooks/use-workspace-store';
 import useWebviewStore from '@/hooks/use-webview-store';
+import useMobileLayoutActions from '@/hooks/use-mobile-layout-actions';
+import useTabMetadataStore from '@/hooks/use-tab-metadata-store';
 
 interface ISidebarActionsState {
   onSelectWorkspace: ((id: string) => void) | null;
@@ -15,24 +17,27 @@ const useSidebarActions = create<ISidebarActionsState>((set) => ({
   unregister: () => set({ onSelectWorkspace: null }),
 }));
 
+export const selectWorkspace = (workspaceId: string, navigateHome: () => void) => {
+  const registered = useSidebarActions.getState().onSelectWorkspace
+    ?? useMobileLayoutActions.getState().onSelectWorkspace;
+  useWebviewStore.getState().hide();
+  if (registered) {
+    registered(workspaceId);
+  } else {
+    const { activeWorkspaceId } = useWorkspaceStore.getState();
+    if (workspaceId !== activeWorkspaceId) {
+      useTabMetadataStore.getState().reset();
+      useWorkspaceStore.getState().switchWorkspace(workspaceId);
+    }
+  }
+  navigateHome();
+};
+
 export const useSelectWorkspace = () => {
   const router = useRouter();
-  const registered = useSidebarActions((s) => s.onSelectWorkspace);
-
-  return (workspaceId: string) => {
-    useWebviewStore.getState().hide();
-    if (registered) {
-      registered(workspaceId);
-    } else {
-      const { activeWorkspaceId } = useWorkspaceStore.getState();
-      if (workspaceId !== activeWorkspaceId) {
-        useWorkspaceStore.getState().switchWorkspace(workspaceId);
-      }
-      if (router.pathname !== '/') {
-        router.push('/');
-      }
-    }
-  };
+  return (workspaceId: string) => selectWorkspace(workspaceId, () => {
+    if (router.pathname !== '/') router.push('/');
+  });
 };
 
 export default useSidebarActions;

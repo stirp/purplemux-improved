@@ -765,7 +765,9 @@ export const navigateToTabOrCreate = async (
   workspaceName: string,
   workspaceDir: string | null,
   providerId: 'claude' | 'codex' = 'claude',
+  options: { onNavigate?: (workspaceId: string, tabId: string) => void; requireExistingTab?: boolean } = {},
 ): Promise<void> => {
+  const onNavigate = options.onNavigate ?? navigateToTab;
   const wsStore = useWorkspaceStore.getState();
 
   const panelType: TPanelType = providerId === 'codex' ? 'codex-cli' : 'claude-code';
@@ -795,7 +797,7 @@ export const navigateToTabOrCreate = async (
       useTabStore.getState().initTab(firstTab.id, { panelType, sessionView: 'check' });
     }
 
-    navigateToTab(targetWsId, firstTab.id);
+    onNavigate(targetWsId, firstTab.id);
     return;
   }
 
@@ -807,15 +809,16 @@ export const navigateToTabOrCreate = async (
     const matchingTab = collectAllTabs(layout.root).find(matchSessionId);
     if (matchingTab) {
       useTabStore.getState().setSessionView(matchingTab.id, 'timeline');
-      navigateToTab(targetWsId, matchingTab.id);
+      onNavigate(targetWsId, matchingTab.id);
       return;
     }
   } else {
     const existingTab = collectAllTabs(layout.root).find((t) => t.id === tabId);
     if (existingTab) {
-      navigateToTab(targetWsId, tabId);
+      onNavigate(targetWsId, tabId);
       return;
     }
+    if (options.requireExistingTab) return;
   }
 
   const paneId = layout.activePaneId ?? getFirstPaneId(layout.root);
@@ -835,11 +838,11 @@ export const navigateToTabOrCreate = async (
     useTabStore.getState().initTab(newTab.id, { panelType, sessionView: 'check' });
   }
 
-  if (targetWsId === useLayoutStore.getState().workspaceId) {
+  if (onNavigate === navigateToTab && targetWsId === useLayoutStore.getState().workspaceId) {
     useLayoutStore.setState({ pendingFocusTabId: newTab.id });
     useLayoutStore.getState().fetchLayout();
   } else {
-    navigateToTab(targetWsId, newTab.id);
+    onNavigate(targetWsId, newTab.id);
   }
 };
 

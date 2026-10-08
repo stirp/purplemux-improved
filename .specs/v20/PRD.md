@@ -1,5 +1,7 @@
 # v20 需求整理：Fork 后累计新增功能
 
+2026-10-08 复审：[Sessions 导航同步侧边栏项目](./requirements/session-workspace-navigation.md)仅历史入口触发，复用项目选择处理器，分组采用临时展开而非修改折叠偏好。
+
 2026-10-05 增量：[AI 提交信息生成超时兼容](./requirements/ai-git-generation-timeout.md)，补充网关错误解析、有限等待、草稿保留与提交结果不确定时的恢复约束。
 
 ## 来源与版本范围
@@ -21,7 +23,7 @@ v20 覆盖 `52140216..3637a357` 的 fork 增量，共 48 个非合并提交，�
 | 05 | [AI 分支名生成与分支快速筛选](./features/ai-branch-naming/spec.md) | 根据需求描述生成分支名，设置中可配置生成提示词及 provider。 |
 | 06 | [AI 提交信息、PR/MR 文案与提交确认](./features/ai-git-writing/spec.md) | 为仓库全部可提交改动生成可编辑的提交标题和正文，支持保存自定义生成提示词。 |
 | 07 | [排队输入、立即提交与长文本粘贴](./features/queued-input/spec.md) | Web 输入默认排队；Agent 忙碌时保留后续消息，空闲后按顺序发送。 |
-| 08 | [历史会话删除与工作区会话清理](./features/session-lifecycle/spec.md) | 工作区会话列表和全局 Sessions 支持移除历史项，并可同时删除 Claude/Codex 原始记录。 |
+| 08 | [历史会话删除与工作区会话清理](./features/session-lifecycle/spec.md) | 支持移除历史项及原始记录；Sessions 历史导航同步所属项目，临时展开分组。 |
 | 09 | [Claude/Codex 交互式问题卡片](./features/interactive-questions/spec.md) | 统一 Claude 与 Codex 的交互式选项卡片样式。 |
 | 10 | [Agent 状态栏与 Todo/Plan 进度](./features/agent-progress/spec.md) | 桌面及移动端展示 CLI 实际渲染的 Claude/Codex 状态栏，终端收起后仍可见。 |
 | 11 | [Web 输入联动 CLI 原生命令菜单](./features/native-commands/spec.md) | Web 输入框中的 / 操作联动当前 Claude/Codex CLI 原生命令菜单。 |
