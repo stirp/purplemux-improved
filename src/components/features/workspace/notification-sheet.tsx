@@ -30,7 +30,8 @@ import useTabStore from '@/hooks/use-tab-store';
 import useWorkspaceStore from '@/hooks/use-workspace-store';
 import useSessionHistoryStore from '@/hooks/use-session-history-store';
 import { dismissTab } from '@/hooks/use-agent-status';
-import { navigateToTab, navigateToTabOrCreate, useLayoutStore } from '@/hooks/use-layout';
+import { navigateToTab, useLayoutStore } from '@/hooks/use-layout';
+import { navigateToSession } from '@/hooks/use-session-navigation';
 import { findPane } from '@/lib/layout-tree';
 import type { ITabState } from '@/hooks/use-tab-store';
 import type { ICurrentAction } from '@/types/status';
@@ -535,18 +536,7 @@ export const NotificationPanel = ({ onNavigated, className }: { onNavigated?: ()
 
   const handleHistoryClick = useCallback((entry: ISessionHistoryEntry, resolvedTabId: string | null) => {
     onNavigated?.();
-    if (resolvedTabId) {
-      navigateToTab(entry.workspaceId, resolvedTabId);
-    } else {
-      navigateToTabOrCreate(
-        entry.workspaceId,
-        entry.tabId,
-        entry.agentSessionId,
-        entry.workspaceName,
-        entry.workspaceDir,
-        entry.providerId,
-      );
-    }
+    void navigateToSession(entry, resolvedTabId);
   }, [onNavigated]);
 
   const isEmpty = busyItems.length === 0 && needsInputItems.length === 0 && reviewItems.length === 0 && dateGroups.length === 0;

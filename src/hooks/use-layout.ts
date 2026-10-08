@@ -8,9 +8,7 @@ import type { IDiffSettings, ILayoutData, ITab, IPaneNode, TPanelType } from '@/
 import { clearInputDraft } from '@/hooks/use-web-input';
 import useTabStore from '@/hooks/use-tab-store';
 import useWorkspaceStore from '@/hooks/use-workspace-store';
-import useWebviewStore from '@/hooks/use-webview-store';
 import useTabMetadataStore from '@/hooks/use-tab-metadata-store';
-import { getVisuallyOrderedWorkspaces } from '@/lib/workspace-order';
 import { resolveTabNameForPanelTypeChange } from '@/lib/tab-name';
 import {
   collectPanes,
@@ -741,23 +739,12 @@ export const setOnFetchError = (fn: (() => void) | null): void => {
   _onFetchError = fn;
 };
 
-const revealWorkspace = (workspaceId: string) => {
-  const store = useWorkspaceStore.getState();
-  useWebviewStore.getState().hide();
-  store.setSidebarTab('workspace');
-  if (store.activeWorkspaceId !== workspaceId) store.switchWorkspace(workspaceId);
-  const workspace = getVisuallyOrderedWorkspaces(store.workspaces, store.groups)
-    .find((item) => item.id === workspaceId);
-  const group = store.groups.find((item) => item.id === workspace?.groupId);
-  if (group?.collapsed) store.toggleGroupCollapsed(group.id);
-};
-
 export const navigateToTab = (workspaceId: string, tabId: string) => {
   const store = useLayoutStore.getState();
-  revealWorkspace(workspaceId);
 
   if (Router.pathname !== '/') {
     useLayoutStore.setState({ pendingFocusTabId: tabId });
+    useWorkspaceStore.getState().switchWorkspace(workspaceId);
     Router.push('/');
     return;
   }
@@ -767,6 +754,7 @@ export const navigateToTab = (workspaceId: string, tabId: string) => {
   } else {
     store.clearLayout();
     useLayoutStore.setState({ pendingFocusTabId: tabId });
+    useWorkspaceStore.getState().switchWorkspace(workspaceId);
   }
 };
 
@@ -777,7 +765,9 @@ export const navigateToTabOrCreate = async (
   workspaceName: string,
   workspaceDir: string | null,
   providerId: 'claude' | 'codex' = 'claude',
+  options: { onNavigate?: (workspaceId: string, tabId: string) => void; requireExistingTab?: boolean } = {},
 ): Promise<void> => {
+  const onNavigate = options.onNavigate ?? navigateToTab;
   const wsStore = useWorkspaceStore.getState();
 
   const panelType: TPanelType = providerId === 'codex' ? 'codex-cli' : 'claude-code';
@@ -807,7 +797,7 @@ export const navigateToTabOrCreate = async (
       useTabStore.getState().initTab(firstTab.id, { panelType, sessionView: 'check' });
     }
 
-    navigateToTab(targetWsId, firstTab.id);
+    onNavigate(targetWsId, firstTab.id);
     return;
   }
 
@@ -819,15 +809,16 @@ export const navigateToTabOrCreate = async (
     const matchingTab = collectAllTabs(layout.root).find(matchSessionId);
     if (matchingTab) {
       useTabStore.getState().setSessionView(matchingTab.id, 'timeline');
-      navigateToTab(targetWsId, matchingTab.id);
+      onNavigate(targetWsId, matchingTab.id);
       return;
     }
   } else {
     const existingTab = collectAllTabs(layout.root).find((t) => t.id === tabId);
     if (existingTab) {
-      navigateToTab(targetWsId, tabId);
+      onNavigate(targetWsId, tabId);
       return;
     }
+    if (options.requireExistingTab) return;
   }
 
   const paneId = layout.activePaneId ?? getFirstPaneId(layout.root);
@@ -847,12 +838,11 @@ export const navigateToTabOrCreate = async (
     useTabStore.getState().initTab(newTab.id, { panelType, sessionView: 'check' });
   }
 
-  if (targetWsId === useLayoutStore.getState().workspaceId) {
-    revealWorkspace(targetWsId);
+  if (onNavigate === navigateToTab && targetWsId === useLayoutStore.getState().workspaceId) {
     useLayoutStore.setState({ pendingFocusTabId: newTab.id });
     useLayoutStore.getState().fetchLayout();
   } else {
-    navigateToTab(targetWsId, newTab.id);
+    onNavigate(targetWsId, newTab.id);
   }
 };
 

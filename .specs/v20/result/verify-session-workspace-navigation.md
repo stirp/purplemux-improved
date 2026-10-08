@@ -1,6 +1,6 @@
 # Sessions 导航同步侧边栏项目：验证记录
 
-2026-10-07，本次实际运行。
+2026-10-07 初版检查记录（已被 2026-10-08 复审实现替代，初版测试隔离不足，不作为最终验收证据）。
 
 ## 自动检查
 
@@ -24,3 +24,19 @@
 - 需求 5：测试、类型、lint 已通过；构建结果见上表。
 
 未执行真实浏览器点击、高亮视觉与自动滚动检查，未执行移动端实机验收。桌面和移动端共用导航函数及现有激活工作区状态，抽屉关闭和父子展开接线经源码检查；此项不等于运行验收通过。
+
+## 2026-10-08 复审验证
+
+本次重新运行，未借用上方初版结果。命令均使用 `pnpm --config.verify-deps-before-run=false exec`。
+
+- `vitest run tests/unit/lib/session-workspace-navigation.test.ts tests/unit/lib/workspace-visibility.test.ts tests/unit/lib/layout-tab-rename.test.ts`：3 文件、34 项通过，无未处理错误。
+- 完整 `tsc --noEmit`：通过。
+- ESLint：覆盖 use-layout、use-session-navigation、use-sidebar-actions、sidebar、notification-sheet 和新测试，通过；最后补强当前项目 Tab 焦点断言后，测试文件单独复检。
+- `next build --webpack`：本次类型检查及编译通过；收集 `/login` 页面数据再次因 `ReferenceError: self is not defined` 失败，完整构建未通过。
+- `git diff --check`：通过。
+
+验收覆盖 Sessions 专用入口、其他路由、两类代理复用/新建、真实新 Tab 布局刷新、重建项目实际分组、桌面/移动端注册选择处理器调用、临时展开取消、失效 Tab/恢复失败/hydrate 失败不定位，以及通用导航保持原侧边栏状态。测试恢复所有相关 store 的完整快照，不在活 store 上 spyOn；通过 setWorkspaceId 清除跨用例 fetch 抑制状态。
+
+分组保存偏好始终不变且无分组 PATCH，避免 reveal 引入双份全量配置写入及同步回声。Projects 标签仍沿用已有 localStorage，激活工作区仍沿用已有保存动作；不能描述为整个导航不持久化。
+
+未运行浏览器/移动端实机验收；自动化 handler 调用证明选择路径复用，不替代真实上一项目回退操作与视觉验收。认证跳转和登录后恢复深链属于原通用导航能力，本次恢复其原行为，未新增跨登录保存导航意图能力。

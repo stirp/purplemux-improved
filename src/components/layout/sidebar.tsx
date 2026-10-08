@@ -31,6 +31,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import type { ITab, IWorkspace, IWorkspaceGroup } from '@/types/terminal';
 import useWorkspaceStore from '@/hooks/use-workspace-store';
+import useSessionNavigation, { getSessionNavigationGroupId, toggleSessionNavigationGroup } from '@/hooks/use-session-navigation';
 import WorkspaceItem from '@/components/features/workspace/workspace-item';
 import CreateWorkspaceDialog from '@/components/features/workspace/create-workspace-dialog';
 import WorkspaceGroupHeader from '@/components/features/workspace/workspace-group-header';
@@ -68,6 +69,10 @@ const Sidebar = () => {
   const workspaces = useWorkspaceStore((s) => s.workspaces);
   const groups = useWorkspaceStore((s) => s.groups);
   const activeWorkspaceId = useWorkspaceStore((s) => s.activeWorkspaceId);
+  const revealedWorkspaceId = useSessionNavigation((s) => s.revealedWorkspaceId);
+  const revealedGroupId = useMemo(() => getSessionNavigationGroupId(
+    workspaces, revealedWorkspaceId === activeWorkspaceId ? revealedWorkspaceId : null,
+  ), [workspaces, revealedWorkspaceId, activeWorkspaceId]);
   const workspaceVisibility = useMemo(
     () => getWorkspaceVisibility(workspaces, activeWorkspaceId),
     [workspaces, activeWorkspaceId],
@@ -192,7 +197,7 @@ const Sidebar = () => {
   }, []);
 
   const handleToggleGroup = useCallback((groupId: string) => {
-    useWorkspaceStore.getState().toggleGroupCollapsed(groupId);
+    toggleSessionNavigationGroup(groupId);
   }, []);
 
   const handleUngroup = useCallback((groupId: string) => {
@@ -419,7 +424,7 @@ const Sidebar = () => {
     for (const g of groups) {
       const list = byGroup.get(g.id) ?? [];
       const firstWsPosition = list[0]?.flatIdx ?? workspaces.length;
-      sections.push({ type: 'group', group: g, workspaces: list, firstWsPosition });
+      sections.push({ type: 'group', group: g.id === revealedGroupId ? { ...g, collapsed: false } : g, workspaces: list, firstWsPosition });
     }
     sections.push({
       type: 'ungrouped',
@@ -427,7 +432,7 @@ const Sidebar = () => {
       lastPosition: ungrouped.length > 0 ? ungrouped[ungrouped.length - 1].flatIdx : workspaces.length - 1,
     });
     return sections;
-  }, [workspaces, groups]);
+  }, [workspaces, groups, revealedGroupId]);
 
   const renderWorkspaceRow = (entry: TRenderEntry) => {
     const { ws, flatIdx } = entry;
