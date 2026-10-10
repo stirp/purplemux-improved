@@ -33,7 +33,6 @@ purplemux-improved
 
 pnpm und yarn funktionieren analog (`pnpm add -g purplemux-improved` / `yarn global add purplemux-improved`). Folgeläufe starten schneller, weil nichts mehr aufgelöst werden muss. Update mit `npm update -g purplemux-improved`.
 
-Das Binary ist außerdem als `pmux` verfügbar — kürzer.
 
 ### Native macOS-App
 

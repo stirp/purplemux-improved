@@ -33,7 +33,6 @@ purplemux-improved
 
 pnpm과 yarn도 같은 방식입니다 (`pnpm add -g purplemux-improved` / `yarn global add purplemux-improved`). 이후 실행이 더 빠르고, 업데이트는 `npm update -g purplemux-improved`로 합니다.
 
-짧은 별칭 `pmux`로도 실행할 수 있습니다.
 
 ### macOS 네이티브 앱
 

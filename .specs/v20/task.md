@@ -1,5 +1,14 @@
 # v20 任务进度
 
+## Linux CLI 安装入口修复（2026-10-10）
+
+- [x] [需求](./requirements/single-cli-install.md)及 fork-platform 规格更新：仅注册 purplemux-improved。
+- [x] 删除 purplemux/pmux bin 别名，同步 CLI 帮助、Claude/Codex 提示、README 和多语言安装/CLI 文档。
+- [x] 实际 tarball 元数据验证、61 项 CLI 回归、2 项 Codex 提示测试、完整 TypeScript 和改动代码 ESLint 检查通过；CommonJS 文件关闭不适用的 require 禁止规则。
+- [ ] 用户 Linux 全局安装与现有旧命令归属检查（本次未执行）。
+
+详见[实施记录](./result/build-single-cli-install.md)及[验证记录](./result/verify-single-cli-install.md)。
+
 2026-10-05：[AI 生成超时兼容](./requirements/ai-git-generation-timeout.md)已实现；6 文件 52 项测试、完整 TypeScript、改动文件 ESLint、Next.js 和服务端构建通过；浏览器/实际网关验收未执行。详见[验证记录](./result/verify-ai-git-generation-timeout.md)。
 
 v20 是现有 fork 功能回补规格。下表的实现状态来自当前源码检查，不代表本次执行了构建或功能测试。
