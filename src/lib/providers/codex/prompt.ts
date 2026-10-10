@@ -12,42 +12,42 @@ export const sanitizeForTomlTripleQuote = (s: string): string =>
 export const toTomlBasicString = (s: string): string => JSON.stringify(s);
 
 const buildBody = (ws: IWorkspace): string => {
-  const raw = `# purplemux context
+  const raw = `# purplemux-improved context
 
-You are running inside a purplemux workspace tab via OpenAI Codex CLI.
+You are running inside a purplemux-improved workspace tab via OpenAI Codex CLI.
 
 - **Workspace ID**: \`${ws.id}\`
 
-Use \`purplemux workspaces\` if you need the workspace name or directories.
+Use \`purplemux-improved workspaces\` if you need the workspace name or directories.
 
-## purplemux CLI
+## purplemux-improved CLI
 
-The \`purplemux\` CLI lets you inspect and control other tabs in this workspace.
+The \`purplemux-improved\` CLI lets you inspect and control other tabs in this workspace.
 It reads port and token from \`~/.purplemux/{port,cli-token}\` automatically,
 so no environment setup is needed.
 
 ### Commands
 
 \`\`\`bash
-purplemux features                                  # offline guide to fork features
-purplemux worktree --help                            # create, inspect, sync and deliver worktrees
-purplemux queue --help                               # queued input and immediate answers
-purplemux session --help                             # history, entries and live status
-purplemux commit --help                              # inspect, generate and commit
-purplemux workspaces                                # list all workspaces
-purplemux tab list -w ${ws.id}                        # list tabs in this workspace
-purplemux tab create -w ${ws.id} [-n NAME] [-t TYPE]  # create a tab (type: terminal | claude-code | codex-cli | agent-sessions | web-browser | diff)
-purplemux tab send -w ${ws.id} TAB_ID CONTENT...      # send input to a tab
-purplemux tab status -w ${ws.id} TAB_ID               # tab status
-purplemux tab result -w ${ws.id} TAB_ID               # capture current pane content
-purplemux tab close -w ${ws.id} TAB_ID                # close a tab
+purplemux-improved features                                  # offline guide to fork features
+purplemux-improved worktree --help                            # create, inspect, sync and deliver worktrees
+purplemux-improved queue --help                               # queued input and immediate answers
+purplemux-improved session --help                             # history, entries and live status
+purplemux-improved commit --help                              # inspect, generate and commit
+purplemux-improved workspaces                                # list all workspaces
+purplemux-improved tab list -w ${ws.id}                        # list tabs in this workspace
+purplemux-improved tab create -w ${ws.id} [-n NAME] [-t TYPE]  # create a tab (type: terminal | claude-code | codex-cli | agent-sessions | web-browser | diff)
+purplemux-improved tab send -w ${ws.id} TAB_ID CONTENT...      # send input to a tab
+purplemux-improved tab status -w ${ws.id} TAB_ID               # tab status
+purplemux-improved tab result -w ${ws.id} TAB_ID               # capture current pane content
+purplemux-improved tab close -w ${ws.id} TAB_ID                # close a tab
 \`\`\`
 
 For the full HTTP API reference (including endpoint paths and payloads),
 run:
 
 \`\`\`bash
-purplemux api-guide
+purplemux-improved api-guide
 \`\`\`
 
 ### When to use
@@ -63,7 +63,7 @@ purplemux api-guide
   \`tab list\` / \`tab status\` is always \`false\` for these — that is the normal
   value, not a sign the tab is dead. Do not gate actions on \`alive\`. Use the
   browser-specific HTTP endpoints (\`/browser/url\`, \`/browser/screenshot\`, …;
-  see \`purplemux api-guide\`) directly.
+  see \`purplemux-improved api-guide\`) directly.
 - **\`terminal\` / \`claude-code\` / \`codex-cli\` tabs**: run inside tmux, so
   \`alive\` is a valid liveness signal.
 `;

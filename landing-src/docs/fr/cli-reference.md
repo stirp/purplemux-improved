@@ -1,12 +1,12 @@
 ---
 title: Référence CLI
-description: Chaque sous-commande et flag des binaires purplemux-improved et pmux.
+description: Chaque sous-commande et flag des binaires purplemux-improved.
 eyebrow: Référence
 permalink: /fr/docs/cli-reference/index.html
 ---
 {% from "docs/callouts.njk" import callout %}
 
-`purplemux-improved` propose deux façons d'utiliser le binaire : comme démarreur de serveur (`purplemux-improved` / `purplemux-improved start`) et comme wrapper d'API HTTP (`purplemux-improved <sous-commande>`) qui parle à un serveur en cours d'exécution. L'alias court `pmux` est identique.
+`purplemux-improved` propose deux façons d'utiliser le binaire : comme démarreur de serveur (`purplemux-improved` / `purplemux-improved start`) et comme wrapper d'API HTTP (`purplemux-improved <sous-commande>`) qui parle à un serveur en cours d'exécution.
 
 ## Deux rôles, un binaire
 
@@ -14,7 +14,6 @@ permalink: /fr/docs/cli-reference/index.html
 |---|---|
 | `purplemux-improved` | Démarre le serveur. Comme `purplemux-improved start`. |
 | `purplemux-improved <sous-commande>` | Parle à l'API HTTP CLI d'un serveur en cours. |
-| `pmux ...` | Alias pour `purplemux-improved ...`. |
 
 Le dispatcher dans `bin/purplemux.js` décortique le premier argument : les sous-commandes connues routent vers `bin/cli.js`, n'importe quoi d'autre (ou rien) lance le serveur.
 

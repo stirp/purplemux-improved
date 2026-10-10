@@ -1,12 +1,12 @@
 ---
 title: CLI 参考
-description: purplemux-improved 和 pmux 二进制的所有子命令与参数。
+description: purplemux-improved 二进制的所有子命令与参数。
 eyebrow: 参考
 permalink: /zh-CN/docs/cli-reference/index.html
 ---
 {% from "docs/callouts.njk" import callout %}
 
-`purplemux-improved` 提供两种使用方式:作为服务启动器(`purplemux-improved` / `purplemux-improved start`)和作为与运行中服务对话的 HTTP API 包装器(`purplemux-improved <subcommand>`)。短别名 `pmux` 与之等价。
+`purplemux-improved` 提供两种使用方式:作为服务启动器(`purplemux-improved` / `purplemux-improved start`)和作为与运行中服务对话的 HTTP API 包装器(`purplemux-improved <subcommand>`)。
 
 ## 一个二进制,两种角色
 
@@ -14,7 +14,6 @@ permalink: /zh-CN/docs/cli-reference/index.html
 |---|---|
 | `purplemux-improved` | 启动服务。等价于 `purplemux-improved start`。 |
 | `purplemux-improved <subcommand>` | 与运行中的服务的 CLI HTTP API 通信。 |
-| `pmux ...` | `purplemux-improved ...` 的别名。 |
 
 `bin/purplemux.js` 将已知子命令路由到 `bin/cli.js`；没有参数或使用 `start` 时启动服务，未知命令报错。
 
@@ -143,13 +142,13 @@ CLI token 授予服务的完全访问权限。把它当作密码对待。不要�
 
 ## Fork 新增能力
 
-从源码验证本分支时，将下面的 `purplemux` 换成 `node bin/purplemux.js`，以免调用系统里安装的旧版本。`purplemux-improved`、`purplemux` 和 `pmux` 使用相同入口。
+从源码验证本分支时，将下面的 `purplemux-improved` 换成 `node bin/purplemux.js`，以免调用系统里安装的旧版本。
 
 ```bash
-purplemux features                 # 离线查看全部 fork 命令及 HTTP 路径
-purplemux worktree --help           # 查看整个命令组
-purplemux worktree create --help    # 查看单条命令的必填/可选参数
-purplemux help commit create        # 等价的帮助形式
+purplemux-improved features                 # 离线查看全部 fork 命令及 HTTP 路径
+purplemux-improved worktree --help           # 查看整个命令组
+purplemux-improved worktree create --help    # 查看单条命令的必填/可选参数
+purplemux-improved help commit create        # 等价的帮助形式
 ```
 
 帮助不需要启动服务。执行命令仍需本机运行的服务和 CLI token。普通输出为 JSON；参数错误、HTTP 错误、同步失败和批量清理部分失败均返回非零退出码；后两种保留完整 JSON，便于检查冲突和逐项结果。
@@ -177,9 +176,9 @@ purplemux help commit create        # 等价的帮助形式
 复杂对象使用 JSON 参数或完整请求文件；请求文件的键名采用接口的 camelCase。显式参数覆盖文件中同名字段。未知字段/参数会在发送请求前报错。
 
 ```bash
-purplemux worktree create -w ws-EXAMPLE --name "修复登录" --branch "fix/login" --base-ref "main"
-purplemux worktree create --data @request.json
-cat "request.json" | purplemux worktree create --data -
+purplemux-improved worktree create -w ws-EXAMPLE --name "修复登录" --branch "fix/login" --base-ref "main"
+purplemux-improved worktree create --data @request.json
+cat "request.json" | purplemux-improved worktree create --data -
 ```
 
 `--data` 仅包含该命令帮助列出的字段，不传 `action`。命令自身决定固定 action。GET 的字段进入查询字符串；其他命令通常进入 JSON body；`queue` 的 `workspaceId`、`tabId` 始终进入查询字符串；路径中的 `:workspaceId` / `:groupId` 由相应参数替换。上传使用二进制请求体。
@@ -187,20 +186,20 @@ cat "request.json" | purplemux worktree create --data -
 ### 工作区、分组和标签
 
 ```bash
-purplemux workspace directories --directory "/home/me/projects"
-purplemux workspace create --directory "/home/me/projects/app" --name "App"
-purplemux workspace list
-purplemux workspace update -w ws-EXAMPLE --name "新名称"
-purplemux group create --name "本周需求"
-purplemux workspace update -w ws-EXAMPLE --group-id "GROUP_ID"
-purplemux group update --group-id "GROUP_ID" --collapsed true
-purplemux workspace reorder --items '[{"id":"ws-EXAMPLE","groupId":null}]'
-purplemux group reorder --group-ids '["GROUP_ID"]'
-purplemux tab rename -w ws-EXAMPLE TAB_ID "代码检查"
-purplemux tab rename -w ws-EXAMPLE TAB_ID ""
+purplemux-improved workspace directories --directory "/home/me/projects"
+purplemux-improved workspace create --directory "/home/me/projects/app" --name "App"
+purplemux-improved workspace list
+purplemux-improved workspace update -w ws-EXAMPLE --name "新名称"
+purplemux-improved group create --name "本周需求"
+purplemux-improved workspace update -w ws-EXAMPLE --group-id "GROUP_ID"
+purplemux-improved group update --group-id "GROUP_ID" --collapsed true
+purplemux-improved workspace reorder --items '[{"id":"ws-EXAMPLE","groupId":null}]'
+purplemux-improved group reorder --group-ids '["GROUP_ID"]'
+purplemux-improved tab rename -w ws-EXAMPLE TAB_ID "代码检查"
+purplemux-improved tab rename -w ws-EXAMPLE TAB_ID ""
 
 # 保留原始会话记录；省略 --delete-sessions 时服务端默认删除记录
-purplemux workspace delete -w ws-EXAMPLE --delete-sessions false
+purplemux-improved workspace delete -w ws-EXAMPLE --delete-sessions false
 ```
 
 排序请求按服务端规则提供完整的目标顺序。删除工作区不会自动删除磁盘工作树和分支；磁盘清理由 `worktree remove` / `cleanup` 完成。
@@ -208,10 +207,10 @@ purplemux workspace delete -w ws-EXAMPLE --delete-sessions false
 ### 工作树创建、同步与交付
 
 ```bash
-purplemux worktree source -w ws-EXAMPLE --directory-index 0
-purplemux worktree generate-branch -w ws-EXAMPLE --title "修复登录" --base-ref "main"
-purplemux worktree create -w ws-EXAMPLE --name "修复登录" --branch "fix/login" --base-ref "main"
-purplemux worktree list -w ws-EXAMPLE > "worktrees.json"
+purplemux-improved worktree source -w ws-EXAMPLE --directory-index 0
+purplemux-improved worktree generate-branch -w ws-EXAMPLE --title "修复登录" --base-ref "main"
+purplemux-improved worktree create -w ws-EXAMPLE --name "修复登录" --branch "fix/login" --base-ref "main"
+purplemux-improved worktree list -w ws-EXAMPLE > "worktrees.json"
 ```
 
 分支名生成使用已有的无工具 Claude 能力；只返回建议名称，不创建分支。多目录工作区通过 `--directory-index` 选择仓库。
@@ -222,25 +221,25 @@ purplemux worktree list -w ws-EXAMPLE > "worktrees.json"
 WT_DIR="/absolute/path/to/worktree"
 jq --arg dir "$WT_DIR" '{item: ([.repositories[] | .id as $repo | .worktrees[] | select(.directory == $dir) | {repositoryId:$repo,directory,head,branch}] | if length == 1 then .[0] else error("select exactly one worktree") end)}' "worktrees.json" > "item.json"
 cat "item.json"
-purplemux worktree measure -w ws-EXAMPLE --data @item.json
-purplemux worktree inspect-sync -w ws-EXAMPLE --data @item.json --target-ref "refs/remotes/origin/main" > "sync.json"
+purplemux-improved worktree measure -w ws-EXAMPLE --data @item.json
+purplemux-improved worktree inspect-sync -w ws-EXAMPLE --data @item.json --target-ref "refs/remotes/origin/main" > "sync.json"
 
 # 审阅 sync.json 后，将目标快照加入请求；merge/rebase 都要求 targetHead
 jq --slurpfile sync "sync.json" '. + {targetRef:$sync[0].targetRef,targetHead:$sync[0].targetHead}' "item.json" > "merge.json"
-purplemux worktree merge -w ws-EXAMPLE --data @merge.json
+purplemux-improved worktree merge -w ws-EXAMPLE --data @merge.json
 ```
 
 需要最新远端状态时先执行 `worktree fetch -w ws-EXAMPLE --data @item.json`，再执行 `inspect-sync`。同步修改了 HEAD 或出现冲突后，重新读取列表和快照，再使用 `continue` / `abort`。服务端保留脏文件、会话占用、忽略文件冲突及目标版本变化检查，不会在 CLI 中自动刷新并绕过确认。
 
 ```bash
 # 以下操作使用重新检查过的 item.json
-purplemux worktree push -w ws-EXAMPLE --data @item.json --remote origin
-purplemux worktree generate-draft -w ws-EXAMPLE --data @item.json --remote origin --target-branch main --locale zh-CN > "draft.json"
+purplemux-improved worktree push -w ws-EXAMPLE --data @item.json --remote origin
+purplemux-improved worktree generate-draft -w ws-EXAMPLE --data @item.json --remote origin --target-branch main --locale zh-CN > "draft.json"
 
 # 审阅 title/body 后创建草稿；GitLab 改用 --provider gitlab
 jq --slurpfile draft "draft.json" '. + {title:$draft[0].title,body:$draft[0].body}' "item.json" > "review.json"
-purplemux worktree create-draft -w ws-EXAMPLE --data @review.json --remote origin --target-branch main --provider github
-purplemux worktree refresh-review -w ws-EXAMPLE --data @item.json
+purplemux-improved worktree create-draft -w ws-EXAMPLE --data @review.json --remote origin --target-branch main --provider github
+purplemux-improved worktree refresh-review -w ws-EXAMPLE --data @item.json
 ```
 
 创建草稿/刷新状态沿用服务器上的 Git 和 GitHub/GitLab CLI 认证。`generate-draft` 只生成文案；`push` 和 `create-draft` 会执行真实远端操作。已有 PR/MR 可用 `save-review --url "https://..."` 关联，`--url null` 解除关联。
@@ -249,8 +248,8 @@ purplemux worktree refresh-review -w ws-EXAMPLE --data @item.json
 
 ```bash
 jq '{items:[.item]}' "item.json" > "cleanup.json"
-purplemux worktree preview-cleanup -w ws-EXAMPLE --data @cleanup.json
-purplemux worktree cleanup -w ws-EXAMPLE --data @cleanup.json
+purplemux-improved worktree preview-cleanup -w ws-EXAMPLE --data @cleanup.json
+purplemux-improved worktree cleanup -w ws-EXAMPLE --data @cleanup.json
 ```
 
 ### AI 提交信息与提交
@@ -258,13 +257,13 @@ purplemux worktree cleanup -w ws-EXAMPLE --data @cleanup.json
 `--session` 是 `tab list` 返回的 tmux `sessionName`，不是标签 ID 或 Agent 会话 ID。
 
 ```bash
-purplemux tab list -w ws-EXAMPLE
-purplemux commit inspect --session "TMUX_SESSION"
-purplemux commit generate --session "TMUX_SESSION" --locale zh-CN > "commit-preview.json"
+purplemux-improved tab list -w ws-EXAMPLE
+purplemux-improved commit inspect --session "TMUX_SESSION"
+purplemux-improved commit generate --session "TMUX_SESSION" --locale zh-CN > "commit-preview.json"
 
 # 审阅文件列表和 title/body；仅提取提交所需字段
 jq '{snapshot,message:{title,body}}' "commit-preview.json" > "commit.json"
-purplemux commit create --session "TMUX_SESSION" --data @commit.json
+purplemux-improved commit create --session "TMUX_SESSION" --data @commit.json
 ```
 
 `generate` 不提交；`create` 检查分支、HEAD 和变更树快照后提交。若文件变化导致快照失效，重新检查并生成请求。
@@ -272,24 +271,24 @@ purplemux commit create --session "TMUX_SESSION" --data @commit.json
 ### 输入队列、附件与会话
 
 ```bash
-purplemux queue add -w ws-EXAMPLE --tab-id TAB_ID --id msg-1 --text "完成后再补充测试"
-purplemux queue list -w ws-EXAMPLE --tab-id TAB_ID
-purplemux queue submit -w ws-EXAMPLE --tab-id TAB_ID
-purplemux queue remove -w ws-EXAMPLE --tab-id TAB_ID --id msg-1
+purplemux-improved queue add -w ws-EXAMPLE --tab-id TAB_ID --id msg-1 --text "完成后再补充测试"
+purplemux-improved queue list -w ws-EXAMPLE --tab-id TAB_ID
+purplemux-improved queue submit -w ws-EXAMPLE --tab-id TAB_ID
+purplemux-improved queue remove -w ws-EXAMPLE --tab-id TAB_ID --id msg-1
 
-purplemux upload file --file "./design.pdf" -w ws-EXAMPLE --tab-id TAB_ID > "attachment.json"
+purplemux-improved upload file --file "./design.pdf" -w ws-EXAMPLE --tab-id TAB_ID > "attachment.json"
 jq '{attachments:[.],text:"请检查附件"}' "attachment.json" > "message.json"
-purplemux queue add -w ws-EXAMPLE --tab-id TAB_ID --id msg-2 --data @message.json
+purplemux-improved queue add -w ws-EXAMPLE --tab-id TAB_ID --id msg-2 --data @message.json
 
-purplemux tab status -w ws-EXAMPLE TAB_ID
-purplemux queue answer -w ws-EXAMPLE --tab-id TAB_ID --id answer-1 --agent-session-id AGENT_SESSION_ID --text "选择第一项"
-purplemux session codex-status -w ws-EXAMPLE --tab-id TAB_ID --session-id AGENT_SESSION_ID
-purplemux session codex --cwd "/absolute/path/to/repo" --days-back 30
-purplemux session claude --tmux-session "TMUX_SESSION" --limit 20
-purplemux session entries --jsonl-path "/allowed/session.jsonl" --before-byte 4096 --mode turn
+purplemux-improved tab status -w ws-EXAMPLE TAB_ID
+purplemux-improved queue answer -w ws-EXAMPLE --tab-id TAB_ID --id answer-1 --agent-session-id AGENT_SESSION_ID --text "选择第一项"
+purplemux-improved session codex-status -w ws-EXAMPLE --tab-id TAB_ID --session-id AGENT_SESSION_ID
+purplemux-improved session codex --cwd "/absolute/path/to/repo" --days-back 30
+purplemux-improved session claude --tmux-session "TMUX_SESSION" --limit 20
+purplemux-improved session entries --jsonl-path "/allowed/session.jsonl" --before-byte 4096 --mode turn
 
 # 默认仅移除历史/隐藏；显式 true 同时删除原始记录
-purplemux session delete --provider codex --session-id AGENT_SESSION_ID --delete-original true
+purplemux-improved session delete --provider codex --session-id AGENT_SESSION_ID --delete-original true
 ```
 
 上传文件非空且最大 50 MiB。队列允许纯文本、纯附件或两者组合。`queue answer` 的 Agent 会话 ID 必须与当前状态一致，会话切换时服务端拒绝发送。状态栏响应的 `active:false` 表示未匹配当前活动会话。历史读取的 `beforeByte` 为字节游标，路径必须通过服务端会话目录校验。
@@ -297,11 +296,11 @@ purplemux session delete --provider codex --session-id AGENT_SESSION_ID --delete
 ### Codex 环境与生成提示词
 
 ```bash
-purplemux config get
-purplemux config set --codex-environment '{"EXAMPLE_VARIABLE":"value"}'
-purplemux codex launch-args -w ws-EXAMPLE
-purplemux config set --branch-name-provider claude
-purplemux config set --data @prompts.json
+purplemux-improved config get
+purplemux-improved config set --codex-environment '{"EXAMPLE_VARIABLE":"value"}'
+purplemux-improved codex launch-args -w ws-EXAMPLE
+purplemux-improved config set --branch-name-provider claude
+purplemux-improved config set --data @prompts.json
 ```
 
 `codexEnvironment` 替换整张配置映射，仅影响后续启动的进程。`prompts.json` 可包含 `branchNamePrompt`、`commitMessagePrompt`、`reviewDescriptionPrompt`；变量和长度沿用服务端校验。`config get` 与 `codex launch-args` 会返回所配置的环境变量值。
