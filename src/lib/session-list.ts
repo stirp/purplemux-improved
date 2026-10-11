@@ -5,7 +5,8 @@ import readline from 'readline';
 import { toClaudeProjectName } from '@/lib/providers/claude/session-detection';
 import { getSessionCwd } from '@/lib/tmux';
 import { createLogger } from '@/lib/logger';
-import { createMetaCache } from '@/lib/session-meta-cache';
+import { createSessionMetaCache, type ISessionMetaCache } from '@/lib/session-meta-cache';
+import { runWithConcurrency } from '@/lib/bounded-concurrency';
 import type { ISessionMeta } from '@/types/timeline';
 
 const log = createLogger('session-list');
@@ -18,35 +19,13 @@ const PROJECTS_DIR = path.join(
 const MAX_CONCURRENCY = 10;
 const MAX_FIRST_MESSAGE_LENGTH = 200;
 
-const metaCache = createMetaCache();
+const g = globalThis as unknown as { __ptClaudeSessionMetaCache?: ISessionMetaCache<ISessionMeta> };
+if (!g.__ptClaudeSessionMetaCache) g.__ptClaudeSessionMetaCache = createSessionMetaCache<ISessionMeta>();
+const metaCache = g.__ptClaudeSessionMetaCache;
 
 export const cwdToProjectPath = (cwd: string): string => {
   const projectName = toClaudeProjectName(cwd);
   return path.join(PROJECTS_DIR, projectName);
-};
-
-const runWithConcurrency = async <T>(
-  tasks: (() => Promise<T>)[],
-  limit: number,
-): Promise<PromiseSettledResult<T>[]> => {
-  const results: PromiseSettledResult<T>[] = new Array(tasks.length);
-  let nextIndex = 0;
-
-  const runNext = async (): Promise<void> => {
-    while (nextIndex < tasks.length) {
-      const idx = nextIndex++;
-      try {
-        const value = await tasks[idx]();
-        results[idx] = { status: 'fulfilled', value };
-      } catch (reason) {
-        results[idx] = { status: 'rejected', reason };
-      }
-    }
-  };
-
-  const workers = Array.from({ length: Math.min(limit, tasks.length) }, () => runNext());
-  await Promise.all(workers);
-  return results;
 };
 
 const truncateMessage = (text: string): string =>
@@ -123,29 +102,16 @@ const scanJsonl = async (filePath: string): Promise<IJsonlScanResult> => {
 
 export const parseSessionMeta = async (jsonlPath: string): Promise<ISessionMeta | null> => {
   try {
-    const stat = await fs.stat(jsonlPath);
-    const sessionId = path.basename(jsonlPath, '.jsonl');
-
-    const cached = metaCache.get('claude', sessionId);
-    if (cached && !metaCache.isStale('claude', sessionId, stat.mtimeMs)) {
-      return cached;
-    }
-
-    const { startedAt: startedAtFromFile, firstMessage, turnCount } = await scanJsonl(jsonlPath);
-
-    const startedAt = startedAtFromFile || stat.birthtime.toISOString();
-    const lastActivityAt = stat.mtime.toISOString();
-
-    const meta: ISessionMeta = {
-      sessionId,
-      startedAt,
-      lastActivityAt,
-      firstMessage,
-      turnCount,
-    };
-
-    metaCache.set('claude', sessionId, meta, stat.mtimeMs);
-    return meta;
+    return await metaCache.read(jsonlPath, async (stat) => {
+      const { startedAt: startedAtFromFile, firstMessage, turnCount } = await scanJsonl(jsonlPath);
+      return {
+        sessionId: path.basename(jsonlPath, '.jsonl'),
+        startedAt: startedAtFromFile || stat.birthtime.toISOString(),
+        lastActivityAt: stat.mtime.toISOString(),
+        firstMessage,
+        turnCount,
+      };
+    });
   } catch (err) {
     log.warn({ err }, `failed to parse session meta: ${jsonlPath}`);
     return null;
