@@ -1,5 +1,17 @@
 # v20 任务进度
 
+## 0.5.2 性能优化版本（2026-10-10）
+
+- [x] 记录[版本目标与范围](./requirements/performance-optimization.md)，同步平台规格。
+- [x] 使用 npm version 更新版本为 0.5.2；元数据验证见[记录](./result/verify-performance-optimization.md)。
+- [x] 源码初审，整理 PERF-01 至 PERF-07 候选工作、测量场景及执行顺序。
+- [x] 第一轮会话元数据微基准、共享缓存与 Codex 扫描并发限制；[实施记录](./result/build-performance-optimization.md)。
+- [x] 缓存失效、并发、真实文件修改及列表兼容回归，完整 TypeScript、改动文件 ESLint 和全量测试；[验证记录](./result/verify-performance-optimization.md)。
+- [x] 第一轮完整生产构建通过；单次微基准的 31 秒后刷新由 256 ms/50 次扫描变为 2 ms/0 次扫描，不代表端到端指标。
+- [ ] 测量性能基线，定位瓶颈并补充具体优化规格与指标。
+- [ ] 按规格实施性能优化，并完成前后测量和相关回归验证。
+- [ ] 重新打包、安装验收与发布。
+
 ## Linux CLI 安装入口修复（2026-10-10）
 
 - [x] [需求](./requirements/single-cli-install.md)及 fork-platform 规格更新：仅注册 purplemux-improved。

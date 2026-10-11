@@ -5,6 +5,8 @@ import os from 'os';
 import readline from 'readline';
 import { createLogger } from '@/lib/logger';
 import { readCodexSessionStats } from '@/lib/stats/jsonl-parser-codex';
+import { createSessionMetaCache, type ISessionMetaCache } from '@/lib/session-meta-cache';
+import { runWithConcurrency } from '@/lib/bounded-concurrency';
 
 const log = createLogger('codex-session-list');
 
@@ -12,7 +14,7 @@ const SESSIONS_ROOT = path.join(os.homedir(), '.codex', 'sessions');
 const DEFAULT_DAYS_BACK = 30;
 const MAX_FIRST_MESSAGE_LENGTH = 200;
 const MAX_LINES_FOR_FIRST_MESSAGE = 60;
-const CACHE_TTL_MS = 30_000;
+const MAX_CONCURRENCY = 10;
 const META_DEDUP_LOG_KEYS = new Set<string>();
 
 export interface ICodexSessionEntry {
@@ -27,15 +29,9 @@ export interface ICodexSessionEntry {
   totalTokens: number | null;
 }
 
-interface ICodexCacheEntry {
-  entry: ICodexSessionEntry;
-  mtime: number;
-  cachedAt: number;
-}
-
-const g = globalThis as unknown as { __ptCodexSessionMetaCache?: Map<string, ICodexCacheEntry> };
-if (!g.__ptCodexSessionMetaCache) g.__ptCodexSessionMetaCache = new Map();
-const cache = g.__ptCodexSessionMetaCache;
+const g = globalThis as unknown as { __ptCodexListMetaCache?: ISessionMetaCache<ICodexSessionEntry> };
+if (!g.__ptCodexListMetaCache) g.__ptCodexListMetaCache = createSessionMetaCache<ICodexSessionEntry>();
+const cache = g.__ptCodexListMetaCache;
 
 const truncateMessage = (text: string): string =>
   text.length <= MAX_FIRST_MESSAGE_LENGTH ? text : text.slice(0, MAX_FIRST_MESSAGE_LENGTH) + '…';
@@ -145,33 +141,18 @@ const extractMeta = async (jsonlPath: string): Promise<ICodexSessionEntry | null
 };
 
 const getCachedEntry = async (jsonlPath: string): Promise<ICodexSessionEntry | null> => {
-  let stat;
   try {
-    stat = await fs.stat(jsonlPath);
-  } catch (err) {
-    warnOnce(`stat:${jsonlPath}`, { jsonlPath, err: err instanceof Error ? err.message : err });
-    return null;
-  }
-
-  const cached = cache.get(jsonlPath);
-  if (cached && cached.mtime === stat.mtimeMs && Date.now() - cached.cachedAt < CACHE_TTL_MS) {
-    return cached.entry;
-  }
-
-  try {
-    const entry = await extractMeta(jsonlPath);
+    const entry = await cache.read(jsonlPath, async (stat) => {
+      const entry = await extractMeta(jsonlPath);
+      return entry ? { ...entry, lastActivityAt: stat.mtimeMs } : null;
+    });
     if (!entry) return null;
     const stats = await readCodexSessionStats(jsonlPath).catch(() => null);
-    const enriched: ICodexSessionEntry = stats
-      ? {
-          ...entry,
-          lastActivityAt: stat.mtimeMs,
-          model: entry.model ?? stats.model,
-          totalTokens: stats.totalTokens > 0 ? stats.totalTokens : null,
-        }
-      : { ...entry, lastActivityAt: stat.mtimeMs };
-    cache.set(jsonlPath, { entry: enriched, mtime: stat.mtimeMs, cachedAt: Date.now() });
-    return enriched;
+    return {
+      ...entry,
+      model: entry.model ?? stats?.model ?? null,
+      totalTokens: stats && stats.totalTokens > 0 ? stats.totalTokens : null,
+    };
   } catch (err) {
     warnOnce(`parse:${jsonlPath}`, { jsonlPath, err: err instanceof Error ? err.message : err });
     return null;
@@ -227,17 +208,18 @@ export const listCodexSessions = async ({
     dirEntries.push({ dir, files: jsonlFiles });
   }
 
-  const allTasks: Promise<ICodexSessionEntry | null>[] = [];
+  const allTasks: (() => Promise<ICodexSessionEntry | null>)[] = [];
   for (const { dir, files } of dirEntries) {
     for (const file of files) {
       scannedFiles++;
-      allTasks.push(getCachedEntry(path.join(dir, file)));
+      allTasks.push(() => getCachedEntry(path.join(dir, file)));
     }
   }
 
-  const results = await Promise.all(allTasks);
-  for (const entry of results) {
-    if (!entry) continue;
+  const results = await runWithConcurrency(allTasks, MAX_CONCURRENCY);
+  for (const result of results) {
+    if (result.status !== 'fulfilled' || !result.value) continue;
+    const entry = result.value;
     if (entry.cwd !== cwd) continue;
     sessions.push(entry);
   }

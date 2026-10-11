@@ -1,57 +1,57 @@
-import type { ISessionMeta } from '@/types/timeline';
+import fs from 'node:fs/promises';
+import type { Stats } from 'node:fs';
 
-export type TMetaCacheProviderId = 'claude' | 'codex';
-
-interface ICacheEntry {
-  meta: ISessionMeta;
-  mtime: number;
-  cachedAt: number;
+interface ICacheEntry<T> {
+  value: T;
+  fingerprint: string;
 }
 
-const CACHE_TTL = 30_000;
-
-const composeKey = (providerId: TMetaCacheProviderId, sessionId: string): string =>
-  `${providerId}:${sessionId}`;
-
-export interface IMetaCache {
-  get: (providerId: TMetaCacheProviderId, sessionId: string) => ISessionMeta | undefined;
-  set: (providerId: TMetaCacheProviderId, sessionId: string, meta: ISessionMeta, mtime: number) => void;
-  isStale: (providerId: TMetaCacheProviderId, sessionId: string, currentMtime: number) => boolean;
+export interface ISessionMetaCache<T> {
+  read: (filePath: string, load: (stat: Stats) => Promise<T | null>) => Promise<T | null>;
   clear: () => void;
 }
 
-export const createMetaCache = (): IMetaCache => {
-  const store = new Map<string, ICacheEntry>();
+const fingerprint = (stat: Stats): string =>
+  `${stat.dev}:${stat.ino}:${stat.size}:${stat.mtimeMs}:${stat.ctimeMs}`;
 
-  const get = (providerId: TMetaCacheProviderId, sessionId: string): ISessionMeta | undefined => {
-    const key = composeKey(providerId, sessionId);
-    const entry = store.get(key);
-    if (!entry) return undefined;
-    if (Date.now() - entry.cachedAt > CACHE_TTL) {
-      store.delete(key);
-      return undefined;
-    }
-    return entry.meta;
-  };
+export const createSessionMetaCache = <T>(capacity = 2000): ISessionMetaCache<T> => {
+  const cache = new Map<string, ICacheEntry<T>>();
+  const pending = new Map<string, Promise<T | null>>();
+  let generation = 0;
 
-  const set = (providerId: TMetaCacheProviderId, sessionId: string, meta: ISessionMeta, mtime: number) => {
-    store.set(composeKey(providerId, sessionId), { meta, mtime, cachedAt: Date.now() });
-  };
-
-  const isStale = (providerId: TMetaCacheProviderId, sessionId: string, currentMtime: number): boolean => {
-    const key = composeKey(providerId, sessionId);
-    const entry = store.get(key);
-    if (!entry) return true;
-    if (Date.now() - entry.cachedAt > CACHE_TTL) {
-      store.delete(key);
-      return true;
-    }
-    return entry.mtime !== currentMtime;
+  const read = (filePath: string, load: (stat: Stats) => Promise<T | null>): Promise<T | null> => {
+    const existing = pending.get(filePath);
+    if (existing) return existing;
+    const readGeneration = generation;
+    const loadValue = async (): Promise<T | null> => {
+      const stat = await fs.stat(filePath);
+      const version = fingerprint(stat);
+      const cached = cache.get(filePath);
+      cache.delete(filePath);
+      if (cached?.fingerprint === version) {
+        cache.set(filePath, cached);
+        return cached.value;
+      }
+      const value = await load(stat);
+      const currentStat = value !== null ? await fs.stat(filePath) : null;
+      if (value !== null && currentStat && readGeneration === generation && fingerprint(currentStat) === version) {
+        cache.set(filePath, { value, fingerprint: version });
+        while (cache.size > capacity) cache.delete(cache.keys().next().value!);
+      }
+      return value;
+    };
+    const result = loadValue().finally(() => {
+      if (pending.get(filePath) === result) pending.delete(filePath);
+    });
+    pending.set(filePath, result);
+    return result;
   };
 
   const clear = () => {
-    store.clear();
+    generation++;
+    cache.clear();
+    pending.clear();
   };
 
-  return { get, set, isStale, clear };
+  return { read, clear };
 };
