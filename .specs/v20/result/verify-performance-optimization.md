@@ -74,3 +74,18 @@ Codex 消息扫描已同样优化，其统计尾部读取仍沿用原有缓存�
 - PERF-01 的完整 CPU、内存、启动及交互基线，PERF-03 至 PERF-07，以及元数据增量读取和分页优化仍待推进。
 - 全量测试后仅增加显式 null 类型收窄，该处不改变运行行为；修改后相关回归、完整类型检查及生产构建已重跑通过。
 - 未执行 Git 提交、标签、推送或发布。
+
+## 合并冲突验证（2026-10-12）
+
+本次整合性能优化与 single-cli-install 改动，在 fork-platform/spec.md、三个 detail 文档和 task.md 中解决 6 处冲突。
+保留 0.5.2、性能优化记录以及另一侧的单 CLI 安装约定，双方任务和变更历史均保留。
+package.json 的安装入口只有 purplemux-improved，仍指向 bin/purplemux.js；数据目录仍为 ~/.purplemux。
+
+验证发现 Codex 列表测试将 2026-10-11 固定为最新文件日期，当前日期超过该值导致排序断言失败；已改为当前时间加 60 秒，保持原有排序验证目的。
+
+- `node node_modules/vitest/vitest.mjs run tests/unit/lib/session-meta-cache.test.ts tests/unit/lib/codex-session-list.test.ts tests/unit/lib/session-list-performance.test.ts tests/unit/lib/codex-prompt.test.ts`：18 项通过，1 项可选微基准跳过。
+- `node --test tests/cli/features.test.cjs`：61 项通过。
+- `node node_modules/typescript/bin/tsc --noEmit`：完整类型检查通过。
+- `node node_modules/eslint/bin/eslint.js tests/unit/lib/codex-session-list.test.ts`：通过。
+- 检查包版本、单 bin 入口及双方任务段落：通过；冲突标记与 Git 未合并索引检查通过。
+- 本次未重新运行全量测试、生产构建、性能微基准或实机安装，未创建合并提交。

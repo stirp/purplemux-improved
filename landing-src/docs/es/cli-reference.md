@@ -1,12 +1,12 @@
 ---
 title: Referencia del CLI
-description: Cada subcomando y flag de los binarios purplemux-improved y pmux.
+description: Cada subcomando y flag de los binarios purplemux-improved.
 eyebrow: Referencia
 permalink: /es/docs/cli-reference/index.html
 ---
 {% from "docs/callouts.njk" import callout %}
 
-`purplemux-improved` viene con dos formas de usar el binario: como arrancador del servidor (`purplemux-improved` / `purplemux-improved start`) y como wrapper de la API HTTP (`purplemux-improved <subcomando>`) que habla con un servidor en marcha. El alias corto `pmux` es idéntico.
+`purplemux-improved` viene con dos formas de usar el binario: como arrancador del servidor (`purplemux-improved` / `purplemux-improved start`) y como wrapper de la API HTTP (`purplemux-improved <subcomando>`) que habla con un servidor en marcha.
 
 ## Dos roles, un binario
 
@@ -14,7 +14,6 @@ permalink: /es/docs/cli-reference/index.html
 |---|---|
 | `purplemux-improved` | Arranca el servidor. Igual que `purplemux-improved start`. |
 | `purplemux-improved <subcomando>` | Habla con la API HTTP del CLI de un servidor en marcha. |
-| `pmux ...` | Alias para `purplemux-improved ...`. |
 
 El dispatcher en `bin/purplemux.js` separa el primer argumento: los subcomandos conocidos van a `bin/cli.js`, cualquier otra cosa (o sin argumento) lanza el servidor.
 

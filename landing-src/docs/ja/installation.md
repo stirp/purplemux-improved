@@ -33,7 +33,6 @@ purplemux-improved
 
 pnpm や yarn でも同様に動作します (`pnpm add -g purplemux-improved` / `yarn global add purplemux-improved`)。2 回目以降は解決処理が不要なため起動が速くなります。アップデートは `npm update -g purplemux-improved` で。
 
-短縮形として `pmux` バイナリも使えます。
 
 ### macOS ネイティブアプリ
 

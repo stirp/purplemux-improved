@@ -1,12 +1,12 @@
 ---
 title: CLI referansı
-description: purplemux-improved ve pmux ikili dosyalarının her alt komutu ve bayrağı.
+description: purplemux-improved ikili dosyalarının her alt komutu ve bayrağı.
 eyebrow: Referans
 permalink: /tr/docs/cli-reference/index.html
 ---
 {% from "docs/callouts.njk" import callout %}
 
-`purplemux-improved`, ikili dosyayı kullanmanın iki yolunu sunar: bir sunucu başlatıcısı olarak (`purplemux-improved` / `purplemux-improved start`) ve çalışan bir sunucuyla konuşan bir HTTP API sarmalayıcısı olarak (`purplemux-improved <subcommand>`). Kısa kısayol `pmux` aynıdır.
+`purplemux-improved`, ikili dosyayı kullanmanın iki yolunu sunar: bir sunucu başlatıcısı olarak (`purplemux-improved` / `purplemux-improved start`) ve çalışan bir sunucuyla konuşan bir HTTP API sarmalayıcısı olarak (`purplemux-improved <subcommand>`).
 
 ## İki rol, tek ikili
 
@@ -14,7 +14,6 @@ permalink: /tr/docs/cli-reference/index.html
 |---|---|
 | `purplemux-improved` | Sunucuyu başlat. `purplemux-improved start` ile aynı. |
 | `purplemux-improved <subcommand>` | Çalışan bir sunucunun CLI HTTP API'siyle konuş. |
-| `pmux ...` | `purplemux-improved ...` için kısayol. |
 
 `bin/purplemux.js`'deki dağıtıcı ilk argümanı ayırır: bilinen alt komutlar `bin/cli.js`'e gider, başka her şey (veya argüman yok) sunucuyu başlatır.
 

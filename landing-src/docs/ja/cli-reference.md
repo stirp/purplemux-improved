@@ -1,12 +1,12 @@
 ---
 title: CLI リファレンス
-description: purplemux-improved と pmux バイナリのすべてのサブコマンドとフラグ。
+description: purplemux-improved バイナリのすべてのサブコマンドとフラグ。
 eyebrow: リファレンス
 permalink: /ja/docs/cli-reference/index.html
 ---
 {% from "docs/callouts.njk" import callout %}
 
-`purplemux-improved` バイナリには 2 つの使い方があります: サーバスタータ (`purplemux-improved` / `purplemux-improved start`) として、そして実行中のサーバと話す HTTP API ラッパー (`purplemux-improved <subcommand>`) として。短いエイリアス `pmux` は同一のものです。
+`purplemux-improved` バイナリには 2 つの使い方があります: サーバスタータ (`purplemux-improved` / `purplemux-improved start`) として、そして実行中のサーバと話す HTTP API ラッパー (`purplemux-improved <subcommand>`) として。
 
 ## 1 つのバイナリ、2 つの役割
 
@@ -14,7 +14,6 @@ permalink: /ja/docs/cli-reference/index.html
 |---|---|
 | `purplemux-improved` | サーバを起動。`purplemux-improved start` と同じ。 |
 | `purplemux-improved <subcommand>` | 実行中のサーバの CLI HTTP API と話す。 |
-| `pmux ...` | `purplemux-improved ...` のエイリアス。 |
 
 `bin/purplemux.js` のディスパッチャは最初の引数を取り出します: 既知のサブコマンドは `bin/cli.js` にルーティング、それ以外 (または引数なし) はサーバを起動します。
 

@@ -33,7 +33,6 @@ purplemux-improved
 
 pnpm и yarn работают так же (`pnpm add -g purplemux-improved` / `yarn global add purplemux-improved`). Последующие запуски быстрее, потому что не нужно ничего разрешать. Обновление — `npm update -g purplemux-improved`.
 
-Бинарник также доступен под коротким именем `pmux`.
 
 ### Нативное macOS-приложение
 

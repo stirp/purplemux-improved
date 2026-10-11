@@ -57,7 +57,8 @@ describe('Codex session list', () => {
     const files = await Promise.all(Array.from({ length: 35 }, (_, i) => writeSession(`s-${i}`)));
     await writeSession('elsewhere', '/other');
     await fs.writeFile(path.join(day, 'invalid.jsonl'), 'invalid');
-    await fs.utimes(files[0], new Date('2026-10-11'), new Date('2026-10-11'));
+    const latest = new Date(Date.now() + 60_000);
+    await fs.utimes(files[0], latest, latest);
     const result = await list.listCodexSessions({ cwd: '/project', daysBack: 1 });
     expect(result.sessions).toHaveLength(35);
     expect(result.scannedDirs).toBe(1);

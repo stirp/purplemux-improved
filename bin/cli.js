@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// purplemux CLI — workspace-scoped HTTP API wrapper
+// purplemux-improved CLI — workspace-scoped HTTP API wrapper
 // Falls back to ~/.purplemux/{port,cli-token} when env vars absent.
 
 'use strict';
@@ -161,11 +161,11 @@ const cmdTabClose = async (args) => {
 
 const cmdTabRename = async (args) => {
   if (args.length === 1 && ['--help', '-h'].includes(args[0])) {
-    process.stdout.write('purplemux tab rename -w WS TAB_ID NAME\nRename a tab in its current pane. An empty name restores its automatic title.\n');
+    process.stdout.write('purplemux-improved tab rename -w WS TAB_ID NAME\nRename a tab in its current pane. An empty name restores its automatic title.\n');
     return;
   }
   const rest = stripFlags(args, ['--workspace', '-w']);
-  if (rest.length !== 2) die('Usage: purplemux tab rename -w WS TAB_ID NAME');
+  if (rest.length !== 2) die('Usage: purplemux-improved tab rename -w WS TAB_ID NAME');
   const wsId = resolveWsForTab(args);
   requireEnv();
   const tabId = encodeURIComponent(rest[0]);
