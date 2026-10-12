@@ -26,3 +26,5 @@
 Review 修复：sessionWorkflow 增加 sessions 持久索引和 tabBindings 首次绑定记录；GET Workspace 回补当前 Tab/保留历史并迁移 fallback，历史新增在裁剪前更新索引，显式删除同步清除索引。同步连接 onopen 补拉 Workspace，历史禁用导航按会话身份判断。完整约束见上链需求的 Review 修复约定。
 
 第二轮 Review：删除标记 sessionWorkflow.deleted 在写锁内持久化，并在回补中读取 hidden-sessions；无轮次索引单独保存 navigation 恢复目标，按原生身份导航、判断当前会话和提供删除入口。详见状态管理需求第二轮约定。
+
+第三轮 Review：删除身份仍消费首次绑定 fallback 并记录绑定，不迁移人工状态；无轮次会话使用 DOM 菜单触发器，验收右键和长按。详见状态管理需求第三轮约定。

@@ -91,3 +91,5 @@ Sessions 项目定位测试本次已运行，结果见独立验证记录；其�
 Review 修复补齐会话身份导航、首次绑定人工状态迁移、同步重连和独立会话索引，约束见[状态管理需求](../../requirements/session-task-status.md)。
 
 第二轮 Review 补齐持久删除标记与无轮次会话恢复目标，验证见[第二轮记录](../../result/verify-session-task-status-review-2.md)。
+
+2026-10-13 第三轮 Review：补齐已删除身份首次绑定清理及无轮次行菜单触发，遵循状态管理需求第三轮约定。

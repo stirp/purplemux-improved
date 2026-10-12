@@ -584,3 +584,5 @@ Session 工作状态独立于 TCliState，由 session-workflow 的共享纯函�
 Review 修复：sessionWorkflow.sessions 保存独立会话索引（关联及最近一轮摘要），tabBindings 在首次绑定时消费 Tab fallback 人工状态。索引先于轮次历史裁剪持久化，GET Workspace 回补，状态更新使用快照写入；人工确认不被后续会话继承。历史导航按 provider/session ID 判断当前会话，useSync 每次连接建立均补拉 Workspace；删除时同步清除索引。
 
 第二轮 Review：sessionWorkflow.deleted 与索引同锁写入，回补同锁读取 hidden-sessions 并排除删除键；客户端同样过滤删除键。无轮次索引的 navigation 保存原生身份、Workspace 名称/目录与 Tab ID，独立于轮次历史；导航和删除均使用该身份，不把复用 Tab 上的新会话当作旧索引的目标。
+
+第三轮 Review：原生身份已隐藏/删除仍消费首次绑定 fallback 的状态与索引并记录 tabBindings，不迁移至删除身份；后续新身份使用自身自动或人工状态。无轮次行以 DOM 元素承接真实菜单事件与 ref，支持右键、移动端长按及取消手势。

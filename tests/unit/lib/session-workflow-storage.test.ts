@@ -41,6 +41,23 @@ beforeEach(() => {
     sidebarCollapsed: false, sidebarWidth: 240 }));
 });
 describe('persistent workflow preferences', () => {
+  it.each(['deleted', 'hidden'])('consumes fallback on first binding of a %s native identity', async (source) => {
+    await updateSessionWorkflow({ key: 'codex:tab:t', status: 'completed' });
+    await synchronizeSessionWorkflow([], { t: { workspaceId: 'ws', panelType: 'codex-cli' } });
+    if (source === 'deleted') await removeSessionWorkflow('codex', 'A');
+    else mocks.files.set('/workflow-test/.purplemux/hidden-sessions.json', JSON.stringify(['codex:A']));
+    await synchronizeSessionWorkflow([], { t: { workspaceId: 'ws', panelType: 'codex-cli', agentSessionId: 'A' } });
+    const bound = (await getWorkspaces()).sessionWorkflow!;
+    expect(bound.statuses).toEqual({});
+    expect(bound.sessions).toEqual({});
+    expect(bound.tabBindings).toEqual({ 'codex:tab:t': 'codex:A' });
+    await synchronizeSessionWorkflow([]);
+    expect(collectWorkSessions([], {}, (await getWorkspaces()).sessionWorkflow!)).toEqual([]);
+    await synchronizeSessionWorkflow([], { t: { workspaceId: 'ws', panelType: 'codex-cli', agentSessionId: 'B' } });
+    const next = (await getWorkspaces()).sessionWorkflow!;
+    expect(next.statuses).toEqual({});
+    expect(collectWorkSessions([], {}, next)).toMatchObject([{ key: 'codex:B', status: 'pending' }]);
+  });
   it('reads legacy workspaces and preserves unrelated fields while saving concurrent updates', async () => {
     expect((await getWorkspaces()).sessionWorkflow).toBeUndefined();
     await Promise.all([

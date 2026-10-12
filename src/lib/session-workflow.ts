@@ -108,9 +108,8 @@ export const reconcileSessionWorkflow = (
     const provider = tab.agentProviderId === 'codex' || tab.panelType === 'codex-cli' ? 'codex' : 'claude';
     const fallback = sessionWorkKey(provider, null, `tab:${tabId}`);
     const key = sessionWorkKey(provider, tab.agentSessionId, '');
-    if (deleted.has(key)) continue;
     if (!next.tabBindings![fallback]) {
-      if (next.statuses[fallback] !== undefined && next.statuses[key] === undefined) next.statuses[key] = next.statuses[fallback];
+      if (!deleted.has(key) && next.statuses[fallback] !== undefined && next.statuses[key] === undefined) next.statuses[key] = next.statuses[fallback];
       delete next.statuses[fallback];
       delete next.sessions![fallback];
     }

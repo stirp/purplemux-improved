@@ -10,6 +10,23 @@ const entry = (overrides: Partial<ISessionHistoryEntry> = {}): ISessionHistoryEn
 });
 
 describe('session work status', () => {
+  it('consumes first-binding fallback even when the native identity is deleted', () => {
+    const original: ISessionWorkflow = {
+      statuses: { 'codex:tab:t1': 'completed' }, collapsed: {}, deleted: ['codex:A'],
+      sessions: { 'codex:tab:t1': { workspaceId: 'ws', tabId: 't1', status: 'pending' } },
+    };
+    const tab = { workspaceId: 'ws', panelType: 'codex-cli', agentSessionId: 'A' };
+    expect(collectWorkSessions([], { t1: tab }, original)).toEqual([]);
+    const bound = reconcileSessionWorkflow(original, [], { t1: tab });
+    expect(bound.statuses).toEqual({});
+    expect(bound.sessions).toEqual({});
+    expect(bound.tabBindings).toEqual({ 'codex:tab:t1': 'codex:A' });
+    expect(collectWorkSessions([], {}, bound)).toEqual([]);
+    const next = reconcileSessionWorkflow(bound, [], { t1: { ...tab, agentSessionId: 'B' } });
+    expect(collectWorkSessions([], {}, next)).toMatchObject([{ key: 'codex:B', status: 'pending' }]);
+    expect(next.statuses).toEqual({});
+    expect(original.statuses['codex:tab:t1']).toBe('completed');
+  });
   it('keeps finished turns in review even after notification dismissal', () => {
     expect(collectWorkSessions([entry({ dismissedAt: 4 })], {}, workflow)[0].status).toBe('review');
   });

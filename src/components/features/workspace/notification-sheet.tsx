@@ -396,7 +396,7 @@ export const NotificationPanel = ({ onNavigated, className }: { onNavigated?: ()
                         ? <SessionHistoryActions provider={target.providerId} sessionId={target.agentSessionId}
                           label={session.live?.lastUserMessage} onDeleted={async () => {
                             forgetSessionWorkflow(target.providerId, target.agentSessionId);
-                          }}>{liveItem}</SessionHistoryActions>
+                          }}><div>{liveItem}</div></SessionHistoryActions>
                         : liveItem}
                     <div className="flex items-center gap-2 pl-9">
                       <select aria-label={t('workStatusLabel')} disabled={saving}

@@ -37,3 +37,10 @@
 - 索引增加 navigation，只保存恢复所需身份和 Workspace 元数据，不创建虚假的历史轮次；老的无轮次索引可从其原生键及仍存在的 Workspace 回补。
 - navigateToSession 接受专用恢复目标；无轮次条目使用该目标判断当前会话、恢复及删除。A/B 复用一个 Tab 或关闭 Tab 后都按原生 ID 定位。
 - 复用历史删除组件、会话恢复工具和现有全局锁，避免另建恢复或删除通道。
+
+## 第三轮 Review 修复（2026-10-13）
+
+- reconcileSessionWorkflow 删除提前跳过，首次绑定统一消费 fallback 并记录绑定，仅非删除身份允许迁移人工状态。沿用现有纯函数和存储锁，不增加配置字段。
+- 无历史轮次行传入 DOM div 作为 SessionHistoryActions 触发器，复用 Base UI 事件与 ref 注入，保留内部行的身份导航。
+- 新增删除/隐藏首次绑定回归及真实菜单组件测试，覆盖桌面右键、移动端长按、手势取消和左键恢复；不 mock 被测菜单组件。
+- 本轮结果见[第三轮验证记录](./verify-session-task-status-review-3.md)。
