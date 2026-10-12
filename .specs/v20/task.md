@@ -1,5 +1,14 @@
 # v20 任务进度
 
+## Chat 内容区比例宽度（2026-10-12）
+
+- [x] 需求、timeline-history 规格及界面约定：所在面板 85%，无固定上限。
+- [x] 共享样式及聊天各区域实现。
+- [x] 完整 TypeScript、改动文件 ESLint、生产 CSS 编译及 4 文件 48 项相关回归通过。
+- [ ] 浏览器及实机验收。
+
+证据见[实施记录](./result/build-chat-content-width.md)和[验证记录](./result/verify-chat-content-width.md)。
+
 ## Claude 启动信任提示恢复（2026-10-10）
 
 - [x] 需求及 agent-runtime 界面、流程、数据约定。
