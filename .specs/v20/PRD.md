@@ -1,6 +1,7 @@
 # v20 需求整理：Fork 后累计新增功能
 
 2026-10-10 增量：[Claude 启动信任提示恢复](./requirements/claude-startup-prompts.md)，修复聊天区漏显示启动选项及新版无编号菜单回答。
+2026-10-10 增量：[安装后仅保留一个 CLI 命令](./requirements/single-cli-install.md)，取消 purplemux/pmux 安装别名，保留 purplemux-improved 和原数据目录。
 
 2026-10-08 复审：[Sessions 导航同步侧边栏项目](./requirements/session-workspace-navigation.md)仅历史入口触发，复用项目选择处理器，分组采用临时展开而非修改折叠偏好。
 
@@ -12,7 +13,7 @@
 - [全量提交覆盖表](./requirements/commit-coverage.md)
 - [项目约定](../../CLAUDE.md)
 
-v20 覆盖 `52140216..3637a357` 的 fork 增量，共 48 个非合并提交，按 19 个功能模块整理。当前应用版本为 `0.5.1`，升级版本号只是其中的平台元数据变更。
+v20 覆盖 `52140216..3637a357` 的 fork 增量，共 48 个非合并提交，按 19 个功能模块整理。当前开发版本为 `0.5.2`，用户确认 `0.5.1` 已打包安装；应用版本与规格版本分别维护。
 
 ## 功能列表
 
@@ -36,7 +37,7 @@ v20 覆盖 `52140216..3637a357` 的 fork 增量，共 48 个非合并提交，�
 | 16 | [终端流控与移动端视口](./features/terminal-rendering/spec.md) | 浏览器解析端对终端输出进行排队和确认，服务端依据消费进度进行背压控制。 |
 | 17 | [浏览器存储清理、翻译刷新与异常恢复](./features/browser-recovery/spec.md) | 设置页支持清理浏览器本地存储、缓存、Service Worker 和可枚举的 IndexedDB。 |
 | 18 | [附件草稿与上传访问保护](./features/attachments/spec.md) | 改善 Web 输入附件草稿处理及上传客户端错误处理。 |
-| 19 | [Fork 标识、旧浏览器兼容与开发配置](./features/fork-platform/spec.md) | 应用与包标识改为 purplemux-improved，保留 purplemux/pmux 别名及 ~/.purplemux 数据目录。 |
+| 19 | [Fork 标识、旧浏览器兼容与开发配置](./features/fork-platform/spec.md) | 应用与包标识使用 purplemux-improved，安装仅注册同名命令，保留 ~/.purplemux 数据目录。 |
 
 ## 主要产品要求
 
@@ -44,7 +45,7 @@ v20 覆盖 `52140216..3637a357` 的 fork 增量，共 48 个非合并提交，�
 2. 提升 Claude/Codex 的 Web 交互：队列、直接回答、原生命令、状态栏、计划和按轮历史。
 3. 桌面与移动端共享工作区能力，同时补足触摸拖拽、视口适配和工作树入口。
 4. 历史会话、文件上传、Git 操作和清理行为以当前源码保护条件为准，记录真实默认值与失败状态。
-5. 保留原命令别名和数据目录兼容，补齐浏览器恢复、语言资源与旧 Safari 支持。
+5. 安装仅注册 purplemux-improved，保留数据目录兼容，补齐浏览器恢复、语言资源与旧 Safari 支持。
 
 ## 约束与决策
 
@@ -55,6 +56,8 @@ v20 覆盖 `52140216..3637a357` 的 fork 增量，共 48 个非合并提交，�
 - 所有功能均有实现入口和已有测试索引；本次未重新运行完整测试或真实设备验收。
 
 ## 新增需求安排
+
+2026-10-10：[0.5.2 性能优化版本](./requirements/performance-optimization.md)完成版本准备、源码初审和第一轮会话元数据缓存/扫描并发优化；全量测试、完整 TypeScript、改动文件 ESLint 和生产构建通过。完整性能基线、后续优化与安装包验收仍待执行，证据见[验证记录](./result/verify-performance-optimization.md)。
 
 | 需求 | 优先级 | 状态 | 关联功能 |
 | --- | --- | --- | --- |

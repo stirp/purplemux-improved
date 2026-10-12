@@ -33,7 +33,6 @@ purplemux-improved
 
 pnpm 與 yarn 同樣可用（`pnpm add -g purplemux-improved` / `yarn global add purplemux-improved`）。後續啟動會更快，因為不需要再解析。升級指令是 `npm update -g purplemux-improved`。
 
-執行檔也可用 `pmux` 這個簡短別名。
 
 ### macOS 原生 App
 

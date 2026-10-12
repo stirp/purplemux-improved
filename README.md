@@ -1,6 +1,6 @@
 # purplemux-improved
 
-An improved fork of [subicura/purplemux](https://github.com/subicura/purplemux). The `purplemux` / `pmux` aliases and `~/.purplemux` data directory remain compatible. npm installation requires this fork to be published; until then, run from source.
+An improved fork of [subicura/purplemux](https://github.com/subicura/purplemux). Installation exposes only the `purplemux-improved` command and keeps the `~/.purplemux` data directory compatible. npm installation requires this fork to be published; until then, run from source.
 
 Fork features are also available through the CLI. Run `purplemux features` for the offline command guide, or read the [CLI examples](landing-src/docs/cli-reference.md#fork-feature-commands). From a source checkout, use `node bin/purplemux.js features`.
 

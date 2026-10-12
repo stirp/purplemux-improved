@@ -1,12 +1,12 @@
 ---
 title: CLI 레퍼런스
-description: purplemux-improved와 pmux 바이너리의 모든 서브커맨드와 플래그.
+description: purplemux-improved 바이너리의 모든 서브커맨드와 플래그.
 eyebrow: 레퍼런스
 permalink: /ko/docs/cli-reference/index.html
 ---
 {% from "docs/callouts.njk" import callout %}
 
-`purplemux-improved`는 한 바이너리를 두 가지 방식으로 사용합니다: 서버 시작 (`purplemux-improved` / `purplemux-improved start`)과, 실행 중인 서버에 말을 거는 HTTP API 래퍼 (`purplemux-improved <subcommand>`). 짧은 별칭 `pmux`도 동일합니다.
+`purplemux-improved`는 한 바이너리를 두 가지 방식으로 사용합니다: 서버 시작 (`purplemux-improved` / `purplemux-improved start`)과, 실행 중인 서버에 말을 거는 HTTP API 래퍼 (`purplemux-improved <subcommand>`).
 
 ## 한 바이너리, 두 역할
 
@@ -14,7 +14,6 @@ permalink: /ko/docs/cli-reference/index.html
 |---|---|
 | `purplemux-improved` | 서버 시작. `purplemux-improved start`와 동일. |
 | `purplemux-improved <subcommand>` | 실행 중인 서버의 CLI HTTP API와 통신. |
-| `pmux ...` | `purplemux-improved ...`의 별칭. |
 
 `bin/purplemux.js`의 디스패처가 첫 인자를 보고 결정합니다: 알려진 서브커맨드면 `bin/cli.js`로 라우팅, 그 외(또는 인자 없음)이면 서버를 시작합니다.
 

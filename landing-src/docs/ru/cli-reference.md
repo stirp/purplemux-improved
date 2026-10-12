@@ -1,12 +1,12 @@
 ---
 title: CLI reference
-description: Каждая подкоманда и флаг бинарей purplemux-improved и pmux.
+description: Каждая подкоманда и флаг бинарей purplemux-improved.
 eyebrow: Справочник
 permalink: /ru/docs/cli-reference/index.html
 ---
 {% from "docs/callouts.njk" import callout %}
 
-`purplemux-improved` поставляется с двумя способами использования бинаря: как стартер сервера (`purplemux-improved` / `purplemux-improved start`) и как обёртка над HTTP API (`purplemux-improved <subcommand>`), которая разговаривает с работающим сервером. Короткий алиас `pmux` идентичен.
+`purplemux-improved` поставляется с двумя способами использования бинаря: как стартер сервера (`purplemux-improved` / `purplemux-improved start`) и как обёртка над HTTP API (`purplemux-improved <subcommand>`), которая разговаривает с работающим сервером.
 
 ## Две роли, один бинарь
 
@@ -14,7 +14,6 @@ permalink: /ru/docs/cli-reference/index.html
 |---|---|
 | `purplemux-improved` | Запускает сервер. То же, что `purplemux-improved start`. |
 | `purplemux-improved <subcommand>` | Разговаривает с CLI HTTP API работающего сервера. |
-| `pmux ...` | Алиас для `purplemux-improved ...`. |
 
 Диспетчер в `bin/purplemux.js` отделяет первый аргумент: известные подкоманды идут в `bin/cli.js`, всё остальное (или ничего) запускает сервер.
 

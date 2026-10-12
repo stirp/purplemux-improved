@@ -33,7 +33,6 @@ purplemux-improved
 
 pnpm et yarn fonctionnent de la même façon (`pnpm add -g purplemux-improved` / `yarn global add purplemux-improved`). Démarre plus vite ensuite parce qu'il n'y a plus rien à résoudre. Mise à jour avec `npm update -g purplemux-improved`.
 
-Le binaire est aussi disponible sous le nom plus court `pmux`.
 
 ### Application native macOS
 

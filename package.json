@@ -1,6 +1,6 @@
 {
   "name": "purplemux-improved",
-  "version": "0.5.1",
+  "version": "0.5.2",
   "description": "Manage multiple Claude Code sessions from your browser",
   "license": "MIT",
   "author": "subicura",
@@ -26,9 +26,7 @@
   "browserslist": ["chrome 111", "edge 111", "firefox 111", "safari 15.4", "ios_saf 15.4"],
   "main": "dist-electron/main.js",
   "bin": {
-    "purplemux-improved": "./bin/purplemux.js",
-    "purplemux": "./bin/purplemux.js",
-    "pmux": "./bin/purplemux.js"
+    "purplemux-improved": "./bin/purplemux.js"
   },
   "files": [
     "bin/",

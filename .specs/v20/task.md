@@ -12,6 +12,27 @@
 
 Review：已修复分次按键、选项前缀识别、软换行及过期校验后保留卡片；同步完成提示块锚定、判别联合、移动端终端入口、会话隔离和共享解析。8 文件 62 项测试、完整类型检查、改动文件 ESLint 及重新生产构建通过，真实 CLI/浏览器待验收。
 
+## 0.5.2 性能优化版本（2026-10-10）
+
+- [x] 记录[版本目标与范围](./requirements/performance-optimization.md)，同步平台规格。
+- [x] 使用 npm version 更新版本为 0.5.2；元数据验证见[记录](./result/verify-performance-optimization.md)。
+- [x] 源码初审，整理 PERF-01 至 PERF-07 候选工作、测量场景及执行顺序。
+- [x] 第一轮会话元数据微基准、共享缓存与 Codex 扫描并发限制；[实施记录](./result/build-performance-optimization.md)。
+- [x] 缓存失效、并发、真实文件修改及列表兼容回归，完整 TypeScript、改动文件 ESLint 和全量测试；[验证记录](./result/verify-performance-optimization.md)。
+- [x] 第一轮完整生产构建通过；单次微基准的 31 秒后刷新由 256 ms/50 次扫描变为 2 ms/0 次扫描，不代表端到端指标。
+- [ ] 测量性能基线，定位瓶颈并补充具体优化规格与指标。
+- [ ] 按规格实施性能优化，并完成前后测量和相关回归验证。
+- [ ] 重新打包、安装验收与发布。
+
+## Linux CLI 安装入口修复（2026-10-10）
+
+- [x] [需求](./requirements/single-cli-install.md)及 fork-platform 规格更新：仅注册 purplemux-improved。
+- [x] 删除 purplemux/pmux bin 别名，同步 CLI 帮助、Claude/Codex 提示、README 和多语言安装/CLI 文档。
+- [x] 实际 tarball 元数据验证、61 项 CLI 回归、2 项 Codex 提示测试、完整 TypeScript 和改动代码 ESLint 检查通过；CommonJS 文件关闭不适用的 require 禁止规则。
+- [ ] 用户 Linux 全局安装与现有旧命令归属检查（本次未执行）。
+
+详见[实施记录](./result/build-single-cli-install.md)及[验证记录](./result/verify-single-cli-install.md)。
+
 2026-10-05：[AI 生成超时兼容](./requirements/ai-git-generation-timeout.md)已实现；6 文件 52 项测试、完整 TypeScript、改动文件 ESLint、Next.js 和服务端构建通过；浏览器/实际网关验收未执行。详见[验证记录](./result/verify-ai-git-generation-timeout.md)。
 
 v20 是现有 fork 功能回补规格。下表的实现状态来自当前源码检查，不代表本次执行了构建或功能测试。

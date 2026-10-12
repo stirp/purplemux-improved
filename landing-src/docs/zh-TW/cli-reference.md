@@ -1,12 +1,12 @@
 ---
 title: CLI 參考
-description: purplemux-improved 與 pmux 二進位的所有子指令與旗標。
+description: purplemux-improved 二進位的所有子指令與旗標。
 eyebrow: 參考資料
 permalink: /zh-TW/docs/cli-reference/index.html
 ---
 {% from "docs/callouts.njk" import callout %}
 
-`purplemux-improved` 提供兩種使用方式：作為伺服器啟動器（`purplemux-improved` / `purplemux-improved start`），以及作為 HTTP API 包裝器（`purplemux-improved <subcommand>`）來與執行中的伺服器對話。短別名 `pmux` 完全等價。
+`purplemux-improved` 提供兩種使用方式：作為伺服器啟動器（`purplemux-improved` / `purplemux-improved start`），以及作為 HTTP API 包裝器（`purplemux-improved <subcommand>`）來與執行中的伺服器對話。
 
 ## 一個二進位、兩種角色
 
@@ -14,7 +14,6 @@ permalink: /zh-TW/docs/cli-reference/index.html
 |---|---|
 | `purplemux-improved` | 啟動伺服器。等同於 `purplemux-improved start`。 |
 | `purplemux-improved <subcommand>` | 與執行中的伺服器的 CLI HTTP API 對話。 |
-| `pmux ...` | `purplemux-improved ...` 的別名。 |
 
 `bin/purplemux.js` 中的派發器會剝離第一個參數：已知的子指令會路由到 `bin/cli.js`，其餘（或沒有參數）則啟動伺服器。
 
