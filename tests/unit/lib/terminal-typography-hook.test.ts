@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { act, createElement } from 'react';
+import { act, createElement, useEffect } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import type { ITerminalOptions } from '@xterm/xterm';
 import { beforeEach, afterEach, describe, expect, it, vi } from 'vitest';
@@ -9,6 +9,7 @@ import { resolveTerminalTypography } from '@/lib/terminal-appearance';
 import { getTerminalTheme } from '@/lib/terminal-themes';
 
 const mocks = vi.hoisted(() => ({
+  bufferLines: [] as { isWrapped: boolean; translateToString: ReturnType<typeof vi.fn> }[],
   terminals: [] as { options: ITerminalOptions; refresh: ReturnType<typeof vi.fn>; dispose: ReturnType<typeof vi.fn> }[],
   fit: vi.fn(),
   translate: (key: string) => key,
@@ -19,6 +20,10 @@ vi.mock('@xterm/xterm', () => ({ Terminal: class {
   options: ITerminalOptions;
   cols = 80;
   rows = 24;
+  buffer = { active: {
+    get length() { return mocks.bufferLines.length; },
+    getLine: (index: number) => mocks.bufferLines[index],
+  } };
   unicode = { activeVersion: '' };
   refresh = vi.fn();
   dispose = vi.fn();
@@ -42,6 +47,7 @@ let fontLoad: ReturnType<typeof vi.fn>;
 beforeEach(() => {
   vi.clearAllMocks();
   mocks.terminals.length = 0;
+  mocks.bufferLines.length = 0;
   vi.stubGlobal('IS_REACT_ACT_ENVIRONMENT', true);
   vi.stubGlobal('ResizeObserver', class { observe() {} disconnect() {} });
   vi.stubGlobal('FontFace', class { async load() { return this; } });
@@ -65,6 +71,23 @@ const Harness = ({ newThemeObject = false, foreground }: { newThemeObject?: bool
 };
 
 describe('terminal typography hook', () => {
+  it('joins actual xterm soft wraps while preserving hard line breaks and spaces', async () => {
+    mocks.bufferLines.push(
+      { isWrapped: false, translateToString: vi.fn((trim: boolean) => trim ? '❯ Yes, I trust this' : '❯ Yes, I trust this ') },
+      { isWrapped: true, translateToString: vi.fn(() => 'folder') },
+      { isWrapped: false, translateToString: vi.fn(() => '  No, exit') },
+    );
+    let readBuffer!: () => string;
+    const BufferHarness = () => {
+      const { terminalRef, getBufferText } = useTerminal({ theme });
+      useEffect(() => { readBuffer = getBufferText; }, [getBufferText]);
+      return createElement('div', { ref: terminalRef });
+    };
+    await act(async () => root.render(createElement(BufferHarness)));
+    expect(readBuffer()).toBe('❯ Yes, I trust this folder\n  No, exit');
+    expect(mocks.bufferLines[0].translateToString).toHaveBeenCalledWith(false);
+  });
+
   it('redraws on pure color changes, restores the theme, and skips equal new objects', async () => {
     await act(async () => root.render(createElement(Harness)));
     const terminal = mocks.terminals.at(-1)!;

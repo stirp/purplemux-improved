@@ -6,6 +6,10 @@
 - /api/status/hook 与 provider runtime snapshot 协同更新会话状态。
 - shell-env 继承大小写形式的 HTTP_PROXY、HTTPS_PROXY、ALL_PROXY、NO_PROXY；Codex 的专用环境配置叠加于新启动进程环境。
 
+启动信任检测复用终端可见缓冲和 sendStdin，不新增接口或持久化字段。ITrustPromptInfo.selection 为判别联合：numbered 带 yesKey/noKey；navigation 同时带 selectedAnswer/yesIsFirst；unavailable 表示光标不可识别，禁用回答按钮并保留终端入口。复用 parsePermissionOptions 处理选项；终端缓冲合并 xterm isWrapped 行，保留真实换行。
+
+Hook 的 scopeKey 由标签及代理会话 ID 构成。getTrustResponseKeys 返回独立按键数组，导航或数字与 Enter 相隔 80ms 写入。onTrustResponse 返回 Promise<void>，卡片等待其完成后恢复按钮。延时提交可取消，Enter 前重新校验会话、目录及导航光标。
+
 ## 数据与执行边界
 
 - 环境变量只作用于新启动进程，不追改运行中的进程环境。

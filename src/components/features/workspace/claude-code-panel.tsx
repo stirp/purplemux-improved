@@ -30,7 +30,7 @@ interface IClaudeCodePanelProps {
   addPendingMessageRef?: React.MutableRefObject<((text: string, options?: { autoHide?: boolean; attachmentPlaceholder?: boolean }) => string) | undefined>;
   removePendingMessageRef?: React.MutableRefObject<((id: string) => void) | undefined>;
   trustPrompt?: ITrustPromptInfo | null;
-  onTrustResponse?: (answer: TTrustAnswer) => void;
+  onTrustResponse?: (answer: TTrustAnswer) => void | Promise<void>;
 }
 
 const ClaudeCodePanel = ({
@@ -202,6 +202,7 @@ const ClaudeCodePanel = ({
         <TrustPromptCard
           folderPath={trustPrompt.folderPath}
           agent={trustPrompt.agent}
+          canRespond={trustPrompt.selection.mode !== 'unavailable'}
           onRespond={onTrustResponse}
         />
         <button

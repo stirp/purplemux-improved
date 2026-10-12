@@ -47,7 +47,7 @@ interface IMobileCodexPanelProps {
   updatePrompt?: ICodexUpdatePromptInfo | null;
   onUpdatePromptResponse?: (answer: TCodexUpdateAnswer) => void;
   trustPrompt?: ITrustPromptInfo | null;
-  onTrustResponse?: (answer: TTrustAnswer) => void;
+  onTrustResponse?: (answer: TTrustAnswer) => void | Promise<void>;
 }
 
 const MobileCodexPanel = ({
@@ -259,6 +259,7 @@ const MobileCodexPanel = ({
         <TrustPromptCard
           folderPath={trustPrompt.folderPath}
           agent={trustPrompt.agent}
+          canRespond={trustPrompt.selection.mode !== 'unavailable'}
           onRespond={onTrustResponse}
         />
       </div>
