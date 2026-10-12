@@ -1,5 +1,7 @@
 # v20 需求整理：Fork 后累计新增功能
 
+2026-10-12 增量：[移动端空工作区选择](./requirements/mobile-empty-workspace-selection.md)，修复点击无 Tab 项目无法切换并新建标签的问题。
+
 2026-10-10 增量：[Claude 启动信任提示恢复](./requirements/claude-startup-prompts.md)，修复聊天区漏显示启动选项及新版无编号菜单回答。
 2026-10-10 增量：[安装后仅保留一个 CLI 命令](./requirements/single-cli-install.md)，取消 purplemux/pmux 安装别名，保留 purplemux-improved 和原数据目录。
 

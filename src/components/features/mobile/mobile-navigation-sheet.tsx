@@ -18,6 +18,7 @@ import OpenAIIcon from '@/components/icons/openai-icon';
 import { useRouter } from 'next/router';
 import useSidebarItems from '@/hooks/use-sidebar-items';
 import useWorkspaceStore from '@/hooks/use-workspace-store';
+import { useSelectWorkspace } from '@/hooks/use-sidebar-actions';
 import IconRenderer from '@/components/features/settings/icon-renderer';
 import { cn } from '@/lib/utils';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -84,6 +85,7 @@ const MobileNavigationSheet = ({
   const tc = useTranslations('common');
   const ts = useTranslations('sidebar');
   const router = useRouter();
+  const selectWorkspace = useSelectWorkspace();
   const mobileTab = useWorkspaceStore((s) => s.sidebarTab);
   const groups = useWorkspaceStore((s) => s.groups);
 
@@ -140,10 +142,11 @@ const MobileNavigationSheet = ({
 
   const handleToggleWorkspace = useCallback(
     (workspaceId: string) => {
+      selectWorkspace(workspaceId);
       const parentId = workspaces.find((workspace) => workspace.id === workspaceId)?.parentWorkspaceId;
       setExpandedWsId(workspaceVisibility.expandedIds.has(workspaceId) ? parentId ?? null : workspaceId);
     },
-    [workspaceVisibility.expandedIds, workspaces],
+    [selectWorkspace, workspaceVisibility.expandedIds, workspaces],
   );
 
   const handleSheetOpenChange = useCallback(

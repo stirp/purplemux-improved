@@ -7,7 +7,7 @@ complexity: Medium
 depends_on:
   - CLAUDE.md
 created: 2026-09-28
-updated: 2026-09-28
+updated: 2026-10-12
 assignee: ''
 ---
 
@@ -23,6 +23,7 @@ assignee: ''
 - Tab 改名弹窗；桌面与移动端统一 Tab/工作区拖拽行为。
 - 长按拖拽与上下文菜单协调，避免一次触摸同时触发两种操作。
 - 移动端补齐工作树交付和管理入口。
+- [空工作区选择](../../requirements/mobile-empty-workspace-selection.md)：点击工作区行同时选中项目，使无 Tab 项目可以进入新建 Tab 流程。
 
 ## 边界与约束
 
@@ -33,6 +34,7 @@ assignee: ''
 
 - 触摸排序、菜单、改名互不干扰。
 - 小屏长名称可读，工作树管理和交付入口可达。
+- 空工作区与有 Tab 工作区均可通过工作区行切换，展开/收起及 Tab 导航保持可用；新 Tab 归属当前所选项目。
 
 ## 实现依据
 
