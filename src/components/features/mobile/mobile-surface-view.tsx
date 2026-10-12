@@ -209,7 +209,8 @@ const MobileSurfaceView = ({
   }, []);
 
   const { trustPrompt, onTerminalData: onTrustData, onTrustResponse } = useTrustPromptDetector({
-    enabled: (isClaudeCode || isCodex) && claudeCliState === 'inactive',
+    enabled: isClaudeCode || isCodex,
+    scopeKey: `${activeTabId}:${claudeSessionId}`,
     getBufferText: () => termActionsRef.current.getBufferText(),
     sendStdin: (data) => wsActionsRef.current.sendStdin(data),
   });
@@ -352,8 +353,10 @@ const MobileSurfaceView = ({
   } = useTerminalWebSocket({
     onStdin: (data) => nativeCommandEventsRef.current?.onInput(data),
     onData: (data, onParsed) => {
-      termActionsRef.current.write(data, onParsed);
-      onTrustData();
+      termActionsRef.current.write(data, (error) => {
+        onParsed(error);
+        if (!error) onTrustData();
+      });
       onCodexUpdateData();
     },
     onConnected: () => {
@@ -818,6 +821,9 @@ const MobileSurfaceView = ({
           onNewSession={handleNewClaudeSession}
           trustPrompt={trustPrompt}
           onTrustResponse={onTrustResponse}
+          onCheckTerminal={() => {
+            if (activeTabId) onUpdateTabPanelType(paneId, activeTabId, 'terminal');
+          }}
         />
       )}
 

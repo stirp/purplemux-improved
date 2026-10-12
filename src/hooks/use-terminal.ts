@@ -107,7 +107,12 @@ const useTerminal = ({ theme, fontSize = DEFAULT_FONT_SIZE, fontFamily = DEFAULT
     const lines: string[] = [];
     for (let y = start; y < buf.length; y++) {
       const line = buf.getLine(y);
-      lines.push(line ? line.translateToString(true) : '');
+      const text = line ? line.translateToString(!buf.getLine(y + 1)?.isWrapped) : '';
+      if (line?.isWrapped && lines.length) {
+        lines[lines.length - 1] += text;
+      } else {
+        lines.push(text);
+      }
     }
     return lines.join('\n');
   }, []);

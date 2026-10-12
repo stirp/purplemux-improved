@@ -7,7 +7,7 @@ complexity: Medium
 depends_on:
   - CLAUDE.md
 created: 2026-09-28
-updated: 2026-09-29
+updated: 2026-10-10
 assignee: ''
 ---
 
@@ -35,6 +35,7 @@ assignee: ''
 
 - 嵌套 shell 下能识别 Claude；初始 unknown 状态正确收敛。
 - Claude/Codex 新启动与恢复进程分别获得各自配置，review 期间保留根会话绑定。
+- [Claude 启动信任提示恢复](../../requirements/claude-startup-prompts.md)：桌面和移动端跨 CLI 状态显示信任卡片，兼容编号及无编号选项；按当前提示提交，切换标签不复用旧卡片。
 
 ## 实现依据
 

@@ -1,10 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { matchTrustPrompt, type ITrustPromptInfo, type TTrustAnswer } from '@/lib/trust-prompt-detector';
+import { getTrustResponseKeys, matchTrustPrompt, type ITrustPromptInfo, type TTrustAnswer } from '@/lib/trust-prompt-detector';
 
 const DEBOUNCE_MS = 200;
+const SUBMIT_DELAY_MS = 80;
 
 interface IUseTrustPromptDetectorOptions {
   enabled: boolean;
+  scopeKey?: string | null;
   getBufferText: () => string;
   sendStdin: (data: string) => void;
 }
@@ -12,66 +14,85 @@ interface IUseTrustPromptDetectorOptions {
 interface IUseTrustPromptDetectorReturn {
   trustPrompt: ITrustPromptInfo | null;
   onTerminalData: () => void;
-  onTrustResponse: (answer: TTrustAnswer) => void;
+  onTrustResponse: (answer: TTrustAnswer) => Promise<void>;
 }
 
 const useTrustPromptDetector = ({
   enabled,
+  scopeKey = null,
   getBufferText,
   sendStdin,
 }: IUseTrustPromptDetectorOptions): IUseTrustPromptDetectorReturn => {
-  const [trustPrompt, setTrustPrompt] = useState<ITrustPromptInfo | null>(null);
-  const trustPromptRef = useRef<ITrustPromptInfo | null>(null);
-  const enabledRef = useRef(enabled);
+  const [detected, setDetected] = useState<{ scopeKey: string | null; prompt: ITrustPromptInfo } | null>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const getBufferTextRef = useRef(getBufferText);
+  const submitRef = useRef<{ timer: ReturnType<typeof setTimeout>; resolve: (ready: boolean) => void } | null>(null);
+  const detectorRef = useRef({ enabled, scopeKey, getBufferText });
 
   useEffect(() => {
-    trustPromptRef.current = trustPrompt;
-  }, [trustPrompt]);
-
-  useEffect(() => {
-    getBufferTextRef.current = getBufferText;
-  }, [getBufferText]);
-
-  useEffect(() => {
-    enabledRef.current = enabled;
-    if (!enabled && debounceRef.current) {
-      clearTimeout(debounceRef.current);
-      debounceRef.current = null;
-    }
-  }, [enabled]);
-
-  useEffect(() => () => {
-    if (debounceRef.current) {
-      clearTimeout(debounceRef.current);
-      debounceRef.current = null;
-    }
-  }, []);
-
-  const effectiveTrustPrompt = enabled ? trustPrompt : null;
+    detectorRef.current = { enabled, scopeKey, getBufferText };
+  }, [enabled, scopeKey, getBufferText]);
 
   const onTerminalData = useCallback(() => {
-    if (!enabledRef.current || debounceRef.current) return;
+    if (!detectorRef.current.enabled || debounceRef.current) return;
     debounceRef.current = setTimeout(() => {
       debounceRef.current = null;
-      if (!enabledRef.current) return;
-      const matched = matchTrustPrompt(getBufferTextRef.current());
-      setTrustPrompt((prev) => {
-        const same = prev?.folderPath === matched?.folderPath && prev?.agent === matched?.agent;
-        return same ? prev : matched;
+      const current = detectorRef.current;
+      if (!current.enabled) return;
+      const prompt = matchTrustPrompt(current.getBufferText());
+      setDetected((prev) => {
+        if (!prompt) return null;
+        if (prev?.scopeKey === current.scopeKey
+          && prev.prompt.folderPath === prompt.folderPath
+          && prev.prompt.agent === prompt.agent
+          && prev.prompt.selection.mode === prompt.selection.mode) return prev;
+        return { scopeKey: current.scopeKey, prompt };
       });
     }, DEBOUNCE_MS);
   }, []);
 
-  const onTrustResponse = useCallback((answer: TTrustAnswer) => {
-    const agent = trustPromptRef.current?.agent ?? 'claude';
-    setTrustPrompt(null);
-    const digit = answer === 'yes' ? '1' : '2';
-    sendStdin(agent === 'codex' ? digit : `${digit}\r`);
-  }, [sendStdin]);
+  useEffect(() => {
+    onTerminalData();
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+      debounceRef.current = null;
+      if (submitRef.current) {
+        clearTimeout(submitRef.current.timer);
+        submitRef.current.resolve(false);
+        submitRef.current = null;
+      }
+    };
+  }, [enabled, scopeKey, onTerminalData]);
 
-  return { trustPrompt: effectiveTrustPrompt, onTerminalData, onTrustResponse };
+  const trustPrompt = enabled && detected?.scopeKey === scopeKey ? detected.prompt : null;
+
+  const onTrustResponse = useCallback(async (answer: TTrustAnswer) => {
+    const current = detectorRef.current;
+    if (!trustPrompt || !current.enabled || current.scopeKey !== scopeKey || submitRef.current) return;
+    const prompt = matchTrustPrompt(current.getBufferText());
+    if (!prompt || prompt.agent !== trustPrompt.agent || prompt.folderPath !== trustPrompt.folderPath) return;
+    const keys = getTrustResponseKeys(prompt, answer);
+    if (!keys.length) return;
+    sendStdin(keys[0]);
+    if (keys.length > 1) {
+      const ready = await new Promise<boolean>((resolve) => {
+        const timer = setTimeout(() => {
+          submitRef.current = null;
+          resolve(true);
+        }, SUBMIT_DELAY_MS);
+        submitRef.current = { timer, resolve };
+      });
+      const latest = detectorRef.current;
+      if (!ready || !latest.enabled || latest.scopeKey !== scopeKey) return;
+      const confirmed = matchTrustPrompt(latest.getBufferText());
+      if (!confirmed || confirmed.agent !== prompt.agent || confirmed.folderPath !== prompt.folderPath) return;
+      if (prompt.selection.mode === 'navigation'
+        && (confirmed.selection.mode !== 'navigation' || confirmed.selection.selectedAnswer !== answer)) return;
+      sendStdin(keys[1]);
+    }
+    setDetected(null);
+  }, [trustPrompt, scopeKey, sendStdin]);
+
+  return { trustPrompt, onTerminalData, onTrustResponse };
 };
 
 export default useTrustPromptDetector;

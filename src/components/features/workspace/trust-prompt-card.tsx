@@ -6,7 +6,8 @@ import type { TTrustAgent, TTrustAnswer } from '@/lib/trust-prompt-detector';
 interface ITrustPromptCardProps {
   folderPath: string;
   agent?: TTrustAgent;
-  onRespond: (answer: TTrustAnswer) => void;
+  canRespond?: boolean;
+  onRespond: (answer: TTrustAnswer) => void | Promise<void>;
 }
 
 const AGENT_LABEL: Record<TTrustAgent, string> = {
@@ -14,14 +15,18 @@ const AGENT_LABEL: Record<TTrustAgent, string> = {
   codex: 'Codex',
 };
 
-const TrustPromptCard = ({ folderPath, agent = 'claude', onRespond }: ITrustPromptCardProps) => {
+const TrustPromptCard = ({ folderPath, agent = 'claude', canRespond = true, onRespond }: ITrustPromptCardProps) => {
   const t = useTranslations('terminal');
   const [sending, setSending] = useState<TTrustAnswer | null>(null);
 
-  const handle = (answer: TTrustAnswer) => {
-    if (sending) return;
+  const handle = async (answer: TTrustAnswer) => {
+    if (sending || !canRespond) return;
     setSending(answer);
-    onRespond(answer);
+    try {
+      await onRespond(answer);
+    } finally {
+      setSending(null);
+    }
   };
 
   return (
@@ -38,7 +43,7 @@ const TrustPromptCard = ({ folderPath, agent = 'claude', onRespond }: ITrustProm
       </p>
       <div className="flex flex-col gap-1.5">
         <button
-          disabled={sending !== null}
+          disabled={sending !== null || !canRespond}
           onClick={() => handle('yes')}
           className="flex items-center gap-2.5 rounded-md border border-border/50 px-3 py-2 text-left text-sm transition-colors hover:border-ui-amber/30 hover:bg-ui-amber/5 disabled:opacity-50"
         >
@@ -46,7 +51,7 @@ const TrustPromptCard = ({ folderPath, agent = 'claude', onRespond }: ITrustProm
           <span className="font-medium">{t('trustPromptYes')}</span>
         </button>
         <button
-          disabled={sending !== null}
+          disabled={sending !== null || !canRespond}
           onClick={() => handle('no')}
           className="flex items-center gap-2.5 rounded-md border border-border/50 px-3 py-2 text-left text-sm transition-colors hover:border-ui-amber/30 hover:bg-ui-amber/5 disabled:opacity-50"
         >

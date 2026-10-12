@@ -174,6 +174,7 @@ const parseKeywordOptions = (lines: string[]): IParsedPromptOptions => {
   let focusedIndex = 0;
   let optionStartIndex = -1;
   let foundFirst = false;
+  let lastOptionIndent = 0;
 
   for (let i = 0; i < lines.length; i += 1) {
     const line = lines[i];
@@ -186,6 +187,10 @@ const parseKeywordOptions = (lines: string[]): IParsedPromptOptions => {
     const isIndented = /^\s+\S/.test(line);
 
     if (!isFocused && !isIndented) {
+      if (foundFirst && /^[a-z]/.test(line.trim())) {
+        options[options.length - 1] += line.trim();
+        continue;
+      }
       if (foundFirst) break;
       continue;
     }
@@ -201,6 +206,9 @@ const parseKeywordOptions = (lines: string[]): IParsedPromptOptions => {
       if (isFocused) focusedIndex = options.length;
       options.push(label);
       foundFirst = true;
+      lastOptionIndent = leadingSpaces(line);
+    } else if (foundFirst && !isFocused && leadingSpaces(line) > lastOptionIndent) {
+      options[options.length - 1] += line.trim();
     }
   }
 

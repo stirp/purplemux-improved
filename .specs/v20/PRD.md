@@ -2,6 +2,7 @@
 
 2026-10-12 增量：[空闲 Agent 允许同步分支](./requirements/idle-agent-worktree-sync.md)，复用既有状态判断，在执行前复核 Git 与会话状态，保留运行中的 Agent。
 
+2026-10-10 增量：[Claude 启动信任提示恢复](./requirements/claude-startup-prompts.md)，修复聊天区漏显示启动选项及新版无编号菜单回答。
 2026-10-10 增量：[安装后仅保留一个 CLI 命令](./requirements/single-cli-install.md)，取消 purplemux/pmux 安装别名，保留 purplemux-improved 和原数据目录。
 
 2026-10-08 复审：[Sessions 导航同步侧边栏项目](./requirements/session-workspace-navigation.md)仅历史入口触发，复用项目选择处理器，分组采用临时展开而非修改折叠偏好。

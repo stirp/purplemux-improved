@@ -46,7 +46,8 @@ interface IMobileClaudeCodePanelProps {
   nativeCommandsActive?: boolean;
   onNewSession?: () => void;
   trustPrompt?: ITrustPromptInfo | null;
-  onTrustResponse?: (answer: TTrustAnswer) => void;
+  onTrustResponse?: (answer: TTrustAnswer) => void | Promise<void>;
+  onCheckTerminal?: () => void;
 }
 
 const MobileClaudeCodePanel = ({
@@ -68,6 +69,7 @@ const MobileClaudeCodePanel = ({
   onNewSession,
   trustPrompt,
   onTrustResponse,
+  onCheckTerminal,
 }: IMobileClaudeCodePanelProps) => {
   const t = useTranslations('terminal');
   const { prompts: quickPrompts } = useQuickPrompts();
@@ -225,8 +227,15 @@ const MobileClaudeCodePanel = ({
         <TrustPromptCard
           folderPath={trustPrompt.folderPath}
           agent={trustPrompt.agent}
+          canRespond={trustPrompt.selection.mode !== 'unavailable'}
           onRespond={onTrustResponse}
         />
+        <button
+          className="mt-3 text-xs text-muted-foreground underline underline-offset-2 hover:text-foreground"
+          onClick={onCheckTerminal}
+        >
+          {t('checkTerminal')}
+        </button>
       </div>
     );
   }
