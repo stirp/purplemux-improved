@@ -1,5 +1,15 @@
 # v20 任务进度
 
+## 移动端空工作区选择（2026-10-12）
+
+- [x] [需求](./requirements/mobile-empty-workspace-selection.md)与 mobile-navigation 规格、界面、流程和内部通道更新。
+- [x] 工作区行复用共享选择处理器，保留展开/收起与原 Tab 导航；[实施记录](./result/build-mobile-empty-workspace-selection.md)。
+- [x] 2 文件 28 项导航回归、完整 TypeScript、改动文件 ESLint 和差异空白检查通过。
+- [ ] 完整构建：默认 Turbopack 被跨目录依赖软链接限制阻断；webpack 类型检查与编译通过，页面数据收集因 `/login` 的 `self is not defined` 失败。
+- [ ] 浏览器/移动端实机及真实新建 Tab 验收；[验证记录](./result/verify-mobile-empty-workspace-selection.md)。
+
+2026-10-13 PR #32 Review：无注册处理器的跨页面切换先清空旧布局；2 文件 30 项回归、完整 TypeScript、改动文件 ESLint 和差异检查通过。webpack 类型检查及编译通过，页面数据收集因 `/login` 的 `self is not defined` 失败；浏览器/实机未执行。
+
 ## Chat 内容区比例宽度（2026-10-12）
 
 - [x] 需求、timeline-history 规格及界面约定：所在面板 85%，无固定上限。
