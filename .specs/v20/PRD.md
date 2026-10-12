@@ -1,5 +1,7 @@
 # v20 需求整理：Fork 后累计新增功能
 
+2026-10-10 增量：[Claude 启动信任提示恢复](./requirements/claude-startup-prompts.md)，修复聊天区漏显示启动选项及新版无编号菜单回答。
+
 2026-10-08 复审：[Sessions 导航同步侧边栏项目](./requirements/session-workspace-navigation.md)仅历史入口触发，复用项目选择处理器，分组采用临时展开而非修改折叠偏好。
 
 2026-10-05 增量：[AI 提交信息生成超时兼容](./requirements/ai-git-generation-timeout.md)，补充网关错误解析、有限等待、草稿保留与提交结果不确定时的恢复约束。

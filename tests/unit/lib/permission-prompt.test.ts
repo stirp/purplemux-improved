@@ -3,6 +3,12 @@ import { describe, expect, it } from 'vitest';
 import { hasPermissionPrompt, parseChoiceOptions, parsePermissionOptions } from '@/lib/permission-prompt';
 
 describe('parsePermissionOptions', () => {
+  it.each(['    folder', 'folder'])('joins unnumbered option continuation %s', (continuation) => {
+    const result = parsePermissionOptions(`❯ Yes, I trust this\n${continuation}\n  No, exit`);
+    expect(result.options).toEqual(['Yes, I trust thisfolder', 'No, exit']);
+    expect(result.focusedIndex).toBe(0);
+  });
+
   it('numbered Yes/No 프롬프트에서 포커스된 옵션을 인식한다', () => {
     const pane = [
       'Do you want to proceed?',

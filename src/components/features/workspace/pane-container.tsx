@@ -334,7 +334,8 @@ const PaneContainer = memo(({ paneId, paneNumber }: IPaneContainerProps) => {
   }, []);
 
   const { trustPrompt, onTerminalData: onTrustData, onTrustResponse } = useTrustPromptDetector({
-    enabled: (isClaudeCode || isCodex) && claudeCliState === 'inactive',
+    enabled: isClaudeCode || isCodex,
+    scopeKey: `${activeTabId}:${claudeSessionId}`,
     getBufferText: () => termActionsRef.current.getBufferText(),
     sendStdin: (data) => wsActionsRef.current.sendStdin(data),
   });
@@ -554,8 +555,10 @@ const PaneContainer = memo(({ paneId, paneNumber }: IPaneContainerProps) => {
   } = useTerminalWebSocket({
     onStdin: (data) => nativeCommandEventsRef.current?.onInput(data),
     onData: (data, onParsed) => {
-      termActionsRef.current.write(data, onParsed);
-      onTrustData();
+      termActionsRef.current.write(data, (error) => {
+        onParsed(error);
+        if (!error) onTrustData();
+      });
       onCodexUpdateData();
     },
     onConnected: () => {

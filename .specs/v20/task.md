@@ -1,5 +1,17 @@
 # v20 任务进度
 
+## Claude 启动信任提示恢复（2026-10-10）
+
+- [x] 需求及 agent-runtime 界面、流程、数据约定。
+- [x] 实现及回归测试：4 文件 24 项通过。
+- [x] 完整 TypeScript、改动文件 ESLint。
+- [x] `pnpm build` 及 `pnpm build:server` 通过。
+- [ ] 浏览器及真实 Claude 验收。
+
+详见[实施记录](./result/build-claude-startup-prompts.md)和[验证记录](./result/verify-claude-startup-prompts.md)。
+
+Review：已修复分次按键、选项前缀识别、软换行及过期校验后保留卡片；同步完成提示块锚定、判别联合、移动端终端入口、会话隔离和共享解析。8 文件 62 项测试、完整类型检查、改动文件 ESLint 及重新生产构建通过，真实 CLI/浏览器待验收。
+
 2026-10-05：[AI 生成超时兼容](./requirements/ai-git-generation-timeout.md)已实现；6 文件 52 项测试、完整 TypeScript、改动文件 ESLint、Next.js 和服务端构建通过；浏览器/实际网关验收未执行。详见[验证记录](./result/verify-ai-git-generation-timeout.md)。
 
 v20 是现有 fork 功能回补规格。下表的实现状态来自当前源码检查，不代表本次执行了构建或功能测试。

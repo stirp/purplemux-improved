@@ -33,7 +33,7 @@ interface ICodexPanelProps {
   updatePrompt?: ICodexUpdatePromptInfo | null;
   onUpdatePromptResponse?: (answer: TCodexUpdateAnswer) => void;
   trustPrompt?: ITrustPromptInfo | null;
-  onTrustResponse?: (answer: TTrustAnswer) => void;
+  onTrustResponse?: (answer: TTrustAnswer) => void | Promise<void>;
   scrollToBottomRef?: React.MutableRefObject<(() => void) | undefined>;
   addPendingMessageRef?: React.MutableRefObject<((text: string, options?: { autoHide?: boolean; attachmentPlaceholder?: boolean }) => string) | undefined>;
   removePendingMessageRef?: React.MutableRefObject<((id: string) => void) | undefined>;
@@ -257,6 +257,7 @@ const CodexPanel = ({
         <TrustPromptCard
           folderPath={trustPrompt.folderPath}
           agent={trustPrompt.agent}
+          canRespond={trustPrompt.selection.mode !== 'unavailable'}
           onRespond={onTrustResponse}
         />
       </div>
