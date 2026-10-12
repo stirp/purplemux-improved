@@ -86,3 +86,5 @@ v20 覆盖 `52140216..3637a357` 的 fork 增量，共 48 个非合并提交，�
 2026-10-13 增量：[Sessions 与 Workspace 工作状态管理](./requirements/session-task-status.md)。
 
 2026-10-13 Review 修复：[状态管理需求](./requirements/session-task-status.md)补齐身份导航、首次绑定迁移、重连同步与历史裁剪后的会话关联保留。
+
+2026-10-13 第二轮 Review：[状态管理需求](./requirements/session-task-status.md)补齐删除标记与迟到回补过滤，以及无轮次会话的身份恢复和删除入口。

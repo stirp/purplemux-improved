@@ -89,3 +89,5 @@ Sessions 项目定位测试本次已运行，结果见独立验证记录；其�
 遵循[Sessions 与 Workspace 工作状态需求](../../requirements/session-task-status.md)。人工状态与运行状态分离，分类折叠及 Workspace 汇总共享同一状态规则。状态和折叠偏好保存于 workspaces.json 的 sessionWorkflow，GET /api/workspace 读取，PATCH /api/session-workflow 严格校验并按字段更新，通过 workspace 广播同步。
 
 Review 修复补齐会话身份导航、首次绑定人工状态迁移、同步重连和独立会话索引，约束见[状态管理需求](../../requirements/session-task-status.md)。
+
+第二轮 Review 补齐持久删除标记与无轮次会话恢复目标，验证见[第二轮记录](../../result/verify-session-task-status-review-2.md)。

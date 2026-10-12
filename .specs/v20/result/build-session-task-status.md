@@ -29,3 +29,11 @@
 - 新增历史在获取历史写锁前更新持久索引，再裁剪轮次；避免与 Workspace 删除的锁顺序形成循环。
 - 历史删除 API 清除索引与人工状态；Workspace 删除在自身锁内清除关联索引，不重复获取同一锁。
 - useSync 每次 onopen 补拉 Workspace。回归测试使用真实客户端 store 验证断线期间人工状态和折叠偏好的变化。
+
+## 第二轮 Review 修复（2026-10-13）
+
+- sessionWorkflow.deleted 在 Workspace 全局写锁内持久保存删除标记；回补在该锁内补读 hidden-sessions，合并旧标记，排除迟到的历史与残留 Tab。
+- 客户端派生同样排除 deleted；删除成功后本地同步消费索引和状态，避免直接从旧运行快照再次显示。
+- 索引增加 navigation，只保存恢复所需身份和 Workspace 元数据，不创建虚假的历史轮次；老的无轮次索引可从其原生键及仍存在的 Workspace 回补。
+- navigateToSession 接受专用恢复目标；无轮次条目使用该目标判断当前会话、恢复及删除。A/B 复用一个 Tab 或关闭 Tab 后都按原生 ID 定位。
+- 复用历史删除组件、会话恢复工具和现有全局锁，避免另建恢复或删除通道。

@@ -1,4 +1,4 @@
-import type { ISessionHistoryEntry } from '@/types/session-history';
+import type { ISessionHistoryEntry, TSessionNavigationTarget } from '@/types/session-history';
 import type { TCliState } from '@/types/timeline';
 
 export const WORK_STATUSES = ['pending', 'in-progress', 'review', 'completed'] as const;
@@ -8,15 +8,19 @@ export interface ISessionWorkflow {
   collapsed: Partial<Record<TWorkStatus, boolean>>;
   sessions?: Record<string, IWorkflowSessionRecord>;
   tabBindings?: Record<string, string>;
+  deleted?: string[];
 }
 export interface IWorkflowSessionRecord {
   workspaceId: string;
   tabId: string;
   status: TWorkStatus;
   entry?: ISessionHistoryEntry;
+  navigation?: TSessionNavigationTarget;
 }
 export interface IWorkflowTab {
   workspaceId: string;
+  workspaceName?: string;
+  workspaceDir?: string | null;
   panelType?: string;
   agentProviderId?: string;
   agentSessionId?: string | null;
@@ -29,6 +33,7 @@ export interface IWorkSession {
   tabId: string;
   status: TWorkStatus;
   entry?: ISessionHistoryEntry;
+  navigation?: TSessionNavigationTarget;
   olderEntries: ISessionHistoryEntry[];
   live?: IWorkflowTab;
 }
@@ -40,6 +45,7 @@ export const collectWorkSessions = (
   entries: ISessionHistoryEntry[], tabs: Record<string, IWorkflowTab>, workflow: ISessionWorkflow,
 ): IWorkSession[] => {
   const sessions = new Map<string, IWorkSession>();
+  const deleted = new Set(workflow.deleted);
   for (const [key, record] of Object.entries(workflow.sessions ?? {})) {
     sessions.set(key, { key, ...record, entry: undefined, olderEntries: [] });
   }
@@ -51,7 +57,10 @@ export const collectWorkSessions = (
     if (existing?.entry) existing.olderEntries.push(entry);
     else sessions.set(key, {
       key, workspaceId: entry.workspaceId, tabId: entry.tabId,
-      status: 'review', entry, olderEntries: [],
+      status: 'review', entry, navigation: {
+        workspaceId: entry.workspaceId, workspaceName: entry.workspaceName, workspaceDir: entry.workspaceDir,
+        tabId: entry.tabId, providerId: entry.providerId, agentSessionId: entry.agentSessionId,
+      }, olderEntries: [],
     });
   }
   for (const [tabId, tab] of Object.entries(tabs)) {
@@ -67,9 +76,14 @@ export const collectWorkSessions = (
     sessions.set(key, {
       key, workspaceId: tab.workspaceId, tabId, status,
       entry: existing?.entry, olderEntries: existing?.olderEntries ?? [], live: tab,
+      navigation: tab.agentSessionId ? {
+        providerId: provider, agentSessionId: tab.agentSessionId, workspaceId: tab.workspaceId, tabId,
+        workspaceName: tab.workspaceName ?? existing?.navigation?.workspaceName ?? tab.workspaceId,
+        workspaceDir: tab.workspaceDir ?? existing?.navigation?.workspaceDir ?? null,
+      } : existing?.navigation,
     });
   }
-  return [...sessions.values()].map((session) => {
+  return [...sessions.values()].filter((session) => !deleted.has(session.key)).map((session) => {
     const fallback = sessionWorkKey(session.key.split(':')[0], null, `tab:${session.tabId}`);
     const firstBindingStatus = session.live?.agentSessionId && !workflow.tabBindings?.[fallback]
       ? workflow.statuses[fallback] : undefined;
@@ -84,11 +98,17 @@ export const reconcileSessionWorkflow = (
     ...workflow, statuses: { ...workflow.statuses },
     sessions: { ...workflow.sessions }, tabBindings: { ...workflow.tabBindings },
   };
+  const deleted = new Set(next.deleted);
+  for (const key of deleted) {
+    delete next.statuses[key];
+    delete next.sessions![key];
+  }
   for (const [tabId, tab] of Object.entries(tabs)) {
     if (!tab.agentSessionId) continue;
     const provider = tab.agentProviderId === 'codex' || tab.panelType === 'codex-cli' ? 'codex' : 'claude';
     const fallback = sessionWorkKey(provider, null, `tab:${tabId}`);
     const key = sessionWorkKey(provider, tab.agentSessionId, '');
+    if (deleted.has(key)) continue;
     if (!next.tabBindings![fallback]) {
       if (next.statuses[fallback] !== undefined && next.statuses[key] === undefined) next.statuses[key] = next.statuses[fallback];
       delete next.statuses[fallback];
@@ -100,6 +120,7 @@ export const reconcileSessionWorkflow = (
     if (session.live && !session.live.agentSessionId && !next.statuses[session.key]) continue;
     next.sessions![session.key] = {
       workspaceId: session.workspaceId, tabId: session.tabId, status: session.status, entry: session.entry,
+      navigation: session.navigation,
     };
   }
   return next;

@@ -15,7 +15,10 @@ vi.mock('@/hooks/use-layout', () => ({
 }));
 vi.mock('@/hooks/use-session-navigation', () => ({ navigateToSession: vi.fn() }));
 vi.mock('@/components/features/workspace/session-history-actions', () => ({
-  default: ({ children }: { children: React.ReactNode }) => children,
+  default: ({ children, provider, sessionId, onDeleted }: {
+    children: React.ReactNode; provider: string; sessionId: string; onDeleted: () => Promise<void>;
+  }) => createElement('div', { 'data-session-id': sessionId, 'data-provider': provider },
+    children, createElement('button', { onClick: () => void onDeleted(), 'data-delete-session': sessionId }, 'Delete')),
 }));
 vi.mock('sonner', () => ({ toast: { error: vi.fn() } }));
 vi.mock('@/lib/i18n', () => ({ t: (_namespace: string, key: string) => key }));
@@ -24,6 +27,7 @@ import useTabStore from '@/hooks/use-tab-store';
 import useSessionHistoryStore from '@/hooks/use-session-history-store';
 import { NotificationPanel } from '@/components/features/workspace/notification-sheet';
 import { toast } from 'sonner';
+import { reconcileSessionWorkflow } from '@/lib/session-workflow';
 import { navigateToSession } from '@/hooks/use-session-navigation';
 
 let container: HTMLDivElement;
@@ -60,6 +64,41 @@ afterEach(async () => {
   vi.unstubAllGlobals();
 });
 describe('Sessions workflow controls', () => {
+  it('restores and removes native session A without a turn while active tab runs B', async () => {
+    const a = { workspaceId: 'ws', workspaceName: 'Workspace', workspaceDir: '/project', panelType: 'codex-cli', agentSessionId: 'A' };
+    const first = reconcileSessionWorkflow({ statuses: {}, collapsed: {} }, [], { t: a });
+    const second = reconcileSessionWorkflow(first, [], { t: { ...a, agentSessionId: 'B' } });
+    layoutMock.activeTab = { id: 't', agentState: { providerId: 'codex', sessionId: 'B' } };
+    await act(async () => {
+      useSessionHistoryStore.setState({ entries: [] });
+      useWorkspaceStore.setState({ sessionWorkflow: second });
+      useTabStore.getState().initTab('t', { workspaceId: 'ws', panelType: 'codex-cli', agentProviderId: 'codex', agentSessionId: 'B', cliState: 'busy' });
+      root.render(createElement(NotificationPanel));
+    });
+    const row = container.querySelector('[data-session-id="A"] [class*="rounded-md"]') as HTMLElement;
+    expect(row).not.toBeNull();
+    await act(async () => row.click());
+    expect(navigateToSession).toHaveBeenLastCalledWith(expect.objectContaining({
+      providerId: 'codex', agentSessionId: 'A', workspaceDir: '/project',
+    }), null);
+    await act(async () => (container.querySelector('[data-delete-session="A"]') as HTMLButtonElement).click());
+    expect(container.querySelector('[data-session-id="A"]')).toBeNull();
+    expect(container.querySelector('[data-session-id="B"]')).not.toBeNull();
+    expect(useWorkspaceStore.getState().sessionWorkflow.deleted).toContain('codex:A');
+  });
+  it('restores the native identity of entry-less sessions after the Tab has closed', async () => {
+    const saved = reconcileSessionWorkflow({ statuses: {}, collapsed: {} }, [], { t: {
+      workspaceId: 'ws', workspaceName: 'Workspace', workspaceDir: '/project', panelType: 'codex-cli', agentSessionId: 'A',
+    } });
+    await act(async () => {
+      useSessionHistoryStore.setState({ entries: [] });
+      useWorkspaceStore.setState({ sessionWorkflow: saved });
+    });
+    const row = container.querySelector('[data-session-id="A"] [class*="rounded-md"]') as HTMLElement;
+    await act(async () => row.click());
+    expect(navigateToSession).toHaveBeenLastCalledWith(expect.objectContaining({ agentSessionId: 'A', workspaceDir: '/project' }), null);
+    expect(container.querySelector('[data-delete-session="A"]')).not.toBeNull();
+  });
   it('allows restoring old session A after its active tab is reused for B', async () => {
     layoutMock.activeTab = { id: 't', agentState: { providerId: 'codex', sessionId: 's2' } };
     await act(async () => root.render(createElement(NotificationPanel)));

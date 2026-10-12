@@ -29,7 +29,7 @@ import useTabStore from '@/hooks/use-tab-store';
 import useWorkspaceStore from '@/hooks/use-workspace-store';
 import useSessionHistoryStore from '@/hooks/use-session-history-store';
 import { collectWorkSessions, WORK_STATUSES, type TWorkStatus } from '@/lib/session-workflow';
-import { useSessionWorkflowMutation } from '@/hooks/use-session-workflow';
+import { useSessionWorkflowMutation, forgetSessionWorkflow } from '@/hooks/use-session-workflow';
 import { navigateToTab, useLayoutStore } from '@/hooks/use-layout';
 import { navigateToSession } from '@/hooks/use-session-navigation';
 import { findPane } from '@/lib/layout-tree';
@@ -193,6 +193,7 @@ const SessionHistoryItem = ({
       historyEntryId={entry.id}
       label={entry.prompt}
       onDeleted={async () => {
+        forgetSessionWorkflow(entry.providerId, entry.agentSessionId, entry.id);
         useSessionHistoryStore.setState((state) => ({
           entries: state.entries.filter((item) => item.providerId !== entry.providerId || (
             entry.agentSessionId ? item.agentSessionId !== entry.agentSessionId : item.id !== entry.id
@@ -364,31 +365,39 @@ export const NotificationPanel = ({ onNavigated, className }: { onNavigated?: ()
             {!collapsed && <div className="flex flex-col gap-2">
               {items.map((session) => {
                 const entry = session.entry;
-                const isActiveSession = entry?.agentSessionId
-                  ? entry.agentSessionId === activeSessionId && entry.providerId === activeProviderId
+                const target = entry ?? session.navigation;
+                const isActiveSession = target?.agentSessionId
+                  ? target.agentSessionId === activeSessionId && target.providerId === activeProviderId
                   : !!session.live && session.tabId === activeTabId;
                 const expanded = expandedSessions.has(session.key);
                 const onClick = () => {
-                  if (entry) {
+                  if (target) {
                     onNavigated?.();
-                    void navigateToSession(entry, session.live ? session.tabId : null);
+                    void navigateToSession(target, session.live ? session.tabId : null);
                   } else handleNavigate(session.workspaceId, session.tabId);
                 };
+                const liveItem = <NotificationItem item={{
+                  tabId: session.tabId, workspaceId: session.workspaceId,
+                  workspaceName: target?.workspaceName ?? workspaces.find((ws) => ws.id === session.workspaceId)?.name ?? session.workspaceId,
+                  providerId: target?.providerId ?? (session.key.startsWith('codex:') ? 'codex' : 'claude'),
+                  agentSessionId: target?.agentSessionId,
+                  lastUserMessage: session.live?.lastUserMessage,
+                  currentAction: session.live ? tabs[session.tabId]?.currentAction : null,
+                  busySince: session.live ? tabs[session.tabId]?.busySince : null,
+                }} variant={session.live?.cliState === 'needs-input' ? 'needs-input' : session.live?.cliState === 'busy' ? undefined : status === 'completed' ? 'done' : 'pending'}
+                  isActiveTab={isActiveSession} onNavigate={onClick} />;
                 return (
                   <div key={session.key}>
                     {entry && session.live?.cliState !== 'busy' && session.live?.cliState !== 'needs-input' ? <SessionHistoryItem entry={entry} isActiveSession={isActiveSession} onClick={onClick}
                         icon={status === 'completed' ? <CheckCircle2 className="h-3.5 w-3.5 text-muted-foreground" />
                           : status === 'review' ? <Clock3 className="h-3.5 w-3.5 text-muted-foreground" />
                             : <Circle className="h-3.5 w-3.5 text-muted-foreground" />} />
-                      : <NotificationItem item={{
-                        tabId: session.tabId, workspaceId: session.workspaceId,
-                        workspaceName: workspaces.find((ws) => ws.id === session.workspaceId)?.name ?? session.workspaceId,
-                        providerId: session.key.startsWith('codex:') ? 'codex' : 'claude',
-                        agentSessionId: session.live?.agentSessionId,
-                        lastUserMessage: session.live?.lastUserMessage,
-                        currentAction: tabs[session.tabId]?.currentAction,
-                        busySince: tabs[session.tabId]?.busySince,
-                      }} variant={session.live?.cliState === 'needs-input' ? 'needs-input' : session.live?.cliState === 'busy' ? undefined : status === 'completed' ? 'done' : 'pending'} isActiveTab={session.tabId === activeTabId} onNavigate={handleNavigate} />}
+                      : !entry && target?.agentSessionId
+                        ? <SessionHistoryActions provider={target.providerId} sessionId={target.agentSessionId}
+                          label={session.live?.lastUserMessage} onDeleted={async () => {
+                            forgetSessionWorkflow(target.providerId, target.agentSessionId);
+                          }}>{liveItem}</SessionHistoryActions>
+                        : liveItem}
                     <div className="flex items-center gap-2 pl-9">
                       <select aria-label={t('workStatusLabel')} disabled={saving}
                         className="max-w-full rounded border bg-card px-1 py-0.5 text-xs text-muted-foreground"
