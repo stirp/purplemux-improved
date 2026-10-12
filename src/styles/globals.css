@@ -203,6 +203,11 @@
   --max-width-content: var(--content-max-width);
 }
 
+.chat-content {
+  width: 85%;
+  margin-inline: auto;
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
