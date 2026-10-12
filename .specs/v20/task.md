@@ -1,5 +1,28 @@
 # v20 任务进度
 
+## 聊天打开性能优化（2026-10-12）
+
+- [x] 2026-10-13 Review：session-waiting 清理旧记录时保留待确认文本和附件占位，补充 PERF-OPEN-06；本轮证据见验证记录的独立 Review 小节。
+
+- [x] 补齐 timeline-history 的 PERF-OPEN-01 至 05 与 ui/flow/api 约定。
+- [x] 桌面聊天并行挂载、历史先于统计发送、会话隔离的有限展示缓存；新增服务端分阶段耗时日志。
+- [x] 缓存和真实 React hook、真实 Codex JSONL 服务端初始化回归通过；完整 TypeScript、改动文件 ESLint 与生产构建通过。
+- [x] 本轮全量测试 126 文件、910 项通过，1 项可选微基准跳过；可控统计延迟前后测量已记录。
+- [ ] 真实手机 4G 与生产冷/热打开测量、长轮次主线程性能评估。
+
+详见[实施记录](./result/build-chat-open-performance.md)和[验证记录](./result/verify-chat-open-performance.md)。
+
+## 空闲 Agent 允许同步分支（2026-10-12）
+
+- [x] PR #30 Review P1/P2 修复：实际 shell 前台验证、严格 pane 快照复用及针对性回归；本次验证结果见下方记录链接。
+
+- [x] [需求与验收](./requirements/idle-agent-worktree-sync.md)、同步 spec 及 ui/flow/api 约定。
+- [x] 服务端预览/执行复用空闲判定，执行前复核 Git 与会话状态，不关闭 Agent；同步专属提示覆盖 11 种语言。
+- [x] 6 文件 76 项相关回归、完整 TypeScript、改动文件 ESLint、11 种翻译与完整生产构建通过。
+- [ ] 浏览器与真实 Claude/Codex 实机验收。
+
+实施及检查结果见[实施记录](./result/build-idle-agent-worktree-sync.md)和[验证记录](./result/verify-idle-agent-worktree-sync.md)。
+
 ## 移动端空工作区选择（2026-10-12）
 
 - [x] [需求](./requirements/mobile-empty-workspace-selection.md)与 mobile-navigation 规格、界面、流程和内部通道更新。

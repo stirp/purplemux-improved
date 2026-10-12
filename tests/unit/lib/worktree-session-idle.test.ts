@@ -7,14 +7,29 @@ const manager = getStatusManager();
 const check = (overrides: Partial<ITabStatusEntry>) => {
   manager.registerTab('idle-check', {
     workspaceId: 'ws-test', tabName: 'Test', tmuxSession: 'pt-idle-check',
-    panelType: 'codex-cli', cliState: 'idle', ...overrides,
+    panelType: 'codex-cli', cliState: 'idle', currentProcess: 'bash', ...overrides,
   });
   return manager.areSessionsIdle(['pt-idle-check']);
 };
 
 describe('worktree session idle checks', () => {
-  it.each(['idle', 'ready-for-review', 'cancelled'] as const)('allows settled agent state %s', (cliState) => {
-    expect(check({ cliState })).toBe(true);
+  it.each(['claude-code', 'codex-cli', 'terminal'] as const)('blocks non-shell foreground commands in %s', (panelType) => {
+    for (const currentProcess of ['node', 'vim', 'make', undefined]) {
+      expect(check({ panelType, cliState: 'inactive', terminalStatus: 'idle', currentProcess })).toBe(false);
+    }
+  });
+
+  it('uses the strict pane snapshot instead of cached foreground metadata', () => {
+    check({ cliState: 'inactive', terminalStatus: 'idle', currentProcess: 'bash' });
+    const pane = { command: 'node', path: '/repo', pid: 123, windowActivity: 0 };
+    expect(manager.areSessionsIdle(['pt-idle-check'], new Map([['pt-idle-check', pane]]))).toBe(false);
+    expect(manager.areSessionsIdle(['pt-idle-check'], new Map())).toBe(false);
+    expect(manager.areSessionsIdle(['pt-idle-check'], new Map([['pt-idle-check', { ...pane, command: 'bash' }]]))).toBe(true);
+  });
+  it.each(['claude-code', 'codex-cli'] as const)('allows settled states for %s', (panelType) => {
+    for (const cliState of ['idle', 'ready-for-review', 'cancelled'] as const) {
+      expect(check({ panelType, cliState })).toBe(true);
+    }
   });
   it.each(['busy', 'needs-input', 'unknown'] as const)('blocks agent state %s', (cliState) => {
     expect(check({ cliState, terminalStatus: 'idle' })).toBe(false);

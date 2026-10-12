@@ -9,6 +9,9 @@
 
 ## 数据与执行边界
 
+- timeline:init 的 sessionStats 可为 null；聊天记录发送后统计通过现有 timeline:stats-update 补齐，过期订阅结果丢弃。
+- 浏览器展示缓存按 provider/sessionName/agentSessionId 隔离，12 项、每项 2 MiB、5 分钟 TTL；不缓存 pending 消息，不恢复分页或进程判断。
+
 - 分页边界按对话轮次，不等同于固定条目数。
 - 必须区分 Codex 旧模式替换行为与按轮增量模式。
 

@@ -2,8 +2,32 @@ import { getWorktreeReviewRemotes } from '@/lib/worktree-delivery';
 import { readWorktreeOperation, worktreeGit } from '@/lib/worktree-git';
 import { resolveWorktreeItem, WorktreeError } from '@/lib/worktree-manager';
 import { readWorktreeMetadata, updateWorktreeMetadata, worktreeMetadataKey } from '@/lib/worktree-metadata';
+import { getAllPanesInfo } from '@/lib/tmux';
 import type { IWorkspace } from '@/types/terminal';
-import type { IWorktreeSyncInfo, IWorktreeSyncResult, TWorktreeSnapshot } from '@/types/worktree';
+import type { IManagedWorktree, IWorktreeSyncInfo, IWorktreeSyncResult, TWorktreeSnapshot } from '@/types/worktree';
+
+const syncBlockers = async (item: IManagedWorktree, refresh = true) => {
+  let idle = false;
+  if (item.sessions?.length) {
+    try {
+      const panes = await getAllPanesInfo({ strict: true });
+      const extraPane = [...panes.keys()].some((name) => name.includes(':') && item.sessions!.includes(name.split(':')[0]));
+      if (!extraPane) {
+        const { getStatusManager } = await import('@/lib/status-manager');
+        const manager = getStatusManager();
+        if (refresh) await manager.poll(panes);
+        idle = manager.areSessionsIdle(item.sessions, panes);
+      }
+    } catch {
+      idle = false;
+    }
+  }
+  return item.blockers.filter((reason) => reason !== 'ignored' && !(reason === 'sessions' && idle));
+};
+
+const executionBlockers = async (item: IManagedWorktree, resuming: boolean, refresh = true) =>
+  (await syncBlockers(item, refresh)).filter((reason) => !(resuming && (reason === 'operation' || reason === 'dirty'
+    || (reason === 'detached' && item.status?.operation === 'rebase'))));
 
 const resolveTarget = async (directory: string, target: string) => {
   if (target.startsWith('-')) throw new WorktreeError('targetRequired', 400);
@@ -33,7 +57,7 @@ export const inspectWorktreeSync = async (source: IWorkspace, snapshot: TWorktre
   }
   return { head: item.head, branch: item.branch, branches, remotes: await getWorktreeReviewRemotes(item.directory), targetRef: target?.ref ?? null, targetHead: target?.head ?? null,
     ahead, behind, operation: item.status.operation,
-    blockers: item.blockers.filter((reason) => reason !== 'ignored'), review: metadata.review ?? null };
+    blockers: await syncBlockers(item), review: metadata.review ?? null };
 };
 
 const protectIgnoredFiles = async (directory: string, target: string, rebase: boolean) => {
@@ -52,8 +76,7 @@ export const synchronizeWorktree = async (source: IWorkspace, snapshot: TWorktre
   const { item } = await resolveWorktreeItem(source, snapshot.repositoryId, snapshot.directory);
   if (item.head !== snapshot.head || item.branch !== snapshot.branch) throw new WorktreeError('changed');
   const resuming = action === 'continue' || action === 'abort';
-  const blockers = item.blockers.filter((reason) => reason !== 'ignored' && !(resuming && (reason === 'operation' || reason === 'dirty'
-    || (reason === 'detached' && item.status?.operation === 'rebase'))));
+  const blockers = await executionBlockers(item, resuming);
   if (blockers.length) throw new WorktreeError(blockers[0]);
   let args: string[];
   if (resuming) {
@@ -69,6 +92,12 @@ export const synchronizeWorktree = async (source: IWorkspace, snapshot: TWorktre
     args = action === 'merge' ? ['merge', '--no-edit', '--no-autostash', '--no-overwrite-ignore', target.head]
       : ['rebase', '--no-autostash', '--no-update-refs', target.head];
   }
+  const refreshedBlockers = await executionBlockers(item, resuming);
+  if (refreshedBlockers.length) throw new WorktreeError(refreshedBlockers[0]);
+  const { item: current } = await resolveWorktreeItem(source, snapshot.repositoryId, snapshot.directory);
+  if (current.head !== snapshot.head || current.branch !== snapshot.branch) throw new WorktreeError('changed');
+  const currentBlockers = await executionBlockers(current, resuming, false);
+  if (currentBlockers.length) throw new WorktreeError(currentBlockers[0]);
   try {
     const output = await worktreeGit(item.directory, ['-c', 'core.editor=true', '-c', 'sequence.editor=true', ...args], 60_000);
     return { ok: true, operation: await readWorktreeOperation(item.directory), output };

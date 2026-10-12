@@ -1,5 +1,6 @@
 # v20 需求整理：Fork 后累计新增功能
 
+2026-10-12 增量：[空闲 Agent 允许同步分支](./requirements/idle-agent-worktree-sync.md)，复用既有状态判断，在执行前复核 Git 与会话状态，保留运行中的 Agent。
 2026-10-12 增量：[移动端空工作区选择](./requirements/mobile-empty-workspace-selection.md)，修复点击无 Tab 项目无法切换并新建标签的问题。
 
 2026-10-13 Review 增量：跨页面无选择处理器时，切换项目前清空旧布局，避免慢请求期间操作旧 pane。
@@ -87,3 +88,7 @@ v20 覆盖 `52140216..3637a357` 的 fork 增量，共 48 个非合并提交，�
 区域字体 Review 增量补充 RT-10 至 RT-17：重绘、颜色编辑一致性、保存去重、同步竞态、错误反馈、样式生命周期及标签栏行高。
 
 2026-10-05 架构复审补充 RT-18 至 RT-23：完整配置快照广播、通用 hydrate 同步、组件区域 CSS 变量和显式终端 props；替换区域专用同步状态机。
+
+## 聊天打开性能增量
+
+2026-10-12：桌面聊天独立于终端初始化、历史先于统计发送、切回会话复用有限展示缓存；验收约束见 [timeline-history](./features/timeline-history/spec.md) 的 PERF-OPEN-01 至 06，证据见 [验证记录](./result/verify-chat-open-performance.md)。2026-10-13 Review 修复等待新会话文件时保留 pending 文本与附件占位。真实手机冷/热打开与长轮次测量仍待执行。

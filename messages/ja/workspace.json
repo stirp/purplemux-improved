@@ -65,6 +65,7 @@
     "deleted": "Worktree を削除しました。",
     "workspaceCleanupFailed": "Worktree は削除されましたが、一部のワークスペースを個別に削除してください。",
     "branchRetained": "Worktree は削除されました。Git が安全に削除できなかったため、ブランチは保持されました。",
+    "syncSessionsBlocked": "関連するターミナルまたはエージェントがタスクを実行中、または待機状態を確認できないため、同期できません。",
     "reasons": {
       "main": "メイン worktree は保護されています",
       "locked": "Worktree はロックされています",
