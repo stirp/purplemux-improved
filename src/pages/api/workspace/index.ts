@@ -1,6 +1,7 @@
 import os from 'os';
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { getWorkspaces, createWorkspace } from '@/lib/workspace-store';
+import { getWorkspaces, createWorkspace, synchronizeSessionWorkflow } from '@/lib/workspace-store';
+import { getSessionHistory } from '@/lib/session-history';
 import { readLayoutFile, resolveLayoutFile, collectAllTabs, updateTabAgentSessionId } from '@/lib/layout-store';
 import { getProviderByPanelType } from '@/lib/providers';
 import { checkAgentAvailabilityForPanelType, toAgentAvailabilityError } from '@/lib/agent-availability';
@@ -14,6 +15,7 @@ const SHELL_READY_DELAY_MS = 500;
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   if (req.method === 'GET') {
+    await synchronizeSessionWorkflow(await getSessionHistory(), getStatusManager().getAllForClient());
     const data = await getWorkspaces();
     return res.status(200).json(data);
   }

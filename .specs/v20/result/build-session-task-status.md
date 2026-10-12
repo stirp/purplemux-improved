@@ -18,4 +18,14 @@
 
 ## 限制
 
-浏览器/实机未验收。无原生会话 ID 时按历史或 Tab ID 保存，原生 ID 出现后属于不同的状态标识；没有新增跨身份迁移机制。
+浏览器/实机未验收。首次身份绑定迁移已在 Review 修复中补齐；旧版本已经裁剪且从未保存关联的会话无法凭人工状态键恢复 Workspace，升级只回补仍保留的历史及当前 Tab。
+
+
+## Review 修复（2026-10-13）
+
+- 当前历史项禁用导航时比较 provider/session ID，复用 Tab 不误判旧会话。
+- sessionWorkflow.sessions 独立保存会话关联和最近一轮摘要，tabBindings 记录首次绑定；同锁消费 fallback，已有原生人工状态优先。
+- StatusManager 状态广播触发持久化；传入独立快照避免异步写入读到随后切换的会话。GET Workspace 回补原有数据和运行快照。
+- 新增历史在获取历史写锁前更新持久索引，再裁剪轮次；避免与 Workspace 删除的锁顺序形成循环。
+- 历史删除 API 清除索引与人工状态；Workspace 删除在自身锁内清除关联索引，不重复获取同一锁。
+- useSync 每次 onopen 补拉 Workspace。回归测试使用真实客户端 store 验证断线期间人工状态和折叠偏好的变化。

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { aggregateWorkStatus, collectWorkSessions, type ISessionWorkflow } from '@/lib/session-workflow';
+import { aggregateWorkStatus, collectWorkSessions, reconcileSessionWorkflow, type ISessionWorkflow } from '@/lib/session-workflow';
 import type { ISessionHistoryEntry } from '@/types/session-history';
 
 const workflow: ISessionWorkflow = { statuses: {}, collapsed: {} };
@@ -39,6 +39,45 @@ describe('session work status', () => {
       new: { workspaceId: 'ws', panelType: 'codex-cli', cliState: 'inactive' },
     }, { ...workflow, statuses: { 'codex:history:e1': 'completed' } });
     expect(sessions.map((s) => s.status)).toEqual(['completed', 'pending']);
+  });
+  it('consumes fallback status on first binding without leaking it to another session', () => {
+    const original: ISessionWorkflow = { statuses: { 'codex:tab:t1': 'completed' }, collapsed: {} };
+    const first = reconcileSessionWorkflow(original, [], {
+      t1: { workspaceId: 'ws', panelType: 'codex-cli', agentSessionId: 's1', cliState: 'idle' },
+    });
+    expect(first.statuses).toEqual({ 'codex:s1': 'completed' });
+    expect(first.tabBindings).toEqual({ 'codex:tab:t1': 'codex:s1' });
+    expect(collectWorkSessions([], {}, first)[0].status).toBe('completed');
+    const second = reconcileSessionWorkflow(first, [], {
+      t1: { workspaceId: 'ws', panelType: 'codex-cli', agentSessionId: 's2', cliState: 'idle' },
+    });
+    expect(collectWorkSessions([], {}, second).find((s) => s.key === 'codex:s2')?.status).toBe('pending');
+    expect(second.statuses['codex:s2']).toBeUndefined();
+    const repeated = reconcileSessionWorkflow(second, [], {
+      t1: { workspaceId: 'ws', panelType: 'codex-cli', agentSessionId: 's2', cliState: 'idle' },
+    });
+    expect(collectWorkSessions([], {}, repeated).find((s) => s.key === 'codex:s2')?.status).toBe('pending');
+    expect(original.statuses).toEqual({ 'codex:tab:t1': 'completed' });
+  });
+  it('keeps explicit native status when consuming fallback, and restores automatic correctly', () => {
+    const bound = reconcileSessionWorkflow({
+      statuses: { 'codex:tab:t1': 'completed', 'codex:s1': 'pending' }, collapsed: {},
+    }, [entry()], { t1: { workspaceId: 'ws', panelType: 'codex-cli', agentSessionId: 's1' } });
+    expect(bound.statuses).toEqual({ 'codex:s1': 'pending' });
+    expect(collectWorkSessions([], {}, { ...bound, statuses: {} })[0].status).toBe('review');
+  });
+  it('keeps indexed navigation and workspace association after every turn is pruned', () => {
+    const indexed = reconcileSessionWorkflow({ ...workflow, statuses: { 'codex:s1': 'completed' } }, [entry()], {});
+    const restored = collectWorkSessions([], {}, JSON.parse(JSON.stringify(indexed)));
+    expect(restored).toHaveLength(1);
+    expect(restored[0]).toMatchObject({ key: 'codex:s1', workspaceId: 'ws', status: 'completed', entry: { agentSessionId: 's1', workspaceDir: '/project' } });
+    expect(aggregateWorkStatus(restored.map((s) => s.status))).toBe('completed');
+  });
+  it('does not duplicate the indexed latest turn still in history', () => {
+    const indexed = reconcileSessionWorkflow(workflow, [entry()], {});
+    const restored = collectWorkSessions([entry()], {}, indexed);
+    expect(restored[0].olderEntries).toEqual([]);
+    expect(restored).toHaveLength(1);
   });
   it('uses all related sessions for workspace completion', () => {
     expect(aggregateWorkStatus([])).toBe('pending');

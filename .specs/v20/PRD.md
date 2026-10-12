@@ -84,3 +84,5 @@ v20 覆盖 `52140216..3637a357` 的 fork 增量，共 48 个非合并提交，�
 2026-10-05 架构复审补充 RT-18 至 RT-23：完整配置快照广播、通用 hydrate 同步、组件区域 CSS 变量和显式终端 props；替换区域专用同步状态机。
 
 2026-10-13 增量：[Sessions 与 Workspace 工作状态管理](./requirements/session-task-status.md)。
+
+2026-10-13 Review 修复：[状态管理需求](./requirements/session-task-status.md)补齐身份导航、首次绑定迁移、重连同步与历史裁剪后的会话关联保留。

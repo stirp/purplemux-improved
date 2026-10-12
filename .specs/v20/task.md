@@ -1,5 +1,14 @@
 # v20 任务进度
 
+## Sessions 工作状态 Review 修复（2026-10-13）
+
+- [x] 补齐身份导航、首次绑定、重连及持久会话索引规格。
+- [x] 修复四项 Review 问题及删除索引清理。
+- [x] 相关测试、完整 TypeScript、ESLint 和生产构建。
+- [ ] 浏览器/实机及真实跨客户端断网验收。
+
+见[Review 验证记录](./result/verify-session-task-status-review.md)。
+
 ## Claude 启动信任提示恢复（2026-10-10）
 
 - [x] 需求及 agent-runtime 界面、流程、数据约定。

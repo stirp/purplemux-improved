@@ -2,6 +2,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import os from 'os';
 import { createLogger } from '@/lib/logger';
+import { synchronizeSessionWorkflow } from '@/lib/workspace-store';
 import type { ISessionHistoryEntry, ISessionHistoryData } from '@/types/session-history';
 
 const log = createLogger('session-history');
@@ -123,6 +124,7 @@ const writeSessionHistory = async (data: ISessionHistoryData): Promise<void> => 
 };
 
 export const addSessionHistoryEntry = async (entry: ISessionHistoryEntry): Promise<void> => {
+  await synchronizeSessionWorkflow([entry, ...(await readSessionHistory()).entries]);
   await withLock(async () => {
     const data = await readSessionHistory();
     data.entries.unshift(entry);

@@ -580,3 +580,5 @@ The idempotent guard at the top of the function (`prevState === newState`) block
 ## Session 工作状态（2026-10-13）
 
 Session 工作状态独立于 TCliState，由 session-workflow 的共享纯函数解析。人工覆盖及分类折叠存于 workspaces.json/sessionWorkflow，通过 workspace 广播同步。未覆盖时 busy/needs-input 为进行中，单轮产出为审批中，未执行为未开始；完成仅人工确认。关闭通知不确认工作完成。Workspace 汇总去重后的本工作区 sessions，优先级为进行中、审批中、未开始，全部完成才已完成。模型 Todo/Plan 仍是会话内部执行计划，不作为 Workspace 完成依据。
+
+Review 修复：sessionWorkflow.sessions 保存独立会话索引（关联及最近一轮摘要），tabBindings 在首次绑定时消费 Tab fallback 人工状态。索引先于轮次历史裁剪持久化，GET Workspace 回补，状态更新使用快照写入；人工确认不被后续会话继承。历史导航按 provider/session ID 判断当前会话，useSync 每次连接建立均补拉 Workspace；删除时同步清除索引。

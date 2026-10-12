@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { hideSession } from '@/lib/hidden-sessions';
 import { deleteOriginalSession, SessionInUseError } from '@/lib/delete-session';
 import { removeSessionHistory } from '@/lib/session-history';
+import { removeSessionWorkflow } from '@/lib/workspace-store';
 import { getStatusManager } from '@/lib/status-manager';
 
 const schema = z.object({
@@ -26,6 +27,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       await hideSession(provider, sessionId);
     }
     const entries = await removeSessionHistory(provider, sessionId, historyEntryId);
+    await removeSessionWorkflow(provider, sessionId, historyEntryId);
     getStatusManager().broadcast({ type: 'session-history:sync', entries });
     return res.status(204).end();
   } catch (error) {

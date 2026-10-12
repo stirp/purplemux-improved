@@ -19,3 +19,5 @@ Sessions 历史进入流程：等待工作区 hydrate，查询服务端布局并
 ## 2026-10-13 工作状态管理
 
 遵循[Sessions 与 Workspace 工作状态需求](../../../requirements/session-task-status.md)。人工状态与运行状态分离，分类折叠及 Workspace 汇总共享同一状态规则。状态和折叠偏好保存于 workspaces.json 的 sessionWorkflow，GET /api/workspace 读取，PATCH /api/session-workflow 严格校验并按字段更新，通过 workspace 广播同步。
+
+Review 修复：sessionWorkflow 增加 sessions 持久索引和 tabBindings 首次绑定记录；GET Workspace 回补当前 Tab/保留历史并迁移 fallback，历史新增在裁剪前更新索引，显式删除同步清除索引。同步连接 onopen 补拉 Workspace，历史禁用导航按会话身份判断。完整约束见上链需求的 Review 修复约定。

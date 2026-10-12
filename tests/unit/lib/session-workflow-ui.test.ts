@@ -6,7 +6,11 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 vi.mock('next-intl', () => ({ useTranslations: () => (key: string) => key }));
 vi.mock('next/router', () => ({ useRouter: () => ({ pathname: '/' }) }));
 vi.mock('@/hooks/use-layout', () => ({
-  useLayoutStore: (select: (state: { layout: null }) => unknown) => select({ layout: null }),
+  useLayoutStore: (select: (state: unknown) => unknown) => select({
+    layout: layoutMock.activeTab ? { activePaneId: 'pane', root: {
+      type: 'pane', id: 'pane', activeTabId: layoutMock.activeTab.id, tabs: [layoutMock.activeTab],
+    } } : null,
+  }),
   navigateToTab: vi.fn(),
 }));
 vi.mock('@/hooks/use-session-navigation', () => ({ navigateToSession: vi.fn() }));
@@ -20,9 +24,11 @@ import useTabStore from '@/hooks/use-tab-store';
 import useSessionHistoryStore from '@/hooks/use-session-history-store';
 import { NotificationPanel } from '@/components/features/workspace/notification-sheet';
 import { toast } from 'sonner';
+import { navigateToSession } from '@/hooks/use-session-navigation';
 
 let container: HTMLDivElement;
 let root: Root;
+const layoutMock = vi.hoisted(() => ({ activeTab: null as null | { id: string; agentState: { providerId: string; sessionId: string } } }));
 const initialWorkspace = useWorkspaceStore.getState();
 const fetchMock = vi.fn();
 beforeEach(async () => {
@@ -30,6 +36,7 @@ beforeEach(async () => {
   vi.stubGlobal('fetch', fetchMock);
   fetchMock.mockReset();
   vi.clearAllMocks();
+  layoutMock.activeTab = null;
   useWorkspaceStore.setState({
     workspaces: [{ id: 'ws', name: 'Workspace', directories: [] }],
     sessionWorkflow: { statuses: {}, collapsed: {} },
@@ -53,6 +60,20 @@ afterEach(async () => {
   vi.unstubAllGlobals();
 });
 describe('Sessions workflow controls', () => {
+  it('allows restoring old session A after its active tab is reused for B', async () => {
+    layoutMock.activeTab = { id: 't', agentState: { providerId: 'codex', sessionId: 's2' } };
+    await act(async () => root.render(createElement(NotificationPanel)));
+    const historyRow = container.querySelector('p')!.closest('[class*="rounded-md"]') as HTMLElement;
+    await act(async () => historyRow.click());
+    expect(navigateToSession).toHaveBeenCalledWith(expect.objectContaining({ agentSessionId: 's1' }), null);
+  });
+  it('disables navigation only for the same active provider and session', async () => {
+    layoutMock.activeTab = { id: 't', agentState: { providerId: 'codex', sessionId: 's1' } };
+    await act(async () => root.render(createElement(NotificationPanel)));
+    const historyRow = container.querySelector('p')!.closest('[class*="rounded-md"]') as HTMLElement;
+    await act(async () => historyRow.click());
+    expect(navigateToSession).not.toHaveBeenCalled();
+  });
   it('moves a session after manual selection and restores automatic review', async () => {
     fetchMock.mockResolvedValueOnce({ ok: true, json: async () => ({ statuses: { 'codex:s1': 'completed' }, collapsed: {} }) });
     const select = container.querySelector('select')!;

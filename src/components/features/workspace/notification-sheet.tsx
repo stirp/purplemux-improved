@@ -331,7 +331,7 @@ export const NotificationPanel = ({ onNavigated, className }: { onNavigated?: ()
   const workspaces = useWorkspaceStore((s) => s.workspaces);
   const workflow = useWorkspaceStore((s) => s.sessionWorkflow);
   const historyEntries = useSessionHistoryStore((s) => s.entries);
-  const { id: activeTabId } = useActiveTab();
+  const { id: activeTabId, agentSessionId: activeSessionId, providerId: activeProviderId } = useActiveTab();
   const [expandedSessions, setExpandedSessions] = useState<Set<string>>(new Set());
   const { save, saving } = useSessionWorkflowMutation();
   const sessions = useMemo(() => collectWorkSessions(historyEntries, tabs, workflow), [historyEntries, tabs, workflow]);
@@ -364,6 +364,9 @@ export const NotificationPanel = ({ onNavigated, className }: { onNavigated?: ()
             {!collapsed && <div className="flex flex-col gap-2">
               {items.map((session) => {
                 const entry = session.entry;
+                const isActiveSession = entry?.agentSessionId
+                  ? entry.agentSessionId === activeSessionId && entry.providerId === activeProviderId
+                  : !!session.live && session.tabId === activeTabId;
                 const expanded = expandedSessions.has(session.key);
                 const onClick = () => {
                   if (entry) {
@@ -373,7 +376,7 @@ export const NotificationPanel = ({ onNavigated, className }: { onNavigated?: ()
                 };
                 return (
                   <div key={session.key}>
-                    {entry && session.live?.cliState !== 'busy' && session.live?.cliState !== 'needs-input' ? <SessionHistoryItem entry={entry} isActiveSession={session.tabId === activeTabId} onClick={onClick}
+                    {entry && session.live?.cliState !== 'busy' && session.live?.cliState !== 'needs-input' ? <SessionHistoryItem entry={entry} isActiveSession={isActiveSession} onClick={onClick}
                         icon={status === 'completed' ? <CheckCircle2 className="h-3.5 w-3.5 text-muted-foreground" />
                           : status === 'review' ? <Clock3 className="h-3.5 w-3.5 text-muted-foreground" />
                             : <Circle className="h-3.5 w-3.5 text-muted-foreground" />} />
