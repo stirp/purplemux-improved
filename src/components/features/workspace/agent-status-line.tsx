@@ -35,7 +35,7 @@ const AgentStatusLine = ({ tabId, enabled, provider }: IAgentStatusLineProps) =>
   const visibleText = data?.text ?? text;
   if (!enabled || !sessionId || data?.active === false || !visibleText) return null;
   return (
-    <div data-agent-status-line={provider} className="mx-auto w-full max-w-content shrink-0 border-t px-3 py-1.5 font-mono text-[11px] text-muted-foreground">
+    <div data-agent-status-line={provider} className="chat-content shrink-0 border-t px-3 py-1.5 font-mono text-[11px] text-muted-foreground">
       <p className="whitespace-pre-wrap break-words">{visibleText}</p>
     </div>
   );

@@ -472,7 +472,7 @@ const TimelineEntryRenderer = ({ entry, sessionName, tabId, sessionId }: { entry
 };
 
 const SkeletonLoader = () => (
-  <div className="mx-auto max-w-content">
+  <div className="chat-content">
     <div className="animate-delayed-fade-in flex flex-col gap-4 p-4">
       {[48, 36, 40].map((w, i) => (
         <div key={i} className="flex flex-col gap-2">
@@ -869,7 +869,7 @@ const TimelineView = ({
         role="log"
         aria-label={t('timelineAria')}
       >
-        <div ref={contentRef} className="region-typography-messages mx-auto max-w-content">
+        <div ref={contentRef} className="region-typography-messages chat-content">
           {hasMore && !isLoadingMore && (
             <div className="flex justify-center py-2">
               <Button variant="ghost" size="sm" className="h-7 text-xs text-muted-foreground" onClick={triggerLoadMore}>

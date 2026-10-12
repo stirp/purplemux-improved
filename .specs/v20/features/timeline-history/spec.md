@@ -7,7 +7,7 @@ complexity: Medium
 depends_on:
   - CLAUDE.md
 created: 2026-09-28
-updated: 2026-10-10
+updated: 2026-10-12
 assignee: ''
 ---
 
@@ -22,6 +22,7 @@ assignee: ''
 - Claude/Codex 时间线按一个对话轮次加载历史，减少一次读取大量记录。
 - 字节游标与 hasMore 协调历史分页和实时增量。
 - 用户长消息支持折叠展开，改善长文本阅读。
+- [Chat 比例宽度需求](../../requirements/chat-content-width.md)：聊天相关内容居中占所在面板的 85%，取消固定最大宽度。
 
 ## 边界与约束
 
@@ -34,6 +35,10 @@ assignee: ''
 - 必须区分 Codex 旧模式替换行为与按轮增量模式。
 
 ## 验收标准
+
+- CW-01：消息区、加载骨架、输入框及连接提示、快捷提示、Agent 状态栏共享 85% 外层宽度，无固定最大宽度，左右各留 7.5%。
+- CW-02：桌面、移动端和分屏按所在面板宽度计算；调整窗口或分屏后自动重排，1920px 面板内容区为 1632px，2560px 为 2176px，390px 为 331.5px（不含组件内部间距）。
+- CW-03：保留消息气泡比例及内部间距；统计和报告页沿用原宽度，配置、接口、分页和发送流程不变。
 
 - PERF-CACHE-01：超过 30 秒后未变化文件不再次解析；文件内容变化或删除后不会返回过期缓存。
 - PERF-CACHE-02：同名不同路径隔离、并发读取合并、失败重试、读取期间变化、容量淘汰及清缓存竞态有回归覆盖。
@@ -72,6 +77,8 @@ assignee: ''
 - [使用流程](./detail/flow.md)
 - [接口与数据](./detail/api.md)
 - [统一验证记录](../../result/verify-1.md)
+- [Chat 宽度实施记录](../../result/build-chat-content-width.md)
+- [Chat 宽度验证记录](../../result/verify-chat-content-width.md)
 
 ## 变更历史
 
