@@ -65,6 +65,7 @@
     "deleted": "Worktree 已刪除。",
     "workspaceCleanupFailed": "Worktree 已刪除，但部分工作區記錄清理失敗，請單獨移除對應工作區。",
     "branchRetained": "Worktree 已刪除，Git 無法安全刪除分支，已保留該分支。",
+    "syncSessionsBlocked": "關聯終端或 Agent 正在執行任務，或無法確認閒置狀態，暫不能同步",
     "reasons": {
       "main": "主工作樹受保護",
       "locked": "Worktree 已鎖定",

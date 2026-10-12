@@ -65,6 +65,7 @@
     "deleted": "Worktree supprimé.",
     "workspaceCleanupFailed": "Le worktree a été supprimé, mais certains espaces doivent être retirés séparément.",
     "branchRetained": "Le worktree a été supprimé. Git a conservé la branche car sa suppression sûre a échoué.",
+    "syncSessionsBlocked": "Les terminaux ou agents associés exécutent des tâches, ou leur état inactif ne peut pas être confirmé. La synchronisation est bloquée.",
     "reasons": {
       "main": "Le worktree principal est protégé",
       "locked": "Worktree verrouillé",

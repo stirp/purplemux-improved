@@ -5,7 +5,7 @@ import useWorkspaceStore from '@/hooks/use-workspace-store';
 import useWebviewStore from '@/hooks/use-webview-store';
 import useTabStore from '@/hooks/use-tab-store';
 import useTabMetadataStore from '@/hooks/use-tab-metadata-store';
-import useSidebarActions from '@/hooks/use-sidebar-actions';
+import useSidebarActions, { selectWorkspace } from '@/hooks/use-sidebar-actions';
 import useMobileLayoutActions from '@/hooks/use-mobile-layout-actions';
 import useSessionNavigation, { navigateToSession, getSessionNavigationGroupId, toggleSessionNavigationGroup } from '@/hooks/use-session-navigation';
 import { navigateToTab, navigateToTabOrCreate, useLayoutStore } from '@/hooks/use-layout';
@@ -80,6 +80,39 @@ const expectUnchanged = () => {
   expect(useWorkspaceStore.getState().groups[0].collapsed).toBe(true);
   expect(useSessionNavigation.getState().revealedWorkspaceId).toBeNull();
 };
+
+describe('workspace selection without a registered handler', () => {
+  it('clears the old layout before switching projects and returning home', () => {
+    Router.pathname = '/stats';
+    const staleLayout = layout([tab('claude')]);
+    useLayoutStore.setState({ layout: staleLayout });
+    const layoutsAtSwitch: (ILayoutData | null)[] = [];
+    const unsubscribe = useWorkspaceStore.subscribe((state, previous) => {
+      if (state.activeWorkspaceId !== previous.activeWorkspaceId) {
+        layoutsAtSwitch.push(useLayoutStore.getState().layout);
+      }
+    });
+    const navigateHome = vi.fn(() => {
+      expect(useWorkspaceStore.getState().activeWorkspaceId).toBe('ws-target');
+      expect(useLayoutStore.getState().layout).toBeNull();
+    });
+    try {
+      selectWorkspace('ws-target', navigateHome);
+      expect(layoutsAtSwitch).toEqual([null]);
+      expect(useLayoutStore.getState().paneCount).toBe(0);
+      expect(useLayoutStore.getState().canSplit).toBe(false);
+      expect(navigateHome).toHaveBeenCalledOnce();
+    } finally {
+      unsubscribe();
+    }
+  });
+
+  it('preserves the layout when selecting the current project', () => {
+    const currentLayout = useLayoutStore.getState().layout;
+    selectWorkspace('ws-other', vi.fn());
+    expect(useLayoutStore.getState().layout).toBe(currentLayout);
+  });
+});
 
 describe('Sessions project navigation', () => {
   it.each(['claude', 'codex'] as const)('validates and enters an existing %s session', async (providerId) => {

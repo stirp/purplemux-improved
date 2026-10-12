@@ -1,5 +1,11 @@
 # v20 需求整理：Fork 后累计新增功能
 
+2026-10-12 增量：[空闲 Agent 允许同步分支](./requirements/idle-agent-worktree-sync.md)，复用既有状态判断，在执行前复核 Git 与会话状态，保留运行中的 Agent。
+2026-10-12 增量：[移动端空工作区选择](./requirements/mobile-empty-workspace-selection.md)，修复点击无 Tab 项目无法切换并新建标签的问题。
+
+2026-10-13 Review 增量：跨页面无选择处理器时，切换项目前清空旧布局，避免慢请求期间操作旧 pane。
+2026-10-12 增量：[Chat 内容区比例宽度](./requirements/chat-content-width.md)，消息区、输入框及相关聊天区域占所在面板 85%，取消固定上限，规格见 [timeline-history](./features/timeline-history/spec.md)。
+
 2026-10-10 增量：[Claude 启动信任提示恢复](./requirements/claude-startup-prompts.md)，修复聊天区漏显示启动选项及新版无编号菜单回答。
 2026-10-10 增量：[安装后仅保留一个 CLI 命令](./requirements/single-cli-install.md)，取消 purplemux/pmux 安装别名，保留 purplemux-improved 和原数据目录。
 
@@ -90,3 +96,6 @@ v20 覆盖 `52140216..3637a357` 的 fork 增量，共 48 个非合并提交，�
 2026-10-13 第二轮 Review：[状态管理需求](./requirements/session-task-status.md)补齐删除标记与迟到回补过滤，以及无轮次会话的身份恢复和删除入口。
 
 2026-10-13 第三轮 Review：补齐已删除身份首次绑定清理及无轮次行菜单触发，遵循状态管理需求第三轮约定。
+## 聊天打开性能增量
+
+2026-10-12：桌面聊天独立于终端初始化、历史先于统计发送、切回会话复用有限展示缓存；验收约束见 [timeline-history](./features/timeline-history/spec.md) 的 PERF-OPEN-01 至 06，证据见 [验证记录](./result/verify-chat-open-performance.md)。2026-10-13 Review 修复等待新会话文件时保留 pending 文本与附件占位。真实手机冷/热打开与长轮次测量仍待执行。

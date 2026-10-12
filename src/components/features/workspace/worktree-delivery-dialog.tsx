@@ -15,6 +15,7 @@ export default function WorktreeDeliveryDialog({ workspaceId, item, onClose }: {
 }) {
   const t = useTranslations('workspace.worktreeManager');
   const tc = useTranslations('common');
+  const blockerLabel = (reason: string) => reason === 'sessions' ? t('syncSessionsBlocked') : t(`reasons.${reason}`);
   const [targetOpen, setTargetOpen] = useState(false);
   const [info, setInfo] = useState<IWorktreeSyncInfo | null>(null);
   const [targetRef, setTargetRef] = useState('');
@@ -56,7 +57,7 @@ export default function WorktreeDeliveryDialog({ workspaceId, item, onClose }: {
       if (action === 'saveReview') setReviewUrl(null);
     } catch (error) {
       const failure = error as Error & { code?: string };
-      setError(failure.code ? t(`reasons.${failure.code}`) : failure.message);
+      setError(failure.code ? blockerLabel(failure.code) : failure.message);
     } finally { setBusy(false); setConfirm(null); reload(); }
   };
 
@@ -115,7 +116,7 @@ export default function WorktreeDeliveryDialog({ workspaceId, item, onClose }: {
             <Button disabled={busy || loading || !info.targetHead || targetsCurrentBranch || info.blockers.length > 0} onClick={() => setConfirm('merge')}>{t('mergeTarget')}</Button>
             <Button variant="outline" disabled={busy || loading || !info.targetHead || targetsCurrentBranch || info.blockers.length > 0} onClick={() => setConfirm('rebase')}>{t('rebaseTarget')}</Button>
           </div>}
-          {(info.operation ? recovering : info.blockers).length > 0 && <p className="text-xs text-muted-foreground">{(info.operation ? recovering : info.blockers).map((reason) => t(`reasons.${reason}`)).join(' · ')}</p>}
+          {(info.operation ? recovering : info.blockers).length > 0 && <p className="text-xs text-muted-foreground">{(info.operation ? recovering : info.blockers).map(blockerLabel).join(' · ')}</p>}
           <div className="flex flex-wrap gap-2">
             <Button variant="outline" disabled={busy || loading} onClick={() => void perform('fetch')}>{t('fetchRemotes')}</Button>
             <Button variant="outline" disabled={busy || loading} onClick={reload}>{t('refresh')}</Button>

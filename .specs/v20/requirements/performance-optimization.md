@@ -59,3 +59,7 @@
 - 具体约束与 PERF-CACHE-01 至 PERF-CACHE-04 验收见 [timeline-history 规格](../features/timeline-history/spec.md)。
 - PERF-03 至 PERF-07 仍待测量及实施；本轮没有调整时间线渲染、轮询和终端行为。
 - 变更入口与结果见[实施记录](../result/build-performance-optimization.md)和[验证记录](../result/verify-performance-optimization.md)。
+
+## 聊天打开性能增量（2026-10-12）
+
+用户报告移动端点击 Codex tab 后需 20–30 秒才显示历史，确认优化加载顺序。按 timeline-history 的 PERF-OPEN-01 至 05 实施桌面聊天并行初始化、记录先于统计发送及有限展示缓存；移动端已有并行初始化。长轮次渐进渲染待主线程测量后决定。截图包含开发 Compiling，不能直接作为生产性能基线。

@@ -297,9 +297,9 @@ class StatusManager {
     }
   }
 
-  async poll(): Promise<void> {
+  async poll(paneSnapshot?: ReadonlyMap<string, IPaneInfo>): Promise<void> {
     const { workspaces } = await getWorkspaces();
-    const panesInfo = await getAllPanesInfo();
+    const panesInfo = paneSnapshot ?? await getAllPanesInfo();
     const knownTabIds = new Set<string>();
     const tabsBeforePoll = new Set(this.tabs.keys());
     const now = Date.now();
@@ -487,15 +487,18 @@ class StatusManager {
     }
   }
 
-  areSessionsIdle(sessions: string[]): boolean {
+  areSessionsIdle(sessions: string[], paneSnapshot?: ReadonlyMap<string, IPaneInfo>): boolean {
     return sessions.every((session) => {
+      if (paneSnapshot && !paneSnapshot.has(session)) return false;
       const entries = [...this.tabs.values()].filter((entry) => entry.tmuxSession === session);
       return entries.length > 0 && entries.every((entry) => {
         if (entry.permissionRequest || entry.compactingSince) return false;
-        if (entry.panelType === 'terminal' || !entry.panelType) return entry.terminalStatus === 'idle';
+        const process = paneSnapshot ? paneSnapshot.get(session)?.command : entry.currentProcess;
+        const idleShell = entry.terminalStatus === 'idle' && SAFE_SHELLS.has(process ?? '');
+        if (entry.panelType === 'terminal' || !entry.panelType) return idleShell;
         if (!getProviderByPanelType(entry.panelType)) return false;
         return ['idle', 'ready-for-review', 'cancelled'].includes(entry.cliState)
-          || (entry.cliState === 'inactive' && entry.terminalStatus === 'idle');
+          || (entry.cliState === 'inactive' && idleShell);
       });
     });
   }

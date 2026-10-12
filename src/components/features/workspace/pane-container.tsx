@@ -1265,7 +1265,7 @@ const PaneContainer = memo(({ paneId, paneNumber }: IPaneContainerProps) => {
               onDragOver={isAgentPanel ? handleTimelineDragOver : undefined}
               onDrop={isAgentPanel ? handleTimelineDrop : undefined}
             >
-              {isClaudeCode && activeTab && !showInitialLoading && activeTabId && (
+              {isClaudeCode && activeTab && activeTabId && (
                 <ClaudeCodePanel
                   key={activeTab.sessionName}
                   tabId={activeTabId}
@@ -1281,7 +1281,7 @@ const PaneContainer = memo(({ paneId, paneNumber }: IPaneContainerProps) => {
                   onTrustResponse={onTrustResponse}
                 />
               )}
-              {isCodex && activeTab && !showInitialLoading && activeTabId && (
+              {isCodex && activeTab && activeTabId && (
                 <CodexPanel
                   key={activeTab.sessionName}
                   tabId={activeTabId}

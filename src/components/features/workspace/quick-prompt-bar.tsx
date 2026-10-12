@@ -49,7 +49,7 @@ const QuickPromptBar = ({ prompts, visible, onSelect }: IQuickPromptBarProps) =>
       ref={barRef}
       role="toolbar"
       aria-label={t('quickPrompts')}
-      className="mx-auto mt-1 flex w-full max-w-content justify-start gap-2 overflow-x-auto px-3 py-1.5 scrollbar-none animate-in fade-in duration-150"
+      className="chat-content mt-1 flex justify-start gap-2 overflow-x-auto px-3 py-1.5 scrollbar-none animate-in fade-in duration-150"
       onKeyDown={handleKeyDown}
     >
       {prompts.map((p) => (

@@ -52,6 +52,13 @@ beforeEach(() => {
 });
 
 describe('sync target selection', () => {
+  it('blocks unsettled sessions with a synchronization-specific message', async () => {
+    hooks.request.mockResolvedValue({ ...info('refs/heads/main'), blockers: ['sessions'] });
+    const tree = await inspect();
+    expect(tree.find((element) => element.props.children === 'mergeTarget')?.props.disabled).toBe(true);
+    expect(tree.some((element) => element.props.children === 'syncSessionsBlocked')).toBe(true);
+  });
+
   it('checks the default current branch and disables only its sync actions', async () => {
     const tree = await inspect();
     expect(tree.find((element) => element.props.value === 'refs/heads/feature')?.props['data-checked']).toBe(true);

@@ -29,6 +29,7 @@ import type { TTimelineServerMessage, IInitMeta, ITimelineEntry, ISessionStats }
 import path from 'path';
 import { isAllowedJsonlPath } from './path-validation';
 import { createLogger } from '@/lib/logger';
+import { deliverTimelineInit } from '@/lib/timeline-initial-delivery';
 
 const log = createLogger('timeline');
 
@@ -58,6 +59,7 @@ interface ITimelineConnection {
   lastHeartbeat: number;
   currentJsonlPath: string | null;
   cleaned: boolean;
+  initVersion: number;
 }
 
 interface IFileWatcher {
@@ -389,6 +391,9 @@ const subscribeToFile = async (
   sessionName: string,
   provider: IAgentProvider,
 ): Promise<string | undefined> => {
+  const conn = connections.get(ws);
+  const initVersion = conn ? (conn.initVersion = (conn.initVersion ?? 0) + 1) : 0;
+  const startedAt = performance.now();
   if (!existsSync(jsonlPath)) {
     sendJson(ws, { type: 'timeline:init', entries: [], sessionId: sessionId ?? '', totalEntries: 0, startByteOffset: 0, hasMore: false, jsonlPath });
     return undefined;
@@ -445,9 +450,7 @@ const subscribeToFile = async (
   const meta = computeInitMeta(result.entries, result.fileSize, firstTimestamp, result.customTitle);
 
   const resolvedSessionId = sessionId ?? provider.sessionIdFromJsonlPath(jsonlPath) ?? '';
-  const sessionStats = await readTimelineSessionStats(jsonlPath, resolvedSessionId, Boolean(fw.codexParser));
-
-  sendJson(ws, {
+  deliverTimelineInit({
     type: 'timeline:init',
     entries: result.entries,
     sessionId: resolvedSessionId,
@@ -457,8 +460,16 @@ const subscribeToFile = async (
     jsonlPath,
     summary: result.summary,
     meta,
-    sessionStats,
-  });
+  }, (message) => sendJson(ws, message),
+  async () => {
+    const statsStartedAt = performance.now();
+    const stats = await readTimelineSessionStats(jsonlPath, resolvedSessionId, Boolean(fw.codexParser));
+    log.debug({ durationMs: performance.now() - statsStartedAt }, 'timeline initial stats read');
+    return stats;
+  },
+  () => Boolean(conn && !conn.cleaned && conn.currentJsonlPath === jsonlPath && conn.initVersion === initVersion),
+  (err) => log.warn({ err: err instanceof Error ? err.message : String(err) }, 'initial session stats failed'));
+  log.debug({ durationMs: performance.now() - startedAt, entries: result.entries.length }, 'timeline history init sent');
 
   if (!isNewWatcher) {
     fw.initOffsets.set(ws, result.readOffset ?? result.fileSize);
@@ -690,6 +701,7 @@ const handleResumeMessage = async (
 };
 
 export const handleTimelineConnection = async (ws: WebSocket, request: IncomingMessage) => {
+  const connectionStartedAt = performance.now();
   if (connections.size >= MAX_CONNECTIONS) {
     ws.close(1013, 'Too many connections');
     return;
@@ -738,6 +750,7 @@ export const handleTimelineConnection = async (ws: WebSocket, request: IncomingM
     lastHeartbeat,
     currentJsonlPath: null,
     cleaned: false,
+    initVersion: 0,
   };
 
   connections.set(ws, conn);
@@ -788,6 +801,7 @@ export const handleTimelineConnection = async (ws: WebSocket, request: IncomingM
 
   const hintSessionId = url.searchParams.get('agentSessionId') ?? url.searchParams.get('claudeSessionId');
   const sessionInfo = await provider.detectActiveSession(panePid);
+  log.debug({ durationMs: performance.now() - connectionStartedAt, provider: provider.id }, 'timeline session detected');
 
   if (conn.cleaned) return;
 
@@ -829,6 +843,7 @@ export const handleTimelineConnection = async (ws: WebSocket, request: IncomingM
       await updateTabAgentSessionId(conn.sessionName, provider, sessionInfo.sessionId).catch(() => {});
     }
     const jsonlPath = await resolveJsonlPath(sessionName, effectiveSessionId, provider);
+    log.debug({ durationMs: performance.now() - connectionStartedAt, provider: provider.id }, 'timeline session path resolved');
     if (jsonlPath) {
       conn.currentJsonlPath = jsonlPath;
       await subscribeAndUpdateSummary(ws, jsonlPath, effectiveSessionId, conn.sessionName, provider);

@@ -5,11 +5,12 @@ import path from 'node:path';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 import type { IWorkspace } from '@/types/terminal';
-const mocks = vi.hoisted(() => ({ list: vi.fn(), remove: vi.fn(), panes: vi.fn(), agent: vi.fn(), config: vi.fn() }));
+const mocks = vi.hoisted(() => ({ list: vi.fn(), remove: vi.fn(), panes: vi.fn(), agent: vi.fn(), config: vi.fn(), poll: vi.fn(), idle: vi.fn() }));
 vi.mock('@/lib/workspace-store', () => ({ getWorkspaces: mocks.list, createWorkspace: vi.fn(), deleteWorkspace: mocks.remove }));
 vi.mock('@/lib/tmux', () => ({ getAllPanesInfo: mocks.panes }));
 vi.mock('@/lib/agent-text', () => ({ callAgentText: mocks.agent }));
 vi.mock('@/lib/config-store', () => ({ getConfig: mocks.config }));
+vi.mock('@/lib/status-manager', () => ({ getStatusManager: () => ({ poll: mocks.poll, areSessionsIdle: mocks.idle }) }));
 import { generateWorktreeDraft } from '@/lib/worktree-draft-generation';
 import { createGitWorktree } from '@/lib/git-worktree';
 import { getWorktreeOverview } from '@/lib/worktree-manager';
@@ -127,6 +128,71 @@ describe('organization helpers', () => {
 });
 
 describe('sync and delivery Git operations', () => {
+  it.each(['merge', 'rebase'] as const)('allows idle agents during preview and %s without closing sessions', async (action) => {
+    await commit(repo, 'idle-sync.txt', 'target');
+    mocks.panes.mockResolvedValue(new Map([['pt-ws-child-pane-tab', { path: directory }]]));
+    mocks.idle.mockReturnValue(true);
+    const { item, info } = await previewSync();
+    expect(info.blockers).not.toContain('sessions');
+    expect(await synchronizeWorktree(source, item, action, info.targetRef!, info.targetHead!)).toMatchObject({ ok: true });
+    expect(await fs.readFile(path.join(directory, 'idle-sync.txt'), 'utf8')).toBe('target');
+    expect(mocks.idle).toHaveBeenCalledWith(['pt-ws-child-pane-tab'], expect.any(Map));
+    expect(mocks.poll).toHaveBeenCalledWith(expect.any(Map));
+  });
+
+  it('blocks when an idle agent becomes busy after preview', async () => {
+    await commit(repo, 'busy-sync.txt', 'target');
+    mocks.panes.mockResolvedValue(new Map([['pt-ws-child-pane-tab', { path: directory }]]));
+    mocks.idle.mockReturnValue(true);
+    const { item, info } = await previewSync();
+    mocks.idle.mockReturnValue(false);
+    await expect(synchronizeWorktree(source, item, 'merge', info.targetRef!, info.targetHead!)).rejects.toMatchObject({ code: 'sessions' });
+    expect(await git(directory, 'rev-parse', 'HEAD')).toBe(item.head);
+  });
+
+  it('rechecks dirty files written during the final status refresh', async () => {
+    await commit(repo, 'dirty-sync.txt', 'target');
+    mocks.panes.mockResolvedValue(new Map([['pt-ws-child-pane-tab', { path: directory }]]));
+    mocks.idle.mockReturnValue(true);
+    const { item, info } = await previewSync();
+    mocks.poll.mockResolvedValueOnce(undefined).mockImplementationOnce(async () => {
+      await fs.writeFile(path.join(directory, 'file.txt'), 'written during status refresh');
+    });
+    await expect(synchronizeWorktree(source, item, 'merge', info.targetRef!, info.targetHead!)).rejects.toMatchObject({ code: 'dirty' });
+    expect(await git(directory, 'rev-parse', 'HEAD')).toBe(item.head);
+  });
+
+  it('blocks a task that starts during final Git validation', async () => {
+    await commit(repo, 'late-task.txt', 'target');
+    mocks.panes.mockResolvedValue(new Map([['pt-ws-child-pane-tab', { path: directory }]]));
+    mocks.idle.mockReturnValue(true);
+    const { item, info } = await previewSync();
+    mocks.idle.mockReset().mockReturnValueOnce(true).mockReturnValueOnce(true).mockReturnValue(false);
+    await expect(synchronizeWorktree(source, item, 'merge', info.targetRef!, info.targetHead!)).rejects.toMatchObject({ code: 'sessions' });
+    expect(await git(directory, 'rev-parse', 'HEAD')).toBe(item.head);
+  });
+
+  it('keeps extra panes and failed status refresh blocked even if a known agent is idle', async () => {
+    mocks.panes.mockResolvedValue(new Map([
+      ['pt-ws-child-pane-tab', { path: directory }], ['pt-ws-child-pane-tab:1', { path: directory }],
+    ]));
+    mocks.idle.mockReturnValue(true);
+    expect((await previewSync()).info.blockers).toContain('sessions');
+    mocks.panes.mockResolvedValue(new Map([['pt-ws-child-pane-tab', { path: directory }]]));
+    mocks.poll.mockRejectedValue(new Error('cannot refresh'));
+    expect((await previewSync()).info.blockers).toContain('sessions');
+  });
+
+  it('blocks synchronization when the strict safety query fails after overview succeeds', async () => {
+    const { item, info } = await previewSync();
+    mocks.panes.mockResolvedValueOnce(new Map([['pt-ws-child-pane-tab', { path: directory }]]))
+      .mockRejectedValue(new Error('tmux query failed'));
+    mocks.idle.mockReturnValue(true);
+    await expect(synchronizeWorktree(source, item, 'merge', info.targetRef!, info.targetHead!)).rejects.toMatchObject({ code: 'sessions' });
+    expect(mocks.poll).not.toHaveBeenCalled();
+    expect(await git(directory, 'rev-parse', 'HEAD')).toBe(item.head);
+  });
+
   it('previews divergence and merges the target into only the selected worktree', async () => {
     await commit(repo, 'main.txt', 'main'); await commit(directory, 'task.txt', 'task');
     const { item, info } = await previewSync();
