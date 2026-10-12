@@ -136,7 +136,8 @@ describe('sync and delivery Git operations', () => {
     expect(info.blockers).not.toContain('sessions');
     expect(await synchronizeWorktree(source, item, action, info.targetRef!, info.targetHead!)).toMatchObject({ ok: true });
     expect(await fs.readFile(path.join(directory, 'idle-sync.txt'), 'utf8')).toBe('target');
-    expect(mocks.idle).toHaveBeenCalledWith(['pt-ws-child-pane-tab']);
+    expect(mocks.idle).toHaveBeenCalledWith(['pt-ws-child-pane-tab'], expect.any(Map));
+    expect(mocks.poll).toHaveBeenCalledWith(expect.any(Map));
   });
 
   it('blocks when an idle agent becomes busy after preview', async () => {
@@ -180,6 +181,16 @@ describe('sync and delivery Git operations', () => {
     mocks.panes.mockResolvedValue(new Map([['pt-ws-child-pane-tab', { path: directory }]]));
     mocks.poll.mockRejectedValue(new Error('cannot refresh'));
     expect((await previewSync()).info.blockers).toContain('sessions');
+  });
+
+  it('blocks synchronization when the strict safety query fails after overview succeeds', async () => {
+    const { item, info } = await previewSync();
+    mocks.panes.mockResolvedValueOnce(new Map([['pt-ws-child-pane-tab', { path: directory }]]))
+      .mockRejectedValue(new Error('tmux query failed'));
+    mocks.idle.mockReturnValue(true);
+    await expect(synchronizeWorktree(source, item, 'merge', info.targetRef!, info.targetHead!)).rejects.toMatchObject({ code: 'sessions' });
+    expect(mocks.poll).not.toHaveBeenCalled();
+    expect(await git(directory, 'rev-parse', 'HEAD')).toBe(item.head);
   });
 
   it('previews divergence and merges the target into only the selected worktree', async () => {

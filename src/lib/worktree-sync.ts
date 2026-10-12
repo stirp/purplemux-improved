@@ -15,8 +15,8 @@ const syncBlockers = async (item: IManagedWorktree, refresh = true) => {
       if (!extraPane) {
         const { getStatusManager } = await import('@/lib/status-manager');
         const manager = getStatusManager();
-        if (refresh) await manager.poll();
-        idle = manager.areSessionsIdle(item.sessions);
+        if (refresh) await manager.poll(panes);
+        idle = manager.areSessionsIdle(item.sessions, panes);
       }
     } catch {
       idle = false;

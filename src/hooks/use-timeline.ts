@@ -10,6 +10,7 @@ import type {
   TTimelineConnectionStatus,
 } from '@/types/timeline';
 import useTimelineWebSocket from '@/hooks/use-timeline-websocket';
+import { clearTimelineDisplaySnapshot, getTimelineDisplaySnapshot, saveTimelineDisplaySnapshot, timelineDisplayKey } from '@/lib/timeline-display-cache';
 
 interface IResumeCallbacks {
   onResumeStarted?: (payload: { sessionId: string; jsonlPath: string | null }) => void;
@@ -71,16 +72,19 @@ const useTimeline = ({
   onSync,
   getCliState,
 }: IUseTimelineOptions): IUseTimelineReturn => {
-  const [entries, setEntries] = useState<ITimelineEntry[]>([]);
+  const identity = JSON.stringify([panelType ?? 'claude-code', sessionName, agentSessionId ?? claudeSessionId ?? null]);
+  const displayKey = timelineDisplayKey(panelType ?? 'claude-code', sessionName, agentSessionId ?? claudeSessionId);
+  const cached = useMemo(() => getTimelineDisplaySnapshot(displayKey), [displayKey]);
+  const [entries, setEntries] = useState<ITimelineEntry[]>(() => cached?.entries ?? []);
   const [agentProcess, setAgentProcess] = useState<boolean | null>(null);
   const [agentInstalled, setAgentInstalled] = useState(true);
   const [wsInitReceived, setWsInitReceived] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(false);
-  const [sessionId, setSessionId] = useState<string | null>(null);
-  const [sessionSummary, setSessionSummary] = useState<string | undefined>();
-  const [initMeta, setInitMeta] = useState<IInitMeta | undefined>();
-  const [sessionStats, setSessionStats] = useState<ISessionStats | null>(null);
+  const [sessionId, setSessionId] = useState<string | null>(() => cached?.sessionId ?? null);
+  const [sessionSummary, setSessionSummary] = useState<string | undefined>(() => cached?.summary);
+  const [initMeta, setInitMeta] = useState<IInitMeta | undefined>(() => cached?.meta);
+  const [sessionStats, setSessionStats] = useState<ISessionStats | null>(() => cached?.stats ?? null);
   const [jsonlPath, setJsonlPath] = useState<string | null>(null);
 
   const entriesRef = useRef(entries);
@@ -92,26 +96,34 @@ const useTimeline = ({
   const startByteOffsetRef = useRef(0);
   const isLoadingMoreRef = useRef(false);
   const historyGenerationRef = useRef(0);
+  const sessionIdRef = useRef(sessionId);
 
   const getCliStateRef = useRef(getCliState);
   useEffect(() => {
     getCliStateRef.current = getCliState;
   }, [getCliState]);
 
-  const [prevSessionName, setPrevSessionName] = useState(sessionName);
-  if (sessionName !== prevSessionName) {
+  const [prevIdentity, setPrevIdentity] = useState(identity);
+  const [prevScope, setPrevScope] = useState(JSON.stringify([panelType ?? 'claude-code', sessionName]));
+  const scope = JSON.stringify([panelType ?? 'claude-code', sessionName]);
+  if (identity !== prevIdentity) setPrevIdentity(identity);
+  if (scope !== prevScope || (identity !== prevIdentity && (agentSessionId ?? claudeSessionId ?? null) !== sessionId)) {
+    if (scope === prevScope) {
+      clearTimelineDisplaySnapshot(timelineDisplayKey(panelType ?? 'claude-code', sessionName, sessionIdRef.current));
+    }
     historyGenerationRef.current++;
-    setPrevSessionName(sessionName);
+    setPrevScope(scope);
     setWsInitReceived(false);
     setAgentProcess(null);
     setAgentInstalled(true);
-    setEntries([]);
+    setEntries(cached?.entries ?? []);
     setError(null);
     setHasMore(false);
-    setSessionId(null);
-    setSessionSummary(undefined);
-    setInitMeta(undefined);
-    setSessionStats(null);
+    setSessionId(cached?.sessionId ?? null);
+    sessionIdRef.current = cached?.sessionId ?? null;
+    setSessionSummary(cached?.summary);
+    setInitMeta(cached?.meta);
+    setSessionStats(cached?.stats ?? null);
     setJsonlPath(null);
     jsonlPathRef.current = null;
     startByteOffsetRef.current = 0;
@@ -119,7 +131,22 @@ const useTimeline = ({
 
   const isLoading = !wsInitReceived && entries.length === 0;
 
+  useEffect(() => {
+    if (!wsInitReceived || !sessionId) return;
+    saveTimelineDisplaySnapshot(timelineDisplayKey(panelType ?? 'claude-code', sessionName, sessionId), {
+      entries, sessionId, summary: sessionSummary, meta: initMeta, stats: sessionStats,
+    });
+  }, [entries, sessionId, sessionSummary, initMeta, sessionStats, wsInitReceived, panelType, sessionName]);
+
+  const clearDisplayCache = useCallback(() => {
+    clearTimelineDisplaySnapshot(timelineDisplayKey(panelType ?? 'claude-code', sessionName, sessionIdRef.current));
+  }, [panelType, sessionName]);
+
   const handleInit = useCallback((newEntries: ITimelineEntry[], _totalEntries: number, initSessionId: string, summary?: string, meta?: IInitMeta, startByteOffset?: number, hasMoreInit?: boolean, jsonlPath?: string | null, isClaudeStarting?: boolean, initStats?: ISessionStats | null) => {
+    if (sessionIdRef.current && sessionIdRef.current !== initSessionId) {
+      clearTimelineDisplaySnapshot(timelineDisplayKey(panelType ?? 'claude-code', sessionName, sessionIdRef.current));
+    }
+    sessionIdRef.current = initSessionId || null;
     historyGenerationRef.current++;
     setWsInitReceived(true);
     setAgentInstalled(true);
@@ -146,17 +173,16 @@ const useTimeline = ({
     setSessionSummary(summary);
     setInitMeta(meta);
     setSessionStats(initStats ?? null);
-    if (jsonlPath) {
-      jsonlPathRef.current = jsonlPath;
-      setJsonlPath(jsonlPath);
-    }
+    jsonlPathRef.current = jsonlPath ?? null;
+    setJsonlPath(jsonlPath ?? null);
     if (initSessionId) {
       setSessionId(initSessionId);
     } else if (!isClaudeStarting) {
+      setSessionId(null);
       setAgentProcess(false);
     }
     setError(null);
-  }, []);
+  }, [panelType, sessionName]);
 
   const handleAppend = useCallback((newEntries: ITimelineEntry[]) => {
     setEntries((prev) => {
@@ -253,8 +279,14 @@ const useTimeline = ({
   }, []);
 
   const handleSessionChanged = useCallback((newSessionId: string, reason: string) => {
+    const previousSessionId = sessionIdRef.current;
+    if (reason !== 'session-waiting' || (newSessionId && newSessionId !== previousSessionId)) clearDisplayCache();
+    sessionIdRef.current = reason === 'session-ended' ? null : newSessionId || (reason === 'session-waiting' ? previousSessionId : null);
     if (reason !== 'session-waiting') historyGenerationRef.current++;
     if (reason === 'session-ended') {
+      jsonlPathRef.current = null;
+      setJsonlPath(null);
+      setSessionId(null);
       setAgentProcess(false);
       setWsInitReceived(true);
       setEntries([]);
@@ -265,6 +297,17 @@ const useTimeline = ({
       return;
     }
     if (reason === 'session-waiting') {
+      if (newSessionId && newSessionId !== previousSessionId) {
+        historyGenerationRef.current++;
+        setEntries([]);
+        setWsInitReceived(false);
+        setSessionStats(null);
+        setInitMeta(undefined);
+        setSessionSummary(undefined);
+        setHasMore(false);
+        jsonlPathRef.current = null;
+        setJsonlPath(null);
+      }
       if (newSessionId) {
         setAgentProcess(true);
         setSessionId(newSessionId);
@@ -286,10 +329,10 @@ const useTimeline = ({
     setSessionStats(null);
     setHasMore(false);
     setWsInitReceived(false);
-  }, []);
+  }, [clearDisplayCache]);
 
   const handleStatsUpdate = useCallback((stats: ISessionStats) => {
-    setSessionStats(stats);
+    if (stats.sessionId === sessionIdRef.current) setSessionStats(stats);
   }, []);
 
   const loadMore = useCallback(async () => {
@@ -332,16 +375,22 @@ const useTimeline = ({
 
   const handleResumeStarted = useCallback(
     (payload: { sessionId: string; jsonlPath: string | null }) => {
-      if (payload.jsonlPath) {
-        jsonlPathRef.current = payload.jsonlPath;
-      }
+      clearDisplayCache();
+      historyGenerationRef.current++;
+      sessionIdRef.current = payload.sessionId;
+      jsonlPathRef.current = payload.jsonlPath;
+      setJsonlPath(payload.jsonlPath);
+      setSessionStats(null);
+      setInitMeta(undefined);
+      setSessionSummary(undefined);
+      setHasMore(false);
       setSessionId(payload.sessionId);
       setAgentProcess(true);
       setEntries([]);
       setWsInitReceived(false);
       resumeCallbacksRef.current?.onResumeStarted?.(payload);
     },
-    [],
+    [clearDisplayCache],
   );
 
   const handleResumeBlocked = useCallback(

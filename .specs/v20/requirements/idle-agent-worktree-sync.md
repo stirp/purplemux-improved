@@ -17,3 +17,9 @@ Claude/Codex 已启动但没有任务执行时，允许将目标分支合并到�
 - IA-05：桌面与移动端共用现有 blockers 与确认流程；用户点击刷新后更新按钮状态。截图中的 dirty 阻断仍需先提交或移走改动。
 
 自动化验证使用合成状态和临时 Git 仓库，不操作用户真实分支。
+
+## PR #30 Review 补充
+
+- IA-06（P1）：inactive Agent 和普通终端即使 terminalStatus 为 idle，也必须通过实际前台进程确认是 SAFE_SHELLS 中的 shell；构建、编辑器和未知进程仍阻断。同步采用当前严格 pane 快照，不能使用过期 currentProcess 覆盖快照。
+- IA-07（P2）：同步将严格查询成功的 pane 快照传入 StatusManager.poll 和空闲判断，刷新不再重复调用吞错的非严格 pane 查询。严格查询失败、缺少关联 pane 或状态刷新失败，均不移除 sessions 阻断。
+- 定时轮询默认行为保持兼容；共享空闲判断对 inactive/shell 的验证同时修正删除流程的误判，不放宽删除保护。

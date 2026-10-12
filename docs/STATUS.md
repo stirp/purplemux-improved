@@ -8,6 +8,11 @@ System that detects the in-progress state of the Claude CLI on the server, broad
 
 ## State Definitions
 
+### Worktree safety checks
+
+Worktree synchronization passes the strict tmux pane snapshot to `StatusManager.poll(snapshot)` and `areSessionsIdle(sessions, snapshot)`. This avoids a second non-strict query masking tmux errors during refresh. Missing panes remain unsafe.
+Terminal panels and inactive agent panels require both an idle terminal status and a foreground command in `SAFE_SHELLS`. A provider-backed panel's synthetic idle terminal status alone does not make a build or editor safe. The supplied snapshot takes precedence over cached process metadata; ordinary polling without a snapshot keeps its existing query behavior.
+
 ### Agent Process State (`agentProcess: boolean | null`)
 
 Determines whether the agent CLI process (Claude, Codex, …) is running inside a tmux pane. Managed independently from `cliState` and detected from two paths (terminal WS and timeline WS).
@@ -462,6 +467,8 @@ Timeline WS connects → server runs detectActiveSession
 ```
 
 `useTimeline` **no longer derives `cliState` locally** (the old `deriveCliState` was removed). The timeline WS handles only metadata (entries, summaries); `cliState` is updated solely via the hook path.
+
+Timeline display snapshots can make `isTimelineLoading` false before WebSocket initialization on a returning tab. They restore only the latest confirmed round and display metadata, never `agentProcess`, `cliState`, JSONL paths or pagination cursors. A fresh `timeline:init` replaces the snapshot; session changes, ending and resume invalidate it. Initial statistics arrive separately via `timeline:stats-update` and are accepted only for the current session.
 
 ---
 

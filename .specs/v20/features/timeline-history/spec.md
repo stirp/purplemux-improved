@@ -7,7 +7,7 @@ complexity: Medium
 depends_on:
   - CLAUDE.md
 created: 2026-09-28
-updated: 2026-10-10
+updated: 2026-10-12
 assignee: ''
 ---
 
@@ -34,6 +34,12 @@ assignee: ''
 - 必须区分 Codex 旧模式替换行为与按轮增量模式。
 
 ## 验收标准
+
+- PERF-OPEN-01：桌面 Agent 聊天与终端并行挂载；移动端维持已有并行路径，发送输入仍受终端连接状态保护。
+- PERF-OPEN-02：最近一轮解析后立即发送 timeline:init，统计异步通过 timeline:stats-update 补齐；统计失败不阻塞历史，切换订阅/关闭连接后不得发送旧统计。
+- PERF-OPEN-03：切回已打开会话先显示浏览器内缓存并后台重新初始化；按 provider、tmux session 和 Agent session ID 隔离，无明确 Agent ID 不复用。缓存只用于展示，不恢复进程状态或分页游标；服务端 init 替换缓存记录。
+- PERF-OPEN-04：缓存最多 12 个会话，每项最多 2 MiB（JSON UTF-16 估算），5 分钟过期，不缓存待确认消息；会话结束、切换与 resume 清除旧缓存。缓存不持久化、不保活后台连接。
+- PERF-OPEN-05：用可控统计延迟验证首批记录不再等待统计，记录实际检查。真实手机 4G、生产冷/热打开及长轮次性能仍需实机测量，不承诺未经测量的提速比例。
 
 - PERF-CACHE-01：超过 30 秒后未变化文件不再次解析；文件内容变化或删除后不会返回过期缓存。
 - PERF-CACHE-02：同名不同路径隔离、并发读取合并、失败重试、读取期间变化、容量淘汰及清缓存竞态有回归覆盖。

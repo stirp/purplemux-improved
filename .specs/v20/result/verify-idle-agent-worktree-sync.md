@@ -27,3 +27,18 @@
 本次使用临时 Git 仓库、合成状态及组件测试，未操作用户真实分支。
 未执行浏览器或真实 Claude/Codex 端到端验收、完整应用全量测试、重新打包安装或发布。
 实际使用需运行包含本次修改的版本，并在同步弹窗刷新；截图中的 dirty 阻断仍要求先处理未提交文件。
+
+## PR #30 Review 验证
+
+本节单独记录 Review 修复后的运行结果，不复用上一轮 76 项测试作为本轮证据。
+
+- P1 / IA-06：新增 Claude、Codex 和普通终端的 node、make、vim、未知前台命令拒绝测试，以及严格快照覆盖缓存 bash、缺失 pane 和真实 shell 放行测试。
+- P2 / IA-07：真实 StatusManager 测试验证提供快照时不再次调用非严格查询，并保留无快照时的普通轮询路径；临时 Git 仓库验证 overview 成功而后续严格查询失败时拒绝同步、HEAD 不变。
+- 首轮相关回归：`node node_modules/vitest/vitest.mjs run tests/unit/lib/status-refresh-snapshot.test.ts tests/unit/lib/worktree-session-idle.test.ts tests/unit/lib/worktree-tools.test.ts tests/unit/lib/worktree-manager.test.ts tests/unit/lib/worktree-session-safety.test.ts`：5 文件 70 项通过；随后补充了严格查询后续失败用例，包含于本轮全量验证。
+- 完整 `node node_modules/typescript/bin/tsc --noEmit` 及改动代码 ESLint 通过；docs/STATUS.md 与 spec 已同步。
+- 首次 `pnpm test` 与生产构建同时运行：895 项通过、1 项可选微基准跳过，既有 terminal-write-queue 的 64 MiB 压力测试超过默认 5 秒超时，CLI 阶段未执行。后续限制测试并发重跑，结果另列。
+- 构建结束后 `pnpm exec vitest run --maxWorkers=2`：122 个文件、896 项通过、1 项可选微基准跳过，包括原超时的 64 MiB 压力测试；未修改其逻辑和默认超时。
+- 本次 `pnpm build`：Next.js 类型检查、编译、页面生成、post-build 与服务端 tsup 通过。
+- 本次 `pnpm test:cli`：61 项通过，无失败或跳过。
+- 最终完整 TypeScript、改动代码 ESLint 和 `git diff --check` 通过。
+- 浏览器/真实 Agent 实机验收未执行；未提交、推送或在 GitHub 发送评论/关闭 Review 线程。
