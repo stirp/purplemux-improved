@@ -1,6 +1,10 @@
 # v20 需求整理：Fork 后累计新增功能
 
 2026-10-12 增量：[空闲 Agent 允许同步分支](./requirements/idle-agent-worktree-sync.md)，复用既有状态判断，在执行前复核 Git 与会话状态，保留运行中的 Agent。
+2026-10-12 增量：[移动端空工作区选择](./requirements/mobile-empty-workspace-selection.md)，修复点击无 Tab 项目无法切换并新建标签的问题。
+
+2026-10-13 Review 增量：跨页面无选择处理器时，切换项目前清空旧布局，避免慢请求期间操作旧 pane。
+2026-10-12 增量：[Chat 内容区比例宽度](./requirements/chat-content-width.md)，消息区、输入框及相关聊天区域占所在面板 85%，取消固定上限，规格见 [timeline-history](./features/timeline-history/spec.md)。
 
 2026-10-10 增量：[Claude 启动信任提示恢复](./requirements/claude-startup-prompts.md)，修复聊天区漏显示启动选项及新版无编号菜单回答。
 2026-10-10 增量：[安装后仅保留一个 CLI 命令](./requirements/single-cli-install.md)，取消 purplemux/pmux 安装别名，保留 purplemux-improved 和原数据目录。

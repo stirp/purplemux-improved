@@ -4,6 +4,7 @@ import useWorkspaceStore from '@/hooks/use-workspace-store';
 import useWebviewStore from '@/hooks/use-webview-store';
 import useMobileLayoutActions from '@/hooks/use-mobile-layout-actions';
 import useTabMetadataStore from '@/hooks/use-tab-metadata-store';
+import { useLayoutStore } from '@/hooks/use-layout';
 
 interface ISidebarActionsState {
   onSelectWorkspace: ((id: string) => void) | null;
@@ -26,6 +27,7 @@ export const selectWorkspace = (workspaceId: string, navigateHome: () => void) =
   } else {
     const { activeWorkspaceId } = useWorkspaceStore.getState();
     if (workspaceId !== activeWorkspaceId) {
+      useLayoutStore.getState().clearLayout();
       useTabMetadataStore.getState().reset();
       useWorkspaceStore.getState().switchWorkspace(workspaceId);
     }

@@ -3,6 +3,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // Run the sheet's event handlers with persistent hook state without mounting its portals.
 const hooks = vi.hoisted(() => ({ values: [] as unknown[], cursor: 0 }));
+const selectWorkspace = vi.hoisted(() => vi.fn());
+vi.mock('@/hooks/use-sidebar-actions', () => ({ useSelectWorkspace: () => selectWorkspace }));
 vi.mock('react', async (importOriginal) => ({
   ...await importOriginal<typeof import('react')>(),
   useMemo: (compute: () => unknown) => compute(),
@@ -55,6 +57,7 @@ const render = (activeWorkspaceId = 'parent', onSelectSurface = vi.fn()) => {
     ],
     activeWorkspaceId,
     workspaceLayouts: {
+      child: [{ type: 'pane', id: 'empty-pane', activeTabId: null, tabs: [] }],
       parent: [{ type: 'pane', id: 'pane', activeTabId: 'terminal', tabs: [
         { id: 'terminal', sessionName: 'session', name: 'Terminal', order: 0 },
       ] }],
@@ -68,9 +71,16 @@ const render = (activeWorkspaceId = 'parent', onSelectSurface = vi.fn()) => {
   });
 };
 
-beforeEach(() => { hooks.values = []; hooks.cursor = 0; });
+beforeEach(() => { hooks.values = []; hooks.cursor = 0; selectWorkspace.mockClear(); });
 
 describe('mobile workspace expansion', () => {
+  it.each(['parent', 'child', 'grandchild'])('selects workspace %s even with empty or uncached tabs', (workspaceId) => {
+    const tree = render('grandchild');
+    const row = elements(tree).find((element) => element.key === workspaceId)!;
+    elements(row).find((element) => element.type === 'button')!.props.onClick!();
+    expect(selectWorkspace).toHaveBeenCalledExactlyOnceWith(workspaceId);
+  });
+
   it('shows every directory, including child paths and collapsed workspace paths', () => {
     let tree = render();
     const paths = () => elements(tree).filter((element) => element.type === 'span' && element.props.title);
@@ -105,6 +115,7 @@ describe('mobile workspace expansion', () => {
     const terminal = elements(tree).find((element) => element.key === 'terminal')!;
     elements(terminal).find((element) => element.type === 'button')!.props.onClick!();
     expect(onSelectSurface).toHaveBeenCalledWith('parent', 'pane', 'terminal');
+    expect(selectWorkspace).not.toHaveBeenCalled();
     const parent = elements(tree).find((element) => element.key === 'parent')!;
     elements(parent).find((element) => element.type === 'button')!.props.onClick!();
     tree = render();

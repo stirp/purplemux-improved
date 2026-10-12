@@ -4,6 +4,8 @@
 
 - 复用 workspace/layout store 和既有 Worktree API。
 - use-navigation-drag、use-touch-drag 统一拖拽状态与手势处理。
+- 工作区行通过 `useSelectWorkspace` 复用已注册的移动端选择处理器及路由回首页逻辑，不以 Tab 数量判断是否允许选择。Tab 创建沿用现有布局接口，不新增数据字段。
+- 无已注册处理器且目标工作区不同于当前工作区时，`selectWorkspace` 同步调用全局 layout store 的 `clearLayout`，然后重置元数据、切换工作区和导航回首页。
 
 ## 数据与执行边界
 

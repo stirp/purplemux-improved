@@ -425,7 +425,7 @@ const WebInputBar = ({
           )}
           aria-hidden={!isConnecting || !visible}
         >
-          <div className="mx-auto w-full max-w-content px-3 pb-1">
+          <div className="chat-content px-3 pb-1">
             <div className="grid grid-cols-[1fr_auto_1fr] items-center px-2 text-[11px] text-muted-foreground/70">
               <Loader2 size={10} className="mr-1.5 justify-self-end animate-spin" />
               <span>{t('connecting')}</span>
@@ -434,7 +434,7 @@ const WebInputBar = ({
           </div>
         </div>
         <div className="overflow-hidden">
-          <div className="mx-auto w-full max-w-content px-3 pt-0 pb-0 animate-in fade-in duration-150">
+          <div className="chat-content px-3 pt-0 pb-0 animate-in fade-in duration-150">
           <div
             ref={containerRef}
             className={cn(
