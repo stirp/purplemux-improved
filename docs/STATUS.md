@@ -576,3 +576,7 @@ Auto-fired from the `applyCliState` call path:
 The idempotent guard at the top of the function (`prevState === newState`) blocks duplicate calls, so callers don't have to track state.
 
 "Silent" paths such as `resolveUnknown` / `dismissTab` / busy-stuck safety net / server restart recovery suppress the push by passing `{ silent: true }`.
+
+## Session 工作状态（2026-10-13）
+
+Session 工作状态独立于 TCliState，由 session-workflow 的共享纯函数解析。人工覆盖及分类折叠存于 workspaces.json/sessionWorkflow，通过 workspace 广播同步。未覆盖时 busy/needs-input 为进行中，单轮产出为审批中，未执行为未开始；完成仅人工确认。关闭通知不确认工作完成。Workspace 汇总去重后的本工作区 sessions，优先级为进行中、审批中、未开始，全部完成才已完成。模型 Todo/Plan 仍是会话内部执行计划，不作为 Workspace 完成依据。

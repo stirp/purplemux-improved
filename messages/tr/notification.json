@@ -19,5 +19,13 @@
   "showMore": "{count} daha",
   "showLess": "Daha az",
   "toastCompleteTitle": "Görev tamamlandı",
-  "openTab": "Aç"
+  "openTab": "Aç",
+  "workStatus_pending": "Başlamadı",
+  "workStatus_in-progress": "Devam ediyor",
+  "workStatus_review": "İncelemede",
+  "workStatus_completed": "Tamamlandı",
+  "workStatusLabel": "İş durumu",
+  "workStatusAuto": "Otomatik",
+  "workStatusSaveFailed": "İş durumu kaydedilemedi. Tekrar deneyin.",
+  "workRuntimeBusy": "Model çalışıyor"
 }

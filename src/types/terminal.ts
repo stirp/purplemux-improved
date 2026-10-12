@@ -91,6 +91,7 @@ export interface IWorkspaceGroup {
 }
 
 export interface IWorkspacesData {
+  sessionWorkflow?: import('@/lib/session-workflow').ISessionWorkflow;
   workspaces: IWorkspace[];
   groups?: IWorkspaceGroup[];
   activeWorkspaceId?: string;

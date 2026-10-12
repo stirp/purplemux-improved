@@ -113,3 +113,12 @@ store 保持扁平结构，配置改为安全快照同步，区域改为 CSS 变
 ### Sessions 导航同步侧边栏项目（2026-10-08 复审）
 
 规格和代码已修正为仅历史入口定位、复用项目选择处理器、临时展开分组、不改折叠偏好；测试完整隔离并覆盖非 Sessions 路径。3 文件 34 项测试、完整 TypeScript 和改动文件 ESLint 通过；本次构建类型检查及编译通过，页面数据收集仍因 `/login` 的 `self is not defined` 失败。浏览器/实机验收未执行。详情见 [验证记录](./result/verify-session-workspace-navigation.md)、[需求](./requirements/session-workspace-navigation.md)和[实施记录](./result/build-session-workspace-navigation.md)。
+
+## Sessions 与 Workspace 工作状态管理（2026-10-13）
+
+- [x] 需求、生命周期及工作区详情约定。
+- [x] 实现人工状态、分类折叠与 Workspace 汇总。
+- [x] 7 个文件 49 项测试、完整 TypeScript、改动文件 ESLint、生产构建及验证记录。
+- [ ] 浏览器验收。
+
+见[实施记录](./result/build-session-task-status.md)和[验证记录](./result/verify-session-task-status.md)。

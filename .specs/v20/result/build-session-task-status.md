@@ -1,0 +1,21 @@
+# Sessions 与 Workspace 工作状态实施记录
+
+日期：2026-10-13。先读取 CLAUDE.md、session-lifecycle、workspace-management 和 agent-progress 规格，再新增[需求](../requirements/session-task-status.md)并同步相关详情。
+
+## 实现
+
+- session-workflow.ts 统一会话去重、默认状态、人工覆盖及 Workspace 汇总规则，UI 和任务状态共用。
+- workspaces.json 的 sessionWorkflow 保存人工状态与分类折叠；沿用 workspace-store 的全局锁、原子写入与 workspace 同步，旧数据缺省为空。
+- PATCH /api/session-workflow 严格校验单项更新，支持恢复自动判断；失败返回 500 并在界面提示。
+- Sessions 分类为未开始、进行中、审批中、已完成，按完整会话计数；每项选择工作状态，分类标题支持折叠。
+- 保留历史轮次展开、历史删除/恢复导航，以及模型执行中和等待输入提示。人工完成不改变 TCliState。
+- Workspace 行展示本工作区关联会话汇总状态，原 Tab 运行图标继续显示；子工作区和 Todo/Plan 不参与。
+- 同步 docs/STATUS.md 和全部现有语言通知词条。
+
+## 原则
+
+复用现有磁盘存储与同步，避免额外数据库或消息协议；共享纯函数消除分类和汇总逻辑重复；不引入自定义状态编辑器或 Git 操作。
+
+## 限制
+
+浏览器/实机未验收。无原生会话 ID 时按历史或 Tab ID 保存，原生 ID 出现后属于不同的状态标识；没有新增跨身份迁移机制。

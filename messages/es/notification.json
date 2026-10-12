@@ -19,5 +19,13 @@
   "showMore": "{count} más",
   "showLess": "Mostrar menos",
   "toastCompleteTitle": "Tarea completada",
-  "openTab": "Abrir"
+  "openTab": "Abrir",
+  "workStatus_pending": "Sin iniciar",
+  "workStatus_in-progress": "En curso",
+  "workStatus_review": "En revisión",
+  "workStatus_completed": "Completado",
+  "workStatusLabel": "Estado del trabajo",
+  "workStatusAuto": "Automático",
+  "workStatusSaveFailed": "No se pudo guardar el estado. Inténtalo de nuevo.",
+  "workRuntimeBusy": "Modelo en ejecución"
 }

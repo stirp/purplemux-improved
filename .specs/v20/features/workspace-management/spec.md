@@ -63,3 +63,7 @@ assignee: ''
 | 日期 | 内容 | 状态 |
 | --- | --- | --- |
 | 2026-09-28 | 回补 fork 后累计功能；关联提交：`58cd8488`, `6155e1b1`, `a9d601df`, `790e555b`, `5cec20aa` | DETAILED |
+
+## 2026-10-13 工作状态管理
+
+遵循[Sessions 与 Workspace 工作状态需求](../../requirements/session-task-status.md)。人工状态与运行状态分离，分类折叠及 Workspace 汇总共享同一状态规则。状态和折叠偏好保存于 workspaces.json 的 sessionWorkflow，GET /api/workspace 读取，PATCH /api/session-workflow 严格校验并按字段更新，通过 workspace 广播同步。

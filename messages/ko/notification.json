@@ -19,5 +19,13 @@
   "showMore": "이전 기록 {count}개",
   "showLess": "접기",
   "toastCompleteTitle": "작업 완료",
-  "openTab": "열기"
+  "openTab": "열기",
+  "workStatus_pending": "시작 전",
+  "workStatus_in-progress": "진행 중",
+  "workStatus_review": "검토 중",
+  "workStatus_completed": "완료",
+  "workStatusLabel": "작업 상태",
+  "workStatusAuto": "자동",
+  "workStatusSaveFailed": "작업 상태를 저장하지 못했습니다. 다시 시도하세요.",
+  "workRuntimeBusy": "모델 실행 중"
 }

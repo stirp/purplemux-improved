@@ -83,3 +83,7 @@ Sessions 项目定位测试本次已运行，结果见独立验证记录；其�
 | 2026-09-28 | 回补 fork 后累计功能；关联提交：`6155e1b1`, `554ff421`, `1da87ce5`, `1097835c` | DETAILED |
 | 2026-10-07 | 补充 Sessions 导航同步项目列表、选择与分组展开 | DETAILED |
 | 2026-10-08 | 限制定位为历史入口、复用选择处理器、分组临时展开及测试隔离修正 | DETAILED |
+
+## 2026-10-13 工作状态管理
+
+遵循[Sessions 与 Workspace 工作状态需求](../../requirements/session-task-status.md)。人工状态与运行状态分离，分类折叠及 Workspace 汇总共享同一状态规则。状态和折叠偏好保存于 workspaces.json 的 sessionWorkflow，GET /api/workspace 读取，PATCH /api/session-workflow 严格校验并按字段更新，通过 workspace 广播同步。

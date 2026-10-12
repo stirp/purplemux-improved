@@ -19,5 +19,13 @@
   "showMore": "{count} more",
   "showLess": "Show less",
   "toastCompleteTitle": "Task complete",
-  "openTab": "Open"
+  "openTab": "Open",
+  "workStatus_pending": "Not started",
+  "workStatus_in-progress": "In progress",
+  "workStatus_review": "In review",
+  "workStatus_completed": "Completed",
+  "workStatusLabel": "Work status",
+  "workStatusAuto": "Automatic",
+  "workStatusSaveFailed": "Failed to save work status. Please retry.",
+  "workRuntimeBusy": "Model running"
 }

@@ -1,3 +1,4 @@
+import type { ISessionWorkflow } from '@/lib/session-workflow';
 import { create } from 'zustand';
 import { toast } from 'sonner';
 import { t } from '@/lib/i18n';
@@ -18,6 +19,7 @@ interface IValidateResponse {
 }
 
 export interface IWorkspaceInitialData {
+  sessionWorkflow?: ISessionWorkflow;
   workspaces: IWorkspace[];
   groups?: IWorkspaceGroup[];
   activeWorkspaceId?: string | null;
@@ -26,6 +28,7 @@ export interface IWorkspaceInitialData {
 }
 
 interface IWorkspaceState {
+  sessionWorkflow: ISessionWorkflow;
   workspaces: IWorkspace[];
   groups: IWorkspaceGroup[];
   activeWorkspaceId: string | null;
@@ -147,6 +150,7 @@ const requestWorktreeMutation = async <T>(method: 'POST' | 'DELETE', body: objec
 };
 
 const useWorkspaceStore = create<IWorkspaceState>((set, get) => ({
+  sessionWorkflow: { statuses: {}, collapsed: {} },
   workspaces: initialWs.workspaces,
   groups: [],
   activeWorkspaceId: initialWs.workspaces.length > 0 ? resolveActiveWorkspaceId(initialWs.workspaces) : null,
@@ -164,6 +168,7 @@ const useWorkspaceStore = create<IWorkspaceState>((set, get) => ({
     setStoredActiveWorkspaceId(activeWorkspaceId);
     if (activeWorkspaceId) saveActiveWorkspaceIdToServer(activeWorkspaceId);
     set({
+      sessionWorkflow: data.sessionWorkflow ?? { statuses: {}, collapsed: {} },
       workspaces: data.workspaces,
       groups: data.groups ?? [],
       activeWorkspaceId,
@@ -183,6 +188,7 @@ const useWorkspaceStore = create<IWorkspaceState>((set, get) => ({
       const activeWorkspaceId = resolveActiveWorkspaceId(data.workspaces, data.activeWorkspaceId);
       setStoredActiveWorkspaceId(activeWorkspaceId);
       set({
+        sessionWorkflow: data.sessionWorkflow ?? { statuses: {}, collapsed: {} },
         workspaces: data.workspaces,
         groups: data.groups ?? [],
         activeWorkspaceId,
@@ -234,8 +240,11 @@ const useWorkspaceStore = create<IWorkspaceState>((set, get) => ({
       const nextWorkspaces = reorderToVisual(merged, nextGroups);
       const workspacesChanged = JSON.stringify(current) !== JSON.stringify(nextWorkspaces);
 
-      if (!workspacesChanged && !groupsChanged) return;
+      const sessionWorkflow = data.sessionWorkflow ?? { statuses: {}, collapsed: {} };
+      const workflowChanged = JSON.stringify(get().sessionWorkflow) !== JSON.stringify(sessionWorkflow);
+      if (!workspacesChanged && !groupsChanged && !workflowChanged) return;
       set({
+        sessionWorkflow,
         workspaces: workspacesChanged ? nextWorkspaces : current,
         groups: nextGroups,
       });

@@ -19,5 +19,13 @@
   "showMore": "過去の記録 {count}件",
   "showLess": "閉じる",
   "toastCompleteTitle": "タスク完了",
-  "openTab": "開く"
+  "openTab": "開く",
+  "workStatus_pending": "未開始",
+  "workStatus_in-progress": "進行中",
+  "workStatus_review": "レビュー中",
+  "workStatus_completed": "完了",
+  "workStatusLabel": "作業状態",
+  "workStatusAuto": "自動判定",
+  "workStatusSaveFailed": "作業状態を保存できませんでした。再試行してください。",
+  "workRuntimeBusy": "モデル実行中"
 }

@@ -19,5 +19,13 @@
   "showMore": "Ещё {count}",
   "showLess": "Свернуть",
   "toastCompleteTitle": "Задача завершена",
-  "openTab": "Открыть"
+  "openTab": "Открыть",
+  "workStatus_pending": "Не начато",
+  "workStatus_in-progress": "В работе",
+  "workStatus_review": "На проверке",
+  "workStatus_completed": "Завершено",
+  "workStatusLabel": "Статус работы",
+  "workStatusAuto": "Автоматически",
+  "workStatusSaveFailed": "Не удалось сохранить статус. Повторите попытку.",
+  "workRuntimeBusy": "Модель работает"
 }
