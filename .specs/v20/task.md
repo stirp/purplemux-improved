@@ -2,6 +2,8 @@
 
 ## 聊天打开性能优化（2026-10-12）
 
+- [x] 2026-10-13 Review：session-waiting 清理旧记录时保留待确认文本和附件占位，补充 PERF-OPEN-06；本轮证据见验证记录的独立 Review 小节。
+
 - [x] 补齐 timeline-history 的 PERF-OPEN-01 至 05 与 ui/flow/api 约定。
 - [x] 桌面聊天并行挂载、历史先于统计发送、会话隔离的有限展示缓存；新增服务端分阶段耗时日志。
 - [x] 缓存和真实 React hook、真实 Codex JSONL 服务端初始化回归通过；完整 TypeScript、改动文件 ESLint 与生产构建通过。

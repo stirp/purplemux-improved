@@ -7,7 +7,7 @@ complexity: Medium
 depends_on:
   - CLAUDE.md
 created: 2026-09-28
-updated: 2026-10-12
+updated: 2026-10-13
 assignee: ''
 ---
 
@@ -40,6 +40,7 @@ assignee: ''
 - PERF-OPEN-03：切回已打开会话先显示浏览器内缓存并后台重新初始化；按 provider、tmux session 和 Agent session ID 隔离，无明确 Agent ID 不复用。缓存只用于展示，不恢复进程状态或分页游标；服务端 init 替换缓存记录。
 - PERF-OPEN-04：缓存最多 12 个会话，每项最多 2 MiB（JSON UTF-16 估算），5 分钟过期，不缓存待确认消息；会话结束、切换与 resume 清除旧缓存。缓存不持久化、不保活后台连接。
 - PERF-OPEN-05：用可控统计延迟验证首批记录不再等待统计，记录实际检查。真实手机 4G、生产冷/热打开及长轮次性能仍需实机测量，不承诺未经测量的提速比例。
+- PERF-OPEN-06：新会话等待 JSONL 创建时，带新 ID 的 session-waiting 只清理已确认的旧记录，保留 pending 用户消息及附件占位；后续 init/append 确认后不丢失、不重复，并沿用待确认条目 ID。
 
 - PERF-CACHE-01：超过 30 秒后未变化文件不再次解析；文件内容变化或删除后不会返回过期缓存。
 - PERF-CACHE-02：同名不同路径隔离、并发读取合并、失败重试、读取期间变化、容量淘汰及清缓存竞态有回归覆盖。

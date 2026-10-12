@@ -470,6 +470,8 @@ Timeline WS connects → server runs detectActiveSession
 
 Timeline display snapshots can make `isTimelineLoading` false before WebSocket initialization on a returning tab. They restore only the latest confirmed round and display metadata, never `agentProcess`, `cliState`, JSONL paths or pagination cursors. A fresh `timeline:init` replaces the snapshot; session changes, ending and resume invalidate it. Initial statistics arrive separately via `timeline:stats-update` and are accepted only for the current session.
 
+While a new session waits for its JSONL file, `session-waiting` removes confirmed records from the old session but preserves local pending user messages, including attachment placeholders, for subsequent init/append confirmation.
+
 ---
 
 ## Logging Configuration

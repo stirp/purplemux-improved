@@ -87,4 +87,4 @@ v20 覆盖 `52140216..3637a357` 的 fork 增量，共 48 个非合并提交，�
 
 ## 聊天打开性能增量
 
-2026-10-12：桌面聊天独立于终端初始化、历史先于统计发送、切回会话复用有限展示缓存；验收约束见 [timeline-history](./features/timeline-history/spec.md) 的 PERF-OPEN-01 至 05，证据见 [验证记录](./result/verify-chat-open-performance.md)。真实手机冷/热打开与长轮次测量仍待执行。
+2026-10-12：桌面聊天独立于终端初始化、历史先于统计发送、切回会话复用有限展示缓存；验收约束见 [timeline-history](./features/timeline-history/spec.md) 的 PERF-OPEN-01 至 06，证据见 [验证记录](./result/verify-chat-open-performance.md)。2026-10-13 Review 修复等待新会话文件时保留 pending 文本与附件占位。真实手机冷/热打开与长轮次测量仍待执行。

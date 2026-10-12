@@ -22,7 +22,7 @@ class Socket {
 
 const entry = (id: string): ITimelineEntry => ({ id, type: 'user-message', timestamp: 1, text: id });
 let state: ReturnType<typeof useTimeline>;
-const Harness = ({ id = 'a', session = 'pane' }: { id?: string; session?: string }) => {
+const Harness = ({ id = 'a', session = 'pane' }: { id?: string | null; session?: string }) => {
   const timeline = useTimeline({ sessionName: session, panelType: 'codex-cli', agentSessionId: id, enabled: true });
   useEffect(() => { state = timeline; }, [timeline]);
   return createElement('div', null, timeline.entries.map((e) => e.id).join(','));
@@ -42,9 +42,39 @@ beforeEach(() => {
 afterEach(async () => {
   await act(async () => root.unmount());
   vi.unstubAllGlobals();
+  vi.useRealTimers();
 });
 
 describe('timeline cached display and revalidation', () => {
+  it.each([false, true])('preserves the first pending message while waiting for a new file (attachment=%s)', async (attachment) => {
+    vi.useFakeTimers();
+    await act(async () => root.render(createElement(Harness, { id: null })));
+    let pendingId!: string;
+    await act(async () => { pendingId = state.addPendingUserMessage('first message', { autoHide: false, attachmentPlaceholder: attachment }); });
+    await act(async () => Socket.instances[0].message({ type: 'timeline:session-changed', newSessionId: 'b', reason: 'session-waiting' }));
+    expect(state.entries).toEqual([expect.objectContaining({ id: pendingId, pending: true, attachmentPlaceholder: attachment })]);
+    expect(container.textContent).toBe(pendingId);
+    expect(state.isLoading).toBe(false);
+    expect(state.sessionId).toBe('b');
+    const confirmed = { ...entry('confirmed'), text: attachment ? 'attachment transcript' : 'first message' };
+    await act(async () => Socket.instances[0].message(attachment
+      ? { type: 'timeline:append', entries: [confirmed] }
+      : { type: 'timeline:init', entries: [confirmed], sessionId: 'b', totalEntries: 1, startByteOffset: 0, hasMore: false }));
+    expect(state.entries).toEqual([{ ...confirmed, id: pendingId }]);
+  });
+
+  it('removes confirmed records of the old session while preserving pending messages', async () => {
+    saveTimelineDisplaySnapshot(key, { entries: [entry('old')], sessionId: 'a', stats: null });
+    await act(async () => root.render(createElement(Harness)));
+    let pendingId!: string;
+    await act(async () => { pendingId = state.addPendingUserMessage('new message', { autoHide: false }); });
+    await act(async () => Socket.instances[0].message({ type: 'timeline:session-changed', newSessionId: 'b', reason: 'session-waiting' }));
+    expect(state.entries.map((item) => item.id)).toEqual([pendingId]);
+    expect(getTimelineDisplaySnapshot(key)).toBeUndefined();
+    expect(state.hasMore).toBe(false);
+    expect(state.jsonlPath).toBeNull();
+  });
+
   it('restores the latest confirmed round when returning to a tab and reconnects', async () => {
     await act(async () => root.render(createElement(Harness)));
     await act(async () => Socket.instances[0].message({ type: 'timeline:init', entries: [entry('fresh')], sessionId: 'a', totalEntries: 1, startByteOffset: 0, hasMore: false }));

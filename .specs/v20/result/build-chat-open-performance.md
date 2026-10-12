@@ -17,3 +17,7 @@
 复用现有 stats-update 通道、WebSocket 生命周期和按轮解析，不新增接口或后台保活连接。展示缓存与安全/进程判断分离，保持缓存只负责展示；容量和失效约束明确。未改长轮次分组、消息渲染、滚动锚点及终端发送行为，后续依据主线程测量决定是否渐进渲染。
 
 实际检查及限制见[验证记录](./verify-chat-open-performance.md)。
+
+## 2026-10-13 Review 修复
+
+PERF-OPEN-06：新会话等待 JSONL 时，原 session-waiting 分支无条件清空 entries，删除了已发送的本地 pending 消息。改为仅保留 pending 用户消息（包括附件占位），与既有新会话切换、init 确认共用 isPendingUserMessage 判定，避免重复维护过滤条件。旧记录、缓存、统计及分页的清理保持原逻辑；新增实际 React hook 事件顺序回归。

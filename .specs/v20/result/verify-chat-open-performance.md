@@ -36,3 +36,11 @@
 尚未运行真实手机 4G、桌面浏览器、生产冷/热 tab 切换及滚动锚点验收；未测开发编译占比。长轮次渐进渲染尚未实施，待实际主线程证据。新增分段日志用于后续区分会话检测、定位、历史读取和统计；浏览器仍需记录点击、WS open/init 与首次绘制时间。
 
 没有提交、推送、打包安装或重启用户正在使用的服务；截图中正在运行的开发版本不会自动获得生产构建验证结论。
+
+## 2026-10-13 Review：等待新会话时保留消息
+
+- 对应 PERF-OPEN-06。先新增 3 项真实 React hook 回归，在修复前全部失败，确认 session-waiting 清空了 pending 条目。
+- 修复后 `pnpm exec vitest run tests/unit/lib/timeline-display-hook.test.ts tests/unit/lib/timeline-display-cache.test.ts tests/unit/lib/timeline-turn-pagination.test.ts`：3 文件 22 项通过。
+- 新用例覆盖初始 Agent ID 为 null 时发送文本/附件占位 → 新 ID 的 session-waiting → init 确认文本或 append 确认附件。确认前条目可见，确认后只有一条消息且保留 pending ID；同时验证旧会话已确认记录及缓存被清除。
+- 本轮 `node node_modules/typescript/bin/tsc --noEmit`、`pnpm exec eslint src/hooks/use-timeline.ts tests/unit/lib/timeline-display-hook.test.ts` 及 `git diff --check` 全部通过；本小节不复用上一轮构建、全量测试或微基准作为本次证据。
+- 本轮未执行浏览器/真实 Agent 验收、生产构建或安装；未提交、推送或操作 GitHub Review 线程。

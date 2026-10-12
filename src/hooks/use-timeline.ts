@@ -40,6 +40,8 @@ const PENDING_FADE_OUT_DURATION_MS = 200;
 const ATTACHMENT_PLACEHOLDER_TIMEOUT_MS = 60_000;
 
 const normalizeUserMessageText = (s: string) => s.replace(/\s+/g, ' ').trim();
+const isPendingUserMessage = (entry: ITimelineEntry): entry is ITimelineEntry & { type: 'user-message'; pending: true } =>
+  entry.type === 'user-message' && entry.pending === true;
 
 interface IUseTimelineReturn {
   entries: ITimelineEntry[];
@@ -151,10 +153,7 @@ const useTimeline = ({
     setWsInitReceived(true);
     setAgentInstalled(true);
     setEntries((prev) => {
-      const pendings = prev.filter(
-        (e): e is ITimelineEntry & { type: 'user-message'; pending: true } =>
-          e.type === 'user-message' && e.pending === true,
-      );
+      const pendings = prev.filter(isPendingUserMessage);
       if (pendings.length === 0) return newEntries;
 
       const merged = newEntries.map((entry) => {
@@ -299,7 +298,7 @@ const useTimeline = ({
     if (reason === 'session-waiting') {
       if (newSessionId && newSessionId !== previousSessionId) {
         historyGenerationRef.current++;
-        setEntries([]);
+        setEntries((prev) => prev.filter(isPendingUserMessage));
         setWsInitReceived(false);
         setSessionStats(null);
         setInitMeta(undefined);
@@ -318,12 +317,7 @@ const useTimeline = ({
     }
     setSessionId(newSessionId || null);
     setAgentProcess(true);
-    setEntries((prev) =>
-      prev.filter(
-        (e): e is ITimelineEntry & { type: 'user-message'; pending: true } =>
-          e.type === 'user-message' && e.pending === true,
-      ),
-    );
+    setEntries((prev) => prev.filter(isPendingUserMessage));
     setSessionSummary(undefined);
     setInitMeta(undefined);
     setSessionStats(null);
