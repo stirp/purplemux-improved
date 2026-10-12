@@ -13,8 +13,10 @@ const check = (overrides: Partial<ITabStatusEntry>) => {
 };
 
 describe('worktree session idle checks', () => {
-  it.each(['idle', 'ready-for-review', 'cancelled'] as const)('allows settled agent state %s', (cliState) => {
-    expect(check({ cliState })).toBe(true);
+  it.each(['claude-code', 'codex-cli'] as const)('allows settled states for %s', (panelType) => {
+    for (const cliState of ['idle', 'ready-for-review', 'cancelled'] as const) {
+      expect(check({ panelType, cliState })).toBe(true);
+    }
   });
   it.each(['busy', 'needs-input', 'unknown'] as const)('blocks agent state %s', (cliState) => {
     expect(check({ cliState, terminalStatus: 'idle' })).toBe(false);

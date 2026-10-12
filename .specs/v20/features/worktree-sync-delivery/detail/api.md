@@ -4,6 +4,7 @@
 
 - POST /api/workspace/worktree-actions：inspectSync、fetch、merge、rebase、continue、abort、saveReview、refreshReview、pushBranch、createDraft。
 - merge/rebase 校验 targetHead；createDraft 接受 remote、provider、targetBranch、title、body。
+- inspectSync 与同步操作仅在全部关联会话确认空闲时排除 sessions blocker；执行前刷新状态及工作树快照，无法确认则保留 sessions 错误。接口字段不变。
 
 ## 2026-09-29 增量：inspectSync 默认值
 

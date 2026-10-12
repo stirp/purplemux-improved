@@ -74,6 +74,7 @@
     "deleted": "Worktree deleted.",
     "workspaceCleanupFailed": "The worktree was deleted, but a workspace record could not be removed. Remove that workspace separately.",
     "branchRetained": "The worktree was deleted. The branch was retained because Git could not safely delete it.",
+    "syncSessionsBlocked": "Associated terminals or agents are running tasks, or their idle state could not be confirmed. Synchronization is blocked.",
     "reasons": {
       "main": "Main worktree is protected",
       "locked": "Worktree is locked",

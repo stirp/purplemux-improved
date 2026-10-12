@@ -65,6 +65,7 @@
     "deleted": "Worktree silindi.",
     "workspaceCleanupFailed": "Worktree silindi ancak bazı çalışma alanları ayrıca kaldırılmalı.",
     "branchRetained": "Worktree silindi. Git güvenle silemediği için dal korundu.",
+    "syncSessionsBlocked": "İlişkili terminaller veya ajanlar görev yürütüyor ya da boşta oldukları doğrulanamadı. Senkronizasyon engellendi.",
     "reasons": {
       "main": "Ana worktree korunuyor",
       "locked": "Worktree kilitli",

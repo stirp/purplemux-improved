@@ -7,7 +7,7 @@ complexity: Medium
 depends_on:
   - CLAUDE.md
 created: 2026-09-28
-updated: 2026-09-29
+updated: 2026-10-12
 assignee: ''
 ---
 
@@ -25,6 +25,8 @@ assignee: ''
 - 桌面和移动端工作区提供交付与管理入口，交付目标按需加载；草稿表单根据远程自动识别平台。
 
 ## 边界与约束
+
+- [空闲 Agent 同步需求](../../requirements/idle-agent-worktree-sync.md)：关联会话存在但全部确认空闲时允许同步，保留会话；执行中、状态未知或额外 pane 仍阻断。执行前重新校验 Git 和会话状态。
 
 - 同步不修改目标分支；不执行 force push。
 - 草稿目前只支持同远程仓库分支，不支持跨 fork 草稿。
