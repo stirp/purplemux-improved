@@ -8,3 +8,9 @@
 - `tests/unit/lib/mobile-workspace-expansion.test.ts`：补充有 Tab、空 pane、未缓存布局的工作区行选择断言，并确认 Tab 点击仍走原导航。
 
 检查结果见[验证记录](./verify-mobile-empty-workspace-selection.md)。
+
+## PR #32 Review 修复（2026-10-13）
+
+- 对应 [P2 review](https://github.com/stirp/purplemux-improved/pull/32#discussion_r4250835403)：从其他页面选择项目时移动终端页未挂载，兜底选择路径保留全局旧布局。
+- 先更新需求、规格及跨页面流程，再在 `src/hooks/use-sidebar-actions.ts` 的无处理器分支复用 `useLayoutStore.clearLayout`，在元数据重置、项目切换和导航之前清理旧布局。保持当前项目重复选择及已注册处理器行为。
+- 在已有 `session-workspace-navigation.test.ts` 补充切换通知/导航时布局为空与当前项目布局保留的回归；使用共享清理动作满足 KISS/DRY，不增加接口或状态机制。

@@ -24,3 +24,19 @@
 - 共享选择处理器：相关 Sessions 导航回归通过，包括移动端注册处理器调用；此项不代替浏览器路由验收。
 - 空项目的新建入口及归属：源码检查 `mobile-terminal-page.tsx` 的空 pane 按钮与 `handleCreateTab`，以及 `use-layout.ts` 的 `createTabInPane`；已有请求使用所选 workspaceId、paneId 和工作区默认目录。本次未实际创建终端进程。
 - 未运行真实浏览器、手机实机或真实 Agent 启动验收；布局失败回退沿用原实现，本次仅源码检查。
+
+## PR #32 Review 验证（2026-10-13）
+
+本轮使用现有 node_modules，所有 pnpm 命令均带 `--config.manage-package-manager-versions=false --config.verify-deps-before-run=false`，不修改依赖。
+
+| 检查 | 本轮实际结果 |
+| --- | --- |
+| `pnpm … exec vitest run tests/unit/lib/mobile-workspace-expansion.test.ts tests/unit/lib/session-workspace-navigation.test.ts` | 2 文件 30 项通过 |
+| `pnpm … exec tsc --noEmit` | 完整 TypeScript 检查通过 |
+| `pnpm … exec eslint src/hooks/use-sidebar-actions.ts tests/unit/lib/session-workspace-navigation.test.ts` | 通过 |
+| `git diff --check` | 通过 |
+| `pnpm … exec next build --webpack` | 类型检查与编译通过；收集页面数据时 `/login` 报 `ReferenceError: self is not defined`，构建失败 |
+
+- 新增回归使用真实 store：未注册桌面/移动端处理器时，工作区切换的同步订阅及导航回调均观察到旧布局已清空，paneCount 为 0 且不可 split；重复选择当前项目保留布局。
+- 原有注册处理器、工作区行选择、展开/收起、Tab 与 Sessions 导航回归通过。
+- 此轮未执行浏览器、手机实机或真实新建 Tab 验收；慢请求下的跨页面行为通过同步状态断言验证，不等同于浏览器端到端验收。
