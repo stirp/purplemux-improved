@@ -1,5 +1,14 @@
 # v20 任务进度
 
+## MIT 许可证分发保留（2026-10-13）
+
+- [x] 补齐 fork-platform 的 MIT 分发约定，保留原作者完整声明。
+- [x] Electron files 白名单显式加入根目录 LICENSE。
+- [x] 实际 electron-builder 匹配器、许可证 ASAR 内容读回、npm 包预览、完整 TypeScript 及 diff 检查通过。
+- [ ] 完整 macOS DMG/ZIP 打包和安装验收。
+
+见[实施记录](./result/build-mit-license-distribution.md)和[验证记录](./result/verify-mit-license-distribution.md)。
+
 ## Sessions 工作状态第三轮 Review 修复（2026-10-13）
 
 - [x] 先补齐已删除身份首次绑定清理与真实菜单触发规格。

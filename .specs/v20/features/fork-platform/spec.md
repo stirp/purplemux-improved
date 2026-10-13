@@ -7,7 +7,7 @@ complexity: Medium
 depends_on:
   - CLAUDE.md
 created: 2026-09-28
-updated: 2026-10-12
+updated: 2026-10-13
 assignee: ''
 ---
 
@@ -76,3 +76,7 @@ assignee: ''
 | 2026-10-10 | 准备 0.5.2 性能优化版本，仅更新版本元数据与目标 | DETAILED |
 | 2026-10-10 | 按 Linux 安装反馈取消旧 CLI 别名，仅保留 purplemux-improved；见[需求](../../requirements/single-cli-install.md) | DETAILED |
 | 2026-09-28 | 回补 fork 后累计功能；关联提交：`58cd8488`, `bdc766a6`, `b76046b8`, `6fd119f2`, `3637a357` | DETAILED |
+
+## MIT 分发保留（2026-10-13）
+
+遵循[MIT 许可证分发需求](../../requirements/mit-license-distribution.md)。源码及 npm 包保留原作者声明与完整 MIT 文本；Electron files 白名单显式包含根目录 LICENSE，使其随 app.asar 分发。验证实际文件匹配和归档内容；完整安装包检查单独记录，不推定已发布。

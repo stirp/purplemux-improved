@@ -13,3 +13,7 @@
 - 版本操作遵循 CLAUDE.md 第 17 节，使用 npm version；未授权 Git 操作时通过 --no-git-tag-version 只更新版本元数据。
 
 具体实现与测试入口见[规格](../spec.md)。
+
+## MIT 分发保留（2026-10-13）
+
+打包时按 Electron files 白名单选取根目录 LICENSE 并写入 app.asar，验证其内容与源码一致；完整 DMG/ZIP 验收单独记录。 约束见[MIT 分发需求](../../../requirements/mit-license-distribution.md)。

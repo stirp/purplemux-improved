@@ -37,6 +37,7 @@ dmg:
       path: /Applications
 
 files:
+  - LICENSE
   - dist-electron/**/*
   - dist/**/*
   - .next/standalone/**/*
