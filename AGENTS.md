@@ -13,7 +13,7 @@ This version has breaking changes — APIs, conventions, and file structure may 
 ### 规格位置
 
 - 在 `.specs/v{N}/` 查找对应需求版本，不把 package.json 版本当作规格版本。
-- 当前增量维护入口为 [.specs/v20/PRD.md](./.specs/v20/PRD.md)和[任务表](./.specs/v20/task.md)。
+- 当前增量维护入口为 [.specs/v21/PRD.md](./.specs/v21/PRD.md)和[任务表](./.specs/v21/task.md)；v20 保留历史规格与验收记录。
 - `requirements/<requirement>.md`：用户原始需求、范围及验收条件。
 - `PRD.md`：版本需求汇总和功能索引。
 - `features/<feature>/spec.md`：功能目标、边界、验收标准和关联文档。
