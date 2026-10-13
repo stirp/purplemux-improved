@@ -15,3 +15,7 @@
 - 隐藏子工作区只影响导航可见性，不删除工作区、磁盘目录或分支。
 
 本次记录现有交互；未实际运行浏览器验证。功能范围及源码入口见[规格](../spec.md)。
+
+## 2026-10-13 工作状态管理
+
+遵循[Sessions 与 Workspace 工作状态需求](../../../requirements/session-task-status.md)。人工状态与运行状态分离，分类折叠及 Workspace 汇总共享同一状态规则。状态和折叠偏好保存于 workspaces.json 的 sessionWorkflow，GET /api/workspace 读取，PATCH /api/session-workflow 严格校验并按字段更新，通过 workspace 广播同步。

@@ -1,5 +1,8 @@
 export type TSessionHistoryProvider = 'claude' | 'codex';
 
+export type TSessionNavigationTarget = Pick<ISessionHistoryEntry,
+  'workspaceId' | 'workspaceName' | 'workspaceDir' | 'tabId' | 'providerId' | 'agentSessionId'>;
+
 export interface ISessionHistoryEntry {
   id: string;
   workspaceId: string;

@@ -1,5 +1,34 @@
 # v20 任务进度
 
+## Sessions 工作状态第三轮 Review 修复（2026-10-13）
+
+- [x] 先补齐已删除身份首次绑定清理与真实菜单触发规格。
+- [x] 修复删除/隐藏身份 fallback 残留和人工状态泄漏。
+- [x] 无轮次行使用 DOM 菜单触发器，真实组件回归覆盖右键、长按、取消和导航。
+- [x] 定向 35 项、全量 927 项通过（1 项跳过），完整 TypeScript 与改动文件 ESLint 通过。
+- [x] 本次生产构建通过（Next.js 24 页面及服务端 tsup）。
+- [ ] 真实浏览器及移动端实机验收。
+
+见[第三轮验证记录](./result/verify-session-task-status-review-3.md)。
+
+## Sessions 工作状态第二轮 Review 修复（2026-10-13）
+
+- [x] 补齐删除标记、迟到回补过滤与无轮次身份恢复规格。
+- [x] 修复 inactive Tab/迟到快照重建索引，无轮次条目提供正确导航和删除入口。
+- [x] 全量测试 919 项通过、1 项跳过；完整 TypeScript、改动文件 ESLint。
+- [x] 本次生产构建通过。
+- [ ] 浏览器/实机及真实多客户端验收。
+
+见[第二轮验证记录](./result/verify-session-task-status-review-2.md)。
+
+## Sessions 工作状态 Review 修复（2026-10-13）
+
+- [x] 补齐身份导航、首次绑定、重连及持久会话索引规格。
+- [x] 修复四项 Review 问题及删除索引清理。
+- [x] 相关测试、完整 TypeScript、ESLint 和生产构建。
+- [ ] 浏览器/实机及真实跨客户端断网验收。
+
+见[Review 验证记录](./result/verify-session-task-status-review.md)。
 ## 聊天打开性能优化（2026-10-12）
 
 - [x] 2026-10-13 Review：session-waiting 清理旧记录时保留待确认文本和附件占位，补充 PERF-OPEN-06；本轮证据见验证记录的独立 Review 小节。
@@ -155,3 +184,12 @@ store 保持扁平结构，配置改为安全快照同步，区域改为 CSS 变
 ### Sessions 导航同步侧边栏项目（2026-10-08 复审）
 
 规格和代码已修正为仅历史入口定位、复用项目选择处理器、临时展开分组、不改折叠偏好；测试完整隔离并覆盖非 Sessions 路径。3 文件 34 项测试、完整 TypeScript 和改动文件 ESLint 通过；本次构建类型检查及编译通过，页面数据收集仍因 `/login` 的 `self is not defined` 失败。浏览器/实机验收未执行。详情见 [验证记录](./result/verify-session-workspace-navigation.md)、[需求](./requirements/session-workspace-navigation.md)和[实施记录](./result/build-session-workspace-navigation.md)。
+
+## Sessions 与 Workspace 工作状态管理（2026-10-13）
+
+- [x] 需求、生命周期及工作区详情约定。
+- [x] 实现人工状态、分类折叠与 Workspace 汇总。
+- [x] 7 个文件 49 项测试、完整 TypeScript、改动文件 ESLint、生产构建及验证记录。
+- [ ] 浏览器验收。
+
+见[实施记录](./result/build-session-task-status.md)和[验证记录](./result/verify-session-task-status.md)。

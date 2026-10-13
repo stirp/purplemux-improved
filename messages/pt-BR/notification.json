@@ -19,5 +19,13 @@
   "showMore": "{count} mais",
   "showLess": "Mostrar menos",
   "toastCompleteTitle": "Tarefa concluída",
-  "openTab": "Abrir"
+  "openTab": "Abrir",
+  "workStatus_pending": "Não iniciado",
+  "workStatus_in-progress": "Em andamento",
+  "workStatus_review": "Em revisão",
+  "workStatus_completed": "Concluído",
+  "workStatusLabel": "Estado do trabalho",
+  "workStatusAuto": "Automático",
+  "workStatusSaveFailed": "Falha ao salvar o estado. Tente novamente.",
+  "workRuntimeBusy": "Modelo em execução"
 }

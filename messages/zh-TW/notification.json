@@ -19,5 +19,13 @@
   "showMore": "更早記錄 {count}筆",
   "showLess": "收起",
   "toastCompleteTitle": "任務完成",
-  "openTab": "開啟"
+  "openTab": "開啟",
+  "workStatus_pending": "未開始",
+  "workStatus_in-progress": "進行中",
+  "workStatus_review": "審批中",
+  "workStatus_completed": "已完成",
+  "workStatusLabel": "工作狀態",
+  "workStatusAuto": "自動判斷",
+  "workStatusSaveFailed": "儲存工作狀態失敗，請重試",
+  "workRuntimeBusy": "模型執行中"
 }

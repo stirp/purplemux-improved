@@ -1,5 +1,5 @@
 import { WebSocket } from 'ws';
-import { getWorkspaces } from '@/lib/workspace-store';
+import { getWorkspaces, synchronizeSessionWorkflow } from '@/lib/workspace-store';
 import { readLayoutFile, resolveLayoutFile, collectAllTabs, updateTabCliStatus, updateTabAgentSummary, updateTabAgentState, parseSessionName, setLayoutReconciler } from '@/lib/layout-store';
 import { getAllPanesInfo, getListeningPorts, SAFE_SHELLS, getPaneTitle, getSessionCwd, getSessionPanePid } from '@/lib/tmux';
 import { getChildPids } from '@/lib/process-utils';
@@ -1021,6 +1021,9 @@ class StatusManager {
   }
 
   private broadcastUpdate(tabId: string, entry: ITabStatusEntry, exclude?: WebSocket): void {
+    void synchronizeSessionWorkflow([], { [tabId]: { ...entry } }).catch((error) => {
+      log.warn({ error, tabId }, 'Failed to persist session workflow identity');
+    });
     const msg: IStatusUpdateMessage = {
       type: 'status:update',
       tabId,

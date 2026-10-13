@@ -85,7 +85,10 @@ const useSync = () => {
       const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
       const ws = new WebSocket(`${protocol}//${location.host}/api/sync`);
       wsRef.current = ws;
-      ws.onopen = () => { void useConfigStore.getState().syncConfig(); };
+      ws.onopen = () => {
+        void useConfigStore.getState().syncConfig();
+        void useWorkspaceStore.getState().syncWorkspaces();
+      };
 
       ws.onmessage = (event) => {
         try {

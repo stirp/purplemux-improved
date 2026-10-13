@@ -1,4 +1,8 @@
 import fs from 'fs/promises';
+import type { ISessionWorkflow, TWorkStatus } from '@/lib/session-workflow';
+import { reconcileSessionWorkflow, sessionWorkKey, type IWorkflowTab } from '@/lib/session-workflow';
+import type { ISessionHistoryEntry, TSessionHistoryProvider } from '@/types/session-history';
+import { readHiddenSessions } from '@/lib/hidden-sessions';
 import path from 'path';
 import os from 'os';
 import { nanoid } from 'nanoid';
@@ -132,8 +136,8 @@ const readWorkspacesFile = async (): Promise<IWorkspacesData | null> => {
 
 const writeWorkspacesFile = async (data: IWorkspacesData): Promise<void> => {
   normalizeWorkspaceOrder(data);
-  const { workspaces, groups, activeWorkspaceId, sidebarCollapsed, sidebarWidth } = data;
-  const contentKey = JSON.stringify({ workspaces, groups: groups ?? [], activeWorkspaceId, sidebarCollapsed, sidebarWidth });
+  const { workspaces, groups, activeWorkspaceId, sidebarCollapsed, sidebarWidth, sessionWorkflow } = data;
+  const contentKey = JSON.stringify({ workspaces, groups: groups ?? [], activeWorkspaceId, sidebarCollapsed, sidebarWidth, sessionWorkflow });
 
   if (g.__purplemuxWorkspacesContentCache === contentKey) return;
 
@@ -271,6 +275,7 @@ export const initWorkspaceStore = async (): Promise<void> => {
 };
 
 export const getWorkspaces = async (): Promise<{
+  sessionWorkflow?: ISessionWorkflow;
   workspaces: IWorkspace[];
   groups: IWorkspaceGroup[];
   activeWorkspaceId: string | null;
@@ -281,6 +286,7 @@ export const getWorkspaces = async (): Promise<{
   if (!data) return { workspaces: [], groups: [], activeWorkspaceId: null, sidebarCollapsed: false, sidebarWidth: 220 };
 
   return {
+    sessionWorkflow: data.sessionWorkflow,
     workspaces: data.workspaces,
     groups: data.groups ?? [],
     activeWorkspaceId: data.activeWorkspaceId ?? null,
@@ -366,6 +372,14 @@ export const deleteWorkspace = async (workspaceId: string, deleteSessions = true
     await removeLayoutFile(workspaceId);
 
     data.workspaces.splice(idx, 1);
+    if (deleteSessions && data.sessionWorkflow?.sessions) {
+      for (const [key, record] of Object.entries(data.sessionWorkflow.sessions)) {
+        if (record.workspaceId !== workspaceId) continue;
+        data.sessionWorkflow.deleted = [...new Set([...(data.sessionWorkflow.deleted ?? []), key])];
+        delete data.sessionWorkflow.sessions[key];
+        delete data.sessionWorkflow.statuses[key];
+      }
+    }
     for (const child of data.workspaces) {
       if (child.parentWorkspaceId === workspaceId) delete child.parentWorkspaceId;
     }
@@ -558,3 +572,62 @@ export const validateDirectory = async (directory: string): Promise<{
 
   return { valid: true, suggestedName: path.basename(directory) };
 };
+
+export const updateSessionWorkflow = async (update:
+  | { key: string; status: TWorkStatus | null }
+  | { section: TWorkStatus; collapsed: boolean }
+): Promise<ISessionWorkflow> => withLock(async () => {
+  const data = (await readWorkspacesFile()) ?? emptyState();
+  const workflow = data.sessionWorkflow ?? { statuses: {}, collapsed: {} };
+  if ('key' in update) {
+    if (update.status === null) delete workflow.statuses[update.key];
+    else if (!workflow.deleted?.includes(update.key)) workflow.statuses[update.key] = update.status;
+  } else workflow.collapsed[update.section] = update.collapsed;
+  data.sessionWorkflow = workflow;
+  await fs.mkdir(BASE_DIR, { recursive: true });
+  await writeWorkspacesFile(data);
+  return workflow;
+});
+
+export const synchronizeSessionWorkflow = async (
+  entries: ISessionHistoryEntry[], tabs: Record<string, IWorkflowTab> = {},
+): Promise<void> => withLock(async () => {
+  const data = await readWorkspacesFile();
+  if (!data) return;
+  const current = data.sessionWorkflow ?? { statuses: {}, collapsed: {} };
+  const previous = JSON.stringify(current);
+  const hidden = await readHiddenSessions();
+  if (hidden.size) current.deleted = [...new Set([...(current.deleted ?? []), ...hidden])];
+  const workspaces = new Map(data.workspaces.map((workspace) => [workspace.id, workspace]));
+  for (const [key, record] of Object.entries(current.sessions ?? {})) {
+    const identity = /^(claude|codex):([a-zA-Z0-9_-]+)$/.exec(key);
+    const workspace = workspaces.get(record.workspaceId);
+    if (record.navigation || record.entry || !identity || !workspace) continue;
+    record.navigation = {
+      providerId: identity[1] as TSessionHistoryProvider, agentSessionId: identity[2],
+      workspaceId: workspace.id, workspaceName: workspace.name, workspaceDir: workspace.directories[0] ?? null,
+      tabId: record.tabId,
+    };
+  }
+  const currentTabs = Object.fromEntries(Object.entries(tabs).flatMap(([tabId, tab]) => {
+    const workspace = workspaces.get(tab.workspaceId);
+    return workspace ? [[tabId, { ...tab, workspaceName: workspace.name, workspaceDir: workspace.directories[0] ?? null }]] : [];
+  }));
+  const next = reconcileSessionWorkflow(current, entries, currentTabs);
+  if (previous === JSON.stringify(next)) return;
+  data.sessionWorkflow = next;
+  await writeWorkspacesFile(data);
+});
+
+export const removeSessionWorkflow = async (
+  provider: TSessionHistoryProvider, sessionId: string | null, historyEntryId?: string,
+): Promise<void> => withLock(async () => {
+  const data = await readWorkspacesFile();
+  if (!data) return;
+  data.sessionWorkflow ??= { statuses: {}, collapsed: {} };
+  const key = sessionWorkKey(provider, sessionId, `history:${historyEntryId}`);
+  data.sessionWorkflow.deleted = [...new Set([...(data.sessionWorkflow.deleted ?? []), key])];
+  delete data.sessionWorkflow.statuses[key];
+  delete data.sessionWorkflow.sessions?.[key];
+  await writeWorkspacesFile(data);
+});

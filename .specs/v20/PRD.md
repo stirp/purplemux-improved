@@ -89,6 +89,13 @@ v20 覆盖 `52140216..3637a357` 的 fork 增量，共 48 个非合并提交，�
 
 2026-10-05 架构复审补充 RT-18 至 RT-23：完整配置快照广播、通用 hydrate 同步、组件区域 CSS 变量和显式终端 props；替换区域专用同步状态机。
 
+2026-10-13 增量：[Sessions 与 Workspace 工作状态管理](./requirements/session-task-status.md)。
+
+2026-10-13 Review 修复：[状态管理需求](./requirements/session-task-status.md)补齐身份导航、首次绑定迁移、重连同步与历史裁剪后的会话关联保留。
+
+2026-10-13 第二轮 Review：[状态管理需求](./requirements/session-task-status.md)补齐删除标记与迟到回补过滤，以及无轮次会话的身份恢复和删除入口。
+
+2026-10-13 第三轮 Review：补齐已删除身份首次绑定清理及无轮次行菜单触发，遵循状态管理需求第三轮约定。
 ## 聊天打开性能增量
 
 2026-10-12：桌面聊天独立于终端初始化、历史先于统计发送、切回会话复用有限展示缓存；验收约束见 [timeline-history](./features/timeline-history/spec.md) 的 PERF-OPEN-01 至 06，证据见 [验证记录](./result/verify-chat-open-performance.md)。2026-10-13 Review 修复等待新会话文件时保留 pending 文本与附件占位。真实手机冷/热打开与长轮次测量仍待执行。

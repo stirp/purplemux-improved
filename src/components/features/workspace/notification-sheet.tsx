@@ -1,9 +1,9 @@
 import { useMemo, useCallback, useState } from 'react';
-import { AnimatePresence, motion } from 'motion/react';
 import { useShallow } from 'zustand/react/shallow';
 import { useTranslations } from 'next-intl';
 import {
-  Check,
+  Circle,
+  Clock3,
   CheckCircle2,
   ChevronRight,
   FileText,
@@ -24,16 +24,15 @@ import {
   SheetHeader,
   SheetTitle,
 } from '@/components/ui/sheet';
-import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import useTabStore from '@/hooks/use-tab-store';
 import useWorkspaceStore from '@/hooks/use-workspace-store';
 import useSessionHistoryStore from '@/hooks/use-session-history-store';
-import { dismissTab } from '@/hooks/use-agent-status';
+import { collectWorkSessions, WORK_STATUSES, type TWorkStatus } from '@/lib/session-workflow';
+import { useSessionWorkflowMutation, forgetSessionWorkflow } from '@/hooks/use-session-workflow';
 import { navigateToTab, useLayoutStore } from '@/hooks/use-layout';
 import { navigateToSession } from '@/hooks/use-session-navigation';
 import { findPane } from '@/lib/layout-tree';
-import type { ITabState } from '@/hooks/use-tab-store';
 import type { ICurrentAction } from '@/types/status';
 import type { ISessionHistoryEntry, TSessionHistoryProvider } from '@/types/session-history';
 import { stripMarkdown } from '@/lib/strip-markdown';
@@ -50,15 +49,6 @@ const ACTION_ICONS: Record<string, typeof FileText> = {
   Glob: Search,
   Agent: Users,
 };
-
-const ITEM_MOTION = {
-  layout: true,
-  initial: { opacity: 0, y: -6 },
-  animate: { opacity: 1, y: 0 },
-  exit: { opacity: 0, scale: 0.92 },
-  transition: { duration: 0.2, ease: [0.2, 0.8, 0.2, 1] as const },
-};
-
 
 interface IActiveTabInfo {
   id: string | null;
@@ -114,79 +104,6 @@ interface INotificationSheetProps {
   onOpenChange: (open: boolean) => void;
 }
 
-const collectItems = (
-  tabs: Record<string, ITabState>,
-  workspaces: { id: string; name: string }[],
-  targetState: 'busy' | 'ready-for-review' | 'needs-input',
-): INotificationItem[] => {
-  const wsMap = new Map(workspaces.map((ws) => [ws.id, ws.name]));
-  const items: INotificationItem[] = [];
-
-  for (const [tabId, tab] of Object.entries(tabs)) {
-    if (tab.cliState !== targetState) continue;
-    items.push({
-      tabId,
-      workspaceName: wsMap.get(tab.workspaceId) || tab.workspaceId,
-      workspaceId: tab.workspaceId,
-      lastUserMessage: tab.lastUserMessage,
-      lastAssistantMessage: tab.lastAssistantMessage,
-      currentAction: tab.currentAction,
-      readyForReviewAt: tab.readyForReviewAt,
-      busySince: tab.busySince,
-      dismissedAt: tab.dismissedAt,
-      agentSessionId: tab.agentSessionId,
-      providerId: tab.agentProviderId === 'codex' ? 'codex' : 'claude',
-    });
-  }
-
-  items.sort((a, b) => {
-    const ta = a.readyForReviewAt ?? a.busySince ?? 0;
-    const tb = b.readyForReviewAt ?? b.busySince ?? 0;
-    return tb - ta;
-  });
-
-  return items;
-};
-
-interface ISessionHistoryGroup {
-  groupKey: string;
-  agentSessionId: string | null;
-  providerId: TSessionHistoryProvider;
-  tabId: string;
-  workspaceName: string;
-  latestEntry: ISessionHistoryEntry;
-  olderEntries: ISessionHistoryEntry[];
-}
-
-const groupHistoryBySession = (entries: ISessionHistoryEntry[]): ISessionHistoryGroup[] => {
-  const sessionMap = new Map<string, ISessionHistoryEntry[]>();
-
-  for (const entry of entries) {
-    const key = `${entry.providerId}:${entry.agentSessionId ?? entry.id}`;
-    const existing = sessionMap.get(key);
-    if (existing) existing.push(entry);
-    else sessionMap.set(key, [entry]);
-  }
-
-  const groups: ISessionHistoryGroup[] = [];
-  for (const [groupKey, sessionEntries] of sessionMap) {
-    sessionEntries.sort((a, b) => b.completedAt - a.completedAt);
-    const head = sessionEntries[0];
-    groups.push({
-      groupKey,
-      agentSessionId: head.agentSessionId,
-      providerId: head.providerId,
-      tabId: head.tabId,
-      workspaceName: head.workspaceName,
-      latestEntry: head,
-      olderEntries: sessionEntries.slice(1),
-    });
-  }
-
-  groups.sort((a, b) => b.latestEntry.completedAt - a.latestEntry.completedAt);
-  return groups;
-};
-
 const ProviderBadge = ({ providerId }: { providerId: TSessionHistoryProvider }) => {
   const Icon = providerId === 'codex' ? OpenAIIcon : ClaudeCodeIcon;
   return (
@@ -197,34 +114,6 @@ const ProviderBadge = ({ providerId }: { providerId: TSessionHistoryProvider }) 
       <Icon className="size-3" />
     </span>
   );
-};
-
-type TDateGroup = 'today' | 'yesterday' | 'thisWeek' | 'older';
-
-const groupSessionsByDate = (groups: ISessionHistoryGroup[]): { group: TDateGroup; sessions: ISessionHistoryGroup[] }[] => {
-  const now = dayjs();
-  const todayStart = now.startOf('day');
-  const yesterdayStart = todayStart.subtract(1, 'day');
-  const weekStart = todayStart.subtract(6, 'day');
-
-  const buckets: Record<TDateGroup, ISessionHistoryGroup[]> = {
-    today: [],
-    yesterday: [],
-    thisWeek: [],
-    older: [],
-  };
-
-  for (const sg of groups) {
-    const time = dayjs(sg.latestEntry.completedAt);
-    if (time.isAfter(todayStart)) buckets.today.push(sg);
-    else if (time.isAfter(yesterdayStart)) buckets.yesterday.push(sg);
-    else if (time.isAfter(weekStart)) buckets.thisWeek.push(sg);
-    else buckets.older.push(sg);
-  }
-
-  return (['today', 'yesterday', 'thisWeek', 'older'] as TDateGroup[])
-    .filter((g) => buckets[g].length > 0)
-    .map((g) => ({ group: g, sessions: buckets[g] }));
 };
 
 const formatNotificationTime = (ts: number): string => {
@@ -304,6 +193,7 @@ const SessionHistoryItem = ({
       historyEntryId={entry.id}
       label={entry.prompt}
       onDeleted={async () => {
+        forgetSessionWorkflow(entry.providerId, entry.agentSessionId, entry.id);
         useSessionHistoryStore.setState((state) => ({
           entries: state.entries.filter((item) => item.providerId !== entry.providerId || (
             entry.agentSessionId ? item.agentSessionId !== entry.agentSessionId : item.id !== entry.id
@@ -358,24 +248,20 @@ const SessionHistoryItem = ({
 
 const NotificationItem = ({
   item,
-  showActions,
   variant,
   isActiveTab,
-  onDismiss,
   onNavigate,
 }: {
   item: INotificationItem;
-  showActions: boolean;
-  variant?: 'needs-input' | 'done';
+  variant?: 'needs-input' | 'done' | 'pending';
   isActiveTab?: boolean;
-  onDismiss?: (tabId: string) => void;
   onNavigate?: (workspaceId: string, tabId: string) => void;
 }) => {
   const t = useTranslations('notification');
   const action = item.currentAction;
 
   const renderAction = () => {
-    if (!action) return showActions ? null : t('starting');
+    if (!action) return t('starting');
     const IconComponent = action.toolName ? ACTION_ICONS[action.toolName] ?? Wrench : null;
     return (
       <span className="inline-flex items-center gap-1 min-w-0">
@@ -396,12 +282,12 @@ const NotificationItem = ({
       onClick={isActiveTab ? undefined : () => onNavigate?.(item.workspaceId, item.tabId)}
     >
       <span className="mt-1 shrink-0">
-        {variant === 'done' ? (
+        {variant === 'pending' ? (
+          <Circle className="h-3.5 w-3.5 text-muted-foreground/50" />
+        ) : variant === 'done' ? (
           <CheckCircle2 className="h-3.5 w-3.5 text-muted-foreground/50" />
         ) : variant === 'needs-input' ? (
           <span className="block h-2 w-2 rounded-full bg-ui-amber animate-pulse" />
-        ) : showActions ? (
-          <span className="mt-px block h-2 w-2 rounded-full bg-claude-active" />
         ) : (
           <Spinner className="h-3 w-3 text-claude-active/70" />
         )}
@@ -434,19 +320,7 @@ const NotificationItem = ({
             {renderAction()}
           </p>
         )}
-        {showActions && !isActiveTab && (
-          <div className="mt-2 flex items-center gap-1.5">
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-6 px-2 text-xs"
-              onClick={(e) => { e.stopPropagation(); onDismiss?.(item.tabId); }}
-            >
-              <Check className="mr-1 h-3 w-3" />
-              {t('dismiss')}
-            </Button>
-          </div>
-        )}
+
       </div>
     </div>
   );
@@ -456,250 +330,104 @@ export const NotificationPanel = ({ onNavigated, className }: { onNavigated?: ()
   const t = useTranslations('notification');
   const tabs = useTabStore((s) => s.tabs);
   const workspaces = useWorkspaceStore((s) => s.workspaces);
-  const { id: activeTabId, agentSessionId: activeAgentSessionId, providerId: activeProviderId } = useActiveTab();
+  const workflow = useWorkspaceStore((s) => s.sessionWorkflow);
   const historyEntries = useSessionHistoryStore((s) => s.entries);
-  const liveSessionKey = (providerId: TSessionHistoryProvider, agentSessionId: string | null): string =>
-    `${providerId}:${agentSessionId ?? ''}`;
-  const sessionTabMap = useMemo(() => {
-    const map = new Map<string, string>();
-    for (const [tabId, tab] of Object.entries(tabs)) {
-      if (!tab.agentSessionId) continue;
-      const provider: TSessionHistoryProvider = tab.agentProviderId === 'codex' ? 'codex' : 'claude';
-      map.set(liveSessionKey(provider, tab.agentSessionId), tabId);
-    }
-    return map;
-  }, [tabs]);
-  const [expandedTabs, setExpandedTabs] = useState<Set<string>>(new Set());
-
-  const busyItems = useMemo(() => collectItems(tabs, workspaces, 'busy'), [tabs, workspaces]);
-  const needsInputItems = useMemo(() => collectItems(tabs, workspaces, 'needs-input'), [tabs, workspaces]);
-  const reviewItems = useMemo(() => collectItems(tabs, workspaces, 'ready-for-review'), [tabs, workspaces]);
-  const liveSessionKeys = useMemo(() => {
-    const keys = new Set<string>();
-    for (const [, tab] of Object.entries(tabs)) {
-      if ((tab.cliState === 'busy' || tab.cliState === 'needs-input' || tab.cliState === 'ready-for-review') && tab.agentSessionId) {
-        const provider: TSessionHistoryProvider = tab.agentProviderId === 'codex' ? 'codex' : 'claude';
-        keys.add(liveSessionKey(provider, tab.agentSessionId));
-      }
-    }
-    return keys;
-  }, [tabs]);
-  const reviewSessionKeys = useMemo(() => {
-    const keys = new Set<string>();
-    for (const [, tab] of Object.entries(tabs)) {
-      if (tab.cliState === 'ready-for-review' && tab.agentSessionId) {
-        const provider: TSessionHistoryProvider = tab.agentProviderId === 'codex' ? 'codex' : 'claude';
-        keys.add(liveSessionKey(provider, tab.agentSessionId));
-      }
-    }
-    return keys;
-  }, [tabs]);
-  const reviewHistoryMap = useMemo(() => {
-    const map = new Map<string, ISessionHistoryEntry>();
-    for (const entry of historyEntries) {
-      if (!entry.agentSessionId) continue;
-      const key = liveSessionKey(entry.providerId, entry.agentSessionId);
-      if (!reviewSessionKeys.has(key)) continue;
-      const existing = map.get(key);
-      if (!existing || entry.completedAt > existing.completedAt) {
-        map.set(key, entry);
-      }
-    }
-    return map;
-  }, [historyEntries, reviewSessionKeys]);
-  const sessionGroups = useMemo(() => {
-    const filtered = liveSessionKeys.size > 0
-      ? historyEntries.filter((e) => {
-          if (!e.agentSessionId) return true;
-          return !liveSessionKeys.has(liveSessionKey(e.providerId, e.agentSessionId));
-        })
-      : historyEntries;
-    return groupHistoryBySession(filtered);
-  }, [historyEntries, liveSessionKeys]);
-  const dateGroups = useMemo(() => groupSessionsByDate(sessionGroups), [sessionGroups]);
-
-  const toggleExpanded = useCallback((sessionId: string) => {
-    setExpandedTabs((prev) => {
-      const next = new Set(prev);
-      if (next.has(sessionId)) next.delete(sessionId);
-      else next.add(sessionId);
-      return next;
-    });
-  }, []);
-
-  const handleDismiss = useCallback((tabId: string) => { dismissTab(tabId); }, []);
-
+  const { id: activeTabId, agentSessionId: activeSessionId, providerId: activeProviderId } = useActiveTab();
+  const [expandedSessions, setExpandedSessions] = useState<Set<string>>(new Set());
+  const { save, saving } = useSessionWorkflowMutation();
+  const sessions = useMemo(() => collectWorkSessions(historyEntries, tabs, workflow), [historyEntries, tabs, workflow]);
   const handleNavigate = useCallback((workspaceId: string, tabId: string) => {
     navigateToTab(workspaceId, tabId);
     onNavigated?.();
   }, [onNavigated]);
-
-  const handleHistoryClick = useCallback((entry: ISessionHistoryEntry, resolvedTabId: string | null) => {
-    onNavigated?.();
-    void navigateToSession(entry, resolvedTabId);
-  }, [onNavigated]);
-
-  const isEmpty = busyItems.length === 0 && needsInputItems.length === 0 && reviewItems.length === 0 && dateGroups.length === 0;
+  const toggleExpanded = (key: string) => setExpandedSessions((previous) => {
+    const next = new Set(previous);
+    if (next.has(key)) next.delete(key);
+    else next.add(key);
+    return next;
+  });
 
   return (
     <div className={cn('flex-1 overflow-y-auto', className)} style={{ scrollbarWidth: 'none' }}>
-      {isEmpty ? (
-        <p className="py-8 text-center text-sm text-muted-foreground">{t('empty')}</p>
-      ) : (
-        <>
-          {busyItems.length > 0 && (
-            <section>
-              <h3 className="mb-2 text-xs font-medium text-muted-foreground">
-                {t('busySection', { count: busyItems.length })}
-              </h3>
-              <div className="flex flex-col gap-2">
-                <AnimatePresence mode="popLayout" initial={false}>
-                  {busyItems.map((item) => (
-                    <motion.div key={item.tabId} {...ITEM_MOTION}>
-                      <NotificationItem item={item} showActions={false} isActiveTab={item.tabId === activeTabId} onNavigate={handleNavigate} />
-                    </motion.div>
-                  ))}
-                </AnimatePresence>
-              </div>
-            </section>
-          )}
-
-          {needsInputItems.length > 0 && (
-            <section className={busyItems.length > 0 ? 'mt-4' : ''}>
-              <h3 className="mb-2 text-xs font-medium text-muted-foreground">
-                {t('needsInputSection', { count: needsInputItems.length })}
-              </h3>
-              <div className="flex flex-col gap-2">
-                <AnimatePresence mode="popLayout" initial={false}>
-                  {needsInputItems.map((item) => (
-                    <motion.div key={item.tabId} {...ITEM_MOTION}>
-                      <NotificationItem item={item} showActions={false} variant="needs-input" isActiveTab={item.tabId === activeTabId} onNavigate={handleNavigate} />
-                    </motion.div>
-                  ))}
-                </AnimatePresence>
-              </div>
-            </section>
-          )}
-
-          {reviewItems.length > 0 && (
-            <section className={busyItems.length > 0 || needsInputItems.length > 0 ? 'mt-4' : ''}>
-              <h3 className="mb-2 text-xs font-medium text-muted-foreground">
-                {t('reviewSection', { count: reviewItems.length })}
-              </h3>
-              <div className="flex flex-col gap-2">
-                <AnimatePresence mode="popLayout" initial={false}>
-                  {reviewItems.map((item) => {
-                    const entry = item.agentSessionId
-                      ? reviewHistoryMap.get(liveSessionKey(item.providerId, item.agentSessionId))
-                      : undefined;
-                    const isActive = item.tabId === activeTabId;
-                    if (!entry) {
-                      return (
-                        <motion.div key={item.tabId} {...ITEM_MOTION}>
-                          <NotificationItem item={item} showActions isActiveTab={isActive} onDismiss={handleDismiss} onNavigate={handleNavigate} />
-                        </motion.div>
-                      );
-                    }
-                    return (
-                      <motion.div key={item.tabId} {...ITEM_MOTION}>
-                        <SessionHistoryItem
-                          entry={entry}
-                          isActiveSession={isActive}
-                          icon={<span className="mt-px block h-2 w-2 rounded-full bg-claude-active" />}
-                          onClick={isActive ? undefined : () => handleNavigate(item.workspaceId, item.tabId)}
-                        />
-                        {!isActive && (
-                          <div className="mt-1 flex items-center pl-9">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="h-6 px-2 text-xs"
-                              onClick={() => handleDismiss(item.tabId)}
-                            >
-                              <Check className="mr-1 h-3 w-3" />
-                              {t('dismiss')}
-                            </Button>
-                          </div>
-                        )}
-                      </motion.div>
-                    );
-                  })}
-                </AnimatePresence>
-              </div>
-            </section>
-          )}
-
-          {dateGroups.length > 0 && (
-            <section className={busyItems.length > 0 || needsInputItems.length > 0 || reviewItems.length > 0 ? 'mt-4' : ''}>
-              <h3 className="mb-2 text-xs font-medium text-muted-foreground">
-                {t('doneSection', { count: historyEntries.length >= 200 ? '200+' : historyEntries.length })}
-              </h3>
-              {dateGroups.map(({ group: dateGroup, sessions }) => (
-                <div key={dateGroup}>
-                  <h4 className="mb-1.5 mt-3 first:mt-0 text-xs text-muted-foreground/60">
-                    {t(`dateGroup_${dateGroup}`)}
-                  </h4>
-                  <div className="flex flex-col gap-2">
-                    <AnimatePresence mode="popLayout" initial={false}>
-                      {sessions.map((group) => {
-                        const isExpanded = expandedTabs.has(group.groupKey);
-                        const hasOlder = group.olderEntries.length > 0;
-                        const sessionKey = group.agentSessionId
-                          ? liveSessionKey(group.providerId, group.agentSessionId)
-                          : null;
-                        const isActive =
-                          activeAgentSessionId !== null &&
-                          group.agentSessionId === activeAgentSessionId &&
-                          group.providerId === activeProviderId &&
-                          (sessionKey === null || !liveSessionKeys.has(sessionKey));
-                        const resolvedTabId = sessionKey ? sessionTabMap.get(sessionKey) ?? null : null;
-                        return (
-                          <motion.div key={group.groupKey} {...ITEM_MOTION}>
-                            <SessionHistoryItem
-                              entry={group.latestEntry}
-                              isActiveSession={isActive}
-                              onClick={() => handleHistoryClick(group.latestEntry, resolvedTabId)}
-                            />
-                            {hasOlder && (
-                              <button
-                                type="button"
-                                className="mt-1 flex w-full items-center gap-1 py-0.5 pl-9 text-xs text-muted-foreground/50 hover:text-muted-foreground transition-colors"
-                                onClick={() => toggleExpanded(group.groupKey)}
-                              >
-                                <ChevronRight className={cn('h-3 w-3 transition-transform', isExpanded && 'rotate-90')} />
-                                {isExpanded ? t('showLess') : t('showMore', { count: group.olderEntries.length })}
-                              </button>
-                            )}
-                            {hasOlder && (
-                              <div
-                                className="grid transition-[grid-template-rows] duration-200 ease-out"
-                                style={{ gridTemplateRows: isExpanded ? '1fr' : '0fr' }}
-                              >
-                                <div className="overflow-hidden min-h-0">
-                                  <div className="mt-1 flex flex-col border-l border-border/30 ml-5 pl-2">
-                                    {group.olderEntries.map((entry) => (
-                                      <SessionHistoryItem
-                                        key={entry.id}
-                                        entry={entry}
-                                        compact
-                                        onClick={() => handleHistoryClick(entry, resolvedTabId)}
-                                      />
-                                    ))}
-                                  </div>
-                                </div>
-                              </div>
-                            )}
-                          </motion.div>
-                        );
-                      })}
-                    </AnimatePresence>
+      {sessions.length === 0 && <p className="py-8 text-center text-sm text-muted-foreground">{t('empty')}</p>}
+      {WORK_STATUSES.map((status) => {
+        const items = sessions.filter((session) => session.status === status);
+        if (!items.length) return null;
+        const collapsed = workflow.collapsed[status] ?? false;
+        return (
+          <section key={status} className="mb-4">
+            <button type="button" disabled={saving} aria-expanded={!collapsed}
+              className="mb-2 flex w-full items-center gap-1 text-left text-xs font-medium text-muted-foreground"
+              onClick={() => void save({ section: status, collapsed: !collapsed })}>
+              <ChevronRight className={cn('h-3 w-3 transition-transform', !collapsed && 'rotate-90')} />
+              {t('workStatus_' + status)} ({items.length})
+            </button>
+            {!collapsed && <div className="flex flex-col gap-2">
+              {items.map((session) => {
+                const entry = session.entry;
+                const target = entry ?? session.navigation;
+                const isActiveSession = target?.agentSessionId
+                  ? target.agentSessionId === activeSessionId && target.providerId === activeProviderId
+                  : !!session.live && session.tabId === activeTabId;
+                const expanded = expandedSessions.has(session.key);
+                const onClick = () => {
+                  if (target) {
+                    onNavigated?.();
+                    void navigateToSession(target, session.live ? session.tabId : null);
+                  } else handleNavigate(session.workspaceId, session.tabId);
+                };
+                const liveItem = <NotificationItem item={{
+                  tabId: session.tabId, workspaceId: session.workspaceId,
+                  workspaceName: target?.workspaceName ?? workspaces.find((ws) => ws.id === session.workspaceId)?.name ?? session.workspaceId,
+                  providerId: target?.providerId ?? (session.key.startsWith('codex:') ? 'codex' : 'claude'),
+                  agentSessionId: target?.agentSessionId,
+                  lastUserMessage: session.live?.lastUserMessage,
+                  currentAction: session.live ? tabs[session.tabId]?.currentAction : null,
+                  busySince: session.live ? tabs[session.tabId]?.busySince : null,
+                }} variant={session.live?.cliState === 'needs-input' ? 'needs-input' : session.live?.cliState === 'busy' ? undefined : status === 'completed' ? 'done' : 'pending'}
+                  isActiveTab={isActiveSession} onNavigate={onClick} />;
+                return (
+                  <div key={session.key}>
+                    {entry && session.live?.cliState !== 'busy' && session.live?.cliState !== 'needs-input' ? <SessionHistoryItem entry={entry} isActiveSession={isActiveSession} onClick={onClick}
+                        icon={status === 'completed' ? <CheckCircle2 className="h-3.5 w-3.5 text-muted-foreground" />
+                          : status === 'review' ? <Clock3 className="h-3.5 w-3.5 text-muted-foreground" />
+                            : <Circle className="h-3.5 w-3.5 text-muted-foreground" />} />
+                      : !entry && target?.agentSessionId
+                        ? <SessionHistoryActions provider={target.providerId} sessionId={target.agentSessionId}
+                          label={session.live?.lastUserMessage} onDeleted={async () => {
+                            forgetSessionWorkflow(target.providerId, target.agentSessionId);
+                          }}><div>{liveItem}</div></SessionHistoryActions>
+                        : liveItem}
+                    <div className="flex items-center gap-2 pl-9">
+                      <select aria-label={t('workStatusLabel')} disabled={saving}
+                        className="max-w-full rounded border bg-card px-1 py-0.5 text-xs text-muted-foreground"
+                        value={workflow.statuses[session.key] ?? 'auto'}
+                        onChange={(event) => void save({ key: session.key, status: event.target.value === 'auto' ? null : event.target.value as TWorkStatus })}>
+                        <option value="auto">{t('workStatusAuto')}</option>
+                        {WORK_STATUSES.map((value) => <option key={value} value={value}>{t('workStatus_' + value)}</option>)}
+                      </select>
+                      {session.live?.cliState === 'busy' && <span className="text-xs text-muted-foreground">{t('workRuntimeBusy')}</span>}
+                      {session.live?.cliState === 'needs-input' && <span className="text-xs text-muted-foreground">{t('needsInputSection', { count: 1 })}</span>}
+                    </div>
+                    {session.olderEntries.length > 0 && <>
+                      <button type="button" aria-expanded={expanded}
+                        className="mt-1 flex items-center gap-1 pl-9 text-xs text-muted-foreground"
+                        onClick={() => toggleExpanded(session.key)}>
+                        <ChevronRight className={cn('h-3 w-3', expanded && 'rotate-90')} />
+                        {expanded ? t('showLess') : t('showMore', { count: session.olderEntries.length })}
+                      </button>
+                      {expanded && <div className="ml-5 border-l pl-2">
+                        {session.olderEntries.map((older) => <SessionHistoryItem key={older.id} entry={older} compact
+                          onClick={() => { onNavigated?.(); void navigateToSession(older, session.live ? session.tabId : null); }} />)}
+                      </div>}
+                    </>}
                   </div>
-                </div>
-              ))}
-            </section>
-          )}
-        </>
-      )}
+                );
+              })}
+            </div>}
+          </section>
+        );
+      })}
     </div>
   );
 };

@@ -7,11 +7,13 @@ const mocks = vi.hoisted(() => ({
   hidden: new Set<string>(),
   remove: vi.fn(async () => []),
   broadcast: vi.fn(),
+  removeWorkflow: vi.fn(),
 }));
 vi.mock('@/lib/hidden-sessions', () => ({ hideSession: mocks.hide, readHiddenSessions: async () => mocks.hidden, sessionHistoryKey: (provider: string, id: string) => `${provider}:${id}` }));
 vi.mock('@/lib/delete-session', () => ({ deleteOriginalSession: mocks.deleteOriginal, SessionInUseError: class SessionInUseError extends Error {} }));
 vi.mock('@/lib/session-history', () => ({ removeSessionHistory: mocks.remove }));
 vi.mock('@/lib/status-manager', () => ({ getStatusManager: () => ({ broadcast: mocks.broadcast }) }));
+vi.mock('@/lib/workspace-store', () => ({ removeSessionWorkflow: mocks.removeWorkflow }));
 vi.mock('@/lib/tmux', () => ({ hasSession: async () => true }));
 vi.mock('@/lib/session-list', () => ({ listSessions: async () => ['one', 'two', 'three'].map((sessionId) => ({ sessionId })) }));
 vi.mock('@/lib/codex-session-list', () => ({ listCodexSessions: async () => ({ sessions: [{ sessionId: 'one' }, { sessionId: 'two' }], scannedDirs: 1, scannedFiles: 2 }) }));
@@ -34,6 +36,7 @@ describe('history management API', () => {
     await removeHandler({ method: 'DELETE', body: { provider: 'codex', sessionId: 'session-1' } } as NextApiRequest, res as unknown as NextApiResponse);
     expect(mocks.hide).toHaveBeenCalledExactlyOnceWith('codex', 'session-1');
     expect(mocks.remove).toHaveBeenCalledWith('codex', 'session-1', undefined);
+    expect(mocks.removeWorkflow).toHaveBeenCalledWith('codex', 'session-1', undefined);
     expect(mocks.broadcast).toHaveBeenCalledWith({ type: 'session-history:sync', entries: [] });
     expect(mocks.deleteOriginal).not.toHaveBeenCalled();
     expect(res.status).toHaveBeenCalledWith(204);

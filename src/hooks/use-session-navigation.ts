@@ -3,7 +3,7 @@ import Router from 'next/router';
 import { navigateToTabOrCreate, useLayoutStore } from '@/hooks/use-layout';
 import { selectWorkspace } from '@/hooks/use-sidebar-actions';
 import useWorkspaceStore from '@/hooks/use-workspace-store';
-import type { ISessionHistoryEntry } from '@/types/session-history';
+import type { TSessionNavigationTarget } from '@/types/session-history';
 import type { IWorkspace } from '@/types/terminal';
 
 interface ISessionNavigationState {
@@ -60,7 +60,7 @@ const enterSessionTab = (workspaceId: string, tabId: string) => {
   }
 };
 
-export const navigateToSession = async (entry: ISessionHistoryEntry, resolvedTabId: string | null = null): Promise<void> => {
+export const navigateToSession = async (entry: TSessionNavigationTarget, resolvedTabId: string | null = null): Promise<void> => {
   if (useWorkspaceStore.getState().isLoading) {
     await useWorkspaceStore.getState().fetchWorkspaces();
     if (useWorkspaceStore.getState().isLoading || useWorkspaceStore.getState().error) return;
