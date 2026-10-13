@@ -17,3 +17,7 @@
 - 版本操作遵循 CLAUDE.md 第 17 节，使用 npm version；未授权 Git 操作时通过 --no-git-tag-version 只更新版本元数据。
 
 本次记录现有交互；未实际运行浏览器验证。功能范围及源码入口见[规格](../spec.md)。
+
+## MIT 分发保留（2026-10-13）
+
+MIT 版权及授权文本随分发包保存，不新增 UI；README 的上游来源说明和许可证链接继续保留。 约束见[MIT 分发需求](../../../requirements/mit-license-distribution.md)。
