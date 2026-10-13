@@ -37,7 +37,7 @@ const PageShell = ({ children }: IPageShellProps) => {
 
   if (isMobile) {
     return (
-      <div className="flex h-dvh w-full flex-col overflow-hidden bg-background" style={viewportStyle}>
+      <div className="app-viewport flex h-dvh w-full flex-col overflow-hidden bg-background" style={viewportStyle}>
         <MobileLayout>
           {children}
         </MobileLayout>
@@ -46,7 +46,7 @@ const PageShell = ({ children }: IPageShellProps) => {
   }
 
   return (
-    <div className="flex h-dvh w-full overflow-hidden bg-background max-md:hidden" style={viewportStyle}>
+    <div className="app-viewport flex h-dvh w-full overflow-hidden bg-background max-md:hidden" style={viewportStyle}>
       <Sidebar />
       <div className="relative flex min-w-0 flex-1 flex-col">
         <PageContent>{children}</PageContent>

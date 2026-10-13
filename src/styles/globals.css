@@ -213,6 +213,20 @@ body {
   color: var(--foreground);
 }
 
+html:has(.app-viewport),
+body:has(.app-viewport) {
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
+@media (hover: none) and (pointer: coarse) {
+  body:has(.app-viewport) {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+  }
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
