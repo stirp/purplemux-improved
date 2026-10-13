@@ -2,6 +2,14 @@
 
 日期：2026-10-10。依据：[规格](../features/fork-platform/spec.md)、[需求](../requirements/single-cli-install.md)。
 
+## 2026-10-13 补充验证
+
+- `pnpm install --frozen-lockfile`：通过。
+- `pnpm lint`：首次运行在 `tests/cli/features.test.cjs` 报 8 处 CommonJS `require` 规则错误；该测试文件局部禁用不适用的 `@typescript-eslint/no-require-imports` 后重新运行通过。
+- `pnpm tsc --noEmit`：通过。
+- `pnpm test`：Vitest 132 个文件通过，962 项通过、1 项跳过；CLI 61 项通过。
+- 本次没有运行构建、打包或安装验收。
+
 ## 实际检查
 
 | 检查 | 结果 |
