@@ -1,4 +1,10 @@
 {
+  "unknownWorkspace": "不明なプロジェクト",
+  "searchPlaceholder": "セッションを検索…",
+  "searchHint": "タイトル、ワークスペース、セッション ID、履歴の要約",
+  "searchClear": "検索をクリア",
+  "searchCount": "{count} 件のセッション",
+  "searchEmpty": "一致するセッションはありません",
   "title": "通知",
   "empty": "セッションがありません..",
   "busySection": "進行中 ({count})",

@@ -1,4 +1,10 @@
 {
+  "unknownWorkspace": "알 수 없는 프로젝트",
+  "searchPlaceholder": "세션 검색…",
+  "searchHint": "제목, 작업 공간, 세션 ID 또는 기록 요약",
+  "searchClear": "검색 지우기",
+  "searchCount": "세션 {count}개 찾음",
+  "searchEmpty": "일치하는 세션이 없습니다",
   "title": "알림",
   "empty": "세션이 없습니다..",
   "busySection": "진행중 ({count})",

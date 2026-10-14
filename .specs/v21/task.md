@@ -1,5 +1,15 @@
 # v21 任务进度
 
+## Sessions 查询（2026-10-15）
+
+- [x] 补充每条会话项目名称必显；统一名称回退、历史和较早记录展示、长名称换行。后续 73 项测试、完整 TypeScript、ESLint 及桌面/320px 组件浏览器验证通过，见验证记录补充节。
+- [x] 定义查询范围、匹配规则、临时展开和清空恢复行为。
+- [x] 实现共用面板搜索及针对性回归测试。
+- [x] 66 项相关测试、完整 TypeScript、改动文件 ESLint、11 种语言文案及 diff 检查通过；真实组件桌面/320px 浏览器检查通过，见[验证记录](./result/verify-session-search.md)。
+- [ ] 完整应用端到端及移动设备实机验收；本轮浏览器使用模拟数据，未执行生产构建。
+
+见[需求](./requirements/session-search.md)、[规格](./features/session-search/spec.md)和[实施记录](./result/build-session-search.md)。
+
 ## PR #38 交互审查修正
 
 - [x] 明确首次菜单点击、隐藏齿轮键盘可达性和原生鼠标拖动隔离的验收条件。

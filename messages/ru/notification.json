@@ -1,4 +1,10 @@
 {
+  "unknownWorkspace": "Неизвестный проект",
+  "searchPlaceholder": "Поиск сеансов…",
+  "searchHint": "Название, рабочая область, ID сеанса или сводка истории",
+  "searchClear": "Очистить поиск",
+  "searchCount": "Найдено сеансов: {count}",
+  "searchEmpty": "Совпадающих сеансов нет",
   "title": "Уведомления",
   "empty": "Нет сессий..",
   "busySection": "В процессе ({count})",
