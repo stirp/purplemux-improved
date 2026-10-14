@@ -7,6 +7,7 @@ import useTimeline from '@/hooks/use-timeline';
 import useSessionList from '@/hooks/use-session-list';
 import useStartingPrompt from '@/hooks/use-starting-prompt';
 import useTabStore, { selectSessionView } from '@/hooks/use-tab-store';
+import useWorkspaceStore from '@/hooks/use-workspace-store';
 import { useSessionMetaCompute } from '@/hooks/use-session-meta';
 import SessionListView from '@/components/features/workspace/session-list-view';
 import SessionEmptyView from '@/components/features/workspace/session-empty-view';
@@ -58,6 +59,7 @@ const ClaudeCodePanel = ({
   const cachedSessionMeta = useTabStore((s) => s.tabs[tabId]?.sessionMetaCache ?? null);
   const tabClaudeSummary = useTabStore((s) => s.tabs[tabId]?.agentSummary ?? null);
   const tabLastUserMessage = useTabStore((s) => s.tabs[tabId]?.lastUserMessage ?? null);
+  const sessionTitle = useWorkspaceStore((s) => s.sessionWorkflow.titles?.[`claude:${claudeSessionId || `tab:${tabId}`}`]);
 
   const handleResumeStarted = useCallback(
     () => {
@@ -298,7 +300,7 @@ const ClaudeCodePanel = ({
     <div className={cn('flex min-h-0 w-full flex-1 flex-col', className)}>
       {displayMeta ? (
         <SessionMetaBar
-          meta={displayMeta.meta}
+          meta={sessionTitle ? { ...displayMeta.meta, title: sessionTitle } : displayMeta.meta}
           sessionName={sessionName}
           sessionId={displayMeta.sessionId}
           jsonlPath={displayMeta.jsonlPath}

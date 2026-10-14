@@ -13,6 +13,12 @@ const request = async (body: unknown, method = 'PATCH') => {
 };
 beforeEach(() => vi.clearAllMocks());
 describe('workflow API', () => {
+  it('accepts a bounded session title', async () => {
+    const res = await request({ key: 'claude:session-1', title: 'Renamed' });
+    expect(update).toHaveBeenCalledWith({ key: 'claude:session-1', title: 'Renamed' });
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect((await request({ key: 'claude:session-1', title: 'x'.repeat(201) })).status).toHaveBeenCalledWith(400);
+  });
   it('saves manual status and supports restoring automatic mode', async () => {
     for (const status of ['completed', null]) {
       const res = await request({ key: 'codex:s1', status });

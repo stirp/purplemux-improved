@@ -1,5 +1,15 @@
 # v21 任务进度
 
+## Agent 会话标题同步（2026-10-14）
+
+- [x] 定义活动会话标题与手动 Tab 名称的展示优先级。
+- [x] Tab 与 Sessions 活动项复用会话元数据标题。
+- [x] 手动重命名写入持久会话标题，并同步会话详情与历史会话列表。
+- [x] 类型检查、相关测试、改动文件 ESLint 和 diff 检查通过。
+- [ ] 浏览器验收，见[验证记录](./result/verify-agent-session-titles.md)。
+
+见[需求](./requirements/agent-session-titles.md)和[实施记录](./result/build-agent-session-titles.md)。
+
 ## 工作区视口滚动约束（2026-10-13）
 
 - [x] PR #35 Review：移除 Firefox 111 不支持的 `:has()` 选择器，改由页面外壳挂载与卸载文档作用域标记。

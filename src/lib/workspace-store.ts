@@ -378,6 +378,7 @@ export const deleteWorkspace = async (workspaceId: string, deleteSessions = true
         data.sessionWorkflow.deleted = [...new Set([...(data.sessionWorkflow.deleted ?? []), key])];
         delete data.sessionWorkflow.sessions[key];
         delete data.sessionWorkflow.statuses[key];
+        delete data.sessionWorkflow.titles?.[key];
       }
     }
     for (const child of data.workspaces) {
@@ -575,11 +576,16 @@ export const validateDirectory = async (directory: string): Promise<{
 
 export const updateSessionWorkflow = async (update:
   | { key: string; status: TWorkStatus | null }
+  | { key: string; title: string }
   | { section: TWorkStatus; collapsed: boolean }
 ): Promise<ISessionWorkflow> => withLock(async () => {
   const data = (await readWorkspacesFile()) ?? emptyState();
   const workflow = data.sessionWorkflow ?? { statuses: {}, collapsed: {} };
-  if ('key' in update) {
+  if ('title' in update) {
+    workflow.titles ??= {};
+    if (update.title.trim() && !workflow.deleted?.includes(update.key)) workflow.titles[update.key] = update.title.trim();
+    else delete workflow.titles[update.key];
+  } else if ('key' in update) {
     if (update.status === null) delete workflow.statuses[update.key];
     else if (!workflow.deleted?.includes(update.key)) workflow.statuses[update.key] = update.status;
   } else workflow.collapsed[update.section] = update.collapsed;
@@ -628,6 +634,7 @@ export const removeSessionWorkflow = async (
   const key = sessionWorkKey(provider, sessionId, `history:${historyEntryId}`);
   data.sessionWorkflow.deleted = [...new Set([...(data.sessionWorkflow.deleted ?? []), key])];
   delete data.sessionWorkflow.statuses[key];
+  delete data.sessionWorkflow.titles?.[key];
   delete data.sessionWorkflow.sessions?.[key];
   await writeWorkspacesFile(data);
 });

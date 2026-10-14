@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import ClaudeCodeIcon from '@/components/icons/claude-code-icon';
 import OpenAIIcon from '@/components/icons/openai-icon';
 import { cn } from '@/lib/utils';
+import useWorkspaceStore from '@/hooks/use-workspace-store';
 import type { IAgentSessionEntry } from '@/hooks/use-agent-sessions';
 
 type TSessionFilter = 'all' | 'claude' | 'codex';
@@ -109,7 +110,8 @@ const AgentSessionItem = memo(({
 }: IAgentSessionItemProps) => {
   const absoluteTime = dayjs(session.lastActivityAt).format('MM/DD HH:mm');
   const relativeTime = formatRelativeTime(session.lastActivityAt, tSession);
-  const displayMessage = session.firstMessage?.trim() || noMessageLabel;
+  const savedTitle = useWorkspaceStore((state) => state.sessionWorkflow.titles?.[`${session.provider}:${session.sessionId}`]);
+  const displayMessage = savedTitle || session.firstMessage?.trim() || noMessageLabel;
   const providerLabel = session.provider === 'codex' ? 'Codex' : 'Claude';
 
   return (

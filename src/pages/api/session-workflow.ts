@@ -9,6 +9,10 @@ const schema = z.union([
     status: z.enum(WORK_STATUSES).nullable(),
   }).strict(),
   z.object({ section: z.enum(WORK_STATUSES), collapsed: z.boolean() }).strict(),
+  z.object({
+    key: z.string().regex(/^(claude|codex):[a-zA-Z0-9_:-]{1,256}$/),
+    title: z.string().max(200),
+  }).strict(),
 ]);
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {

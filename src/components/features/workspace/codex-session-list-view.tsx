@@ -6,6 +6,7 @@ import { AlertCircle, Loader2, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import OpenAIIcon from '@/components/icons/openai-icon';
 import { cn } from '@/lib/utils';
+import useWorkspaceStore from '@/hooks/use-workspace-store';
 import type { ICodexSessionEntry } from '@/lib/codex-session-list';
 
 interface ICodexSessionListViewProps {
@@ -70,7 +71,8 @@ const CodexSessionItem = memo(({
   const activityAt = session.lastActivityAt || session.startedAt;
   const absoluteTime = dayjs(activityAt).format('MM/DD HH:mm');
   const relative = formatRelativeTime(activityAt, tTime);
-  const message = session.firstUserMessage?.trim() || noMessageLabel;
+  const savedTitle = useWorkspaceStore((state) => state.sessionWorkflow.titles?.[`codex:${session.sessionId}`]);
+  const message = savedTitle || session.firstUserMessage?.trim() || noMessageLabel;
   const turnLabel = tSession('turnCount', { count: session.turnCount });
   const ariaLabel = [
     message,

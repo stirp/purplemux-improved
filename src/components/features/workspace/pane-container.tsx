@@ -44,9 +44,11 @@ import useFileDrop from '@/hooks/use-file-drop';
 import { useAgentInstallCheck } from '@/hooks/use-agent-install-check';
 import PaneTabBar from '@/components/features/workspace/pane-tab-bar';
 import { formatTabTitle, parseCurrentCommand, isShellProcess } from '@/lib/tab-title';
+import { agentTabTitle } from '@/lib/agent-session-title';
 import { isAppShortcut, isClearShortcut, isFocusInputShortcut, isShiftEnter } from '@/lib/keyboard-shortcuts';
 import useTerminalTheme from '@/hooks/use-terminal-theme';
 import useTabStore, { getInitialTabStateFromLayoutTab, selectSessionView, isCliIdle } from '@/hooks/use-tab-store';
+import useWorkspaceStore from '@/hooks/use-workspace-store';
 import { dismissTab as dismissStatusTab } from '@/hooks/use-agent-status';
 import type { IAgentSessionEntry } from '@/hooks/use-agent-sessions';
 import {
@@ -181,7 +183,8 @@ const PaneContainer = memo(({ paneId, paneNumber }: IPaneContainerProps) => {
   const [isPanelTransitioning, setIsPanelTransitioning] = useState(false);
 
   const tabIds = useMemo(() => tabs.map((t) => t.id), [tabs]);
-  const tabTitles = useTabMetadataStore(
+  const sessionWorkflow = useWorkspaceStore((state) => state.sessionWorkflow);
+  const processTitles = useTabMetadataStore(
     useShallow((state) => {
       const result: Record<string, string> = {};
       for (const tab of tabs) {
@@ -192,6 +195,18 @@ const PaneContainer = memo(({ paneId, paneNumber }: IPaneContainerProps) => {
       return result;
     }),
   );
+  const agentTitles = useTabStore(
+    useShallow((state) => {
+      const result: Record<string, string> = {};
+      for (const tab of tabs) {
+        if (tab.panelType !== 'claude-code' && tab.panelType !== 'codex-cli') continue;
+        const title = agentTabTitle(tab.name, state.tabs[tab.id], sessionWorkflow, tab.id);
+        if (title) result[tab.id] = title;
+      }
+      return result;
+    }),
+  );
+  const tabTitles = useMemo(() => ({ ...processTitles, ...agentTitles }), [processTitles, agentTitles]);
 
   const tabProcesses = useTabStore(
     useShallow((state) => {
@@ -746,10 +761,33 @@ const PaneContainer = memo(({ paneId, paneNumber }: IPaneContainerProps) => {
   }, [status, disconnectReason, activeTabId, activeTab, handleRestartTab]);
 
   const handleRenameTab = useCallback(
-    (tabId: string, name: string) => {
-      renameTabInPane(paneId, tabId, name);
+    async (tabId: string, name: string) => {
+      const tab = tabs.find((item) => item.id === tabId);
+      if (!tab) return;
+      if (tab.panelType !== 'claude-code' && tab.panelType !== 'codex-cli') {
+        await renameTabInPane(paneId, tabId, name);
+        return;
+      }
+      const state = useTabStore.getState().tabs[tabId];
+      const provider = tab.panelType === 'codex-cli' ? 'codex' : 'claude';
+      const key = `${provider}:${state?.agentSessionId || `tab:${tabId}`}`;
+      try {
+        const response = await fetch('/api/session-workflow', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ key, title: name }),
+        });
+        if (!response.ok) throw new Error('Failed to save session title');
+        const workflow = await response.json();
+        useWorkspaceStore.setState({ sessionWorkflow: workflow });
+        if (tab.name && !await renameTabInPane(paneId, tabId, '')) {
+          toast.error(t('tabRenameFailed'));
+        }
+      } catch {
+        toast.error(t('tabRenameFailed'));
+      }
     },
-    [paneId, renameTabInPane],
+    [paneId, tabs, renameTabInPane, t],
   );
 
   const handleReorderTabs = useCallback(

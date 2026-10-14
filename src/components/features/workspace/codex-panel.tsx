@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import OpenAIIcon from '@/components/icons/openai-icon';
 import useTabStore, { selectSessionView } from '@/hooks/use-tab-store';
+import useWorkspaceStore from '@/hooks/use-workspace-store';
 import useTimeline from '@/hooks/use-timeline';
 import { useCodexSessions } from '@/hooks/use-codex-sessions';
 import { useSessionMetaCompute } from '@/hooks/use-session-meta';
@@ -66,6 +67,7 @@ const CodexPanel = ({
   const cachedSessionMeta = useTabStore((s) => s.tabs[tabId]?.sessionMetaCache ?? null);
   const tabAgentSummary = useTabStore((s) => s.tabs[tabId]?.agentSummary ?? null);
   const tabLastUserMessage = useTabStore((s) => s.tabs[tabId]?.lastUserMessage ?? null);
+  const sessionTitle = useWorkspaceStore((s) => s.sessionWorkflow.titles?.[`codex:${codexSessionId || `tab:${tabId}`}`]);
 
   const handleStart = useCallback(() => {
     onNewSession?.();
@@ -330,7 +332,7 @@ const CodexPanel = ({
     <div className={cn('flex min-h-0 w-full flex-1 flex-col', className)}>
       {displayMeta ? (
         <SessionMetaBar
-          meta={displayMeta.meta}
+          meta={sessionTitle ? { ...displayMeta.meta, title: sessionTitle } : displayMeta.meta}
           sessionName={sessionName}
           sessionId={displayMeta.sessionId}
           jsonlPath={displayMeta.jsonlPath}
