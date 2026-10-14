@@ -19,8 +19,7 @@ import useWorkspaceStore from '@/hooks/use-workspace-store';
 import useInlineEdit from '@/hooks/use-inline-edit';
 import WorkspaceStatusIndicator from '@/components/features/workspace/workspace-status-indicator';
 import CreateWorktreeDialog from './create-worktree-dialog';
-import ManageWorktreesDialog from './manage-worktrees-dialog';
-import WorkspaceDeliveryButton from './workspace-delivery-button';
+import WorktreeTreeDialog from './worktree-tree-dialog';
 
 interface IWorkspaceItemProps {
   workspace: IWorkspace;
@@ -53,8 +52,10 @@ const WorkspaceItem = ({
   const groups = useWorkspaceStore((s) => s.groups);
   const tw = useTranslations('workspace.worktree');
   const [creatingWorktree, setCreatingWorktree] = useState(false);
-  const [managingWorktrees, setManagingWorktrees] = useState(false);
+  const [showTree, setShowTree] = useState(false);
+  const parentName = useWorkspaceStore((s) => s.workspaces.find((item) => item.id === workspace.parentWorkspaceId)?.name);
   const tm = useTranslations('workspace.worktreeManager');
+  const treeLabel = useTranslations('workspace.worktreeTree');
   const depth = useWorkspaceStore((s) => {
     let parent = workspace.parentWorkspaceId;
     let count = 0;
@@ -115,7 +116,7 @@ const WorkspaceItem = ({
       <ContextMenuTrigger
         touchDrag
         className={cn(
-          'relative flex cursor-pointer flex-col justify-center overflow-hidden border-l-2 py-2 pl-3 pr-24 transition-colors duration-75',
+          'relative flex cursor-pointer flex-col justify-center overflow-hidden border-l-2 py-2 pl-3 pr-12 transition-colors duration-75',
           isActive
             ? 'border-l-focus-indicator bg-accent text-foreground'
             : 'border-l-transparent text-muted-foreground hover:bg-sidebar-accent',
@@ -142,7 +143,7 @@ const WorkspaceItem = ({
         {shortcutLabel && (
           <span
             className={cn(
-              'absolute right-24 top-1.5 rounded bg-muted px-1 py-0.5 text-[10px] font-medium leading-none text-muted-foreground transition-opacity duration-200',
+              'absolute right-12 top-1.5 rounded bg-muted px-1 py-0.5 text-[10px] font-medium leading-none text-muted-foreground transition-opacity duration-200',
               showShortcut ? 'opacity-100' : 'opacity-0',
             )}
           >
@@ -171,6 +172,7 @@ const WorkspaceItem = ({
             </span>
           )}
         </div>
+        {parentName && <span className="truncate text-xs text-ui-blue/80" title={parentName}>↳ {parentName} / {workspace.name}</span>}
         {displayDirs.map((dir, i) => (
           <span key={dir} className={cn('truncate text-xs leading-tight text-muted-foreground/70', i === 0 && 'mt-1')}>
             {dir}
@@ -185,15 +187,14 @@ const WorkspaceItem = ({
           </span>
         )}
         <WorkspaceStatusIndicator workspaceId={workspace.id} tabs={tabs} />
-        <WorkspaceDeliveryButton workspaceId={workspace.id} className="absolute right-11 top-0 h-11 w-11" />
         <ContextMenuSettingsButton className="absolute right-0 top-0 h-11 w-11" label={`${tc('settings')}: ${workspace.name}`} />
       </ContextMenuTrigger>
       <ContextMenuContent>
         <ContextMenuItem onClick={() => setCreatingWorktree(true)}>
           <GitBranch className="mr-2 h-3.5 w-3.5" />{tw('create')}
         </ContextMenuItem>
-        <ContextMenuItem onClick={() => setManagingWorktrees(true)}>
-          <GitBranch className="mr-2 h-3.5 w-3.5" />{tm('title')}
+        <ContextMenuItem onClick={() => setShowTree(true)}>
+          <GitBranch className="mr-2 h-3.5 w-3.5" />{treeLabel('manageTitle')}
         </ContextMenuItem>
         <ContextMenuSub>
           <ContextMenuSubTrigger disabled={!!workspace.parentWorkspaceId}>
@@ -243,8 +244,7 @@ const WorkspaceItem = ({
     </ContextMenu>
     {creatingWorktree && <CreateWorktreeDialog workspace={workspace}
       onClose={() => setCreatingWorktree(false)} onCreated={onSelect} />}
-    {managingWorktrees && <ManageWorktreesDialog workspace={workspace}
-      onClose={() => setManagingWorktrees(false)} onSelect={onSelect} />}
+    {showTree && <WorktreeTreeDialog root={workspace} onClose={() => setShowTree(false)} onSelect={onSelect} />}
     </>
   );
 };

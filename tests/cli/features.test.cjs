@@ -93,6 +93,23 @@ test('help and feature discovery work offline through the public entrypoint', as
   assert.equal(requests.length, count);
 });
 
+test('merge help names the worktree modified by the CLI operation', async () => {
+  const result = await cli(['worktree', 'merge', '--help'], '', { PMUX_PORT: '', PMUX_TOKEN: '' });
+  assert.equal(result.code, 0, result.stderr);
+  assert.match(result.stdout, /Merge targetRef into item \(the worktree being modified\)/);
+  assert.match(result.stdout, /among sync operations, only merge may execute on the main worktree/);
+});
+
+test('publishing help permits main worktrees without relaxing deletion protection', async () => {
+  for (const command of ['push', 'create-draft']) {
+    const result = await cli(['worktree', command, '--help'], '', { PMUX_PORT: '', PMUX_TOKEN: '' });
+    assert.equal(result.code, 0, result.stderr);
+    assert.match(result.stdout, /main worktree allowed/);
+    assert.match(result.stdout, /Push and create-draft allow the main worktree; other publication checks still apply/);
+    assert.match(result.stdout, /Removal and cleanup still protect the main worktree/);
+  }
+});
+
 for (const alias of ['-w', '--workspace', '--workspace-id']) {
   test(`${alias} selects the same workspace in queries, bodies and paths`, async () => {
     const scenarios = [

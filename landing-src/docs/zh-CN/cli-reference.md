@@ -229,7 +229,7 @@ jq --slurpfile sync "sync.json" '. + {targetRef:$sync[0].targetRef,targetHead:$s
 purplemux-improved worktree merge -w ws-EXAMPLE --data @merge.json
 ```
 
-需要最新远端状态时先执行 `worktree fetch -w ws-EXAMPLE --data @item.json`，再执行 `inspect-sync`。同步修改了 HEAD 或出现冲突后，重新读取列表和快照，再使用 `continue` / `abort`。服务端保留脏文件、会话占用、忽略文件冲突及目标版本变化检查，不会在 CLI 中自动刷新并绕过确认。
+`merge` 的 `item` 是实际被修改的工作树，`targetRef` 是合入该工作树的分支。需要最新远端状态时先执行 `worktree fetch -w ws-EXAMPLE --data @item.json`，再执行 `inspect-sync`。同步修改了 HEAD 或出现冲突后，重新读取列表和快照，再使用 `continue` / `abort`。`inspect-sync` 仍报告主工作树的 `main` 阻断；同步操作中仅 `merge` 可以修改主工作树，主工作树的 rebase、continue、abort 仍被阻断，合并冲突需在 Git 终端处理。服务端保留脏文件、会话占用、忽略文件冲突及目标版本变化检查，不会在 CLI 中自动刷新并绕过确认。
 
 ```bash
 # 以下操作使用重新检查过的 item.json
@@ -241,6 +241,8 @@ jq --slurpfile draft "draft.json" '. + {title:$draft[0].title,body:$draft[0].bod
 purplemux-improved worktree create-draft -w ws-EXAMPLE --data @review.json --remote origin --target-branch main --provider github
 purplemux-improved worktree refresh-review -w ws-EXAMPLE --data @item.json
 ```
+
+`push` 和 `create-draft` 同样支持主工作树，不受检出分支名称影响；发布时忽略 `main` 标记，但继续校验快照、脏文件、进行中的 Git 操作及远端状态。删除与清理仍保护主工作树。
 
 创建草稿/刷新状态沿用服务器上的 Git 和 GitHub/GitLab CLI 认证。`generate-draft` 只生成文案；`push` 和 `create-draft` 会执行真实远端操作。已有 PR/MR 可用 `save-review --url "https://..."` 关联，`--url null` 解除关联。
 

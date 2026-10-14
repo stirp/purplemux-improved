@@ -25,8 +25,9 @@ const syncBlockers = async (item: IManagedWorktree, refresh = true) => {
   return item.blockers.filter((reason) => reason !== 'ignored' && !(reason === 'sessions' && idle));
 };
 
-const executionBlockers = async (item: IManagedWorktree, resuming: boolean, refresh = true) =>
-  (await syncBlockers(item, refresh)).filter((reason) => !(resuming && (reason === 'operation' || reason === 'dirty'
+const executionBlockers = async (item: IManagedWorktree, action: 'merge' | 'rebase' | 'continue' | 'abort', refresh = true) =>
+  (await syncBlockers(item, refresh)).filter((reason) => !(reason === 'main' && action === 'merge')
+    && !((action === 'continue' || action === 'abort') && (reason === 'operation' || reason === 'dirty'
     || (reason === 'detached' && item.status?.operation === 'rebase'))));
 
 const resolveTarget = async (directory: string, target: string) => {
@@ -76,7 +77,7 @@ export const synchronizeWorktree = async (source: IWorkspace, snapshot: TWorktre
   const { item } = await resolveWorktreeItem(source, snapshot.repositoryId, snapshot.directory);
   if (item.head !== snapshot.head || item.branch !== snapshot.branch) throw new WorktreeError('changed');
   const resuming = action === 'continue' || action === 'abort';
-  const blockers = await executionBlockers(item, resuming);
+  const blockers = await executionBlockers(item, action);
   if (blockers.length) throw new WorktreeError(blockers[0]);
   let args: string[];
   if (resuming) {
@@ -92,11 +93,11 @@ export const synchronizeWorktree = async (source: IWorkspace, snapshot: TWorktre
     args = action === 'merge' ? ['merge', '--no-edit', '--no-autostash', '--no-overwrite-ignore', target.head]
       : ['rebase', '--no-autostash', '--no-update-refs', target.head];
   }
-  const refreshedBlockers = await executionBlockers(item, resuming);
+  const refreshedBlockers = await executionBlockers(item, action);
   if (refreshedBlockers.length) throw new WorktreeError(refreshedBlockers[0]);
   const { item: current } = await resolveWorktreeItem(source, snapshot.repositoryId, snapshot.directory);
   if (current.head !== snapshot.head || current.branch !== snapshot.branch) throw new WorktreeError('changed');
-  const currentBlockers = await executionBlockers(current, resuming, false);
+  const currentBlockers = await executionBlockers(current, action, false);
   if (currentBlockers.length) throw new WorktreeError(currentBlockers[0]);
   try {
     const output = await worktreeGit(item.directory, ['-c', 'core.editor=true', '-c', 'sequence.editor=true', ...args], 60_000);

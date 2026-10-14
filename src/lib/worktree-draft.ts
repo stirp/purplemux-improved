@@ -15,7 +15,7 @@ const prepare = async (source: IWorkspace, snapshot: TWorktreeSnapshot, remote: 
   const { item } = await resolveWorktreeItem(source, snapshot.repositoryId, snapshot.directory);
   if (item.head !== snapshot.head || item.branch !== snapshot.branch) throw new WorktreeError('changed');
   if (!item.branch) throw new WorktreeError('detached');
-  const blocker = item.blockers.find((reason) => !['ignored', 'sessions', 'sharedWorkspace'].includes(reason));
+  const blocker = item.blockers.find((reason) => !['main', 'ignored', 'sessions', 'sharedWorkspace'].includes(reason));
   if (blocker) throw new WorktreeError(blocker);
   const selected = (await getWorktreeReviewRemotes(item.directory)).find((entry) => entry.name === remote);
   if (!selected) throw new WorktreeError('reviewRemote', 400);

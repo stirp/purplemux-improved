@@ -67,6 +67,13 @@
       "requestTimeout": "请求超时，请关闭并重新打开弹窗后重试。",
       "requestFailed": "请求失败或响应格式异常，请重试。",
       "commitUnknown": "无法确认提交结果。请先在终端检查 git log 和 git status，再决定是否重试。"
-    }
+    },
+    "deliveryNext": "下一步：推送分支并创建 PR/MR 草稿",
+    "deliveryLoading": "正在检查已提交的工作树…",
+    "deliveryUnavailable": "该提交未关联可管理的工作树，或 HEAD 已变化；请到 Worktree 管理界面继续交付。",
+    "workflowButton": "提交与发布",
+    "workflowTitle": "提交、推送与 PR/MR",
+    "workflowDescription": "先生成或编辑提交信息并确认提交，再推送分支并发起 PR/MR 草稿。已提交的改动可直接继续发布。",
+    "cleanPublish": "没有待提交改动，可继续推送当前分支或创建 PR/MR 草稿。"
   }
 }

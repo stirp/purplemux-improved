@@ -203,6 +203,31 @@ describe('sync and delivery Git operations', () => {
     expect(await fs.readFile(path.join(directory, 'main.txt'), 'utf8')).toBe('main');
     expect((await inspectWorktreeSync(source, await snapshot())).targetRef).toBe('refs/heads/main');
   });
+  it('merges a child branch into the main worktree with a checked snapshot', async () => {
+    await commit(directory, 'task.txt', 'task');
+    const overview = await getWorktreeOverview(source);
+    const repository = overview.repositories[0];
+    const main = repository.worktrees.find((item) => item.directory === repo)!;
+    const item = { repositoryId: repository.id, directory: repo, head: main.head, branch: main.branch };
+    const info = await inspectWorktreeSync(source, item, 'refs/heads/task/one');
+    expect(info).toMatchObject({ ahead: 0, behind: 1 });
+    expect(info.blockers).toContain('main');
+    const result = await synchronizeWorktree(source, item, 'merge', info.targetRef!, info.targetHead!);
+    expect(result.ok).toBe(true);
+    expect(await fs.readFile(path.join(repo, 'task.txt'), 'utf8')).toBe('task');
+  });
+  it('keeps rebase, continue and abort blocked on the main worktree', async () => {
+    await commit(directory, 'task.txt', 'task');
+    const overview = await getWorktreeOverview(source);
+    const repository = overview.repositories[0];
+    const main = repository.worktrees.find((item) => item.directory === repo)!;
+    const item = { repositoryId: repository.id, directory: repo, head: main.head, branch: main.branch };
+    const info = await inspectWorktreeSync(source, item, 'refs/heads/task/one');
+    await expect(synchronizeWorktree(source, item, 'rebase', info.targetRef!, info.targetHead!)).rejects.toMatchObject({ code: 'main' });
+    await expect(synchronizeWorktree(source, item, 'continue')).rejects.toMatchObject({ code: 'main' });
+    await expect(synchronizeWorktree(source, item, 'abort')).rejects.toMatchObject({ code: 'main' });
+    expect(await git(repo, 'rev-parse', 'HEAD')).toBe(item.head);
+  });
   it('rejects a moved target, sessions, and uncommitted changes before merge', async () => {
     const { item, info } = await previewSync();
     await commit(repo, 'main.txt', 'new');

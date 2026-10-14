@@ -189,5 +189,25 @@
     "generatingDraft": "正在生成标题和说明…",
     "generateDraftHint": "使用 Claude Code，根据相对目标分支的已提交代码生成，可继续编辑。",
     "replaceDraftConfirm": "重新生成将覆盖现有标题和说明，是否继续？"
+  },
+  "worktreeTree": {
+    "title": "Worktree 关系与同步",
+    "description": "逐条比较本地分支提交；不会自动抓取远端。合并会修改目标工作树。",
+    "refresh": "刷新",
+    "loading": "正在检查分支…",
+    "unavailable": "同一仓库中找不到对应工作树或本地分支。",
+    "childAhead": "子分支尚未合入父分支：{count} 个提交",
+    "parentAhead": "父分支尚未同步到子分支：{count} 个提交",
+    "mergeIntoParent": "将子合并到父",
+    "mergeIntoChild": "将父合并到子",
+    "confirm": "确定将 {source} 合并到 {destination}？请确认目标工作树。",
+    "merge": "确认合并",
+    "cancel": "取消",
+    "changed": "分支已变化或目标工作树不可操作，请刷新重试。",
+    "operationFailed": "合并需要处理。",
+    "recover": "处理合并冲突",
+    "relationships": "关系与同步",
+    "manageTitle": "Worktree 管理",
+    "mainRecovery": "主工作树发生合并冲突，请在终端解决后完成或中止合并。"
   }
 }
