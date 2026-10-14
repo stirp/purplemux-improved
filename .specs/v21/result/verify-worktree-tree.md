@@ -1,5 +1,15 @@
 # Worktree 关系与同步验证记录
 
+## PR #38 三项交互审查修正（2026-10-14）
+
+- 修复前新增桌面/移动“释放后 100ms 内点击重命名”用例，覆盖有/无合成释放点击，4 项均失败；修复后通过。
+- 运行 `pnpm exec vitest run tests/unit/lib/workspace-touch-menu.test.ts tests/unit/lib/touch-drag.test.ts tests/unit/lib/navigation-drag.test.ts tests/unit/lib/workspace-item-render.test.ts tests/unit/lib/mobile-workspace-expansion.test.ts`：43 项通过，退出码 0。覆盖首次菜单点击、一次性保护、新 pointerdown/touchstart 清理、管理按钮 SVG 的取消事件及触摸排除、现有短按/滚动/键盘菜单路径。
+- 完整 `pnpm exec tsc --noEmit` 通过；`pnpm exec eslint src/hooks/use-touch-drag.ts src/components/features/workspace/worktree-management-button.tsx tests/unit/lib/workspace-touch-menu.test.ts tests/unit/lib/touch-drag.test.ts` 通过。
+- agent-browser 配合 Chrome CDP 原生触摸/键盘检查真实 MobileNavigationSheet：明确确认 `(pointer: coarse)` 为 true；长按后立即第二次触摸“重命名”，只产生一次菜单点击并出现输入框。连续 7 次 Tab 均不落在齿轮上；5 个齿轮均零宽且 visibility hidden，无障碍树中的项目齿轮数量为 0。
+- 浏览器鼠标检查真实 WorkspaceItem 中管理按钮图标与项目名称的拖动，使用 hover 后重新测量的按钮位置，避免动态显示的齿轮改变命中目标。原生按钮 dragstart 的 defaultPrevented 为 true，没有祖先拖动；普通项目行的 dragstart 为 false，仍可开始拖动。键盘 Enter 激活管理按钮正常打开统一管理弹窗。
+- 最终 `pnpm build` 通过：Next.js 编译、24 个静态页面生成和 tsup 打包完成；`git diff --check` 通过。
+- 本轮预览脚本 `/tmp/workspace-tree-preview.cjs`，原生交互脚本 `/tmp/pr38-browser-check.cjs`，结果 `/tmp/pr38-mouse-result.json`、`/tmp/pr38-touch-result.json`。页面挂载当前组件和编译 CSS，使用本地模拟项目及 API；未操作真实工作区或 Git，不等同于 iPad/Android 实机或完整应用端到端验收。
+
 ## 根入口、树层级与长按分流验证（2026-10-14）
 
 本节仅记录本轮运行，不复用下方历史结果。对应[需求](../requirements/worktree-tree.md)与[规格](../features/worktree-tree/spec.md)。

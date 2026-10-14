@@ -34,7 +34,7 @@ afterEach(() => {
 const setup = (onLongPress?: () => void) => {
   const target = new EventTarget();
   const doc = Object.assign(new EventTarget(), { elementFromPoint: vi.fn(() => target) });
-  const source = Object.assign(new EventTarget(), { ownerDocument: doc, isConnected: true });
+  const source = Object.assign(new EventTarget(), { ownerDocument: doc, isConnected: true, contains: (node: unknown) => node === doc });
   const events: string[] = [];
   for (const type of ['dragstart', 'dragend']) source.addEventListener(type, () => events.push(type));
   for (const type of ['dragenter', 'dragover', 'drop', 'dragleave']) {
@@ -48,6 +48,19 @@ const setup = (onLongPress?: () => void) => {
 };
 
 describe('touch drag', () => {
+  it.each(['click', 'pointerdown', 'touchstart'])('clears the release guard after %s instead of blocking the next action', (type) => {
+    const { doc, cleanup } = setup(vi.fn());
+    vi.advanceTimersByTime(650);
+    sendTouch(doc, 'touchend', []);
+    const first = type === 'touchstart' ? sendTouch(doc, type, [touch(50)]) : new Event(type, { cancelable: true });
+    if (type !== 'touchstart') doc.dispatchEvent(first);
+    expect(first.defaultPrevented).toBe(type === 'click');
+    const next = new Event('click', { cancelable: true });
+    doc.dispatchEvent(next);
+    expect(next.defaultPrevented).toBe(false);
+    cleanup();
+  });
+
   it('opens a stationary workspace hold as a menu without selecting or dragging', () => {
     const open = vi.fn();
     const { doc, events, cleanup } = setup(open);

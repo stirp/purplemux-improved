@@ -18,6 +18,8 @@ updated: 2026-10-14
 
 ## 详情与证据
 
+PR #38 审查验收补充：释放点击保护不能吞掉菜单首次点击；coarse 布局的隐藏齿轮不得获得键盘焦点；管理按钮及图标须阻断祖先原生拖拽。详见[需求](../../requirements/worktree-tree.md)及界面/流程约定。
+
 - [界面](./detail/ui.md)、[流程](./detail/flow.md)、[接口](./detail/api.md)
 - [实施记录](../../result/build-worktree-tree.md)、[验证记录](../../result/verify-worktree-tree.md)
 

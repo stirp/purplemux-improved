@@ -32,7 +32,14 @@ export const startTouchDrag = (source: HTMLElement, initial: Pick<Touch, 'identi
   };
   const removeClickGuard = () => {
     clearTimeout(clickTimer);
-    doc.removeEventListener('click', suppress, true);
+    doc.removeEventListener('click', suppressReleaseClick, { capture: true });
+    doc.removeEventListener('pointerdown', removeClickGuard, { capture: true });
+    doc.removeEventListener('touchstart', removeClickGuard, { capture: true });
+  };
+  const suppressReleaseClick = (event: Event) => {
+    if (menuOpened && !source.contains(event.target as Node)) return;
+    suppress(event);
+    removeClickGuard();
   };
   const suppressNativeDrag = (event: Event) => {
     if (active && event.isTrusted) suppress(event);
@@ -58,8 +65,9 @@ export const startTouchDrag = (source: HTMLElement, initial: Pick<Touch, 'identi
       dispatch(source, 'dragend');
     }
     active = false;
-    menuOpened = false;
-    doc.addEventListener('click', suppress, true);
+    doc.addEventListener('click', suppressReleaseClick, true);
+    doc.addEventListener('pointerdown', removeClickGuard, true);
+    doc.addEventListener('touchstart', removeClickGuard, true);
     clickTimer = setTimeout(removeClickGuard, 400);
   };
   const cancel = () => finish(false);
@@ -114,7 +122,7 @@ export const startTouchDrag = (source: HTMLElement, initial: Pick<Touch, 'identi
   if (onLongPress) menuTimer = setTimeout(() => {
     if (!source.isConnected) { cancel(); return; }
     menuOpened = true;
-    doc.addEventListener('click', suppress, true);
+    doc.addEventListener('click', suppressReleaseClick, true);
     flushSync(onLongPress);
   }, 650);
 
@@ -132,6 +140,7 @@ export default function useTouchDrag() {
     cleanup.current?.();
     if (event.touches.length !== 1) return;
     const target = event.target as HTMLElement;
+    if (target.closest('[data-touch-drag-ignore]')) return;
     const source = target.closest<HTMLElement>('[draggable="true"]');
     if (!source || !event.currentTarget.contains(source)) return;
     const control = target.closest('input, textarea, button, a, [contenteditable="true"]');

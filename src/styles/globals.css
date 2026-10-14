@@ -394,6 +394,12 @@ html.app-viewport-active body {
   pointer-events: none;
 }
 
+@media (pointer: coarse) {
+  .workspace-row-settings {
+    visibility: hidden;
+  }
+}
+
 @media (pointer: fine), (pointer: none) {
   .workspace-tree-row:hover .workspace-row-settings,
   .workspace-tree-row:focus-within .workspace-row-settings,

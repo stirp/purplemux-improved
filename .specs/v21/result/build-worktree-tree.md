@@ -1,5 +1,13 @@
 # Worktree 关系与同步实施记录
 
+## PR #38 三项交互审查修正（2026-10-14）
+
+- [首次菜单点击被吞](https://github.com/stirp/purplemux-improved/pull/38#discussion_r4271496927)：`use-touch-drag.ts` 为菜单手势仅拦截源项目上的一次释放点击；源项目外的 DOM（含菜单）不被阻断，新的 pointerdown/touchstart 立即清除旧保护，400ms 仅作为无点击时的清理期限。拖动释放也改为一次性保护。
+- [不可见齿轮进入 Tab 顺序](https://github.com/stirp/purplemux-improved/pull/38#discussion_r4271496943)：coarse-pointer 布局增加 `visibility: hidden`，同时移除键盘及无障碍可达性；保留零宽菜单锚点位置，继续从项目行长按或键盘打开菜单。
+- [管理按钮触发祖先拖动](https://github.com/stirp/purplemux-improved/pull/38#discussion_r4271496962)：按钮作为原生拖动源接收并取消 dragstart，防止浏览器以祖先项目为拖动源；`data-touch-drag-ignore` 确保触摸识别不会把按钮当成项目行。
+
+仅调整现有事件与样式边界，复用原菜单和拖拽流程；没有新依赖、服务端协议或持久数据变更。补充真实组件菜单首次点击、按钮图标拖动/触摸排除、一次性点击保护及新手势清理回归，见[验证记录](./verify-worktree-tree.md)。
+
 ## 根入口、树层级与长按分流（2026-10-14）
 
 本轮先更新需求和界面/流程/API 规格，再修改实现。
