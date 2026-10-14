@@ -1,4 +1,10 @@
 {
+  "unknownWorkspace": "Unbekanntes Projekt",
+  "searchPlaceholder": "Sitzungen suchen…",
+  "searchHint": "Titel, Arbeitsbereich, Sitzungs-ID oder Verlaufszusammenfassung",
+  "searchClear": "Suche löschen",
+  "searchCount": "{count} Sitzungen gefunden",
+  "searchEmpty": "Keine passenden Sitzungen",
   "title": "Benachrichtigungen",
   "empty": "Keine Sitzungen..",
   "busySection": "In Bearbeitung ({count})",

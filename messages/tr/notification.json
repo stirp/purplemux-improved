@@ -1,4 +1,10 @@
 {
+  "unknownWorkspace": "Bilinmeyen proje",
+  "searchPlaceholder": "Oturum ara…",
+  "searchHint": "Başlık, çalışma alanı, oturum kimliği veya geçmiş özeti",
+  "searchClear": "Aramayı temizle",
+  "searchCount": "{count} oturum bulundu",
+  "searchEmpty": "Eşleşen oturum yok",
   "title": "Bildirimler",
   "empty": "Oturum yok..",
   "busySection": "Devam Eden ({count})",

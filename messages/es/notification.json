@@ -1,4 +1,10 @@
 {
+  "unknownWorkspace": "Proyecto desconocido",
+  "searchPlaceholder": "Buscar sesiones…",
+  "searchHint": "Título, espacio de trabajo, ID de sesión o resumen del historial",
+  "searchClear": "Borrar búsqueda",
+  "searchCount": "{count} sesiones encontradas",
+  "searchEmpty": "No hay sesiones coincidentes",
   "title": "Notificaciones",
   "empty": "Sin sesiones..",
   "busySection": "En progreso ({count})",

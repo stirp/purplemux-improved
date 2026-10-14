@@ -1,4 +1,10 @@
 {
+  "unknownWorkspace": "未知專案",
+  "searchPlaceholder": "搜尋工作階段…",
+  "searchHint": "標題、工作區、工作階段 ID 或歷史摘要",
+  "searchClear": "清除搜尋",
+  "searchCount": "找到 {count} 個工作階段",
+  "searchEmpty": "沒有符合的工作階段",
   "title": "通知",
   "empty": "沒有工作階段..",
   "busySection": "進行中（{count}）",

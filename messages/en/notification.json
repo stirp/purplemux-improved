@@ -1,6 +1,12 @@
 {
+  "unknownWorkspace": "Unknown project",
   "title": "Notifications",
   "empty": "No sessions..",
+  "searchPlaceholder": "Search sessions…",
+  "searchHint": "Title, workspace, session ID or history summary",
+  "searchClear": "Clear search",
+  "searchCount": "{count, plural, one {# session found} other {# sessions found}}",
+  "searchEmpty": "No matching sessions",
   "busySection": "In Progress ({count})",
   "needsInputSection": "Needs Input ({count})",
   "reviewSection": "Review ({count})",

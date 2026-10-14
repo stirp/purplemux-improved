@@ -1,6 +1,12 @@
 {
+  "unknownWorkspace": "未知项目",
   "title": "通知",
   "empty": "没有会话..",
+  "searchPlaceholder": "搜索会话…",
+  "searchHint": "标题、工作区、会话 ID 或历史摘要",
+  "searchClear": "清空搜索",
+  "searchCount": "找到 {count} 个会话",
+  "searchEmpty": "没有匹配的会话",
   "busySection": "进行中 ({count})",
   "needsInputSection": "等待输入 ({count})",
   "reviewSection": "待审查 ({count})",
