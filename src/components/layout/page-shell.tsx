@@ -1,4 +1,4 @@
-import type { ReactElement, ReactNode } from 'react';
+import { useLayoutEffect, type ReactElement, type ReactNode } from 'react';
 import dynamic from 'next/dynamic';
 import useIsMobile from '@/hooks/use-is-mobile';
 import useIsMobileDevice from '@/hooks/use-is-mobile-device';
@@ -30,6 +30,11 @@ const PageContent = ({ children }: { children: ReactNode }) => {
 const PageShell = ({ children }: IPageShellProps) => {
   useSync();
   useGlobalShortcuts();
+
+  useLayoutEffect(() => {
+    document.documentElement.classList.add('app-viewport-active');
+    return () => document.documentElement.classList.remove('app-viewport-active');
+  }, []);
 
   const isMobile = useIsMobile();
   const isTouchDevice = useIsMobileDevice();
