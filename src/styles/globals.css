@@ -213,14 +213,14 @@ body {
   color: var(--foreground);
 }
 
-html:has(.app-viewport),
-body:has(.app-viewport) {
+html.app-viewport-active,
+html.app-viewport-active body {
   overflow: hidden;
   overscroll-behavior: none;
 }
 
 @media (hover: none) and (pointer: coarse) {
-  body:has(.app-viewport) {
+  html.app-viewport-active body {
     position: fixed;
     inset: 0;
     width: 100%;

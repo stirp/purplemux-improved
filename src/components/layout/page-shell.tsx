@@ -1,4 +1,4 @@
-import type { ReactElement, ReactNode } from 'react';
+import { useLayoutEffect, type ReactElement, type ReactNode } from 'react';
 import dynamic from 'next/dynamic';
 import useIsMobile from '@/hooks/use-is-mobile';
 import useIsMobileDevice from '@/hooks/use-is-mobile-device';
@@ -31,13 +31,18 @@ const PageShell = ({ children }: IPageShellProps) => {
   useSync();
   useGlobalShortcuts();
 
+  useLayoutEffect(() => {
+    document.documentElement.classList.add('app-viewport-active');
+    return () => document.documentElement.classList.remove('app-viewport-active');
+  }, []);
+
   const isMobile = useIsMobile();
   const isTouchDevice = useIsMobileDevice();
   const viewportStyle = useVisualViewport(isTouchDevice);
 
   if (isMobile) {
     return (
-      <div className="app-viewport flex h-dvh w-full flex-col overflow-hidden bg-background" style={viewportStyle}>
+      <div className="flex h-dvh w-full flex-col overflow-hidden bg-background" style={viewportStyle}>
         <MobileLayout>
           {children}
         </MobileLayout>
@@ -46,7 +51,7 @@ const PageShell = ({ children }: IPageShellProps) => {
   }
 
   return (
-    <div className="app-viewport flex h-dvh w-full overflow-hidden bg-background max-md:hidden" style={viewportStyle}>
+    <div className="flex h-dvh w-full overflow-hidden bg-background max-md:hidden" style={viewportStyle}>
       <Sidebar />
       <div className="relative flex min-w-0 flex-1 flex-col">
         <PageContent>{children}</PageContent>
