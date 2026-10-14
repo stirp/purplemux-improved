@@ -2,14 +2,19 @@ import { useCallback, useEffect, useRef, type TouchEvent as ReactTouchEvent } fr
 import { flushSync } from 'react-dom';
 
 // 터치 길게 누르기를 기존 HTML drag/drop 처리에 연결한다.
-export const startTouchDrag = (source: HTMLElement, initial: Pick<Touch, 'identifier' | 'clientX' | 'clientY'>): (() => void) => {
+export const startTouchDrag = (source: HTMLElement, initial: Pick<Touch, 'identifier' | 'clientX' | 'clientY'>,
+  onLongPress?: () => void): (() => void) => {
   const doc = source.ownerDocument;
   let active = false;
+  let finished = false;
+  let armed = false;
+  let menuOpened = false;
   let target: Element | null = null;
   let accepted = false;
   let transfer: DataTransfer;
   let point = initial;
   let clickTimer: ReturnType<typeof setTimeout> | undefined;
+  let menuTimer: ReturnType<typeof setTimeout> | undefined;
 
   const dispatch = (node: Element, type: string) => {
     let allowed = true;
@@ -34,6 +39,7 @@ export const startTouchDrag = (source: HTMLElement, initial: Pick<Touch, 'identi
   };
   const cleanListeners = () => {
     clearTimeout(timer);
+    clearTimeout(menuTimer);
     doc.removeEventListener('touchmove', move, true);
     doc.removeEventListener('touchend', end, true);
     doc.removeEventListener('touchcancel', cancel, true);
@@ -42,24 +48,46 @@ export const startTouchDrag = (source: HTMLElement, initial: Pick<Touch, 'identi
     doc.removeEventListener('dragstart', suppressNativeDrag, true);
   };
   const finish = (drop: boolean) => {
+    if (finished) return;
+    finished = true;
     cleanListeners();
-    if (!active) return;
-    if (drop && target && accepted) dispatch(target, 'drop');
-    if (target) dispatch(target, 'dragleave');
-    dispatch(source, 'dragend');
+    if (!active && !menuOpened) return;
+    if (active) {
+      if (drop && target && accepted) dispatch(target, 'drop');
+      if (target) dispatch(target, 'dragleave');
+      dispatch(source, 'dragend');
+    }
     active = false;
+    menuOpened = false;
     doc.addEventListener('click', suppress, true);
     clickTimer = setTimeout(removeClickGuard, 400);
   };
   const cancel = () => finish(false);
   const extraTouch = (event: TouchEvent) => { if (event.touches.length !== 1) cancel(); };
+  const beginDrag = () => {
+    if (!source.isConnected) { cancel(); return; }
+    clearTimeout(menuTimer);
+    transfer = new DataTransfer();
+    active = true;
+    doc.addEventListener('contextmenu', suppress, true);
+    doc.addEventListener('dragstart', suppressNativeDrag, true);
+    if (dispatch(source, 'dragstart')) cancel();
+  };
   const move = (event: TouchEvent) => {
+    if (finished) return;
     const touch = Array.from(event.touches).find((item) => item.identifier === initial.identifier);
     if (!touch || event.touches.length !== 1) { cancel(); return; }
     point = touch;
-    if (!active) {
-      if (Math.hypot(point.clientX - initial.clientX, point.clientY - initial.clientY) > 8) cancel();
+    if (menuOpened) {
+      event.preventDefault();
+      event.stopPropagation();
       return;
+    }
+    if (!active) {
+      if (Math.hypot(point.clientX - initial.clientX, point.clientY - initial.clientY) <= 8) return;
+      if (!armed) { cancel(); return; }
+      beginDrag();
+      if (!active) return;
     }
     event.preventDefault();
     event.stopPropagation();
@@ -72,7 +100,7 @@ export const startTouchDrag = (source: HTMLElement, initial: Pick<Touch, 'identi
     accepted = target ? dispatch(target, 'dragover') : false;
   };
   const end = (event: TouchEvent) => {
-    if (active) {
+    if (active || menuOpened) {
       event.preventDefault();
       event.stopPropagation();
     }
@@ -80,12 +108,15 @@ export const startTouchDrag = (source: HTMLElement, initial: Pick<Touch, 'identi
   };
   const timer = setTimeout(() => {
     if (!source.isConnected) { cancel(); return; }
-    transfer = new DataTransfer();
-    active = true;
-    doc.addEventListener('contextmenu', suppress, true);
-    doc.addEventListener('dragstart', suppressNativeDrag, true);
-    if (dispatch(source, 'dragstart')) cancel();
+    armed = true;
+    if (!onLongPress) beginDrag();
   }, 350);
+  if (onLongPress) menuTimer = setTimeout(() => {
+    if (!source.isConnected) { cancel(); return; }
+    menuOpened = true;
+    doc.addEventListener('click', suppress, true);
+    flushSync(onLongPress);
+  }, 650);
 
   doc.addEventListener('touchmove', move, { passive: false, capture: true });
   doc.addEventListener('touchend', end, { passive: false, capture: true });
@@ -107,6 +138,12 @@ export default function useTouchDrag() {
     if (control && control !== source) return;
     // ContextMenuTrigger의 별도 길게 누르기 타이머와 충돌하지 않도록 한다.
     event.stopPropagation();
-    cleanup.current = startTouchDrag(source, event.touches[0]);
+    const menuTarget = target.closest<HTMLElement>('[data-touch-context-menu]');
+    const touch = event.touches[0];
+    cleanup.current = startTouchDrag(source, touch, menuTarget ? () => {
+      menuTarget.dispatchEvent(new MouseEvent('contextmenu', {
+        bubbles: true, cancelable: true, clientX: touch.clientX, clientY: touch.clientY,
+      }));
+    } : undefined);
   }, []);
 }

@@ -1,5 +1,29 @@
 import type { IWorkspace, IWorkspaceGroup } from '@/types/terminal';
 
+export interface IWorkspaceTreePosition {
+  rails: boolean[];
+  childCount: number;
+}
+
+export const getWorkspaceTreePosition = (workspaces: IWorkspace[], workspaceId: string): IWorkspaceTreePosition => {
+  const byId = new Map(workspaces.map((workspace) => [workspace.id, workspace]));
+  const rails: boolean[] = [];
+  const seen = new Set([workspaceId]);
+  let current = byId.get(workspaceId);
+  while (current?.parentWorkspaceId && !seen.has(current.parentWorkspaceId)) {
+    const parent = byId.get(current.parentWorkspaceId);
+    if (!parent) break;
+    const siblings = workspaces.filter((workspace) => workspace.parentWorkspaceId === parent.id);
+    rails.unshift(siblings.at(-1)?.id !== current.id);
+    seen.add(parent.id);
+    current = parent;
+  }
+  return {
+    rails: rails.slice(-6),
+    childCount: workspaces.filter((workspace) => workspace.parentWorkspaceId === workspaceId && workspace.id !== workspaceId).length,
+  };
+};
+
 export const getWorkspaceVisibility = (workspaces: IWorkspace[], activeWorkspaceId: string | null) => {
   const byId = new Map(workspaces.map((workspace) => [workspace.id, workspace]));
   const expandedIds = new Set<string>();

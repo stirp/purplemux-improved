@@ -1,5 +1,7 @@
 # 接口
 
+导航调整不增加持久字段或服务端 API。树轨道从 parentWorkspaceId 和可视排序派生；根管理按钮复用原有仓库发现与空状态。useTouchDrag 仅在标记为支持菜单的项目行启用静止长按分流，最终仍派发既有 contextmenu 或 HTML drag/drop 事件。
+
 复用 GET /api/workspace/worktrees 获取路径、仓库及工作区关联；POST /api/workspace/worktree-actions inspectSync、merge。merge 仍校验工作树快照、目标 HEAD、会话与脏状态；允许主工作树作为合并目标，保留其他 blocker。计数仅基于本地 refs，不自动 fetch。
 
 关系匹配在客户端先选择关联子工作区的 repository，再在该 repository.worktrees 中匹配父工作区；两端快照的 repositoryId 必须一致。此修正不新增接口、字段或 CLI 参数。

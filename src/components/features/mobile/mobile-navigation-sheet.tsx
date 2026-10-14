@@ -2,7 +2,6 @@ import { useMemo, useState, useCallback } from 'react';
 import {
   ChevronDown,
   ChevronRight,
-  CornerDownRight,
   Folder,
   GitBranch,
   FolderPlus,
@@ -39,8 +38,9 @@ import WorkspaceStatusIndicator from '@/components/features/workspace/workspace-
 import SidebarRateLimits from '@/components/layout/sidebar-rate-limits';
 import MobileWorkspaceGroupHeader from '@/components/features/mobile/mobile-workspace-group-header';
 import RenameGroupDialog from '@/components/features/workspace/rename-group-dialog';
-import MobileWorkspaceActions from './mobile-workspace-actions';
-import { getVisuallyOrderedWorkspaces, getWorkspaceVisibility } from '@/lib/workspace-order';
+import MobileWorkspaceActions from '@/components/features/mobile/mobile-workspace-actions';
+import WorkspaceTreeGuides, { WORKSPACE_TREE_INDENT } from '@/components/features/workspace/workspace-tree-guides';
+import { getVisuallyOrderedWorkspaces, getWorkspaceVisibility, getWorkspaceTreePosition } from '@/lib/workspace-order';
 import useTouchDrag from '@/hooks/use-touch-drag';
 import useNavigationDrag, { reorderNavigationIds } from '@/hooks/use-navigation-drag';
 
@@ -284,22 +284,9 @@ const MobileNavigationSheet = ({
     | { type: 'group'; group: IWorkspaceGroup; workspaces: IWorkspace[] }
     | { type: 'ungrouped'; workspaces: IWorkspace[] };
 
-  const workspaceDepths = useMemo(() => {
-    const byId = new Map(workspaces.map((ws) => [ws.id, ws]));
-    return new Map(workspaces.map((ws) => {
-      let depth = 0;
-      let parentId = ws.parentWorkspaceId;
-      const seen = new Set([ws.id]);
-      while (parentId && !seen.has(parentId) && depth < 6) {
-        const parent = byId.get(parentId);
-        if (!parent) break;
-        seen.add(parentId);
-        depth++;
-        parentId = parent.parentWorkspaceId;
-      }
-      return [ws.id, depth];
-    }));
-  }, [workspaces]);
+  const treePositions = useMemo(() => new Map(workspaces.map((ws) =>
+    [ws.id, getWorkspaceTreePosition(workspaces, ws.id)],
+  )), [workspaces]);
 
   const sections = useMemo<TSection[]>(() => {
     const validGroupIds = new Set(groups.map((g) => g.id));
@@ -328,34 +315,40 @@ const MobileNavigationSheet = ({
     if (!workspaceVisibility.visibleIds.has(ws.id)) return null;
     const isExpanded = workspaceVisibility.expandedIds.has(ws.id);
     const isActive = ws.id === activeWorkspaceId;
+    const position = treePositions.get(ws.id)!;
+    const depth = position.rails.length;
+    const workspaceDragProps = dragProps({ kind: 'workspace', id: ws.id });
     return (
-      <div key={ws.id} style={{ marginLeft: (workspaceDepths.get(ws.id) ?? 0) * 12 }}>
-        <MobileWorkspaceActions workspace={ws} onCreated={(id) => {
+      <div key={ws.id} className="relative">
+        <WorkspaceTreeGuides position={position} expanded={isExpanded} mobile />
+        <MobileWorkspaceActions workspace={ws} isRoot={depth === 0} onCreated={(id) => {
           useWorkspaceStore.getState().switchWorkspace(id);
           setExpandedWsId(id);
         }}>
           <button
-            {...dragProps({ kind: 'workspace', id: ws.id })}
+            {...workspaceDragProps}
+            data-touch-context-menu
+            style={{ ...workspaceDragProps.style, paddingLeft: 16 + depth * WORKSPACE_TREE_INDENT }}
             className={cn(
-              'flex min-w-0 flex-1 select-none items-center gap-2 py-3 pl-4 pr-1 text-left text-sm transition-colors',
+              'flex min-w-0 flex-1 select-none items-start gap-2 py-3 pr-1 text-left text-sm transition-colors',
               isActive
-                ? 'font-medium text-foreground'
+                ? 'bg-accent font-medium text-foreground'
                 : 'text-foreground hover:bg-accent/50',
             )}
             onClick={() => handleToggleWorkspace(ws.id)}
             aria-expanded={isExpanded}
           >
             {isExpanded ? (
-              <ChevronDown size={14} className="shrink-0 text-muted-foreground" />
+              <ChevronDown size={14} className="mt-1 shrink-0 text-muted-foreground" />
             ) : (
-              <ChevronRight size={14} className="shrink-0 text-muted-foreground" />
+              <ChevronRight size={14} className="mt-1 shrink-0 text-muted-foreground" />
             )}
             <div className="min-w-0 flex-1">
               <span className="flex items-center gap-1.5">
-                {(workspaceDepths.get(ws.id) ?? 0) > 0 && <CornerDownRight aria-hidden="true" size={14} className="shrink-0 text-accent-color" />}
-                {ws.worktree ? <GitBranch size={14} className="shrink-0 text-ui-blue" />
+                {ws.worktree || depth > 0 ? <GitBranch size={14} className="shrink-0 text-ui-blue" />
                   : <Folder size={14} className="shrink-0 text-muted-foreground" />}
-                <span className="truncate">{ws.name}</span>
+                <span className="truncate" title={ws.name}>{ws.name}</span>
+                {position.childCount > 0 && <span className="shrink-0 rounded bg-muted px-1 text-[10px] text-muted-foreground">{position.childCount}</span>}
               </span>
               {ws.directories.map((directory, index) => (
                 <span
@@ -370,9 +363,6 @@ const MobileNavigationSheet = ({
                 <span className="mr-1 rounded bg-muted px-1 text-[10px]">worktree</span>
                 {ws.worktree.branch}
               </span>}
-              {ws.parentWorkspaceId && <span className="mt-0.5 block truncate text-xs text-ui-blue/80">
-                ↳ {workspaces.find((item) => item.id === ws.parentWorkspaceId)?.name} / {ws.name}
-              </span>}
               <WorkspacePortsLabel workspaceId={ws.id} />
               {!isExpanded && (
                 <WorkspaceStatusIndicator
@@ -386,7 +376,7 @@ const MobileNavigationSheet = ({
           </button>
         </MobileWorkspaceActions>
         {/* Keep navigation independent of grid-track animation support on iOS 15. */}
-        {isExpanded && <div>{renderPaneTree(ws.id)}</div>}
+        {isExpanded && <div style={{ paddingLeft: depth * WORKSPACE_TREE_INDENT }}>{renderPaneTree(ws.id)}</div>}
       </div>
     );
   };

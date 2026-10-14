@@ -12,11 +12,13 @@ import CreateWorktreeDialog from '@/components/features/workspace/create-worktre
 import WorktreeTreeDialog from '@/components/features/workspace/worktree-tree-dialog';
 import useWorkspaceStore from '@/hooks/use-workspace-store';
 import type { IWorkspace } from '@/types/terminal';
+import WorktreeManagementButton from '@/components/features/workspace/worktree-management-button';
 
-export default function MobileWorkspaceActions({ workspace, onCreated, children }: {
+export default function MobileWorkspaceActions({ workspace, onCreated, children, isRoot = !workspace.parentWorkspaceId }: {
   workspace: IWorkspace;
   onCreated: (workspaceId: string) => void;
   children: ReactNode;
+  isRoot?: boolean;
 }) {
   const tc = useTranslations('common');
   const ts = useTranslations('sidebar');
@@ -51,12 +53,13 @@ export default function MobileWorkspaceActions({ workspace, onCreated, children 
 
   return <>
     <div
-      className="flex items-center pr-1"
+      className="workspace-tree-row relative flex items-start pr-1"
+      data-menu-open={menuOpen || undefined}
       onPointerDown={(event) => { touchOrigin.current = event.pointerType === 'touch'; }}
       onContextMenu={(event) => {
         event.preventDefault();
         event.stopPropagation();
-        if (touchOrigin.current) return;
+        if (touchOrigin.current && event.nativeEvent.isTrusted) return;
         setMenuOpen(true);
       }}
       onKeyDown={(event) => {
@@ -69,9 +72,12 @@ export default function MobileWorkspaceActions({ workspace, onCreated, children 
       }}
     >
       {children}
+      {isRoot && workspace.directories.length > 0 && <div className="mt-1 shrink-0">
+        <WorktreeManagementButton name={workspace.name} onClick={() => openAction('tree')} />
+      </div>}
       <Popover open={menuOpen} onOpenChange={setMenuOpen}>
         <PopoverTrigger render={<button
-          className="flex h-11 w-11 shrink-0 items-center justify-center rounded text-muted-foreground hover:bg-accent"
+          className="workspace-row-settings mt-1 flex h-11 shrink-0 items-center justify-center rounded text-muted-foreground hover:bg-accent"
           aria-label={`${tc('settings')}: ${workspace.name}`}
         />}>
           <Settings size={16} />
