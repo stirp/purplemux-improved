@@ -387,6 +387,29 @@ html.app-viewport-active body {
 }
 
 
+.workspace-row-settings {
+  width: 0;
+  opacity: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+@media (pointer: coarse) {
+  .workspace-row-settings {
+    visibility: hidden;
+  }
+}
+
+@media (pointer: fine), (pointer: none) {
+  .workspace-tree-row:hover .workspace-row-settings,
+  .workspace-tree-row:focus-within .workspace-row-settings,
+  .workspace-tree-row[data-menu-open] .workspace-row-settings {
+    width: 2rem;
+    opacity: 1;
+    pointer-events: auto;
+  }
+}
+
 /* Unset typography overrides return to the original Tailwind layer. */
 :where(.region-typography-sidebar, .region-typography-sidebar :not(svg, svg *)) {
   font-family: var(--region-sidebar-font-family, revert-layer);

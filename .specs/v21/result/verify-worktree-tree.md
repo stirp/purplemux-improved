@@ -1,5 +1,45 @@
 # Worktree 关系与同步验证记录
 
+## PR #38 三项交互审查修正（2026-10-14）
+
+- 修复前新增桌面/移动“释放后 100ms 内点击重命名”用例，覆盖有/无合成释放点击，4 项均失败；修复后通过。
+- 运行 `pnpm exec vitest run tests/unit/lib/workspace-touch-menu.test.ts tests/unit/lib/touch-drag.test.ts tests/unit/lib/navigation-drag.test.ts tests/unit/lib/workspace-item-render.test.ts tests/unit/lib/mobile-workspace-expansion.test.ts`：43 项通过，退出码 0。覆盖首次菜单点击、一次性保护、新 pointerdown/touchstart 清理、管理按钮 SVG 的取消事件及触摸排除、现有短按/滚动/键盘菜单路径。
+- 完整 `pnpm exec tsc --noEmit` 通过；`pnpm exec eslint src/hooks/use-touch-drag.ts src/components/features/workspace/worktree-management-button.tsx tests/unit/lib/workspace-touch-menu.test.ts tests/unit/lib/touch-drag.test.ts` 通过。
+- agent-browser 配合 Chrome CDP 原生触摸/键盘检查真实 MobileNavigationSheet：明确确认 `(pointer: coarse)` 为 true；长按后立即第二次触摸“重命名”，只产生一次菜单点击并出现输入框。连续 7 次 Tab 均不落在齿轮上；5 个齿轮均零宽且 visibility hidden，无障碍树中的项目齿轮数量为 0。
+- 浏览器鼠标检查真实 WorkspaceItem 中管理按钮图标与项目名称的拖动，使用 hover 后重新测量的按钮位置，避免动态显示的齿轮改变命中目标。原生按钮 dragstart 的 defaultPrevented 为 true，没有祖先拖动；普通项目行的 dragstart 为 false，仍可开始拖动。键盘 Enter 激活管理按钮正常打开统一管理弹窗。
+- 最终 `pnpm build` 通过：Next.js 编译、24 个静态页面生成和 tsup 打包完成；`git diff --check` 通过。
+- 本轮预览脚本 `/tmp/workspace-tree-preview.cjs`，原生交互脚本 `/tmp/pr38-browser-check.cjs`，结果 `/tmp/pr38-mouse-result.json`、`/tmp/pr38-touch-result.json`。页面挂载当前组件和编译 CSS，使用本地模拟项目及 API；未操作真实工作区或 Git，不等同于 iPad/Android 实机或完整应用端到端验收。
+
+## 根入口、树层级与长按分流验证（2026-10-14）
+
+本节仅记录本轮运行，不复用下方历史结果。对应[需求](../requirements/worktree-tree.md)与[规格](../features/worktree-tree/spec.md)。
+
+| 验收项 | 本轮证据 |
+| --- | --- |
+| 根入口外露、子项不重复外露 | 真实 WorkspaceItem 浏览器预览中两个根项目显示入口；点击根入口打开 Worktree 管理，仅发起 overview GET，没有项目选择事件 |
+| 桌面齿轮与键盘 | 未悬停齿轮宽度 0，悬停后 32px；Shift+F10 打开完整菜单；真实组件参数化测试覆盖桌面与移动的 ContextMenu、Shift+F10 |
+| 层级连接与末项折线 | 根/子/孙/兄弟节点浏览器截图；workspace-tree-position 覆盖延续线、末项、缺失父项、环和深度上限 |
+| 桌面/移动菜单与短按不冲突 | workspace-touch-menu 使用真实 Base UI ContextMenu/Popover 和 useTouchDrag，覆盖长按菜单、松手点击保护、短按选择与滚动取消 |
+| 移动长按分流 | Chrome CDP 原生 touchStart/touchMove/touchEnd：静止 750ms 仅出现 contextmenu；等待 400ms 后移动仅出现 dragstart/drop/dragend，未出现菜单或 click |
+| 不影响 Tab 与取消处理 | touch-drag 覆盖原 350ms 拖动、滚动、拖动后落点、短按、多指、touchcancel、卸载；navigation-drag 回归通过 |
+| 窄屏 | iPhone 15 仿真和 320px 宽检查；各项目行 scrollWidth 等于 clientWidth，文档宽度等于视口；5 个齿轮占位宽度均为 0 |
+
+运行命令：
+
+```sh
+pnpm exec vitest run tests/unit/lib/workspace-touch-menu.test.ts tests/unit/lib/workspace-tree-position.test.ts tests/unit/lib/touch-drag.test.ts tests/unit/lib/workspace-item-render.test.ts tests/unit/lib/workspace-menu-order.test.ts tests/unit/lib/mobile-workspace-expansion.test.ts tests/unit/lib/workspace-visibility.test.ts tests/unit/lib/workspace-group-order.test.ts tests/unit/lib/navigation-drag.test.ts
+pnpm tsc --noEmit
+pnpm exec eslint src/components/features/workspace/workspace-item.tsx src/components/features/workspace/workspace-tree-guides.tsx src/components/features/workspace/worktree-management-button.tsx src/components/features/mobile/mobile-workspace-actions.tsx src/components/features/mobile/mobile-navigation-sheet.tsx src/hooks/use-touch-drag.ts src/lib/workspace-order.ts tests/unit/lib/touch-drag.test.ts tests/unit/lib/workspace-touch-menu.test.ts tests/unit/lib/workspace-tree-position.test.ts tests/unit/lib/workspace-menu-order.test.ts tests/unit/lib/mobile-workspace-expansion.test.ts
+pnpm build
+git diff --check
+```
+
+61 项相关测试、完整 TypeScript、改动 TS/TSX ESLint、生产构建及 diff 检查通过。最终构建完成 Next.js 编译、24 个静态页面生成和 tsup 服务端打包。
+
+预览脚本：`/tmp/workspace-tree-preview.cjs`，原生触摸事件脚本：`/tmp/workspace-tree-touch.cjs`。截图：`/tmp/workspace-tree-desktop-final.png`、`/tmp/workspace-tree-desktop-hover-final.png`、`/tmp/workspace-tree-mobile.png`、`/tmp/workspace-tree-mobile-menu.png`、`/tmp/workspace-tree-mobile-320.png`。这些是本机临时验证产物。
+
+浏览器预览使用当前真实组件与生产 CSS，项目与 API 响应为本地模拟数据；模拟排序请求不改真实工作区。浏览器检查不代表完整应用端到端、真实 Git 写操作或 iOS/Android 实机验收。未执行这些验收。
+
 ## PR #37 主工作树发布（2026-10-14）
 
 - 修复前，新增主工作树发布用例复现提交后与无改动发布按钮禁用、服务端 push/createDraft 被 main 提前阻断；修复后相关用例通过。

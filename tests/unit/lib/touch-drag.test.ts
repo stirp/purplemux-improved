@@ -31,10 +31,10 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-const setup = () => {
+const setup = (onLongPress?: () => void) => {
   const target = new EventTarget();
   const doc = Object.assign(new EventTarget(), { elementFromPoint: vi.fn(() => target) });
-  const source = Object.assign(new EventTarget(), { ownerDocument: doc, isConnected: true });
+  const source = Object.assign(new EventTarget(), { ownerDocument: doc, isConnected: true, contains: (node: unknown) => node === doc });
   const events: string[] = [];
   for (const type of ['dragstart', 'dragend']) source.addEventListener(type, () => events.push(type));
   for (const type of ['dragenter', 'dragover', 'drop', 'dragleave']) {
@@ -43,11 +43,72 @@ const setup = () => {
       if (type === 'dragover') event.preventDefault();
     });
   }
-  const cleanup = startTouchDrag(source as unknown as HTMLElement, touch(50));
+  const cleanup = startTouchDrag(source as unknown as HTMLElement, touch(50), onLongPress);
   return { doc, events, cleanup };
 };
 
 describe('touch drag', () => {
+  it.each(['click', 'pointerdown', 'touchstart'])('clears the release guard after %s instead of blocking the next action', (type) => {
+    const { doc, cleanup } = setup(vi.fn());
+    vi.advanceTimersByTime(650);
+    sendTouch(doc, 'touchend', []);
+    const first = type === 'touchstart' ? sendTouch(doc, type, [touch(50)]) : new Event(type, { cancelable: true });
+    if (type !== 'touchstart') doc.dispatchEvent(first);
+    expect(first.defaultPrevented).toBe(type === 'click');
+    const next = new Event('click', { cancelable: true });
+    doc.dispatchEvent(next);
+    expect(next.defaultPrevented).toBe(false);
+    cleanup();
+  });
+
+  it('opens a stationary workspace hold as a menu without selecting or dragging', () => {
+    const open = vi.fn();
+    const { doc, events, cleanup } = setup(open);
+    vi.advanceTimersByTime(350);
+    expect(events).toEqual([]);
+    sendTouch(doc, 'touchmove', [touch(54)]);
+    vi.advanceTimersByTime(300);
+    expect(open).toHaveBeenCalledOnce();
+    sendTouch(doc, 'touchmove', [touch(100)]);
+    sendTouch(doc, 'touchend', []);
+    expect(events).toEqual([]);
+    const click = new Event('click', { cancelable: true });
+    doc.dispatchEvent(click);
+    expect(click.defaultPrevented).toBe(true);
+    cleanup();
+  });
+
+  it('starts workspace dragging only after a hold and movement, cancelling the menu', () => {
+    const open = vi.fn();
+    const { doc, events, cleanup } = setup(open);
+    vi.advanceTimersByTime(350);
+    expect(events).toEqual([]);
+    expect(sendTouch(doc, 'touchmove', [touch(100)]).defaultPrevented).toBe(true);
+    vi.advanceTimersByTime(600);
+    sendTouch(doc, 'touchend', []);
+    expect(events).toEqual(['dragstart', 'dragenter', 'dragover', 'drop', 'dragleave', 'dragend']);
+    expect(open).not.toHaveBeenCalled();
+    cleanup();
+  });
+
+  it.each(['tap', 'scroll', 'cancel', 'multitouch', 'unmount'])('cancels the workspace menu on %s', (action) => {
+    const open = vi.fn();
+    const { doc, events, cleanup } = setup(open);
+    vi.advanceTimersByTime(100);
+    if (action === 'tap') sendTouch(doc, 'touchend', []);
+    if (action === 'scroll') expect(sendTouch(doc, 'touchmove', [touch(80)]).defaultPrevented).toBe(false);
+    if (action === 'cancel') sendTouch(doc, 'touchcancel', []);
+    if (action === 'multitouch') sendTouch(doc, 'touchstart', [touch(50), { ...touch(50), identifier: 2 } as Touch]);
+    if (action === 'unmount') cleanup();
+    vi.advanceTimersByTime(1000);
+    expect(events).toEqual([]);
+    expect(open).not.toHaveBeenCalled();
+    const click = new Event('click', { cancelable: true });
+    doc.dispatchEvent(click);
+    expect(click.defaultPrevented).toBe(false);
+    cleanup();
+  });
+
   it('leaves a normal swipe to native scrolling without dragging', () => {
     const { doc, events, cleanup } = setup();
     expect(sendTouch(doc, 'touchmove', [touch(70)]).defaultPrevented).toBe(false);

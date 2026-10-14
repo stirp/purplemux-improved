@@ -13,6 +13,7 @@ vi.mock('react', async (original) => ({
   ...await original<typeof import('react')>(),
   useEffect: () => undefined,
   useCallback: (callback: unknown) => callback,
+  useMemo: (compute: () => unknown) => compute(),
   useRef: (current: unknown) => ({ current }),
   useState: (initial: unknown) => {
     const index = hooks.cursor++;
@@ -31,7 +32,7 @@ import WorkspaceItem from '@/components/features/workspace/workspace-item';
 import MobileWorkspaceActions from '@/components/features/mobile/mobile-workspace-actions';
 import EditWorkspaceDialog from '@/components/features/workspace/edit-workspace-dialog';
 import CreateWorktreeDialog from '@/components/features/workspace/create-worktree-dialog';
-import ManageWorktreesDialog from '@/components/features/workspace/manage-worktrees-dialog';
+import WorktreeTreeDialog from '@/components/features/workspace/worktree-tree-dialog';
 import { ContextMenuContent, ContextMenuSub, ContextMenuSubTrigger } from '@/components/ui/context-menu';
 import { Popover, PopoverContent } from '@/components/ui/popover';
 import { Input } from '@/components/ui/input';
@@ -85,7 +86,7 @@ beforeEach(() => {
 
 describe('workspace menu order', () => {
   it('presents the same four actions before a separated delete action on both surfaces', () => {
-    const expected = ['workspace.worktree.create', 'workspace.worktreeManager.title', 'sidebar.moveToGroup', 'terminal.rename', '', 'common.delete'];
+    const expected = ['workspace.worktree.create', 'workspace.worktreeTree.manageTitle', 'sidebar.moveToGroup', 'terminal.rename', '', 'common.delete'];
     const desktop = directChildren(find(renderDesktop(), ContextMenuContent));
     expect(desktop.map((item) => text(item.type === ContextMenuSub ? find(item, ContextMenuSubTrigger) : item))).toEqual(expected);
     hooks.values = [];
@@ -104,7 +105,7 @@ describe('workspace menu order', () => {
 
   it.each([
     ['workspace.worktree.create', CreateWorktreeDialog, undefined],
-    ['workspace.worktreeManager.title', ManageWorktreesDialog, undefined],
+    ['workspace.worktreeTree.manageTitle', WorktreeTreeDialog, undefined],
     ['sidebar.moveToGroup', EditWorkspaceDialog, 'group'],
     ['terminal.rename', EditWorkspaceDialog, 'rename'],
   ] as const)('opens the intended mobile action for %s', (label, type, mode) => {

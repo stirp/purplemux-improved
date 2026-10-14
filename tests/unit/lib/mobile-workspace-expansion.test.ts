@@ -83,7 +83,7 @@ describe('mobile workspace expansion', () => {
 
   it('shows every directory, including child paths and collapsed workspace paths', () => {
     let tree = render();
-    const paths = () => elements(tree).filter((element) => element.type === 'span' && element.props.title);
+    const paths = () => elements(tree).filter((element) => element.type === 'span' && element.props.title?.startsWith('/'));
     expect(paths().map((element) => element.props.children)).toEqual(['~/project', '/srv/second', '/srv/child']);
     expect(paths()[0].props.title).toBe('/Users/test/project');
 
