@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import useTabStore from '@/hooks/use-tab-store';
+import { agentSessionTitle } from '@/lib/agent-session-title';
 
 type ServerTabs = Parameters<ReturnType<typeof useTabStore.getState>['syncAllFromServer']>[0];
 type ServerTab = ServerTabs[string];
@@ -23,6 +24,34 @@ const serverTab = (overrides: Partial<ServerTab>): ServerTab => ({
 
 describe('tab store session view transitions', () => {
   beforeEach(resetStore);
+
+  it('drops the previous title fallbacks when the session identity changes', () => {
+    useTabStore.getState().initTab('tab-1', {
+      workspaceId: 'ws-test', panelType: 'claude-code', agentSessionId: 'old',
+      agentSummary: 'Old summary', lastUserMessage: 'Old message',
+    });
+    useTabStore.getState().updateFromServer('tab-1', {
+      ...serverTab({ agentSessionId: 'new', agentSummary: 'Old summary', lastUserMessage: 'Old message' }),
+    });
+    expect(agentSessionTitle(useTabStore.getState().tabs['tab-1'])).toBeNull();
+    useTabStore.getState().updateFromServer('tab-1', {
+      ...serverTab({ agentSessionId: 'new', agentSummary: 'New summary', lastUserMessage: 'New message' }),
+    });
+    expect(agentSessionTitle(useTabStore.getState().tabs['tab-1'])).toBe('New summary');
+  });
+
+  it('drops stale fallbacks on full sync and process detection', () => {
+    useTabStore.getState().initTab('tab-1', {
+      workspaceId: 'ws-test', panelType: 'codex-cli', agentSessionId: 'old',
+      agentSummary: 'Old summary', lastUserMessage: 'Old message',
+    });
+    useTabStore.getState().syncAllFromServer({
+      'tab-1': serverTab({ panelType: 'codex-cli', agentSessionId: 'new', agentSummary: 'Old summary', lastUserMessage: 'Old message' }),
+    });
+    expect(agentSessionTitle(useTabStore.getState().tabs['tab-1'])).toBeNull();
+    useTabStore.getState().setDetectedAgent('tab-1', { running: true, checkedAt: 1, sessionId: 'third' });
+    expect(agentSessionTitle(useTabStore.getState().tabs['tab-1'])).toBeNull();
+  });
 
   it('keeps booting agent tabs on the check view when a live process check is still false', () => {
     useTabStore.getState().initTab('tab-1', {

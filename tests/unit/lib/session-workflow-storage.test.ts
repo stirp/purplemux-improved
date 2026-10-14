@@ -57,6 +57,19 @@ describe('persistent workflow preferences', () => {
     await updateSessionWorkflow({ key: 'codex:first', title: '' });
     expect((await getWorkspaces()).sessionWorkflow?.titles).toEqual({ 'codex:second': 'Second title' });
   });
+  it('saves the current Tab rename marker and title in one workflow update', async () => {
+    const workflow = await updateSessionWorkflow({ key: 'claude:one', title: 'Renamed', tabId: 'tab-1' });
+    expect(workflow.titles).toEqual({ 'claude:one': 'Renamed' });
+    expect(workflow.renamedTabs).toEqual({ 'tab-1': true });
+    expect((await getWorkspaces()).sessionWorkflow?.renamedTabs).toEqual({ 'tab-1': true });
+  });
+  it('does not persist either part of a Tab rename when the write fails', async () => {
+    const before = mocks.files.get(file);
+    mocks.fail = true;
+    await expect(updateSessionWorkflow({ key: 'claude:one', title: 'Renamed', tabId: 'tab-1' })).rejects.toThrow('disk full');
+    expect(mocks.files.get(file)).toBe(before);
+    expect(mocks.broadcast).not.toHaveBeenCalled();
+  });
   it('moves a new temporary title after a Tab was already bound to an older session', async () => {
     await synchronizeSessionWorkflow([], { t: { workspaceId: 'ws', panelType: 'codex-cli', agentSessionId: 'old' } });
     await updateSessionWorkflow({ key: 'codex:old', title: 'Old title' });

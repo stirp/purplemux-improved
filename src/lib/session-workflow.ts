@@ -6,6 +6,7 @@ export type TWorkStatus = typeof WORK_STATUSES[number];
 export interface ISessionWorkflow {
   statuses: Record<string, TWorkStatus>;
   titles?: Record<string, string>;
+  renamedTabs?: Record<string, boolean>;
   collapsed: Partial<Record<TWorkStatus, boolean>>;
   sessions?: Record<string, IWorkflowSessionRecord>;
   tabBindings?: Record<string, string>;

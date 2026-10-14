@@ -775,14 +775,11 @@ const PaneContainer = memo(({ paneId, paneNumber }: IPaneContainerProps) => {
         const response = await fetch('/api/session-workflow', {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ key, title: name }),
+          body: JSON.stringify({ key, title: name, tabId }),
         });
         if (!response.ok) throw new Error('Failed to save session title');
         const workflow = await response.json();
         useWorkspaceStore.setState({ sessionWorkflow: workflow });
-        if (tab.name && !await renameTabInPane(paneId, tabId, '')) {
-          toast.error(t('tabRenameFailed'));
-        }
       } catch {
         toast.error(t('tabRenameFailed'));
       }

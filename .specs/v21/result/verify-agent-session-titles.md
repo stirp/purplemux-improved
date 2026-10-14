@@ -19,3 +19,10 @@ Review 修复（2026-10-14）：
 - `pnpm exec vitest run tests/unit/lib/agent-session-title.test.ts tests/unit/lib/session-workflow-storage.test.ts tests/unit/lib/session-workflow-api.test.ts tests/unit/lib/layout-tab-rename.test.ts`：32 项通过，新增已绑定 Tab 切换新身份、删除身份时消费临时标题、已有 Tab 名称优先级。
 - `pnpm exec tsc --noEmit`、改动文件 ESLint、`git diff --check`：均通过。
 - 浏览器/实机验收仍未执行。
+
+PR #36 Review 修复（2026-10-14）：
+
+- GitHub PR #36 两条评论：切换身份时旧摘要/消息误作为回退标题；旧布局名清理失败时会话标题已单独落盘。
+- `pnpm exec vitest run tests/unit/lib/agent-session-title.test.ts tests/unit/lib/session-workflow-api.test.ts tests/unit/lib/session-workflow-storage.test.ts tests/unit/lib/tab-store-session-view.test.ts tests/unit/lib/layout-tab-rename.test.ts tests/unit/lib/status-refresh-snapshot.test.ts tests/unit/lib/codex-review-state.test.ts tests/unit/lib/timeline-server-initial-delivery.test.ts`：50 项通过。新增身份切换清理回退、一次写入标题和 Tab 标记、写入失败时两者均不落盘的断言。
+- `pnpm exec tsc --noEmit`、改动文件 ESLint、`git diff --check`：均通过；`pnpm build`：Next.js 与 tsup 构建通过。
+- 未运行浏览器/实机交互验收；本次未提交或推送。

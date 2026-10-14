@@ -576,7 +576,7 @@ export const validateDirectory = async (directory: string): Promise<{
 
 export const updateSessionWorkflow = async (update:
   | { key: string; status: TWorkStatus | null }
-  | { key: string; title: string }
+  | { key: string; title: string; tabId?: string }
   | { section: TWorkStatus; collapsed: boolean }
 ): Promise<ISessionWorkflow> => withLock(async () => {
   const data = (await readWorkspacesFile()) ?? emptyState();
@@ -585,6 +585,10 @@ export const updateSessionWorkflow = async (update:
     workflow.titles ??= {};
     if (update.title.trim() && !workflow.deleted?.includes(update.key)) workflow.titles[update.key] = update.title.trim();
     else delete workflow.titles[update.key];
+    if (update.tabId && !workflow.deleted?.includes(update.key)) {
+      workflow.renamedTabs ??= {};
+      workflow.renamedTabs[update.tabId] = true;
+    }
   } else if ('key' in update) {
     if (update.status === null) delete workflow.statuses[update.key];
     else if (!workflow.deleted?.includes(update.key)) workflow.statuses[update.key] = update.status;

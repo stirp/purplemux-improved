@@ -499,6 +499,11 @@ export const updateTabAgentSessionId = (
   mutateTab(sessionName, (tab) => {
     if (provider.readSessionId(tab) === sessionId) return false;
     provider.writeSessionId(tab, sessionId);
+    provider.writeSummary(tab, null);
+    tab.lastUserMessage = null;
+    if (provider.sessionIdFromJsonlPath(provider.readJsonlPath(tab)) !== sessionId) {
+      provider.writeJsonlPath(tab, null);
+    }
     return true;
   });
 
@@ -527,6 +532,11 @@ export const updateTabAgentState = (
     let changed = false;
     if (state.sessionId !== undefined && provider.readSessionId(tab) !== state.sessionId) {
       provider.writeSessionId(tab, state.sessionId);
+      if (state.summary === undefined) provider.writeSummary(tab, null);
+      if (state.lastUserMessage === undefined) tab.lastUserMessage = null;
+      if (state.jsonlPath === undefined && provider.sessionIdFromJsonlPath(provider.readJsonlPath(tab)) !== state.sessionId) {
+        provider.writeJsonlPath(tab, null);
+      }
       changed = true;
     }
     if (state.jsonlPath !== undefined && provider.readJsonlPath(tab) !== state.jsonlPath) {

@@ -12,6 +12,7 @@ const schema = z.union([
   z.object({
     key: z.string().regex(/^(claude|codex):[a-zA-Z0-9_:-]{1,256}$/),
     title: z.string().max(200),
+    tabId: z.string().min(1).max(256).optional(),
   }).strict(),
 ]);
 

@@ -42,5 +42,6 @@ describe('agentSessionTitle', () => {
     const live = tab({ panelType: 'claude-code', agentSessionId: 'shared' });
     expect(agentTabTitle('My Tab', live, workflow, 'first-tab')).toBe('My Tab');
     expect(agentTabTitle('', live, workflow, 'second-tab')).toBe('Shared title');
+    expect(agentTabTitle('My Tab', live, { ...workflow, renamedTabs: { 'first-tab': true } }, 'first-tab')).toBe('Shared title');
   });
 });

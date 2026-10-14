@@ -19,4 +19,4 @@ export const agentTabTitle = (
   tab: ITabState | undefined,
   workflow: ISessionWorkflow,
   tabId: string,
-): string | null => name || agentSessionTitle(tab, workflow, tabId);
+): string | null => (workflow.renamedTabs?.[tabId] ? '' : name) || agentSessionTitle(tab, workflow, tabId);
