@@ -180,5 +180,25 @@
     "generatingDraft": "Titel und Beschreibung werden generiert…",
     "generateDraftHint": "Claude Code fasst die committeten Änderungen gegenüber dem Zielbranch zusammen. Das Ergebnis ist bearbeitbar.",
     "replaceDraftConfirm": "Vorhandenen Titel und Beschreibung durch neu generierte Inhalte ersetzen?"
+  },
+  "worktreeTree": {
+    "title": "Worktree relationships",
+    "description": "Each connection compares local commits. Counts do not fetch remote branches. Merge changes the destination worktree.",
+    "refresh": "Refresh",
+    "loading": "Checking branches…",
+    "unavailable": "Worktrees or local branches are unavailable in the same repository.",
+    "childAhead": "Child commits not merged into parent: {count}",
+    "parentAhead": "Parent commits not synced to child: {count}",
+    "mergeIntoParent": "Merge child into parent",
+    "mergeIntoChild": "Merge parent into child",
+    "confirm": "Merge {source} into {destination}? Check the destination before proceeding.",
+    "merge": "Confirm merge",
+    "cancel": "Cancel",
+    "changed": "Branch changed or destination is blocked. Refresh and try again.",
+    "operationFailed": "Merge requires attention.",
+    "recover": "Resolve merge",
+    "relationships": "Relationships & sync",
+    "manageTitle": "Worktree management",
+    "mainRecovery": "The main worktree has a merge conflict. Resolve it and complete or abort the merge in the terminal."
   }
 }

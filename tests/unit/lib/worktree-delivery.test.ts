@@ -66,7 +66,8 @@ describe('draft creation and explicit publishing', () => {
     });
     mocks.exec.mockImplementation(async (_cli, args) => ({ stdout: args[1] === 'list' ? '[]' : url }));
   });
-  it('checks publication and creates a GitHub draft with literal body content and no implicit push', async () => {
+  it.each([false, true])('creates a GitHub draft without implicit push (main worktree: %s)', async (main) => {
+    mocks.resolve.mockResolvedValue({ item: { ...item, main, blockers: main ? ['main'] : [] } });
     let bodyFile = '';
     mocks.exec.mockImplementation(async (_cli, args) => {
       if (args[1] === 'list') return { stdout: '[]' };
@@ -88,6 +89,7 @@ describe('draft creation and explicit publishing', () => {
     expect(mocks.exec.mock.calls[0][1]).toContain('list');
   });
   it('rejects unpublished source commits, missing target branches, and changed worktrees before any hosted write', async () => {
+    mocks.resolve.mockResolvedValue({ item: { ...item, main: true, blockers: ['main'] } });
     const original = mocks.git.getMockImplementation()!;
     mocks.git.mockImplementation(async (cwd, args) => args[0] === 'ls-remote' ? `${'b'.repeat(40)}\trefs/heads/main\n` : original(cwd, args));
     await expect(createWorktreeDraft(source, item, options)).rejects.toMatchObject({ code: 'branchNotPublished' });
@@ -108,7 +110,8 @@ describe('draft creation and explicit publishing', () => {
     await expect(createWorktreeDraft(source, item, options)).rejects.toMatchObject({ code: 'draftCreateFailed' });
     expect(mocks.exec.mock.calls.filter(([, args]) => args[1] === 'create')).toHaveLength(1);
   });
-  it('creates GitLab drafts with explicit branches, no editor, and no fill/push options', async () => {
+  it.each([false, true])('creates GitLab drafts with explicit branches and no push (main worktree: %s)', async (main) => {
+    mocks.resolve.mockResolvedValue({ item: { ...item, main, blockers: main ? ['main'] : [] } });
     const link = 'https://github.com/owner/repo/-/merge_requests/7';
     mocks.exec.mockResolvedValueOnce({ stdout: '[]' }).mockResolvedValueOnce({ stdout: `Creating merge request\n${link}\n` });
     expect(await createWorktreeDraft(source, item, { ...options, provider: 'gitlab' })).toMatchObject({ review: { url: link, provider: 'gitlab', state: 'draft' } });
@@ -117,12 +120,29 @@ describe('draft creation and explicit publishing', () => {
     expect(args).toEqual(expect.arrayContaining(['--draft', '--yes', '--no-editor', '--description', options.body]));
     expect(args).not.toContain('--push'); expect(args).not.toContain('--fill');
   });
-  it('pushes the exact previewed commit with no force and retains hook verification', async () => {
+  it.each([false, true])('pushes the exact previewed commit without force (main worktree: %s)', async (main) => {
+    mocks.resolve.mockResolvedValue({ item: { ...item, main, blockers: main ? ['main'] : [] } });
     expect(await pushWorktreeBranch(source, item, 'origin')).toEqual({ ok: true });
     const args = mocks.git.mock.calls.find(([, args]) => args.includes('push'))![1];
     expect(args).toContain(`${item.head}:refs/heads/${item.branch}`);
     expect(args).toContain('--verify');
     expect(args).not.toContain('--force'); expect(args).not.toContain('--force-with-lease');
+    expect(mocks.exec).not.toHaveBeenCalled();
+  });
+
+  it.each(['dirty', 'operation', 'detached', 'locked', 'missing', 'unknown'])('keeps %s blocking main-worktree publication', async (blocker) => {
+    mocks.resolve.mockResolvedValue({ item: { ...item, main: true, blockers: ['main', blocker] } });
+    await expect(pushWorktreeBranch(source, item, 'origin')).rejects.toMatchObject({ code: blocker });
+    await expect(createWorktreeDraft(source, item, options)).rejects.toMatchObject({ code: blocker });
+    expect(mocks.git).not.toHaveBeenCalled();
+    expect(mocks.exec).not.toHaveBeenCalled();
+  });
+
+  it.each([{ head: 'b'.repeat(40) }, { branch: 'other' }])('rejects changed main-worktree snapshots: %j', async (changed) => {
+    mocks.resolve.mockResolvedValue({ item: { ...item, ...changed, main: true, blockers: ['main'] } });
+    await expect(pushWorktreeBranch(source, item, 'origin')).rejects.toMatchObject({ code: 'changed' });
+    await expect(createWorktreeDraft(source, item, options)).rejects.toMatchObject({ code: 'changed' });
+    expect(mocks.git).not.toHaveBeenCalled();
     expect(mocks.exec).not.toHaveBeenCalled();
   });
 });

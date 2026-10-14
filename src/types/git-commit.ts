@@ -5,6 +5,12 @@ export interface ICommitSnapshot {
   tree: string;
 }
 
+export interface ICommitRepository {
+  directory: string;
+  branch: string;
+  head: string;
+}
+
 export interface ICommitPreview {
   snapshot: ICommitSnapshot;
   files: string[];

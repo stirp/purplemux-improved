@@ -67,6 +67,13 @@
       "requestTimeout": "リクエストがタイムアウトしました。ダイアログを閉じて開き直してください。",
       "requestFailed": "リクエストに失敗したか、応答が無効です。再試行してください。",
       "commitUnknown": "コミット結果を確認できません。再試行する前に端末で git log と git status を確認してください。"
-    }
+    },
+    "deliveryNext": "Next: publish branch and create PR/MR draft",
+    "deliveryLoading": "Checking committed worktree…",
+    "deliveryUnavailable": "This commit is not linked to a managed worktree, or its HEAD changed. Use Worktree management to continue.",
+    "workflowButton": "コミットと公開",
+    "workflowTitle": "コミット・プッシュ・PR/MR",
+    "workflowDescription": "コミットメッセージを生成または編集してコミットを確認し、ブランチをプッシュして PR/MR の下書きを作成します。既存のコミットは直接公開できます。",
+    "cleanPublish": "コミットする変更はありません。現在のブランチをプッシュするか、PR/MR の下書きを作成できます。"
   }
 }

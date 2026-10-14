@@ -30,7 +30,7 @@ export default function WorktreeDraftForm({ workspaceId, item, info, disabled, o
   const defaultProvider = selected && new URL(selected.repository).hostname !== 'github.com' ? 'gitlab' : 'github';
   const provider = providerOverride && providerOverride.repository === selected?.repository
     ? providerOverride.provider : defaultProvider;
-  const blocked = info.blockers.some((reason) => !['ignored', 'sessions', 'sharedWorkspace'].includes(reason));
+  const blocked = info.blockers.some((reason) => !['main', 'ignored', 'sessions', 'sharedWorkspace'].includes(reason));
   const defaultTarget = info.targetRef === `refs/heads/${info.branch}` ? ''
     : info.targetRef?.replace(/^refs\/heads\//, '').replace(/^refs\/remotes\/[^/]+\//, '') ?? '';
   const targetBranch = target || defaultTarget;
