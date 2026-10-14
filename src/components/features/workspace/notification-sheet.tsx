@@ -36,6 +36,7 @@ import { findPane } from '@/lib/layout-tree';
 import type { ICurrentAction } from '@/types/status';
 import type { ISessionHistoryEntry, TSessionHistoryProvider } from '@/types/session-history';
 import { stripMarkdown } from '@/lib/strip-markdown';
+import { agentSessionTitle } from '@/lib/agent-session-title';
 import ClaudeCodeIcon from '@/components/icons/claude-code-icon';
 import OpenAIIcon from '@/components/icons/openai-icon';
 import SessionHistoryActions from './session-history-actions';
@@ -90,6 +91,7 @@ interface INotificationItem {
   workspaceName: string;
   workspaceId: string;
   lastUserMessage?: string | null;
+  title?: string | null;
   lastAssistantMessage?: string | null;
   currentAction?: ICurrentAction | null;
   readyForReviewAt?: number | null;
@@ -129,12 +131,14 @@ const formatNotificationTime = (ts: number): string => {
 
 const SessionHistoryItem = ({
   entry,
+  title,
   isActiveSession,
   compact,
   icon,
   onClick,
 }: {
   entry: ISessionHistoryEntry;
+  title?: string | null;
   isActiveSession?: boolean;
   compact?: boolean;
   icon?: React.ReactNode;
@@ -226,9 +230,9 @@ const SessionHistoryItem = ({
               {formatNotificationTime(entry.completedAt)}
             </span>
           </div>
-          {entry.prompt && (
+          {(title || entry.prompt) && (
             <p className={cn('mt-0.5 truncate text-sm', isActiveSession ? 'text-foreground' : 'text-muted-foreground')}>
-              {stripMarkdown(entry.prompt)}
+              {stripMarkdown(title || entry.prompt || '')}
             </p>
           )}
           {entry.result && (
@@ -304,9 +308,9 @@ const NotificationItem = ({
             </span>
           )}
         </div>
-        {item.lastUserMessage && (
+        {(item.title || item.lastUserMessage) && (
           <p className={cn('mt-0.5 truncate text-sm', isActiveTab ? 'text-foreground' : 'text-muted-foreground')}>
-            {stripMarkdown(item.lastUserMessage)}
+            {stripMarkdown(item.title || item.lastUserMessage || '')}
           </p>
         )}
         {variant === 'done' ? (
@@ -382,13 +386,14 @@ export const NotificationPanel = ({ onNavigated, className }: { onNavigated?: ()
                   providerId: target?.providerId ?? (session.key.startsWith('codex:') ? 'codex' : 'claude'),
                   agentSessionId: target?.agentSessionId,
                   lastUserMessage: session.live?.lastUserMessage,
+                  title: session.live ? agentSessionTitle(tabs[session.tabId], workflow, session.tabId) : workflow.titles?.[session.key],
                   currentAction: session.live ? tabs[session.tabId]?.currentAction : null,
                   busySince: session.live ? tabs[session.tabId]?.busySince : null,
                 }} variant={session.live?.cliState === 'needs-input' ? 'needs-input' : session.live?.cliState === 'busy' ? undefined : status === 'completed' ? 'done' : 'pending'}
                   isActiveTab={isActiveSession} onNavigate={onClick} />;
                 return (
                   <div key={session.key}>
-                    {entry && session.live?.cliState !== 'busy' && session.live?.cliState !== 'needs-input' ? <SessionHistoryItem entry={entry} isActiveSession={isActiveSession} onClick={onClick}
+                    {entry && session.live?.cliState !== 'busy' && session.live?.cliState !== 'needs-input' ? <SessionHistoryItem entry={entry} title={session.live ? agentSessionTitle(tabs[session.tabId], workflow, session.tabId) : workflow.titles?.[session.key]} isActiveSession={isActiveSession} onClick={onClick}
                         icon={status === 'completed' ? <CheckCircle2 className="h-3.5 w-3.5 text-muted-foreground" />
                           : status === 'review' ? <Clock3 className="h-3.5 w-3.5 text-muted-foreground" />
                             : <Circle className="h-3.5 w-3.5 text-muted-foreground" />} />

@@ -41,6 +41,54 @@ beforeEach(() => {
     sidebarCollapsed: false, sidebarWidth: 240 }));
 });
 describe('persistent workflow preferences', () => {
+  it('persists a tab title across the first native session binding and clears it on deletion', async () => {
+    await updateSessionWorkflow({ key: 'claude:tab:t', title: 'Renamed session' });
+    await synchronizeSessionWorkflow([], { t: { workspaceId: 'ws', panelType: 'claude-code', agentSessionId: 'A' } });
+    expect((await getWorkspaces()).sessionWorkflow?.titles).toEqual({ 'claude:A': 'Renamed session' });
+    await removeSessionWorkflow('claude', 'A');
+    expect((await getWorkspaces()).sessionWorkflow?.titles).toEqual({});
+  });
+  it('keeps session titles distinct and supports clearing a manual title', async () => {
+    await updateSessionWorkflow({ key: 'codex:first', title: '  First title  ' });
+    await updateSessionWorkflow({ key: 'codex:second', title: 'Second title' });
+    expect((await getWorkspaces()).sessionWorkflow?.titles).toEqual({
+      'codex:first': 'First title', 'codex:second': 'Second title',
+    });
+    await updateSessionWorkflow({ key: 'codex:first', title: '' });
+    expect((await getWorkspaces()).sessionWorkflow?.titles).toEqual({ 'codex:second': 'Second title' });
+  });
+  it('saves the current Tab rename marker and title in one workflow update', async () => {
+    const workflow = await updateSessionWorkflow({ key: 'claude:one', title: 'Renamed', tabId: 'tab-1' });
+    expect(workflow.titles).toEqual({ 'claude:one': 'Renamed' });
+    expect(workflow.renamedTabs).toEqual({ 'tab-1': true });
+    expect((await getWorkspaces()).sessionWorkflow?.renamedTabs).toEqual({ 'tab-1': true });
+  });
+  it('does not persist either part of a Tab rename when the write fails', async () => {
+    const before = mocks.files.get(file);
+    mocks.fail = true;
+    await expect(updateSessionWorkflow({ key: 'claude:one', title: 'Renamed', tabId: 'tab-1' })).rejects.toThrow('disk full');
+    expect(mocks.files.get(file)).toBe(before);
+    expect(mocks.broadcast).not.toHaveBeenCalled();
+  });
+  it('moves a new temporary title after a Tab was already bound to an older session', async () => {
+    await synchronizeSessionWorkflow([], { t: { workspaceId: 'ws', panelType: 'codex-cli', agentSessionId: 'old' } });
+    await updateSessionWorkflow({ key: 'codex:old', title: 'Old title' });
+    await synchronizeSessionWorkflow([], { t: { workspaceId: 'ws', panelType: 'codex-cli' } });
+    await updateSessionWorkflow({ key: 'codex:tab:t', title: 'New title' });
+    await synchronizeSessionWorkflow([], { t: { workspaceId: 'ws', panelType: 'codex-cli', agentSessionId: 'new' } });
+    const workflow = (await getWorkspaces()).sessionWorkflow!;
+    expect(workflow.titles).toEqual({ 'codex:old': 'Old title', 'codex:new': 'New title' });
+    expect(workflow.tabBindings?.['codex:tab:t']).toBe('codex:new');
+    await synchronizeSessionWorkflow([]);
+    expect((await getWorkspaces()).sessionWorkflow?.titles).toEqual({ 'codex:old': 'Old title', 'codex:new': 'New title' });
+  });
+  it('consumes a temporary title without assigning it to a deleted identity', async () => {
+    await synchronizeSessionWorkflow([], { t: { workspaceId: 'ws', panelType: 'claude-code', agentSessionId: 'old' } });
+    await updateSessionWorkflow({ key: 'claude:tab:t', title: 'Pending title' });
+    await removeSessionWorkflow('claude', 'new');
+    await synchronizeSessionWorkflow([], { t: { workspaceId: 'ws', panelType: 'claude-code', agentSessionId: 'new' } });
+    expect((await getWorkspaces()).sessionWorkflow?.titles).toEqual({});
+  });
   it.each(['deleted', 'hidden'])('consumes fallback on first binding of a %s native identity', async (source) => {
     await updateSessionWorkflow({ key: 'codex:tab:t', status: 'completed' });
     await synchronizeSessionWorkflow([], { t: { workspaceId: 'ws', panelType: 'codex-cli' } });

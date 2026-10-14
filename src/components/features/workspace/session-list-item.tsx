@@ -4,6 +4,7 @@ import { useTranslations } from 'next-intl';
 import dayjs from 'dayjs';
 import { Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import useWorkspaceStore from '@/hooks/use-workspace-store';
 
 import type { ISessionMeta } from '@/types/timeline';
 
@@ -59,9 +60,10 @@ const SessionListItem = ({
   onDeleted,
 }: ISessionListItemProps) => {
   const t = useTranslations('session');
+  const savedTitle = useWorkspaceStore((state) => state.sessionWorkflow.titles?.[`claude:${session.sessionId}`]);
   const absoluteTime = dayjs(session.lastActivityAt).format('MM/DD HH:mm');
   const relativeTime = formatRelativeTime(session.lastActivityAt, t);
-  const displayMessage = session.firstMessage || t('noMessage');
+  const displayMessage = savedTitle || session.firstMessage || t('noMessage');
 
   return (
     <SessionHistoryActions provider={'claude'} sessionId={session.sessionId} label={session.firstMessage} disabled={isDisabled} onDeleted={onDeleted}>

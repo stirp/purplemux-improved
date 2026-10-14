@@ -5,6 +5,8 @@ export const WORK_STATUSES = ['pending', 'in-progress', 'review', 'completed'] a
 export type TWorkStatus = typeof WORK_STATUSES[number];
 export interface ISessionWorkflow {
   statuses: Record<string, TWorkStatus>;
+  titles?: Record<string, string>;
+  renamedTabs?: Record<string, boolean>;
   collapsed: Partial<Record<TWorkStatus, boolean>>;
   sessions?: Record<string, IWorkflowSessionRecord>;
   tabBindings?: Record<string, string>;
@@ -96,6 +98,7 @@ export const reconcileSessionWorkflow = (
 ): ISessionWorkflow => {
   const next: ISessionWorkflow = {
     ...workflow, statuses: { ...workflow.statuses },
+    titles: { ...workflow.titles },
     sessions: { ...workflow.sessions }, tabBindings: { ...workflow.tabBindings },
   };
   const deleted = new Set(next.deleted);
@@ -108,6 +111,10 @@ export const reconcileSessionWorkflow = (
     const provider = tab.agentProviderId === 'codex' || tab.panelType === 'codex-cli' ? 'codex' : 'claude';
     const fallback = sessionWorkKey(provider, null, `tab:${tabId}`);
     const key = sessionWorkKey(provider, tab.agentSessionId, '');
+    if (next.titles![fallback] !== undefined) {
+      if (!deleted.has(key)) next.titles![key] = next.titles![fallback];
+      delete next.titles![fallback];
+    }
     if (!next.tabBindings![fallback]) {
       if (!deleted.has(key) && next.statuses[fallback] !== undefined && next.statuses[key] === undefined) next.statuses[key] = next.statuses[fallback];
       delete next.statuses[fallback];

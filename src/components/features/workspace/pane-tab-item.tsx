@@ -65,19 +65,20 @@ const PaneTabItem = ({
 
   const startEditing = () => {
     setIsEditing(true);
-    setEditName(tab.name);
+    setEditName(displayName);
   };
 
   const confirmRename = () => {
     const trimmed = editName.trim();
     setIsEditing(false);
-    if (trimmed !== tab.name) {
+    if (trimmed !== displayName) {
       onRename(trimmed);
     }
   };
 
   const typeDisplayName = tab.panelType === 'agent-sessions' ? t('sessionList') : '';
-  const displayName = tab.name || typeDisplayName || displayTitle || '';
+  const isAgent = tab.panelType === 'claude-code' || tab.panelType === 'codex-cli';
+  const displayName = (isAgent ? displayTitle || tab.name : tab.name || typeDisplayName || displayTitle) || '';
 
   return (
     <ContextMenu>

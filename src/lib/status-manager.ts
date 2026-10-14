@@ -368,11 +368,19 @@ class StatusManager {
         existing.workspaceId = ws.id;
         existing.panelType = tab.panelType;
         existing.agentProviderId = provider?.id;
-        existing.agentSessionId = provider?.sessionIdFromJsonlPath(refreshed.jsonlPath)
+        const nextSessionId = provider?.sessionIdFromJsonlPath(refreshed.jsonlPath)
           ?? provider?.readSessionId(tab) ?? null;
-        existing.jsonlPath = refreshed.jsonlPath ?? existing.jsonlPath;
+        const sessionChanged = existing.agentSessionId !== nextSessionId;
+        if (sessionChanged) {
+          existing.agentSummary = null;
+          existing.lastUserMessage = null;
+        }
+        existing.agentSessionId = nextSessionId;
+        existing.jsonlPath = refreshed.jsonlPath ?? (sessionChanged ? null : existing.jsonlPath);
+        if (sessionChanged && !existing.jsonlPath) this.stopJsonlWatch(tab.id);
         if (shouldWatchCodex(existing) && existing.jsonlPath) this.startJsonlWatch(tab.id, existing.jsonlPath);
-        existing.lastUserMessage = tab.lastUserMessage;
+        existing.lastUserMessage = sessionChanged && provider?.readSessionId(tab) !== nextSessionId
+          ? null : tab.lastUserMessage;
 
         if (processChanged) {
           existing.processRetries = PROCESS_RETRY_COUNT;
@@ -392,8 +400,9 @@ class StatusManager {
         }
 
         let summaryChanged = false;
-        const tabSummary = provider ? provider.readSummary(tab) : null;
-        if (existing.cliState === 'busy' || existing.cliState === 'needs-input') {
+        const tabSummary = sessionChanged && provider?.readSessionId(tab) !== nextSessionId
+          ? null : provider?.readSummary(tab) ?? null;
+        if (!sessionChanged && (existing.cliState === 'busy' || existing.cliState === 'needs-input')) {
           const paneTitle = await getPaneTitle(tab.sessionName);
           const liveSummary = provider?.parsePaneTitle(paneTitle) ?? null;
           const nextSummary = liveSummary ?? tabSummary;
@@ -467,7 +476,7 @@ class StatusManager {
           }
         }
 
-        if (terminalChanged || processChanged || processRetryNeeded || messageChanged || panelTypeChanged || summaryChanged) {
+        if (terminalChanged || processChanged || processRetryNeeded || messageChanged || panelTypeChanged || summaryChanged || sessionChanged) {
           this.broadcastUpdate(tab.id, existing);
         }
       }
@@ -827,6 +836,12 @@ class StatusManager {
     }
     if (meta.sessionId !== undefined && entry.agentSessionId !== meta.sessionId) {
       entry.agentSessionId = meta.sessionId;
+      if (meta.agentSummary === undefined) entry.agentSummary = null;
+      if (meta.lastUserMessage === undefined) entry.lastUserMessage = null;
+      if (meta.jsonlPath === undefined) {
+        entry.jsonlPath = null;
+        this.stopJsonlWatch(tabId);
+      }
       changed = true;
     }
     if (meta.jsonlPath !== undefined && entry.jsonlPath !== meta.jsonlPath) {
