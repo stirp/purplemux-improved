@@ -18,7 +18,7 @@ vi.mock('@/components/ui/dialog', () => {
 
 afterEach(() => { request.mockReset(); vi.unstubAllGlobals(); });
 
-it('offers confirmed branch publication after a successful local commit', async () => {
+it.each([false, true])('offers confirmed publication after a successful commit (main worktree: %s)', async (main) => {
   vi.stubGlobal('IS_REACT_ACT_ENVIRONMENT', true);
   const hash = 'a'.repeat(40);
   const preview = { snapshot: { directory: '/repo', branch: 'refs/heads/feature', head: hash, tree: hash }, files: ['file.txt'] };
@@ -29,7 +29,7 @@ it('offers confirmed branch publication after a successful local commit', async 
   vi.stubGlobal('fetch', fetch);
   request.mockResolvedValue({ head: hash, branch: 'feature', targetRef: 'refs/heads/main', targetHead: hash,
     branches: [], remotes: [{ name: 'origin', repository: 'https://github.com/example/repo' }],
-    ahead: 1, behind: 0, operation: null, blockers: [], review: null });
+    ahead: 1, behind: 0, operation: null, blockers: main ? ['main'] : [], review: null });
   const container = document.createElement('div');
   document.body.appendChild(container);
   const root = createRoot(container);
@@ -46,6 +46,7 @@ it('offers confirmed branch publication after a successful local commit', async 
     await act(async () => button('adoptAndCommit').click());
     expect(container.textContent).toContain('deliveryNext');
     expect(button('pushBranch')).toBeTruthy();
+    expect(button('pushBranch').disabled).toBe(false);
     expect(request.mock.calls[0][1]).toBe('inspectSync');
     expect(request.mock.calls.some((args) => args[1] === 'pushBranch')).toBe(false);
     await act(async () => button('pushBranch').click());
@@ -53,13 +54,26 @@ it('offers confirmed branch publication after a successful local commit', async 
     expect(request.mock.calls.some((args) => args[1] === 'pushBranch')).toBe(false);
     await act(async () => button('confirmAction').click());
     expect(request.mock.calls.some((args) => args[1] === 'pushBranch' && args[2].item.head === hash)).toBe(true);
+    const draftTitle = container.querySelector('#worktree-draft-title')!;
+    await act(async () => {
+      Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')!.set!.call(draftTitle, 'Review title');
+      draftTitle.dispatchEvent(new Event('input', { bubbles: true }));
+    });
+    expect(button('createDraft').disabled).toBe(false);
+    await act(async () => button('createDraft').click());
+    expect(container.textContent).toContain('draftConfirm');
+    expect(request.mock.calls.some((args) => args[1] === 'createDraft')).toBe(false);
+    request.mockResolvedValueOnce({ review: { url: 'https://github.com/example/repo/pull/1' }, existing: false });
+    await act(async () => button('confirmAction').click());
+    expect(request.mock.calls.some((args) => args[1] === 'createDraft' && args[2].item.head === hash)).toBe(true);
+    expect(container.querySelector('a')?.href).toBe('https://github.com/example/repo/pull/1');
   } finally {
     await act(async () => root.unmount());
     container.remove();
   }
 });
 
-it.each(['clean', 'different-branch', 'changed-after-overview'])('checks publication identity when there are no changes: %s', async (scenario) => {
+it.each(['clean', 'clean-main', 'dirty-main', 'operation-main', 'locked-main', 'missing-main', 'unknown-main', 'detached-main', 'different-branch', 'changed-after-overview'])('checks publication identity when there are no changes: %s', async (scenario) => {
   vi.stubGlobal('IS_REACT_ACT_ENVIRONMENT', true);
   const head = 'a'.repeat(40);
   const repository = { directory: '/repo', branch: 'feature', head };
@@ -72,7 +86,8 @@ it.each(['clean', 'different-branch', 'changed-after-overview'])('checks publica
   request.mockResolvedValue({ head: scenario === 'changed-after-overview' ? 'b'.repeat(40) : head,
     branch: 'feature', targetRef: 'refs/heads/main', targetHead: head, branches: [],
     remotes: [{ name: 'origin', repository: 'https://github.com/example/repo' }],
-    ahead: 1, behind: 0, operation: null, blockers: [], review: null });
+    ahead: 1, behind: 0, operation: null,
+    blockers: scenario.endsWith('-main') ? ['main', ...(scenario === 'clean-main' ? [] : [scenario.split('-')[0]])] : [], review: null });
   const container = document.createElement('div');
   document.body.appendChild(container);
   const root = createRoot(container);
@@ -82,9 +97,18 @@ it.each(['clean', 'different-branch', 'changed-after-overview'])('checks publica
     })));
     expect(container.textContent).toContain('cleanPublish');
     expect(container.textContent).not.toContain('adoptAndCommit');
-    if (scenario === 'clean') {
+    if (scenario === 'clean' || scenario.endsWith('-main')) {
       expect(container.textContent).toContain('pushBranch');
       expect(container.textContent).toContain('createDraft');
+      const draftTitle = container.querySelector('#worktree-draft-title')!;
+      await act(async () => {
+        Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')!.set!.call(draftTitle, 'Review title');
+        draftTitle.dispatchEvent(new Event('input', { bubbles: true }));
+      });
+      for (const label of ['pushBranch', 'createDraft']) {
+        expect([...container.querySelectorAll('button')].find((node) => node.textContent === label)?.disabled)
+          .toBe(scenario !== 'clean' && scenario !== 'clean-main');
+      }
     } else {
       expect(container.textContent).toContain('deliveryUnavailable');
       expect(container.textContent).not.toContain('pushBranch');

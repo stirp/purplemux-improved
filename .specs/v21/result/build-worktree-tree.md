@@ -1,5 +1,7 @@
 # Worktree 关系与同步实施记录
 
+2026-10-14 PR #37：[审查意见](https://github.com/stirp/purplemux-improved/pull/37#discussion_r4268095210)指出普通 checkout 的 main 标记阻断发布。仅在 WorktreeDraftForm 和 worktree-draft.prepare 的发布检查中忽略 main，复用现有推送及草稿流程；不修改通用 blockers 或同步、删除检查。补充提交后及无改动发布的组件回归、主工作树 GitHub/GitLab 草稿和精确快照推送测试，以及其他 blocker 和快照变化拒绝测试。CLI 命令参数不变，帮助及中英文文档说明发布与同步、清理的限制范围。
+
 2026-10-14 后续审查修正：WorktreeTreeDialog 先定位子工作树仓库，在同一仓库内匹配父工作树，避免父工作区含多个仓库时错配首个仓库。加载错误与合并错误分别保存，刷新只更新加载错误；主工作树冲突输出及终端恢复提示在刷新后保留，下一次执行合并清除旧操作错误。移除成功路径重复的刷新调用，由 finally 统一刷新。沿用现有接口与 CLI，无新增协议。
 
 2026-10-14：桌面和移动根工作区新增有子节点时可见的关系入口；工作区行显示父名称；关系弹窗按工作区树展示本地分支双向提交差异，并复用现有 inspectSync / merge 的快照校验、阻断及冲突恢复流程。主工作树仅在同步流程中免除清理专用的 main 阻断；删除保护保持原状。改动入口：worktree-tree-dialog.tsx、workspace-item.tsx、mobile-workspace-actions.tsx、mobile-navigation-sheet.tsx、worktree-sync.ts。非中文语言暂使用英文文案。

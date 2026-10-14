@@ -10,4 +10,6 @@
 
 审查修正：inspectSync 对主工作树照常返回 main blocker；merge 允许主工作树为 item，rebase、continue、abort 不允许。CLI 的 worktree merge 将 item 对应工作树作为执行目录，targetRef/targetHead 为合入的分支，接口无需新增字段。
 
+PR #37：pushBranch/createDraft 的发布检查忽略 main，与发布表单一致；inspectSync 和仓库列表仍报告该标记，其他 blocker、快照与远端校验不变。只放宽发布操作，不在通用工作树解析或同步检查中移除 main。CLI worktree push/create-draft 自动使用同一规则。
+
 Git 面板新增 ICommitRepository 客户端快照（directory、branch、head），由打开时的面板状态传入共享弹窗；仅初始提交检查返回 noChanges 时作为已有提交发布依据。GitCommitDelivery 要求目录、分支与 HEAD，校验 overview 和 inspectSync 返回值。复用既有提交及交付接口；CLI 命令、参数和服务端协议无需为快捷入口调整。

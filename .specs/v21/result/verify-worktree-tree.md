@@ -1,5 +1,13 @@
 # Worktree 关系与同步验证记录
 
+## PR #37 主工作树发布（2026-10-14）
+
+- 修复前，新增主工作树发布用例复现提交后与无改动发布按钮禁用、服务端 push/createDraft 被 main 提前阻断；修复后相关用例通过。
+- `pnpm exec vitest run tests/unit/lib/worktree-delivery.test.ts tests/unit/lib/git-commit-delivery.test.ts tests/unit/lib/worktree-delivery-dialog.test.ts tests/unit/lib/worktree-manager.test.ts tests/unit/lib/worktree-tools.test.ts tests/unit/lib/worktree-actions-api.test.ts`：105 项通过。覆盖主工作树 GitHub/GitLab 草稿、精确 HEAD 推送、显式确认、脏状态/操作中/锁定/缺失/未知/detached 阻断、分支或 HEAD 变化、未发布提交及目标分支校验；原有真实临时 Git 仓库的删除与 rebase/continue/abort 保护回归通过。
+- `node --test tests/cli/features.test.cjs`：63 项通过，CLI 参数派发及主工作树发布帮助正常。
+- 完整 `pnpm exec tsc --noEmit`、改动 TS/TSX 与 CLI 测试的 ESLint、`git diff --check` 通过。`bin/feature-commands.js` 被仓库 ESLint 默认忽略，强制检查发现已有 CommonJS require 与 no-require-imports 规则冲突；按该 CLI 的 CommonJS 格式运行 `pnpm exec eslint --no-ignore --rule '@typescript-eslint/no-require-imports: off' bin/feature-commands.js`，通过。
+- `pnpm build` 通过（Next.js 编译、24 个静态页面生成、tsup 服务端打包）。本轮未执行浏览器/移动实机验收；发布测试模拟 Git 和托管 CLI，未向真实远端推送或创建 PR/MR。
+
 ## 关系树多仓库与错误保留审查修正（2026-10-14）
 
 - 修复前运行新增用例，复现 4 项失败：多仓库父子双向合并入口缺失、主工作树冲突信息丢失、合并请求失败信息丢失；原双向合并与实际跨仓库阻断的 3 项测试通过。
