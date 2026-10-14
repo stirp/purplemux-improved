@@ -205,7 +205,7 @@ jq '{snapshot,message:{title,body}}' "commit-preview.json" > "commit.json"
 purplemux-improved commit create --session TMUX_SESSION --data @commit.json
 ```
 
-`merge` and `rebase` require `targetRef` and `targetHead` from `inspect-sync`. Fetch first if fresh remote refs are needed. Re-read snapshots after HEAD changes, including conflicts, before `continue`/`abort`. `remove` takes flat snapshot fields rather than `item`, and preserves the branch unless `deleteBranch` is explicitly true. Cleanup retains ignored-file and active-session protection.
+`merge` and `rebase` require `targetRef` and `targetHead` from `inspect-sync`. The `item` is the worktree modified by the operation; `targetRef` is merged into it. Fetch first if fresh remote refs are needed. Re-read snapshots after HEAD changes, including conflicts, before `continue`/`abort`. `inspect-sync` reports `main` as a blocker; only `merge` may execute on the main worktree. Rebase, continue and abort remain blocked there, so resolve main-worktree merge conflicts in Git. `remove` takes flat snapshot fields rather than `item`, and preserves the branch unless `deleteBranch` is explicitly true. Cleanup retains ignored-file and active-session protection.
 
 `generate-draft` only generates title/body. `push` and `create-draft` perform remote writes using the server's Git/hosting CLI authentication. To publish the reviewed draft, add `title`/`body` to the item request and use `create-draft --remote origin --target-branch main --provider github` (or `gitlab`). The [Chinese CLI reference](/purplemux-improved/zh-CN/docs/cli-reference/#fork-新增能力) includes complete `jq` workflows for preparing these files.
 

@@ -54,7 +54,7 @@ assignee: ''
 - [src/lib/worktree-draft.ts](../../../../src/lib/worktree-draft.ts)
 - [src/components/features/workspace/worktree-delivery-dialog.tsx](../../../../src/components/features/workspace/worktree-delivery-dialog.tsx)
 - [src/components/features/workspace/worktree-draft-form.tsx](../../../../src/components/features/workspace/worktree-draft-form.tsx)
-- [src/components/features/workspace/workspace-delivery-button.tsx](../../../../src/components/features/workspace/workspace-delivery-button.tsx)
+- 历史行内交付按钮于 v21 统一入口整合时移除，当前入口见[关系树规格](../../../v21/features/worktree-tree/spec.md)。
 
 ## 已有测试索引
 
@@ -63,7 +63,7 @@ assignee: ''
 - [tests/unit/lib/worktree-tools.test.ts](../../../../tests/unit/lib/worktree-tools.test.ts)
 - [tests/unit/lib/worktree-delivery.test.ts](../../../../tests/unit/lib/worktree-delivery.test.ts)
 - [tests/unit/lib/worktree-actions-api.test.ts](../../../../tests/unit/lib/worktree-actions-api.test.ts)
-- [tests/unit/lib/workspace-delivery-button.test.ts](../../../../tests/unit/lib/workspace-delivery-button.test.ts)
+- 行内交付按钮的历史测试于 v21 入口移除时删除；原验收结果保留在历史验证记录。
 
 ## 下级文档
 

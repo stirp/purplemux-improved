@@ -16,8 +16,9 @@ import WorktreeIgnoredNotice from '@/components/features/workspace/worktree-igno
 
 interface ISelection { repositoryId: string; item: IManagedWorktree }
 
-export default function ManageWorktreesDialog({ workspace, onClose, onSelect }: {
+export default function ManageWorktreesDialog({ workspace, onClose, onSelect, embedded = false, onChanged, onBusyChange }: {
   workspace: IWorkspace; onClose: () => void; onSelect: (id: string) => void;
+  embedded?: boolean; onChanged?: () => void; onBusyChange?: (busy: boolean) => void;
 }) {
   const t = useTranslations('workspace.worktreeManager');
   const tc = useTranslations('common');
@@ -35,6 +36,7 @@ export default function ManageWorktreesDialog({ workspace, onClose, onSelect }: 
   const [batch, setBatch] = useState(false);
   const [delivery, setDelivery] = useState<TWorktreeSnapshot | null>(null);
   const activeWorkspaceId = useWorkspaceStore((state) => state.activeWorkspaceId);
+  useEffect(() => { onBusyChange?.(busy); }, [busy, onBusyChange]);
 
   useEffect(() => {
     if (busy || selection || batch || delivery) return;
@@ -79,6 +81,7 @@ export default function ManageWorktreesDialog({ workspace, onClose, onSelect }: 
       const store = useWorkspaceStore.getState();
       if (method === 'POST') {
         const adopted = await store.adoptWorktree(workspace.id, chosen.repositoryId, chosen.item.directory);
+        onChanged?.();
         onSelect(adopted.id);
         onClose();
       } else {
@@ -91,6 +94,7 @@ export default function ManageWorktreesDialog({ workspace, onClose, onSelect }: 
         });
         for (const warning of data.warnings) toast.warning(t(warning));
         toast.success(t('deleted'));
+        onChanged?.();
         setSelection(null);
         if (data.removedWorkspaceIds.includes(workspace.id)) onClose();
         else setRefresh((value) => value + 1);
@@ -99,17 +103,16 @@ export default function ManageWorktreesDialog({ workspace, onClose, onSelect }: 
       const code = (error as { code?: string }).code;
       setError(code ? t(`reasons.${code}`) : error instanceof Error ? error.message : String(error));
     } finally { setBusy(false); }
-  }, [busy, workspace.id, deleteBranch, discardUnmergedBranch, targetRef, t, onSelect, onClose]);
+  }, [busy, workspace.id, deleteBranch, discardUnmergedBranch, targetRef, t, onSelect, onClose, onChanged]);
 
   if (delivery) return <WorktreeDeliveryDialog workspaceId={workspace.id} item={delivery} onClose={() => { setDelivery(null); setRefresh((value) => value + 1); }} />;
   if (batch) return <WorktreeCleanupDialog workspaceId={workspace.id} items={selected} onClose={() => { setBatch(false); setSelected([]); setRefresh((value) => value + 1); }} />;
 
-  return <Dialog open onOpenChange={(open) => { if (!open && !busy) onClose(); }}>
-    <DialogContent className="max-h-[85dvh] overflow-y-auto sm:max-w-4xl" showCloseButton={!busy}>
-      <DialogHeader>
+  const content = <>
+      {!embedded && <DialogHeader>
         <DialogTitle>{t('title')} · {workspace.name}</DialogTitle>
         <DialogDescription>{t('description')}</DialogDescription>
-      </DialogHeader>
+      </DialogHeader>}
       {error && <p role="alert" className="break-all text-ui-red">{error}</p>}
       {selection ? <div className="flex flex-col gap-4">
         <p className="font-medium">{t('confirmDelete')}</p>
@@ -202,6 +205,9 @@ export default function ManageWorktreesDialog({ workspace, onClose, onSelect }: 
           </article>)}
         </section>; })}
       </>}
-    </DialogContent>
+  </>;
+  if (embedded) return <div className="flex flex-col gap-4">{content}</div>;
+  return <Dialog open onOpenChange={(open) => { if (!open && !busy) onClose(); }}>
+    <DialogContent className="max-h-[85dvh] overflow-y-auto sm:max-w-4xl" showCloseButton={!busy}>{content}</DialogContent>
   </Dialog>;
 }

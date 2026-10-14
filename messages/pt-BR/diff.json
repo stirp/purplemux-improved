@@ -67,6 +67,13 @@
       "requestTimeout": "A solicitação excedeu o tempo limite. Feche e reabra o diálogo.",
       "requestFailed": "A solicitação falhou ou a resposta é inválida. Tente novamente.",
       "commitUnknown": "Não foi possível confirmar o commit. Verifique git log e git status no terminal antes de tentar novamente."
-    }
+    },
+    "deliveryNext": "Next: publish branch and create PR/MR draft",
+    "deliveryLoading": "Checking committed worktree…",
+    "deliveryUnavailable": "This commit is not linked to a managed worktree, or its HEAD changed. Use Worktree management to continue.",
+    "workflowButton": "Commit e publicar",
+    "workflowTitle": "Commit, push e PR/MR",
+    "workflowDescription": "Gere ou edite a mensagem, confirme o commit, envie a branch e crie um rascunho de PR/MR. Commits existentes podem ser publicados diretamente.",
+    "cleanPublish": "Não há alterações para commit. Você pode enviar a branch atual ou criar um rascunho de PR/MR."
   }
 }

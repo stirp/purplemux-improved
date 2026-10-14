@@ -6,10 +6,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { copyToClipboard } from '@/lib/clipboard';
 import { requestCommit } from '@/lib/git-commit-request';
-import type { ICommitPreview, ICommitResult, IGeneratedCommit } from '@/types/git-commit';
+import type { ICommitPreview, ICommitRepository, ICommitResult, IGeneratedCommit } from '@/types/git-commit';
+import GitCommitDelivery from '@/components/features/workspace/git-commit-delivery';
 
-export default function GitCommitDialog({ sessionName, onClose, onCommitted }: {
-  sessionName: string; onClose: () => void; onCommitted: () => void;
+export default function GitCommitDialog({ sessionName, repository, onClose, onCommitted }: {
+  sessionName: string; repository?: ICommitRepository; onClose: () => void; onCommitted: () => void;
 }) {
   const t = useTranslations('diff.commit');
   const locale = useLocale();
@@ -23,6 +24,8 @@ export default function GitCommitDialog({ sessionName, onClose, onCommitted }: {
   const [error, setError] = useState<(Error & { code?: string }) | null>(null);
   const [notice, setNotice] = useState('');
   const [result, setResult] = useState<ICommitResult | null>(null);
+  const [deliveryBusy, setDeliveryBusy] = useState(false);
+  const [noChanges, setNoChanges] = useState(false);
   const mounted = useRef(true);
   useEffect(() => {
     mounted.current = true;
@@ -38,10 +41,13 @@ export default function GitCommitDialog({ sessionName, onClose, onCommitted }: {
     requestCommit<ICommitPreview>(sessionName, 'inspect', {}, controller.signal).then((data) => {
       if (!controller.signal.aborted) setPreview(data);
     }).catch((error) => {
-      if (!controller.signal.aborted) setError(error);
+      if (!controller.signal.aborted) {
+        if (error.code === 'noChanges' && repository) setNoChanges(true);
+        else setError(error);
+      }
     }).finally(() => { if (!controller.signal.aborted) setBusy(null); });
     return () => controller.abort();
-  }, [sessionName]);
+  }, [sessionName, repository]);
 
   const generate = async () => {
     if (pending.current || busy) return;
@@ -69,9 +75,9 @@ export default function GitCommitDialog({ sessionName, onClose, onCommitted }: {
     } finally { pending.current = false; if (mounted.current) setBusy(null); }
   };
 
-  return <Dialog open onOpenChange={(open) => { if (!open && !busy) onClose(); }}>
-    <DialogContent className="max-h-[85dvh] overflow-y-auto sm:max-w-xl" showCloseButton={!busy}>
-      <DialogHeader><DialogTitle>{t('title')}</DialogTitle><DialogDescription>{t('description')}</DialogDescription></DialogHeader>
+  return <Dialog open onOpenChange={(open) => { if (!open && !busy && !deliveryBusy) onClose(); }}>
+    <DialogContent className="max-h-[85dvh] overflow-y-auto sm:max-w-xl" showCloseButton={!busy && !deliveryBusy}>
+      <DialogHeader><DialogTitle>{t('workflowTitle')}</DialogTitle><DialogDescription>{t('workflowDescription')}</DialogDescription></DialogHeader>
       {error && <p role="alert" className="whitespace-pre-wrap break-all text-sm text-ui-red">{failureText(error)}</p>}
       {notice && <p role="status" className="text-sm">{notice}</p>}
       {preview && <div className="min-w-0 rounded border p-3 text-sm">
@@ -87,7 +93,7 @@ export default function GitCommitDialog({ sessionName, onClose, onCommitted }: {
         <p>{t('success', { hash: result.head.slice(0, 8) })}</p>
         {result.warning && <p role="alert" className="mt-2">{t(`errors.${result.warning}`)}</p>}
         {result.output && <pre className="mt-2 max-h-32 overflow-auto whitespace-pre-wrap break-all text-xs">{result.output}</pre>}
-      </div> : <>
+      </div> : noChanges ? <p role="status" className="text-sm">{t('cleanPublish')}</p> : <>
         <label className="flex flex-col gap-1 text-sm">{t('subject')}<Input value={title} maxLength={200} disabled={!!busy} onChange={(event) => setTitle(event.target.value)} /></label>
         <label className="flex flex-col gap-1 text-sm">{t('body')}<textarea className="min-h-32 rounded border bg-background p-2" value={body} maxLength={20000} disabled={!!busy} onChange={(event) => setBody(event.target.value)} /></label>
         {replaceConfirm && <div className="rounded border p-3 text-sm">
@@ -105,7 +111,11 @@ export default function GitCommitDialog({ sessionName, onClose, onCommitted }: {
           <Button disabled={!!busy || !preview || !title.trim()} onClick={() => void commit()}>{t('adoptAndCommit')}</Button>
         </div>
       </>}
-      <div className="flex justify-end"><Button variant="outline" disabled={!!busy} onClick={onClose}>{t('close')}</Button></div>
+      {result && preview && <GitCommitDelivery sessionName={sessionName} directory={preview.snapshot.directory}
+        branch={preview.snapshot.branch.replace(/^refs\/heads\//, '')} head={result.head} onBusy={setDeliveryBusy} />}
+      {noChanges && repository && <GitCommitDelivery sessionName={sessionName} directory={repository.directory}
+        branch={repository.branch} head={repository.head} onBusy={setDeliveryBusy} />}
+      <div className="flex justify-end"><Button variant="outline" disabled={!!busy || deliveryBusy} onClick={onClose}>{t('close')}</Button></div>
     </DialogContent>
   </Dialog>;
 }

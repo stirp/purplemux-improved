@@ -229,7 +229,7 @@ jq --slurpfile sync "sync.json" '. + {targetRef:$sync[0].targetRef,targetHead:$s
 purplemux-improved worktree merge -w ws-EXAMPLE --data @merge.json
 ```
 
-需要最新远端状态时先执行 `worktree fetch -w ws-EXAMPLE --data @item.json`，再执行 `inspect-sync`。同步修改了 HEAD 或出现冲突后，重新读取列表和快照，再使用 `continue` / `abort`。服务端保留脏文件、会话占用、忽略文件冲突及目标版本变化检查，不会在 CLI 中自动刷新并绕过确认。
+`merge` 的 `item` 是实际被修改的工作树，`targetRef` 是合入该工作树的分支。需要最新远端状态时先执行 `worktree fetch -w ws-EXAMPLE --data @item.json`，再执行 `inspect-sync`。同步修改了 HEAD 或出现冲突后，重新读取列表和快照，再使用 `continue` / `abort`。`inspect-sync` 仍报告主工作树的 `main` 阻断；仅 `merge` 可以修改主工作树，主工作树的 rebase、continue、abort 仍被阻断，合并冲突需在 Git 终端处理。服务端保留脏文件、会话占用、忽略文件冲突及目标版本变化检查，不会在 CLI 中自动刷新并绕过确认。
 
 ```bash
 # 以下操作使用重新检查过的 item.json
