@@ -44,6 +44,22 @@ describe('Sessions text search', () => {
     expect(searchSessions(items, 'login token')).toEqual([]);
   });
 
+  it('matches earlier turns by the displayed project name without broadening title matches', () => {
+    const source = [{ ...items[0], session: {
+      ...items[0].session,
+      olderEntries: [
+        entry({ id: 'old-name', workspaceName: 'Old project', completedAt: 2 }),
+        entry({ id: 'blank-name', workspaceName: ' ', completedAt: 1 }),
+      ],
+    } }];
+    const snapshot = structuredClone(source);
+    const results = searchSessions(source, '  RENAMED PROJECT  ');
+    expect(results).toHaveLength(1);
+    expect(results[0].session.olderEntries.map((older) => older.id)).toEqual(['old-name', 'blank-name']);
+    expect(searchSessions(source, '用户认证')[0].session.olderEntries).toEqual([]);
+    expect(source).toEqual(snapshot);
+  });
+
   it('finds live and indexed sessions without history, excluding deleted identities', () => {
     const sessions = collectWorkSessions([], {
       live: { workspaceId: 'ws', panelType: 'claude-code', lastUserMessage: '新任务' },

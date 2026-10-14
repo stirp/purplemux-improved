@@ -58,3 +58,20 @@ git diff --check
 - 临时脚本 `/tmp/session-project-preview.cjs`；截图 `/tmp/session-project-mobile-320.png`、`/tmp/session-project-desktop.png`。
 
 浏览器数据及 API 仍为模拟，本轮未执行生产构建、完整应用端到端或移动实机验收。
+
+## PR #39 Review 修复验证（2026-10-15）
+
+对应[项目改名后的历史匹配问题](https://github.com/stirp/purplemux-improved/pull/39#discussion_r4274445182)。本节为修复后新执行的结果。
+
+- 修复前运行搜索与 UI 测试：25 项通过、2 项失败，分别复现按当前项目名查询时旧名/空白名称的较早轮次被移除，以及页面只渲染主会话名称、未展开历史。
+- 修复后运行以下命令：74 项相关测试、完整 TypeScript、改动文件 ESLint 与 diff 检查通过。测试还确认父会话标题命中不会带出不匹配的较早轮次，原始输入不变，查询数量按会话计算。
+
+```sh
+pnpm exec vitest run "tests/unit/lib/session-workspace-name.test.ts" "tests/unit/lib/session-search.test.ts" "tests/unit/lib/session-workflow-ui.test.ts" "tests/unit/lib/session-workflow.test.ts" "tests/unit/lib/session-workflow-menu.test.ts" "tests/unit/lib/session-workspace-navigation.test.ts" "tests/unit/lib/agent-session-title.test.ts"
+pnpm exec eslint "src/lib/session-search.ts" "tests/unit/lib/session-search.test.ts" "tests/unit/lib/session-workflow-ui.test.ts"
+pnpm exec tsc --noEmit
+git diff --check
+```
+
+- 使用 agent-browser 独立会话 `pr39-review-ws3x` 和临时脚本 `/tmp/session-project-preview.cjs` 重新打包当前真实组件。搜索当前项目名中的“项目名称始终显示”时，15 个会话命中，较早记录的“修复登录问题”可见，`aria-expanded=true`，查询请求数为 0；改搜父会话标题“打包方案”后仅命中 1 个会话，无关较早记录和展开按钮消失。
+- 浏览器运行错误为空。本轮使用模拟数据及 API，没有执行真实服务端写入；未执行生产构建、完整应用端到端或移动设备实机验收。

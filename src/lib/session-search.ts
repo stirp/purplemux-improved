@@ -21,7 +21,8 @@ export const searchSessions = (items: ISessionSearchItem[], query: string): ISes
 
   return items.flatMap((item) => {
     const { session, title, workspaceName } = item;
-    const olderEntries = session.olderEntries.filter(matchesEntry);
+    const matchesProjectName = matches([workspaceName]);
+    const olderEntries = session.olderEntries.filter((entry) => matchesProjectName || matchesEntry(entry));
     const matched = matches([
       stripMarkdown(title ?? ''), workspaceName, ...(item.workspaceDirectories ?? []),
       session.navigation?.workspaceName, session.navigation?.workspaceDir, session.navigation?.agentSessionId,

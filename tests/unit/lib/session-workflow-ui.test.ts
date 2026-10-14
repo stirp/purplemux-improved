@@ -90,6 +90,9 @@ describe('Sessions workflow controls', () => {
     expect(container.querySelectorAll('[title="New project"]')).toHaveLength(2);
     await search('New project');
     expect(container.querySelector('[role="status"]')?.textContent).toBe('searchCount 1');
+    expect(container.querySelectorAll('[title="New project"]')).toHaveLength(2);
+    expect(container.textContent).toContain('Earlier prompt');
+    expect(Array.from(container.querySelectorAll('button')).find((button) => button.textContent?.startsWith('showMore'))?.getAttribute('aria-expanded')).toBe('true');
   });
 
   it('shows project names for active and entry-less indexed sessions independently of titles', async () => {
