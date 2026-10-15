@@ -3,6 +3,13 @@
 本文件保留历史任务记录，不再随单个需求追加进度。后续进度按[开发规范](../../AGENTS.md)记录在 `changes/<requirement-id>/task.md`。
 v21 已有需求继续在本版本维护；新需求进入 `.specs/v22/changes/<requirement-id>/`。使用 `rg --files --hidden ".specs" -g "task.md"` 查找各版本任务表；本文件的历史状态不代表最新验收结果。
 
+## 问题选项聚焦导致灰色空白（2026-10-15）
+
+- [x] 补充[工作区视口规格](./features/workspace-viewport/spec.md)，明确消息内部定位边界与点击、键盘、内容增长验收条件。
+- [x] 修正消息滚动容器定位边界，保留原生单选框聚焦及键盘操作。
+- [x] 16 项相关测试、完整 TypeScript、改动文件 ESLint 和 diff 检查通过；Chrome 真实组件桌面/390px 窄屏回归通过，见[本轮验证](./result/verify-touch-viewport-scroll.md#2026-10-15-问题选项聚焦导致灰色空白修复验证)。
+- [ ] 完整应用真实会话及其他浏览器、移动实机验收；本轮组件验证使用模拟会话数据。
+
 ## CI 冻结安装修复（2026-10-15）
 
 - [x] 补充[需求](./requirements/next-release.md)与[发布规格](./features/release-metadata/spec.md)。
