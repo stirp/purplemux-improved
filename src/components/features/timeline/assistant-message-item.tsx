@@ -1,4 +1,5 @@
 import EditorFileLink, { editorMarkdownUrlTransform } from '@/components/features/timeline/editor-file-link';
+import MarkdownCodeBlock from '@/components/features/timeline/markdown-code-block';
 import { memo } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -9,6 +10,7 @@ const REMARK_PLUGINS = [remarkGfm];
 const REHYPE_PLUGINS = [rehypeHighlight];
 const MARKDOWN_COMPONENTS = {
   a: EditorFileLink,
+  pre: MarkdownCodeBlock,
 };
 
 interface IAssistantMessageItemProps {

@@ -1,4 +1,7 @@
 {
+  "copyCode": "Копировать код",
+  "codeCopied": "Скопировано",
+  "codeCopyFailed": "Не удалось скопировать код. Выделите и скопируйте его вручную.",
   "requestCancelled": "Запрос отменён",
   "sessionExit": "Сессия завершена (/exit)",
   "connectionError": "Ошибка подключения",
