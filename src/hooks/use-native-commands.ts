@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { NativeCommandCompletion } from '@/lib/native-command-completion';
+import { isNativeCommandInput, NativeCommandCompletion } from '@/lib/native-command-completion';
 
 interface INativeCommandsOptions {
   scopeKey: string;
@@ -42,7 +42,7 @@ const useNativeCommands = ({ scopeKey, provider, getBufferText, sendStdin, focus
   }, []);
 
   const open = useCallback((text: string) => {
-    if (!/^\/[^\r\n]*$/.test(text)) return;
+    if (!isNativeCommandInput(provider, text)) return;
     completions.current.get(scopeKey)?.cancelPending();
     completions.current.set(scopeKey, new NativeCommandCompletion(provider, getBufferText, () => finish(scopeKey)));
     setOpenScopes((current) => new Set(current).add(scopeKey));

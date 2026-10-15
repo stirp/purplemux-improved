@@ -15,6 +15,7 @@ import MessageHistoryPicker from '@/components/features/workspace/message-histor
 import { isImageFile, uploadImage } from '@/lib/upload-image-client';
 import { uploadFile } from '@/lib/upload-file-client';
 import { loadAttachmentDraft, saveAttachmentDraft } from '@/lib/attachment-draft';
+import { isNativeCommandInput } from '@/lib/native-command-completion';
 import type { TCliState } from '@/types/timeline';
 
 const DEFAULT_MAX_ROWS = 5;
@@ -521,7 +522,7 @@ const WebInputBar = ({
               value={value}
               onChange={(e) => {
                 const next = e.target.value;
-                if (!value && next === '/' && !(e.nativeEvent as InputEvent).isComposing && openNativeCommands(next)) return;
+                if (!value && next.length === 1 && isNativeCommandInput(provider, next) && !(e.nativeEvent as InputEvent).isComposing && openNativeCommands(next)) return;
                 setValue(next);
               }}
               onKeyDown={handleKeyDown}
@@ -569,7 +570,7 @@ const WebInputBar = ({
               </Button>
             )}
             </div>
-            {onNativeCommands && /^\/[^\r\n]*$/.test(value) && (
+            {onNativeCommands && isNativeCommandInput(provider, value) && (
               <Button variant="ghost" size="sm" className="self-start text-xs" onClick={() => openNativeCommands(value)}
                 disabled={!canSend || cliState === 'needs-input' || cliState === 'unknown' || hasAttachments}>
                 {t('nativeCommandsOpen')}

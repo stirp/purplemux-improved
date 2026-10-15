@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { isNativeCommandComposerReady, NativeCommandCompletion } from '@/lib/native-command-completion';
+import { isNativeCommandInput, isNativeCommandComposerReady, NativeCommandCompletion } from '@/lib/native-command-completion';
 
 const claude = '────────────────────\n❯\n────────────────────\n  bypass permissions on';
 const codex = '› Ask Codex to do anything\n\n  gpt-5.5 high · ~/repo';
@@ -7,7 +7,43 @@ const codex = '› Ask Codex to do anything\n\n  gpt-5.5 high · ~/repo';
 beforeEach(() => vi.useFakeTimers());
 afterEach(() => vi.useRealTimers());
 
+describe('native command input', () => {
+  it.each(['/', '/model', '/model with arguments'])('accepts %j for both providers', (text) => {
+    expect(isNativeCommandInput('claude', text)).toBe(true);
+    expect(isNativeCommandInput('codex', text)).toBe(true);
+  });
+
+  it.each(['$', '$skill', '$skill with arguments'])('accepts %j only for Codex', (text) => {
+    expect(isNativeCommandInput('codex', text)).toBe(true);
+    expect(isNativeCommandInput('claude', text)).toBe(false);
+  });
+
+  it.each(['', ' $skill', 'use $skill', '$skill\nnext', '$skill\rnext', '/model\nnext'])('keeps %j as ordinary input', (text) => {
+    expect(isNativeCommandInput('codex', text)).toBe(false);
+    expect(isNativeCommandInput('claude', text)).toBe(false);
+  });
+});
+
 describe('native command completion', () => {
+  it('keeps Codex skill selection and its unsubmitted draft active until the composer clears', () => {
+    let screen = codex;
+    const complete = vi.fn();
+    const completion = new NativeCommandCompletion('codex', () => screen, complete);
+    for (const draft of ['$', '$skill', '$skill help me']) {
+      screen = codex.replace('Ask Codex to do anything', draft);
+      completion.input('\r');
+      completion.parsed(screen);
+      vi.advanceTimersByTime(1000);
+      expect(complete).not.toHaveBeenCalled();
+    }
+    completion.input('\x1b');
+    screen = codex;
+    completion.parsed(screen);
+    vi.advanceTimersByTime(250);
+    expect(complete).toHaveBeenCalledOnce();
+    expect(isNativeCommandComposerReady('claude', claude.replace('❯', '❯ $skill'))).toBe(true);
+  });
+
   it.each([['claude', claude], ['codex', codex]] as const)('keeps %s command menus active, then returns after the composer is restored', (provider, idle) => {
     let screen: string = idle;
     const complete = vi.fn();
