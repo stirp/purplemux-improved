@@ -30,3 +30,19 @@
 - 浏览器剪贴板读取权限被拒绝，改用真实粘贴操作验证内容，结果匹配。
 - 截图临时保存在 `/tmp/ai-code-copy-Lx8v2d/`：`mobile-light.png`、`mobile-dark.png`、`mobile-plan-dark.png`、`desktop-light.png`、`desktop-dark.png`；临时文件不作为仓库持久化产物。
 - 本次执行了组件浏览器验收，未运行完整 Next.js 生产构建、全量测试、真实会话端到端测试、移动设备或 Electron 实机验收。
+
+## PR #43 审查修复验证（2026-10-16）
+
+以下为此次计时修复的实际执行结果，前文 2026-10-15 浏览器结果仅为历史记录。
+
+| 检查 | 命令或场景 | 结果 |
+| --- | --- | --- |
+| 修复前复现 | `pnpm exec vitest run tests/unit/lib/markdown-code-block.test.ts`；首次成功后 1900ms 再次复制，再过 100ms | 7 项通过、1 项失败；反馈错误地恢复为 `copyCode`，成功复现审查问题 |
+| 修复后相关测试 | `pnpm exec vitest run tests/unit/lib/markdown-code-block.test.ts tests/unit/lib/editor-file-link.test.ts tests/unit/lib/markdown-browser-compatibility.test.ts` | 3 个文件、27 项通过 |
+| 连续成功（CB-03） | 1900ms 时再次复制，旧到期点及第二次成功后 1999ms 仍显示成功，2000ms 恢复 | 通过 |
+| 连续失败与重试（CB-03） | 成功后再次复制失败，立即恢复按钮并清理计时器；重试成功保持完整两秒 | 通过 |
+| 完整类型检查 | `pnpm exec tsc --noEmit` | 通过 |
+| 改动文件 ESLint | `pnpm exec eslint src/components/features/timeline/markdown-code-block.tsx tests/unit/lib/markdown-code-block.test.ts` | 通过 |
+| 差异格式 | `git diff --check` | 通过 |
+
+本次仅修改反馈状态和计时器生命周期，使用组件假时钟验证精确时间边界，未重复执行浏览器、生产构建、全量测试或实机验收。修复尚未提交或推送，远端 CI 结果不代表本次本地变更。

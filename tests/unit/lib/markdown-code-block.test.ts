@@ -71,6 +71,39 @@ describe('AI Markdown code copying', () => {
     expect(vi.getTimerCount()).toBe(0);
   });
 
+  it('restarts feedback for two seconds after a repeat copy near expiry', async () => {
+    vi.useFakeTimers();
+    await renderMessage('```\ntext\n```');
+    await act(async () => copyButtons()[0].click());
+    await act(async () => vi.advanceTimersByTime(1900));
+    await act(async () => copyButtons()[0].click());
+    expect(writeText).toHaveBeenCalledTimes(2);
+    await act(async () => vi.advanceTimersByTime(100));
+    expect(copyButtons()[0].textContent).toBe('codeCopied');
+    await act(async () => vi.advanceTimersByTime(1899));
+    expect(copyButtons()[0].textContent).toBe('codeCopied');
+    await act(async () => vi.advanceTimersByTime(1));
+    expect(copyButtons()[0].textContent).toBe('copyCode');
+    expect(vi.getTimerCount()).toBe(0);
+  });
+
+  it('clears pending feedback when a repeat copy fails and allows retry', async () => {
+    vi.useFakeTimers();
+    await renderMessage('```\nretry\n```');
+    await act(async () => copyButtons()[0].click());
+    await act(async () => vi.advanceTimersByTime(1900));
+    writeText.mockRejectedValueOnce(new Error('Permission denied'));
+    await act(async () => copyButtons()[0].click());
+    expect(toast.error).toHaveBeenCalledWith('codeCopyFailed');
+    expect(copyButtons()[0].textContent).toBe('copyCode');
+    expect(vi.getTimerCount()).toBe(0);
+    await act(async () => copyButtons()[0].click());
+    await act(async () => vi.advanceTimersByTime(1999));
+    expect(copyButtons()[0].textContent).toBe('codeCopied');
+    await act(async () => vi.advanceTimersByTime(1));
+    expect(copyButtons()[0].textContent).toBe('copyCode');
+  });
+
   it('reports denied clipboard access and allows retry', async () => {
     writeText.mockRejectedValueOnce(new Error('Permission denied'));
     await renderMessage('```\nretry\n```');

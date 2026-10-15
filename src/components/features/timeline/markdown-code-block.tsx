@@ -10,17 +10,18 @@ import { cn } from '@/lib/utils';
 const MarkdownCodeBlock = ({ children, className, node: _node, ...props }: ComponentProps<'pre'> & ExtraProps) => {
   const t = useTranslations('timeline');
   const preRef = useRef<HTMLPreElement>(null);
-  const [copied, setCopied] = useState(false);
+  const [copyCount, setCopyCount] = useState(0);
+  const copied = copyCount > 0;
 
   useEffect(() => {
-    if (!copied) return;
-    const timeout = setTimeout(() => setCopied(false), 2000);
+    if (copyCount === 0) return;
+    const timeout = setTimeout(() => setCopyCount(0), 2000);
     return () => clearTimeout(timeout);
-  }, [copied]);
+  }, [copyCount]);
 
   const handleCopy = async () => {
     const success = await copyToClipboard(preRef.current?.textContent ?? '');
-    setCopied(success);
+    setCopyCount((count) => success ? count + 1 : 0);
     if (!success) toast.error(t('codeCopyFailed'));
   };
 
