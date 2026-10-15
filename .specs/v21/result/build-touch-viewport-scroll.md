@@ -7,3 +7,11 @@
 验证结果见[验证记录](./verify-touch-viewport-scroll.md)。
 
 2026-10-14 PR #35 Review 修复：Firefox 111 不支持 `:has()`，由 `PageShell` 挂载时给 `html` 添加 `app-viewport-active`，卸载时移除；CSS 改为普通类选择器。新增页面外壳生命周期测试覆盖桌面与移动分支。
+
+## 2026-10-15 问题选项聚焦导致灰色空白
+
+先更新需求、工作区视口规格、PRD 索引与任务表，再修改 `src/components/features/timeline/timeline-view.tsx`：为 `role="log"` 的实际消息滚动容器增加 `relative`。
+
+问题卡片中的 `sr-only` 单选框及 legend 使用绝对定位。原先其定位祖先在消息滚动容器外，导致隐藏控件的溢出计入外层 Panel；点击选项聚焦控件时 Chrome 滚动外层 Panel，随后滚轮可继续滚出底层终端背景。新增定位边界后，隐藏控件留在消息滚动区域内。
+
+采用一个 Tailwind 类完成修正，复用现有布局和原生聚焦行为，符合 KISS/YAGNI；未引入额外滚动状态、观察器或事件拦截。完整 TypeScript、相关测试与 Chrome 真实组件对照证据见[验证记录](./verify-touch-viewport-scroll.md#2026-10-15-问题选项聚焦导致灰色空白修复验证)。
