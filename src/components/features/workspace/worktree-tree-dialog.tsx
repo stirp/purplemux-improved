@@ -110,6 +110,10 @@ export default function WorktreeTreeDialog({ root, onClose, onSelect }: { root: 
     } finally { setBusy(false); setConfirm(null); setRefresh((value) => value + 1); }
   };
 
+  if (confirm && !descendants.some(({ parent, child }) => parent.id === confirm.edge.parent.id && child.id === confirm.edge.child.id)) {
+    setConfirm(null);
+  }
+
   if (recovery) return <WorktreeDeliveryDialog workspaceId={root.id} item={recovery} onClose={() => { setRecovery(null); setRefresh((value) => value + 1); }} />;
   return <Dialog open onOpenChange={(open) => { if (!open && !busy && !managerBusy) onClose(); }}>
     <DialogContent className="max-h-[85dvh] overflow-y-auto sm:max-w-4xl" showCloseButton={!busy && !managerBusy}>
@@ -123,12 +127,15 @@ export default function WorktreeTreeDialog({ root, onClose, onSelect }: { root: 
       {loadError && <p role="alert" className="whitespace-pre-wrap break-all text-sm text-ui-red">{loadError}</p>}
       {operationError && <p role="alert" className="whitespace-pre-wrap break-all text-sm text-ui-red">{operationError}</p>}
       {!overview && !loadError && <p role="status">{t('loading')}</p>}
-      {confirm && <div className="rounded-lg border p-3"><p>{t('confirm', { source: confirm.direction === 'parent' ? confirm.edge.child.name : confirm.edge.parent.name, destination: confirm.direction === 'parent' ? confirm.edge.parent.name : confirm.edge.child.name })}</p><div className="mt-3 flex gap-2"><Button disabled={busy} onClick={() => void merge()}>{t('merge')}</Button><Button variant="outline" disabled={busy} onClick={() => setConfirm(null)}>{t('cancel')}</Button></div></div>}
       {edges.map((edge) => <div key={edge.child.id} className="rounded-lg border-l-2 border-ui-blue bg-muted/20 p-3" style={{ marginLeft: Math.min(edge.depth, 4) * 16 }}>
         <div className="flex items-center gap-2 font-medium"><ArrowDownRight size={16} className="text-ui-blue" /><span>{edge.parent.name}</span><span aria-hidden="true">→</span><span>{edge.child.name}</span></div>
         {edge.info ? <><p className="mt-2 text-sm">{t('childAhead', { count: edge.info.ahead ?? 0 })} · {t('parentAhead', { count: edge.info.behind ?? 0 })}</p>
           <div className="mt-2 flex flex-wrap gap-2"><Button size="sm" variant="outline" disabled={busy || !!confirm || !edge.info.ahead || !!edge.info.operation} onClick={() => setConfirm({ edge, direction: 'parent' })}>{t('mergeIntoParent')}</Button><Button size="sm" variant="outline" disabled={busy || !!confirm || !edge.info.behind || !!edge.info.operation || !!edge.info.blockers.length} onClick={() => setConfirm({ edge, direction: 'child' })}>{t('mergeIntoChild')}</Button>{edge.info.operation && <Button size="sm" onClick={() => setRecovery(edge.childItem)}>{t('recover')}</Button>}</div>
           {!!edge.info.blockers.length && <p className="mt-2 text-xs text-muted-foreground">{edge.info.blockers.join(', ')}</p>}</> : <p role="status" className="mt-2 text-sm text-muted-foreground">{edge.error}</p>}
+        {confirm?.edge.parent.id === edge.parent.id && confirm.edge.child.id === edge.child.id && <div className="mt-3 rounded-lg border bg-background p-3">
+          <p className="break-words">{t('confirm', { source: confirm.direction === 'parent' ? confirm.edge.child.name : confirm.edge.parent.name, destination: confirm.direction === 'parent' ? confirm.edge.parent.name : confirm.edge.child.name })}</p>
+          <div className="mt-3 flex flex-wrap gap-2"><Button disabled={busy} onClick={() => void merge()}>{t('merge')}</Button><Button variant="outline" disabled={busy} onClick={() => setConfirm(null)}>{t('cancel')}</Button></div>
+        </div>}
       </div>)}
       </div>
       {openedRepository && <div role="tabpanel" hidden={view !== 'repository'}>
