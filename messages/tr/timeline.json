@@ -1,4 +1,7 @@
 {
+  "copyCode": "Kodu kopyala",
+  "codeCopied": "Kopyalandı",
+  "codeCopyFailed": "Kod kopyalanamadı. Lütfen seçip elle kopyalayın.",
   "requestCancelled": "İstek iptal edildi",
   "sessionExit": "Oturum sonlandı (/exit)",
   "connectionError": "Bağlantı hatası",

@@ -1,4 +1,5 @@
 import EditorFileLink, { editorMarkdownUrlTransform } from '@/components/features/timeline/editor-file-link';
+import MarkdownCodeBlock from '@/components/features/timeline/markdown-code-block';
 import { useState, useEffect, memo } from 'react';
 import { useTranslations } from 'next-intl';
 import { ClipboardList, Eye, TerminalSquare, Check } from 'lucide-react';
@@ -21,6 +22,7 @@ const REMARK_PLUGINS = [remarkGfm];
 const REHYPE_PLUGINS = [rehypeHighlight];
 const MARKDOWN_COMPONENTS = {
   a: EditorFileLink,
+  pre: MarkdownCodeBlock,
 };
 
 interface IPlanItemProps {

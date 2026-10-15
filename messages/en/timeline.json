@@ -1,4 +1,7 @@
 {
+  "copyCode": "Copy code",
+  "codeCopied": "Copied",
+  "codeCopyFailed": "Could not copy code. Please select and copy it manually.",
   "requestCancelled": "Request cancelled",
   "sessionExit": "Session exited (/exit)",
   "connectionError": "Connection error",

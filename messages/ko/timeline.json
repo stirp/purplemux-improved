@@ -1,4 +1,7 @@
 {
+  "copyCode": "코드 복사",
+  "codeCopied": "복사됨",
+  "codeCopyFailed": "코드를 복사하지 못했습니다. 직접 선택하여 복사해 주세요.",
   "requestCancelled": "요청 취소됨",
   "sessionExit": "세션 종료(/exit)",
   "connectionError": "연결 오류",

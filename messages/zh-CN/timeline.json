@@ -1,4 +1,7 @@
 {
+  "copyCode": "复制代码",
+  "codeCopied": "已复制",
+  "codeCopyFailed": "代码复制失败，请手动选中并复制。",
   "requestCancelled": "请求已取消",
   "sessionExit": "会话已退出 (/exit)",
   "connectionError": "连接错误",

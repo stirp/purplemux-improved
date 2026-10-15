@@ -1,4 +1,7 @@
 {
+  "copyCode": "Copiar código",
+  "codeCopied": "Copiado",
+  "codeCopyFailed": "Não foi possível copiar o código. Selecione e copie manualmente.",
   "requestCancelled": "Solicitacao cancelada",
   "sessionExit": "Sessao encerrada (/exit)",
   "connectionError": "Erro de conexao",
