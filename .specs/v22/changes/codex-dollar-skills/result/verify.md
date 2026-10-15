@@ -1,16 +1,10 @@
-# 实施与验证记录
+# 验证记录
 
-## 实施
+关联：[需求规格](../spec.md)、[实施记录](./build.md)、[任务进度](../task.md)。
 
-2026-10-15：先完成本需求规格，再实现代码。
+## 2026-10-15 功能验证
 
-- `src/lib/native-command-completion.ts`：统一按 provider 识别单行原生菜单输入，Codex 接受 `/` 和 `$`，Claude 仅接受 `/`；完成检测复用同一规则，避免技能前缀及未提交草稿导致提前恢复焦点。
-- `src/hooks/use-native-commands.ts`：复用上述判定，沿用原有终端展开、发送、焦点管理、作用域和手动返回流程。
-- `src/components/features/workspace/web-input-bar.tsx`：空输入框单字符自动触发及单行草稿手动入口采用共享判定，桌面和移动端共同生效。
-- 遵循 KISS/DRY：仅扩展现有通道的输入判定，不新增技能查询 API、Web 列表、状态模型或依赖。
-- 已阅读 Next.js 16.2.6 随包 Pages Router 表单及 Vitest 指引；本次不涉及路由或服务端表单行为。
-
-## 验证
+以下保留原功能实施时的验证证据，未在 2026-10-16 文档拆分时重新运行应用检查。
 
 工作区初始未安装依赖；执行 `pnpm install --frozen-lockfile` 成功，package.json 和锁文件未变更。
 
@@ -33,3 +27,11 @@
 ## 限制
 
 未运行真实浏览器、移动设备或 Codex TUI 联调。自动化覆盖输入交接和模拟屏幕完成检测；真实技能列表及其展示由当前 Codex 版本、会话和技能安装状态决定，不能据此声称实机验收通过。
+
+## 2026-10-16 PR 审查修正验证
+
+- 对应 [PR #42 审查意见](https://github.com/stirp/purplemux-improved/pull/42#discussion_r4285896890)：实施和验证证据分别位于 `result/build.md` 与 `result/verify.md`。
+- 使用 Python 对照 `git show HEAD:.specs/v22/changes/codex-dollar-skills/result.md` 检查原实施段、验证表、命令结果及限制说明均完整保留，并检查本需求 Markdown 相对链接和 `depends_on` 路径：通过。
+- 使用 `rg -n --hidden --glob '!.git/**' --glob '!node_modules/**' --glob '!.next/**' --glob '!dist/**' 'codex-dollar-skills/result\.md|\]\(\./result\.md\)' .` 搜索旧路径引用：本需求旧文档链接无残留；验证命令中保留旧路径用于追溯原证据，其他需求的独立 `result.md` 链接不受本次调整影响。
+- `git diff --check`：通过。
+- 本次仅调整需求证据文档，按仓库纯文档变更规则检查内容、路径、链接和差异格式；未重新运行应用测试、TypeScript、ESLint、生产构建或浏览器验收。

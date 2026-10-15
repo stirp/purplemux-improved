@@ -3,7 +3,7 @@ page: codex-dollar-skills
 title: Codex 输入框美元符号联动原生技能选择
 status: DETAILED
 created: 2026-10-15
-updated: 2026-10-15
+updated: 2026-10-16
 depends_on:
   - ../../../v20/features/native-commands/spec.md
 ---
@@ -32,4 +32,4 @@ depends_on:
 4. 技能菜单和以 `$` 开头的未提交草稿不会被完成检测提前关闭；取消或提交后恢复普通输入界面才结束原生交互；手动返回可清空输入并恢复焦点。
 5. 自动化测试、完整 TypeScript 和改动文件 ESLint 记录实际结果；构建或浏览器验证与实机验收状态分别记录。
 
-见[任务](./task.md)及[实施与验证记录](./result.md)。
+见[任务](./task.md)、[实施记录](./result/build.md)及[验证记录](./result/verify.md)。
