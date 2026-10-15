@@ -3,8 +3,8 @@
 ## CI 冻结安装修复（2026-10-15）
 
 - [x] 补充[需求](./requirements/next-release.md)与[发布规格](./features/release-metadata/spec.md)。
-- [ ] 复现并修复包管理器与锁文件不一致。
-- [ ] 验证冻结安装、依赖版本及完整类型检查，更新实施和验证记录。
+- [x] 从 Actions 日志确认锁文件缺少 pnpm 12 的 packageManagerDependencies，补齐锁文件元数据。
+- [x] 本地冻结安装、锁文件差异及完整类型检查通过；远端 Actions 验收待修复提交后进行。
 
 ## 暂停 Electron 自动发布（2026-10-15）
 

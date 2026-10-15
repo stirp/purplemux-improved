@@ -1,5 +1,11 @@
 # 下一版版本准备实施记录
 
+## 2026-10-15 CI 冻结安装修复
+
+- 标签 `v0.5.3` 已推送到 `156deb10`；Actions 运行 `38664915587` 的 check 在 `pnpm install --frozen-lockfile` 失败，提示缺少 `packageManagerDependencies`。
+- 工作区使用 pnpm 12.11.2 补齐 `pnpm-lock.yaml` 的包管理器依赖记录，应用依赖声明、覆盖与补丁未改动。
+- 此修复需要独立提交；此前的 `v0.5.3` 标签提交不会自动包含锁文件改动。
+
 日期：2026-10-13。依据：[需求](../requirements/next-release.md)、[规格](../features/release-metadata/spec.md)。
 
 - 执行 `npm version patch --no-git-tag-version`，将 package.json 版本由 0.5.2 提升到 0.5.3；未创建 Git 提交或标签。

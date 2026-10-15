@@ -1,5 +1,17 @@
 # 下一版版本准备验证记录
 
+## 2026-10-15 CI 冻结安装检查
+
+| 检查 | 本次结果 |
+| --- | --- |
+| GitHub Actions `38664915587` | check 的冻结安装失败，publish-npm 跳过；官方 npm latest 仍为 0.5.2 |
+| `pnpm --version` | 12.11.2，与 package.json 一致 |
+| `pnpm install --frozen-lockfile --lockfile-only`、`pnpm install --frozen-lockfile` | 补齐锁文件后均通过 |
+| `pnpm tsc --noEmit`、`git diff --check` | 通过 |
+| 锁文件差异 | 新增 pnpm 12.11.2 的 packageManagerDependencies 与对应平台快照；现有应用依赖版本和补丁配置保持原样 |
+
+未在新提交上触发 Actions；远端发布仍未通过。
+
 日期：2026-10-13。依据：[需求](../requirements/next-release.md)、[规格](../features/release-metadata/spec.md)。
 
 | 检查 | 本次结果 |
