@@ -1,5 +1,8 @@
 # v21 任务进度
 
+本文件保留历史任务记录，不再随单个需求追加进度。后续进度按[开发规范](../../AGENTS.md)记录在 `changes/<requirement-id>/task.md`。
+v21 已有需求继续在本版本维护；新需求进入 `.specs/v22/changes/<requirement-id>/`。使用 `rg --files --hidden ".specs" -g "task.md"` 查找各版本任务表；本文件的历史状态不代表最新验收结果。
+
 ## 问题选项聚焦导致灰色空白（2026-10-15）
 
 - [x] 补充[工作区视口规格](./features/workspace-viewport/spec.md)，明确消息内部定位边界与点击、键盘、内容增长验收条件。
