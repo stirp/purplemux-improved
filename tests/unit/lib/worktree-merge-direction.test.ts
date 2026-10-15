@@ -30,6 +30,113 @@ const overview = { repositories: [{ id: '/repo/.git', worktrees: [
 
 afterEach(() => { request.mockReset(); vi.unstubAllGlobals(); });
 
+it.each(['mergeIntoParent', 'mergeIntoChild'])('expands %s confirmation inside the selected relationship after refresh and cancellation', async (label) => {
+  vi.stubGlobal('IS_REACT_ACT_ENVIRONMENT', true);
+  const originalWorkspaces = state.workspaces;
+  state.workspaces = [...originalWorkspaces,
+    { id: 'ws-sibling', name: 'Sibling', parentWorkspaceId: 'ws-parent', directories: ['/sibling'] },
+    { id: 'ws-nested', name: 'Nested', parentWorkspaceId: 'ws-sibling', directories: ['/nested'] },
+  ];
+  vi.stubGlobal('fetch', vi.fn().mockImplementation(async () => Response.json({
+    ...overview, repositories: [{ ...overview.repositories[0], worktrees: [
+      ...overview.repositories[0].worktrees,
+      { directory: '/sibling', head: childHead, branch: 'sibling', workspaces: [{ id: 'ws-sibling' }] },
+      { directory: '/nested', head: childHead, branch: 'nested', workspaces: [{ id: 'ws-nested' }] },
+    ] }],
+  })));
+  request.mockResolvedValue({ ahead: 1, behind: 1, blockers: [], operation: null });
+  const container = document.createElement('div');
+  const root = createRoot(container);
+  const buttons = (text: string) => [...container.querySelectorAll('button')].filter((node) => node.textContent === text);
+  const card = (index: number) => buttons(label)[index].parentElement!.parentElement!;
+  try {
+    await act(async () => root.render(createElement(WorktreeTreeDialog, {
+      root: state.workspaces[0], onClose: vi.fn(), onSelect: vi.fn(),
+    })));
+    expect(buttons(label)).toHaveLength(3);
+    await act(async () => buttons(label)[2].click());
+    const confirmation = buttons('merge')[0].parentElement!.parentElement!;
+    expect(confirmation.parentElement).toBe(card(2));
+    expect(buttons(label)[2].compareDocumentPosition(confirmation) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(confirmation.textContent).toContain(`confirm${JSON.stringify(label === 'mergeIntoParent'
+      ? { source: 'Nested', destination: 'Sibling' }
+      : { source: 'Sibling', destination: 'Nested' })}`);
+    expect(buttons('merge')).toHaveLength(1);
+    expect(buttons(label).every((node) => node.disabled)).toBe(true);
+    expect(request.mock.calls.every((call) => call[1] === 'inspectSync')).toBe(true);
+
+    await act(async () => buttons('refresh')[0].click());
+    expect(buttons('merge')[0].parentElement!.parentElement!.parentElement).toBe(card(2));
+    expect(buttons('merge')).toHaveLength(1);
+    await act(async () => buttons('cancel')[0].click());
+    expect(buttons('merge')).toHaveLength(0);
+    expect(buttons(label).every((node) => !node.disabled)).toBe(true);
+    expect(request.mock.calls.every((call) => call[1] === 'inspectSync')).toBe(true);
+
+    await act(async () => buttons(label)[0].click());
+    expect(buttons('merge')[0].parentElement!.parentElement!.parentElement).toBe(card(0));
+    expect(buttons('merge')).toHaveLength(1);
+  } finally {
+    await act(async () => root.unmount());
+    state.workspaces = originalWorkspaces;
+  }
+});
+
+it.each(['deleted', 'reparented', 'deleted-refresh-failed'])('clears confirmation when its relationship is %s', async (scenario) => {
+  vi.stubGlobal('IS_REACT_ACT_ENVIRONMENT', true);
+  const originalWorkspaces = state.workspaces;
+  const workspaces = [...originalWorkspaces,
+    { id: 'ws-sibling', name: 'Sibling', parentWorkspaceId: 'ws-parent', directories: ['/sibling'] },
+  ];
+  state.workspaces = workspaces;
+  const fetch = vi.fn().mockImplementation(async () => Response.json({
+    ...overview, repositories: [{ ...overview.repositories[0], worktrees: [
+      ...overview.repositories[0].worktrees,
+      { directory: '/sibling', head: childHead, branch: 'sibling', workspaces: [{ id: 'ws-sibling' }] },
+    ] }],
+  }));
+  vi.stubGlobal('fetch', fetch);
+  request.mockResolvedValue({ ahead: 1, behind: 1, blockers: [], operation: null });
+  const container = document.createElement('div');
+  const root = createRoot(container);
+  const render = () => root.render(createElement(WorktreeTreeDialog, {
+    root: workspaces[0], onClose: vi.fn(), onSelect: vi.fn(),
+  }));
+  const buttons = (label: string) => [...container.querySelectorAll('button')].filter((node) => node.textContent === label);
+  try {
+    await act(async () => render());
+    await act(async () => buttons('mergeIntoChild')[0].click());
+    expect(buttons('merge')).toHaveLength(1);
+    await act(async () => buttons('title')[0].click());
+    await act(async () => buttons('relationships')[0].click());
+    expect(buttons('merge')).toHaveLength(1);
+    await act(async () => buttons('title')[0].click());
+
+    state.workspaces = scenario === 'reparented'
+      ? workspaces.map((workspace) => workspace.id === 'ws-child' ? { ...workspace, parentWorkspaceId: 'ws-sibling' } : workspace)
+      : workspaces.filter((workspace) => workspace.id !== 'ws-child');
+    if (scenario === 'deleted-refresh-failed') {
+      fetch.mockResolvedValueOnce(Response.json({ error: 'Overview unavailable' }, { status: 503 }));
+    }
+    await act(async () => render());
+    await act(async () => buttons('relationships')[0].click());
+    expect(buttons('merge')).toHaveLength(0);
+    expect(buttons('mergeIntoChild').length).toBeGreaterThan(0);
+    expect(buttons('mergeIntoChild').every((node) => !node.disabled)).toBe(true);
+    if (scenario === 'deleted-refresh-failed') expect(container.textContent).toContain('Overview unavailable');
+
+    state.workspaces = workspaces;
+    await act(async () => render());
+    expect(buttons('merge')).toHaveLength(0);
+    await act(async () => buttons('mergeIntoChild')[1].click());
+    expect(container.textContent).toContain('confirm{"source":"Parent","destination":"Sibling"}');
+    expect(request.mock.calls.every((call) => call[1] === 'inspectSync')).toBe(true);
+  } finally {
+    await act(async () => root.unmount());
+    state.workspaces = originalWorkspaces;
+  }
+});
+
 it.each([
   ['mergeIntoParent', '/parent', 'refs/heads/feature', childHead, 'Child', 'Parent'],
   ['mergeIntoChild', '/child', 'refs/heads/main', parentHead, 'Parent', 'Child'],
