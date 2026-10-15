@@ -3,14 +3,18 @@ import { isCodexTuiReadyContent } from '@/lib/codex-tui-ready-detector';
 
 type TProvider = 'claude' | 'codex';
 
+export const isNativeCommandInput = (provider: TProvider, text: string): boolean =>
+  (provider === 'codex' ? /^[/$][^\r\n]*$/ : /^\/[^\r\n]*$/).test(text);
+
 export const isNativeCommandComposerReady = (provider: TProvider, content: string): boolean => {
   const lines = content.trimEnd().split('\n').slice(-16);
   const tail = lines.join('\n');
-  // Slash completions and nested menus may retain the ordinary composer behind them.
+  // Native completions and nested menus may retain the ordinary composer behind them.
   if (/(?:esc(?:ape)?\s+(?:to\s+)?(?:cancel|go back|close|interrupt|stop)|(?:enter|↵)\s+(?:to\s+)?(?:select|confirm)|[↑↓].*(?:select|navigate))/i.test(tail)) return false;
   const marker = provider === 'codex' ? /^\s*›/ : /^\s*❯/;
   const composer = [...lines].reverse().find((line) => marker.test(line));
-  if (!composer || /^\s*[›❯]\s*(?:\/|\d+\.\s|\[[ x-]\])/.test(composer)) return false;
+  if (!composer || /^\s*[›❯]\s*(?:\d+\.\s|\[[ x-]\])/.test(composer)) return false;
+  if (isNativeCommandInput(provider, composer.replace(marker, '').trimStart())) return false;
   return provider === 'codex' ? isCodexTuiReadyContent(content) : isClaudeTuiReadyContent(content);
 };
 
