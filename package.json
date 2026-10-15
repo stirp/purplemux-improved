@@ -20,10 +20,16 @@
     "claude-code"
   ],
   "engines": {
-    "node": ">=20.0.0"
+    "node": ">=24.0.0"
   },
-  "packageManager": "pnpm@11.5.2",
-  "browserslist": ["chrome 111", "edge 111", "firefox 111", "safari 15.4", "ios_saf 15.4"],
+  "packageManager": "pnpm@12.11.2",
+  "browserslist": [
+    "chrome 111",
+    "edge 111",
+    "firefox 111",
+    "safari 15.4",
+    "ios_saf 15.4"
+  ],
   "main": "dist-electron/main.js",
   "bin": {
     "purplemux-improved": "./bin/purplemux.js"
