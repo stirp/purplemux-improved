@@ -1,5 +1,18 @@
 # v21 任务进度
 
+## CI 冻结安装修复（2026-10-15）
+
+- [x] 补充[需求](./requirements/next-release.md)与[发布规格](./features/release-metadata/spec.md)。
+- [ ] 复现并修复包管理器与锁文件不一致。
+- [ ] 验证冻结安装、依赖版本及完整类型检查，更新实施和验证记录。
+
+## 暂停 Electron 自动发布（2026-10-15）
+
+- [x] 补齐[发布规格](./features/release-metadata/spec.md)，约定只发布 npm 包与 GitHub 发布说明。
+- [x] 移除 Electron 构建及 GitHub Release 的产物依赖。
+- [x] 工作流结构、完整 TypeScript 和差异检查通过，ESLint 未配置 YAML 检查；见[实施记录](./result/build-next-release.md)与[验证记录](./result/verify-next-release.md)。
+- [ ] 实际标签触发及远端发布验收（本次不执行发布）。
+
 ## Sessions 查询（2026-10-15）
 
 - [x] PR #39 Review：较早轮次按实际显示的项目名称匹配，修复改名后搜索不展开旧记录；74 项相关测试、完整 TypeScript、改动文件 ESLint、diff 与组件浏览器验证通过，见[本轮记录](./result/verify-session-search.md#pr-39-review-修复验证2026-10-15)。

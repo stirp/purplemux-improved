@@ -70,42 +70,8 @@ jobs:
 
       - run: npm publish --provenance --access public --loglevel=verbose
 
-  build-electron:
-    needs: check
-    runs-on: macos-14
-    env:
-      APPLE_ID: ${{ secrets.APPLE_ID }}
-      APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
-      APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
-      CSC_LINK: ${{ secrets.CSC_LINK }}
-      CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
-    steps:
-      - uses: actions/checkout@v6
-
-      - uses: pnpm/action-setup@v5
-
-      - uses: actions/setup-node@v6
-        with:
-          node-version: 24
-          cache: pnpm
-
-      - run: pnpm install --frozen-lockfile
-      - run: pnpm build:electron
-      - run: pnpm exec electron-builder --mac --publish never
-
-      - uses: actions/upload-artifact@v7
-        with:
-          name: electron-mac
-          path: |
-            release/*.dmg
-            release/*.zip
-            release/*.blockmap
-            release/latest-mac.yml
-          if-no-files-found: error
-          retention-days: 7
-
   github-release:
-    needs: [publish-npm, build-electron]
+    needs: publish-npm
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -113,11 +79,6 @@ jobs:
       - uses: actions/checkout@v6
         with:
           fetch-depth: 0
-
-      - uses: actions/download-artifact@v8
-        with:
-          name: electron-mac
-          path: mac/
 
       - name: Generate changelog with Claude
         id: changelog
@@ -144,9 +105,3 @@ jobs:
         with:
           body: ${{ steps.changelog.outputs.body }}
           generate_release_notes: ${{ steps.changelog.outputs.has_body != 'true' }}
-          files: |
-            mac/*.dmg
-            mac/*.zip
-            mac/*.blockmap
-            mac/latest-mac.yml
-          fail_on_unmatched_files: true
