@@ -30,6 +30,21 @@ describe('terminal command API', () => {
     await request('DELETE', { id: 'one' });
     expect(mocks.update).toHaveBeenLastCalledWith({ action: 'delete', id: 'one' });
   });
+  it.each(['POST', 'PATCH'])('%s rejects every forbidden C0, DEL and C1 character before persistence', async (method) => {
+    const controls = [...Array.from({ length: 32 }, (_, code) => code), ...Array.from({ length: 33 }, (_, offset) => 0x7f + offset)];
+    for (const code of controls.filter((code) => ![9, 10, 13].includes(code))) {
+      const res = await request(method, { id: 'one', name: '命令', command: `echo a${String.fromCodePoint(code)}b` });
+      expect(res.status, `U+${code.toString(16).padStart(4, '0')}`).toHaveBeenCalledWith(400);
+    }
+    expect(mocks.update).not.toHaveBeenCalled();
+  });
+  it.each(['POST', 'PATCH'])('%s preserves tabs, line breaks and ordinary Unicode text', async (method) => {
+    const value = { name: '命令', command: 'echo\t"中文 café 😀\u00a0"\r\necho done\n' };
+    expect((await request(method, { id: 'one', ...value })).status).toHaveBeenCalledWith(200);
+    expect(mocks.update).toHaveBeenCalledWith(method === 'POST'
+      ? { action: 'create', value }
+      : { action: 'edit', id: 'one', value });
+  });
   it.each([404, 409, 500])('returns mutation error %s without success', async (status) => {
     mocks.update.mockRejectedValue(Object.assign(new Error('private disk path'), { status }));
     const res = await request('DELETE', { id: 'one' });

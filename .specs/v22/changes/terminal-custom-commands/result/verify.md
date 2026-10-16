@@ -57,3 +57,16 @@
 | iPhone 12 模拟，390px | 移动端终端显示 `[0/128]`，横向滚动命令栏使按钮可见 | 按钮实际发送同一网页输入帧；历史标记消失，shell 新增一条 `COPY_MODE_OK` 输出并返回提示符 |
 
 本轮完成桌面/手机尺寸的真实浏览器与 tmux 验收；未执行生产构建及手机实机测试。测试实例和浏览器在验证后关闭。
+
+## PR #50 验证：Unicode 控制字符（2026-10-17）
+
+对应[审查意见](https://github.com/stirp/purplemux-improved/pull/50#discussion_r4297384920)，本轮结果如下，不复用前述历史运行结果。
+
+- 修复前先新增回归：API 与 UI 测试运行 24 通过、3 失败，POST/PATCH 接受 U+0080 返回 200，UI 接受 U+009B，成功复现缺陷。
+- 修复后执行 `pnpm exec vitest run tests/unit/api/terminal-commands.test.ts tests/unit/lib/terminal-commands-ui.test.ts tests/unit/lib/terminal-commands-storage.test.ts`：32 项通过。POST/PATCH 分别遍历全部 62 个禁止控制字符，确认返回 400 且不调用存储；正常 TAB/LF/CR 和 Unicode 文本可保存。
+- `pnpm exec tsc --noEmit`：完整类型检查通过。
+- `pnpm exec eslint src/lib/terminal-custom-commands.ts tests/unit/api/terminal-commands.test.ts tests/unit/lib/terminal-commands-ui.test.ts`：通过。
+- `git diff --check`：通过。
+- Chromium 浏览器会话 `terminal-custom-commands-unicode`，沿用隔离测试数据目录与 `http://127.0.0.1:18167`：输入 `echo U+009B31m` 并保存，显示命令内容校验错误，草稿仍在且列表未新增；直接 POST 同样的内容返回 400。
+- 将内容改为含 TAB、LF、中文、`café` 和 emoji 的合法命令后保存成功，GET 读取内容与原值一致。验证只保存命令，没有执行测试命令。
+- 本轮采用开发实例浏览器验证，未运行生产构建或手机实机测试。测试浏览器、服务器及本轮创建的隔离终端在验证后关闭。修复保留在本地工作区，未提交或推送，也未发布 PR 评论。

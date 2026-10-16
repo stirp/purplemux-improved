@@ -128,4 +128,22 @@ describe('terminal command interactions', () => {
     await click('customCommandsLoadFailed · retry');
     expect(button('状态')).toBeDefined();
   });
+
+  it('blocks pasted C1 controls without saving and accepts corrected Unicode commands', async () => {
+    await render();
+    await click('customCommandsManage');
+    await click('customCommandsAdd');
+    await fill('input', '粘贴命令');
+    await fill('textarea', 'echo \u009b31m');
+    await click('save');
+    expect(document.querySelector('[role="alert"]')?.textContent).toBe('customCommandsContentInvalid');
+    expect((document.querySelector('textarea') as HTMLTextAreaElement).value).toBe('echo \u009b31m');
+    expect(vi.mocked(fetch).mock.calls.every(([, options]) => !options?.method)).toBe(true);
+    expect(commands).toHaveLength(1);
+    const command = 'echo\t"中文 café 😀"\necho done';
+    await fill('textarea', command);
+    await click('save');
+    expect(commands[1]).toEqual({ id: 'two', name: '粘贴命令', command });
+    expect(send).not.toHaveBeenCalled();
+  });
 });
