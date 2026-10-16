@@ -16,5 +16,13 @@
   "removeFromGroup": "グループから外す",
   "ungrouped": "未グループ化",
   "defaultGroupName": "新規グループ",
-  "emptyGroup": "（空）"
+  "emptyGroup": "（空）",
+  "workspaceTab": "ワークスペース",
+  "sessionsTab": "セッション",
+  "searchWorkspaces": "ワークスペースを検索…",
+  "clearSearch": "検索をクリア",
+  "noMatchingWorkspaces": "該当するワークスペースがありません",
+  "statusNeedsInput": "入力待ち",
+  "statusBusy": "実行中",
+  "statusUnknown": "不明"
 }

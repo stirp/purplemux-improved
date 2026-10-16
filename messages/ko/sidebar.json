@@ -16,5 +16,13 @@
   "removeFromGroup": "그룹에서 제거",
   "ungrouped": "그룹 없음",
   "defaultGroupName": "새 그룹",
-  "emptyGroup": "(비어 있음)"
+  "emptyGroup": "(비어 있음)",
+  "workspaceTab": "워크스페이스",
+  "sessionsTab": "세션",
+  "searchWorkspaces": "워크스페이스 검색…",
+  "clearSearch": "검색 지우기",
+  "noMatchingWorkspaces": "일치하는 워크스페이스 없음",
+  "statusNeedsInput": "입력 대기",
+  "statusBusy": "실행 중",
+  "statusUnknown": "알 수 없음"
 }

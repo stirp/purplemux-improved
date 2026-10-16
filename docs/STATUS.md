@@ -102,6 +102,8 @@ When the user selects an option on a permission prompt, Claude resumes work but 
 
 ### Tab Display State (`TTabDisplayStatus`)
 
+The desktop workspace sidebar uses a compact summary without changing workflow aggregation. Waiting-for-input agents take visual priority, followed by unknown/disconnected agent status, running agents, and the workspace workflow stage. Pending stages are hidden and completed stages use a check icon. Review keeps its workflow label; it does not imply an outstanding permission request. Tooltips preserve the workflow stage when runtime status occupies the badge. The workspace row references the compact badge through `aria-describedby`, exposing that same full status when the row receives keyboard focus. Disconnected agents show unknown rather than stale running indicators. Mobile navigation keeps the existing per-tab indicators.
+
 `selectTabDisplayStatus(tabs, tabId)` maps `cliState` to a UI display value:
 
 | cliState | Display state | UI indicator |

@@ -16,7 +16,7 @@ let container: HTMLDivElement;
 let root: Root;
 const original = useWorkspaceStore.getState();
 
-const Harness = ({ mobile }: { mobile: boolean }) => {
+const Harness = ({ mobile, searching = false }: { mobile: boolean; searching?: boolean }) => {
   const onTouchStartCapture = useTouchDrag();
   const mobileProps = {
     workspace, onCreated: select,
@@ -24,7 +24,7 @@ const Harness = ({ mobile }: { mobile: boolean }) => {
   };
   return mobile
     ? createElement('div', { onTouchStartCapture }, createElement(MobileWorkspaceActions, mobileProps))
-    : createElement('div', { draggable: true, onTouchStartCapture, onDragStart: drag }, createElement(WorkspaceItem, {
+    : createElement('div', { draggable: !searching, onTouchStartCapture, onDragStart: drag }, createElement(WorkspaceItem, {
       workspace, isActive: false, isDeleting: false, showShortcut: false, tabs: [],
       onSelect: select, onRename: vi.fn(), onDelete: vi.fn(),
     }));
@@ -44,12 +44,29 @@ beforeEach(() => {
   document.body.append(container);
   root = createRoot(container);
 });
+
 afterEach(async () => {
   await act(async () => root.unmount());
   container.remove();
   useWorkspaceStore.setState(original);
   vi.useRealTimers();
   vi.unstubAllGlobals();
+});
+
+it.each([100, 400])('keeps search results scrollable after a %sms hold without starting drag', async (delay) => {
+  await act(async () => root.render(createElement(Harness, { mobile: false, searching: true })));
+  const row = container.querySelector('[data-touch-context-menu]') as HTMLElement;
+  const move = touch('touchmove', 70);
+  await act(async () => {
+    row.dispatchEvent(touch('touchstart'));
+    vi.advanceTimersByTime(delay);
+    row.dispatchEvent(move);
+    vi.advanceTimersByTime(1000);
+    row.dispatchEvent(touch('touchend'));
+  });
+  expect(move.defaultPrevented).toBe(false);
+  expect(drag).not.toHaveBeenCalled();
+  expect(document.querySelector('[role="menu"]')).toBeNull();
 });
 
 it('cancels a native drag from the management icon before it reaches the workspace', async () => {
@@ -67,9 +84,13 @@ it('cancels a native drag from the management icon before it reaches the workspa
   expect(select).not.toHaveBeenCalled();
 });
 
-describe.each([false, true])('real workspace menu, mobile=%s', (mobile) => {
+describe.each([
+  { mobile: false, searching: false },
+  { mobile: false, searching: true },
+  { mobile: true, searching: false },
+])('real workspace menu, mobile=$mobile, searching=$searching', ({ mobile, searching }) => {
   it('ignores a touch hold on the management control', async () => {
-    await act(async () => root.render(createElement(Harness, { mobile })));
+    await act(async () => root.render(createElement(Harness, { mobile, searching })));
     const icon = container.querySelector('[data-touch-drag-ignore] svg')!;
     await act(async () => icon.dispatchEvent(touch('touchstart')));
     await act(async () => vi.advanceTimersByTime(700));
@@ -80,7 +101,7 @@ describe.each([false, true])('real workspace menu, mobile=%s', (mobile) => {
   });
 
   it.each(['ContextMenu', 'F10'])('opens from keyboard %s without selecting the workspace', async (key) => {
-    await act(async () => root.render(createElement(Harness, { mobile })));
+    await act(async () => root.render(createElement(Harness, { mobile, searching })));
     const row = container.querySelector('[data-touch-context-menu]') as HTMLElement;
     await act(async () => row.dispatchEvent(new KeyboardEvent('keydown', { key, shiftKey: key === 'F10', bubbles: true, cancelable: true })));
     expect(document.querySelector(mobile ? '[data-slot="popover-content"]' : '[role="menu"]')).not.toBeNull();
@@ -88,7 +109,7 @@ describe.each([false, true])('real workspace menu, mobile=%s', (mobile) => {
   });
 
   it('opens from a stationary touch and suppresses release click', async () => {
-    await act(async () => root.render(createElement(Harness, { mobile })));
+    await act(async () => root.render(createElement(Harness, { mobile, searching })));
     const row = container.querySelector('[data-touch-context-menu]') as HTMLElement;
     await act(async () => row.dispatchEvent(touch('touchstart')));
     await act(async () => vi.advanceTimersByTime(650));
@@ -99,7 +120,7 @@ describe.each([false, true])('real workspace menu, mobile=%s', (mobile) => {
     expect(drag).not.toHaveBeenCalled();
   });
   it.each([false, true])('accepts the first menu action within 400ms, release click=%s', async (releaseClick) => {
-    await act(async () => root.render(createElement(Harness, { mobile })));
+    await act(async () => root.render(createElement(Harness, { mobile, searching })));
     const row = container.querySelector('[data-touch-context-menu]') as HTMLElement;
     await act(async () => row.dispatchEvent(touch('touchstart')));
     await act(async () => vi.advanceTimersByTime(650));
@@ -116,7 +137,7 @@ describe.each([false, true])('real workspace menu, mobile=%s', (mobile) => {
   });
 
   it('keeps a short tap selectable and scrolling free of menus', async () => {
-    await act(async () => root.render(createElement(Harness, { mobile })));
+    await act(async () => root.render(createElement(Harness, { mobile, searching })));
     const row = container.querySelector('[data-touch-context-menu]') as HTMLElement;
     await act(async () => {
       row.dispatchEvent(touch('touchstart'));

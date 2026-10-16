@@ -1,5 +1,5 @@
 import ContextMenuSettingsButton from "@/components/ui/context-menu-settings-button";
-import { useCallback, useEffect, useMemo, useState, memo } from 'react';
+import { useCallback, useEffect, useId, useMemo, useState, memo } from 'react';
 import { Pencil, Trash2, FolderPlus, FolderMinus, Folder, GitBranch, ChevronDown, ChevronRight } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
@@ -58,6 +58,7 @@ const WorkspaceItem = ({
   const [showTree, setShowTree] = useState(false);
   const workspaces = useWorkspaceStore((s) => s.workspaces);
   const [menuOpen, setMenuOpen] = useState(false);
+  const statusId = useId();
   const tm = useTranslations('workspace.worktreeManager');
   const treeLabel = useTranslations('workspace.worktreeTree');
   const position = useMemo(() => getWorkspaceTreePosition(workspaces, workspace.id), [workspaces, workspace.id]);
@@ -100,8 +101,8 @@ const WorkspaceItem = ({
     }
   }, [workspace.id, ts]);
 
-  const displayDirs = workspace.directories.map((d) => d.replace(/^\/Users\/[^/]+/, '~'));
   const portsLabel = useTabStore((state) => selectWorkspacePortsLabel(state.tabs, workspace.id));
+  const details = [workspace.name, ...workspace.directories, workspace.worktree?.branch, portsLabel].filter(Boolean).join('\n');
 
   return (
     <>
@@ -110,14 +111,17 @@ const WorkspaceItem = ({
         touchDrag
         data-touch-context-menu
         data-menu-open={menuOpen || undefined}
+        title={details}
+        aria-label={details}
+        aria-describedby={shortcutLabel && showShortcut ? undefined : statusId}
         className={cn(
-          'workspace-tree-row relative flex cursor-pointer flex-col justify-center overflow-hidden border-l-2 py-2 pl-3 pr-2 transition-colors duration-75',
+          'workspace-tree-row workspace-tree-row-compact relative flex min-h-9 cursor-pointer items-center gap-1.5 rounded-md border border-transparent py-1.5 pr-1.5 transition-colors focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ui-purple [@media(pointer:coarse)]:min-h-11',
           isActive
-            ? 'border-l-focus-indicator bg-accent text-foreground'
-            : 'border-l-transparent text-muted-foreground hover:bg-sidebar-accent',
+            ? 'bg-ui-purple/15 text-sidebar-foreground before:absolute before:inset-y-2 before:left-0 before:w-0.5 before:bg-ui-purple'
+            : 'text-sidebar-foreground hover:bg-sidebar-accent/60',
         )}
         style={{
-          paddingLeft: 12 + depth * WORKSPACE_TREE_INDENT,
+          paddingLeft: 8 + depth * WORKSPACE_TREE_INDENT,
           opacity: isDeleting ? 0.5 : 1,
           transition: 'opacity 150ms, background-color 75ms',
         }}
@@ -143,59 +147,37 @@ const WorkspaceItem = ({
         render={<div />}
       >
         <WorkspaceTreeGuides position={position} expanded={childrenExpanded} />
-        {shortcutLabel && (
-          <span
-            className={cn(
-              'pointer-events-none absolute right-2 bottom-1 rounded bg-muted px-1 py-0.5 text-[10px] font-medium leading-none text-muted-foreground transition-opacity duration-200',
-              showShortcut ? 'opacity-100' : 'opacity-0',
-            )}
-          >
-            {shortcutLabel}
-          </span>
-        )}
-        <div className="flex min-h-5 min-w-0 items-center gap-1.5">
+        <span className="flex w-3 shrink-0 items-center justify-center" aria-hidden="true">
           {childrenExpanded !== undefined ? (
             childrenExpanded
-              ? <ChevronDown aria-hidden="true" className="h-3.5 w-3.5 shrink-0 text-accent-color" />
-              : <ChevronRight aria-hidden="true" className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
-          ) : workspace.worktree || depth > 0
-            ? <GitBranch aria-hidden="true" className="h-3.5 w-3.5 shrink-0 text-ui-blue" />
-            : <Folder aria-hidden="true" className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />}
-          {isEditing ? (
-            <input
-              ref={inputRef}
-              className="min-w-0 w-full border-b border-accent-color bg-transparent p-0 text-sm font-medium leading-tight text-foreground outline-none"
-              value={draft}
-              onChange={(e) => setDraft(e.target.value)}
-              onKeyDown={handleKeyDown}
-              onBlur={commit}
-            />
-          ) : (
-            <span className="min-w-0 truncate border-b border-transparent text-sm font-medium leading-tight" title={workspace.name}>
-              {workspace.name}
-            </span>
-          )}
-          {position.childCount > 0 && <span className="shrink-0 rounded bg-muted px-1 text-[10px] text-muted-foreground">{position.childCount}</span>}
-          <div className="-my-1.5 ml-auto flex shrink-0 items-center">
-            {depth === 0 && workspace.directories.length > 0 && <WorktreeManagementButton name={workspace.name} onClick={() => setShowTree(true)} />}
-            <ContextMenuSettingsButton className="workspace-row-settings h-8 w-8" label={`${tc('settings')}: ${workspace.name}`} />
-          </div>
-        </div>
-        <div className="flex min-w-0 flex-col pl-5">
-          {displayDirs.map((dir, i) => (
-            <span key={dir} className={cn('truncate text-xs leading-tight text-muted-foreground/70', i === 0 && 'mt-1')}>
-              {dir}
-            </span>
-          ))}
-          {workspace.worktree && <span className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
-            <GitBranch className="h-3 w-3 shrink-0" /><span className="truncate">{workspace.worktree.branch}</span>
-          </span>}
-          {portsLabel && (
-            <span className="mt-1 truncate text-xs leading-tight text-ui-green/80">
-              {portsLabel}
-            </span>
-          )}
-          <WorkspaceStatusIndicator workspaceId={workspace.id} tabs={tabs} />
+              ? <ChevronDown className="h-3 w-3 text-muted-foreground" />
+              : <ChevronRight className="h-3 w-3 text-muted-foreground" />
+          ) : null}
+        </span>
+        {workspace.worktree || depth > 0
+          ? <GitBranch aria-hidden="true" className={cn('h-3.5 w-3.5 shrink-0', isActive ? 'text-ui-purple' : 'text-muted-foreground')} />
+          : <Folder aria-hidden="true" className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />}
+        {isEditing ? (
+          <input
+            ref={inputRef}
+            className="min-w-0 flex-1 border-b border-accent-color bg-transparent p-0 text-sm leading-normal text-foreground outline-none"
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            onKeyDown={handleKeyDown}
+            onBlur={commit}
+          />
+        ) : (
+          <span className={cn('min-w-0 flex-1 truncate text-sm leading-normal', isActive && 'font-medium')}>
+            {workspace.name}
+          </span>
+        )}
+        {position.childCount > 0 && <span className="workspace-child-count shrink-0 px-0.5 text-[10px] tabular-nums text-muted-foreground">{position.childCount}</span>}
+        {shortcutLabel && showShortcut ? (
+          <span className="pointer-events-none shrink-0 rounded bg-muted px-1 py-0.5 text-[10px] font-medium leading-none text-muted-foreground">{shortcutLabel}</span>
+        ) : <WorkspaceStatusIndicator id={statusId} workspaceId={workspace.id} tabs={tabs} compact />}
+        <div className="workspace-row-actions -my-1.5 flex shrink-0 items-center">
+          {depth === 0 && workspace.directories.length > 0 && <span className="workspace-row-management"><WorktreeManagementButton name={workspace.name} onClick={() => setShowTree(true)} /></span>}
+          <ContextMenuSettingsButton className="workspace-row-settings h-8 w-8" label={`${tc('settings')}: ${workspace.name}`} />
         </div>
       </ContextMenuTrigger>
       <ContextMenuContent>

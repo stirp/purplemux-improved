@@ -16,5 +16,13 @@
   "removeFromGroup": "Убрать из группы",
   "ungrouped": "Без группы",
   "defaultGroupName": "Новая группа",
-  "emptyGroup": "(пусто)"
+  "emptyGroup": "(пусто)",
+  "workspaceTab": "Пространства",
+  "sessionsTab": "Сеансы",
+  "searchWorkspaces": "Поиск пространств…",
+  "clearSearch": "Очистить поиск",
+  "noMatchingWorkspaces": "Нет подходящих пространств",
+  "statusNeedsInput": "Ожидает ввода",
+  "statusBusy": "Работает",
+  "statusUnknown": "Неизвестно"
 }

@@ -21,6 +21,7 @@ interface IWorkspaceGroupHeaderProps {
   onUngroup: (groupId: string) => void;
   onDragStart: (event: React.DragEvent) => void;
   onDragEnd: (event: React.DragEvent) => void;
+  draggable?: boolean;
 }
 
 const WorkspaceGroupHeader = ({
@@ -31,6 +32,7 @@ const WorkspaceGroupHeader = ({
   onUngroup,
   onDragStart,
   onDragEnd,
+  draggable = true,
 }: IWorkspaceGroupHeaderProps) => {
   const t = useTranslations('sidebar');
   const [menuOpen, setMenuOpen] = useState(false);
@@ -61,9 +63,18 @@ const WorkspaceGroupHeader = ({
   return (
     <ContextMenu>
       <ContextMenuTrigger
-        className="group relative flex h-7 cursor-grab items-center gap-1 px-2 text-sm font-medium tracking-wide text-muted-foreground hover:bg-sidebar-accent/50 active:cursor-grabbing"
+        className={cn('group relative flex min-h-8 items-center gap-2 px-2 text-xs font-medium text-muted-foreground hover:bg-sidebar-accent/40 focus-visible:outline-2 focus-visible:outline-ui-purple', draggable ? 'cursor-grab active:cursor-grabbing' : 'cursor-pointer')}
         onClick={handleToggle}
-        draggable={!isEditing}
+        role="button"
+        tabIndex={0}
+        aria-expanded={!group.collapsed}
+        onKeyDown={(event) => {
+          if (event.target === event.currentTarget && (event.key === 'Enter' || event.key === ' ')) {
+            event.preventDefault();
+            handleToggle();
+          }
+        }}
+        draggable={draggable && !isEditing}
         onDragStart={(event) => {
           if ((event.target as HTMLElement).closest('button, input')) {
             event.preventDefault();
@@ -78,7 +89,7 @@ const WorkspaceGroupHeader = ({
         {isEditing ? (
           <input
             ref={inputRef}
-            className="min-w-0 flex-1 bg-transparent p-0 text-sm font-medium tracking-wide text-foreground outline-none"
+              className="min-w-0 flex-1 bg-transparent p-0 text-xs font-medium text-foreground outline-none"
             value={draft}
             onChange={(e) => setDraft(e.target.value)}
             onKeyDown={handleKeyDown}
@@ -87,7 +98,7 @@ const WorkspaceGroupHeader = ({
           />
         ) : (
           <span className="min-w-0 flex-1 truncate">
-            {group.name} <span className="text-muted-foreground/60">({count})</span>
+            {group.name}
           </span>
         )}
         <Popover open={menuOpen} onOpenChange={setMenuOpen}>
@@ -96,7 +107,7 @@ const WorkspaceGroupHeader = ({
               <button
                 className={cn(
                   'ml-0.5 flex h-5 w-5 items-center justify-center rounded transition-opacity hover:bg-sidebar-accent',
-                  menuOpen ? 'opacity-100' : 'opacity-0 group-hover:opacity-100',
+                  menuOpen ? 'opacity-100' : 'opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 [@media(pointer:coarse)]:opacity-100',
                 )}
                 onClick={(e) => e.stopPropagation()}
                 aria-label={t('renameGroup')}
@@ -122,6 +133,7 @@ const WorkspaceGroupHeader = ({
             </button>
           </PopoverContent>
         </Popover>
+        <span className="shrink-0 text-[10px] tabular-nums text-muted-foreground">{count}</span>
       </ContextMenuTrigger>
       <ContextMenuContent>
         <ContextMenuItem onClick={handleRenameAction}>

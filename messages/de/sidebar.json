@@ -16,5 +16,13 @@
   "removeFromGroup": "Aus Gruppe entfernen",
   "ungrouped": "Nicht gruppiert",
   "defaultGroupName": "Neue Gruppe",
-  "emptyGroup": "(leer)"
+  "emptyGroup": "(leer)",
+  "workspaceTab": "Arbeitsbereiche",
+  "sessionsTab": "Sitzungen",
+  "searchWorkspaces": "Arbeitsbereiche suchen…",
+  "clearSearch": "Suche löschen",
+  "noMatchingWorkspaces": "Keine passenden Arbeitsbereiche",
+  "statusNeedsInput": "Eingabe nötig",
+  "statusBusy": "Läuft",
+  "statusUnknown": "Unbekannt"
 }
