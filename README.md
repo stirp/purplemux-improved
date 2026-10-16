@@ -1,8 +1,8 @@
 # purplemux-improved
 
-An improved fork of [subicura/purplemux](https://github.com/subicura/purplemux). Installation exposes only the `purplemux-improved` command and keeps the `~/.purplemux` data directory compatible. npm installation requires this fork to be published; until then, run from source.
+An improved fork of [subicura/purplemux](https://github.com/subicura/purplemux). Installation provides `purplemux-improved` to start the server and `pmuxi` for CLI operations, keeping the `~/.purplemux` data directory compatible. npm installation requires this fork to be published; until then, run from source.
 
-Fork features are also available through the CLI. Run `purplemux features` for the offline command guide, or read the [CLI examples](landing-src/docs/cli-reference.md#fork-feature-commands). From a source checkout, use `node bin/purplemux.js features`.
+Fork features are also available through the CLI. Run `pmuxi features` for the offline command guide, or read the [CLI examples](landing-src/docs/cli-reference.md#fork-feature-commands). From a source checkout, use `node bin/cli.js features`. `pmuxi` without arguments shows help; it never starts a server. Existing `purplemux-improved <subcommand>` calls remain supported.
 
 ## Main improvements in this fork
 
@@ -82,7 +82,7 @@ Plus
 - **Terminal themes** — Dark / light mode, multiple color themes
 - **Workspaces & groups** — Save and restore panel layouts, tabs, and working directories. Organize workspaces into groups with drag-and-drop
 - **Git workflow** — Side-by-side / line-by-line diff with syntax highlighting, inline hunk expansion, and a paginated history tab. Fetch / pull / push from the panel with ahead/behind indicators — if sync fails (dirty worktree, conflicts), Ask Claude or Codex in one click
-- **Web browser panel** — Embedded browser for checking dev output (Electron). Drive it from the `purplemux-improved` CLI and switch viewports with a built-in device emulator
+- **Web browser panel** — Embedded browser for checking dev output (Electron). Drive it from the `pmuxi` CLI and switch viewports with a built-in device emulator
 - **Agent tabs** — Start Claude, Codex, or a combined session list from the new-tab menu
 
 ### Claude Code and Codex integration
@@ -157,8 +157,8 @@ purplemux-improved
 ### CLI examples
 
 ```bash
-purplemux-improved tab create -w WS -t codex-cli -n "fix auth"
-purplemux-improved tab create -w WS -t agent-sessions
+pmuxi tab create -w WS -t codex-cli -n "fix auth"
+pmuxi tab create -w WS -t agent-sessions
 ```
 
 ### Run from source
