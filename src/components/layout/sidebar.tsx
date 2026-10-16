@@ -7,6 +7,8 @@ import {
   FolderPlus,
   Settings,
   LogOut,
+  Search,
+  X,
 } from 'lucide-react';
 import useTabStore from '@/hooks/use-tab-store';
 import useTouchDrag from '@/hooks/use-touch-drag';
@@ -17,6 +19,9 @@ import useShortcutHints from '@/hooks/use-shortcut-hints';
 import { useRouter } from 'next/router';
 import { cn } from '@/lib/utils';
 import { getWorkspaceVisibility } from '@/lib/workspace-order';
+import { searchWorkspaces } from '@/lib/workspace-search';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   AlertDialog,
@@ -69,6 +74,8 @@ const Sidebar = () => {
   const workspaces = useWorkspaceStore((s) => s.workspaces);
   const groups = useWorkspaceStore((s) => s.groups);
   const activeWorkspaceId = useWorkspaceStore((s) => s.activeWorkspaceId);
+  const [workspaceQuery, setWorkspaceQuery] = useState('');
+  const searchResult = useMemo(() => searchWorkspaces(workspaces, workspaceQuery), [workspaces, workspaceQuery]);
   const revealedWorkspaceId = useSessionNavigation((s) => s.revealedWorkspaceId);
   const revealedGroupId = useMemo(() => getSessionNavigationGroupId(
     workspaces, revealedWorkspaceId === activeWorkspaceId ? revealedWorkspaceId : null,
@@ -436,7 +443,7 @@ const Sidebar = () => {
 
   const renderWorkspaceRow = (entry: TRenderEntry) => {
     const { ws, flatIdx } = entry;
-    if (!workspaceVisibility.visibleIds.has(ws.id)) return null;
+    if (!(searchResult ?? workspaceVisibility).visibleIds.has(ws.id)) return null;
     const isDropBefore =
       dropTarget?.position === flatIdx &&
       dropTarget.edge === 'before' &&
@@ -452,11 +459,11 @@ const Sidebar = () => {
       <div
         key={ws.id}
         onTouchStartCapture={onTouchDragStart}
-        draggable
+        draggable={!searchResult}
         onDragStart={(e) => handleDragStart(e, flatIdx)}
         onDragEnd={handleDragEnd}
-        onDragOver={(e) => handleWsDragOver(e, flatIdx, ws.groupId ?? null)}
-        onDrop={handleWsDrop}
+        onDragOver={searchResult ? undefined : (e) => handleWsDragOver(e, flatIdx, ws.groupId ?? null)}
+        onDrop={searchResult ? undefined : handleWsDrop}
         style={{
           opacity: fadingOutIds.has(ws.id) ? 0 : undefined,
           transition: 'opacity 150ms ease-out',
@@ -468,7 +475,7 @@ const Sidebar = () => {
           workspace={ws}
           isActive={ws.id === activeWorkspaceId && router.pathname === '/' && !activeWebviewId}
           isDeleting={deletingIds.has(ws.id)}
-          childrenExpanded={workspaceVisibility.parentIds.has(ws.id) ? workspaceVisibility.expandedIds.has(ws.id) : undefined}
+          childrenExpanded={workspaceVisibility.parentIds.has(ws.id) ? (searchResult ?? workspaceVisibility).expandedIds.has(ws.id) : undefined}
           shortcutLabel={flatIdx < 8 ? `⌘${flatIdx + 1}` : flatIdx === workspaces.length - 1 ? '⌘9' : undefined}
           showShortcut={showShortcuts}
           tabs={workspaceTabs[ws.id]}
@@ -483,7 +490,7 @@ const Sidebar = () => {
   return (
     <div className="relative flex shrink-0">
       <div
-        className="region-typography-sidebar flex shrink-0 flex-col overflow-hidden border-r border-sidebar-border bg-sidebar"
+        className="workspace-sidebar region-typography-sidebar flex shrink-0 flex-col overflow-hidden border-r border-sidebar-border bg-sidebar font-sans"
         suppressHydrationWarning
         style={{
           width: isLoading ? 'var(--initial-sb-w, 200px)' : (collapsed ? 0 : width),
@@ -496,10 +503,10 @@ const Sidebar = () => {
         aria-label={t('workspaceList')}
       >
         <div
-          className="relative z-[60] flex h-12 shrink-0 items-center justify-between border-b border-sidebar-border px-3 pl-traffic-light"
+          className="relative z-[60] flex min-h-12 shrink-0 items-center justify-between gap-2 border-b border-sidebar-border px-3 py-2 pl-traffic-light"
           {...(isElectron ? { style: { WebkitAppRegion: 'drag' } as React.CSSProperties } : {})}
         >
-          <AppLogo shimmer={hasBusy} className="pointer-events-none" />
+          <AppLogo shimmer={hasBusy} className="pointer-events-none min-w-0 [&>span]:truncate" />
           <div
             className="flex items-center gap-0.5"
             {...(isElectron ? { style: { WebkitAppRegion: 'no-drag' } as React.CSSProperties } : {})}
@@ -531,15 +538,15 @@ const Sidebar = () => {
           </div>
         </div>
 
-        <div className="shrink-0 border-b border-sidebar-border px-2 py-1.5">
+        <div className="shrink-0 px-3 pb-2 pt-3">
           <Tabs
             value={sidebarTab}
             onValueChange={handleSidebarTabChange}
             className="gap-0"
           >
-            <TabsList className="h-7 w-full">
-              <TabsTrigger value="workspace" className="relative h-full flex-1 px-2.5 text-[11px] tracking-wide">
-                WORKSPACE
+            <TabsList className="min-h-9 w-full border border-sidebar-border/50 group-data-horizontal/tabs:h-auto">
+              <TabsTrigger value="workspace" className="relative h-auto min-h-7 min-w-0 flex-1 px-2 text-xs group-data-[variant=default]/tabs-list:data-active:shadow-none">
+                <span className="truncate">{t('workspaceTab')}</span>
                 {sidebarTab !== 'workspace' && (
                   <ShortcutKey
                     mac="⌘⇧B"
@@ -551,8 +558,8 @@ const Sidebar = () => {
                   />
                 )}
               </TabsTrigger>
-              <TabsTrigger value="sessions" className="relative h-full flex-1 px-2.5 text-[11px] tracking-wide">
-                SESSIONS
+              <TabsTrigger value="sessions" className="relative h-auto min-h-7 min-w-0 flex-1 px-2 text-xs group-data-[variant=default]/tabs-list:data-active:shadow-none">
+                <span className="truncate">{t('sessionsTab')}</span>
                 {sessionsBadge > 0 && (
                   <span className="ml-1 inline-flex h-3.5 min-w-3.5 items-center justify-center rounded bg-[var(--ui-coral)] px-0.5 text-[9px] font-medium leading-none text-white">
                     {sessionsBadge}
@@ -571,14 +578,28 @@ const Sidebar = () => {
               </TabsTrigger>
             </TabsList>
           </Tabs>
+          {sidebarTab === 'workspace' && <div className="relative mt-3">
+            <Search aria-hidden="true" className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              value={workspaceQuery}
+              onChange={(event) => setWorkspaceQuery(event.target.value)}
+              onKeyDown={(event) => { if (event.key === 'Escape') { event.stopPropagation(); setWorkspaceQuery(''); } }}
+              placeholder={t('searchWorkspaces')}
+              aria-label={t('searchWorkspaces')}
+              className="h-auto min-h-9 border-sidebar-border bg-background/70 py-2 pl-8 pr-8 text-xs shadow-none"
+            />
+            {workspaceQuery && <Button variant="ghost" size="icon" className="absolute right-0.5 top-1/2 h-7 w-7 -translate-y-1/2 text-muted-foreground" aria-label={t('clearSearch')} onClick={() => setWorkspaceQuery('')}>
+              <X className="h-3.5 w-3.5" />
+            </Button>}
+          </div>}
         </div>
 
         {sidebarTab === 'workspace' ? (
           <div
-            className="flex-1 overflow-y-auto"
+            className="flex-1 space-y-3 overflow-y-auto px-2 pb-3 pt-1"
             style={{ scrollbarWidth: 'none' }}
             onDragOver={(e) => {
-              if (dragIndex === null) return;
+              if (searchResult || dragIndex === null) return;
               e.preventDefault();
               e.dataTransfer.dropEffect = 'move';
             }}
@@ -590,14 +611,17 @@ const Sidebar = () => {
                 </span>
               </div>
             )}
+            {searchResult?.visibleIds.size === 0 && workspaces.length > 0 && <p className="px-3 py-6 text-center text-xs text-muted-foreground" role="status">{t('noMatchingWorkspaces')}</p>}
 
             {renderedSections.map((section) => {
               if (section.type === 'group') {
+                if (searchResult && !section.workspaces.some(({ ws }) => searchResult.visibleIds.has(ws.id))) return null;
+                const group = searchResult ? { ...section.group, collapsed: false } : section.group;
                 return (
                   <div
                     key={`group-${section.group.id}`}
-                    onDragOver={(e) => handleGroupDragOver(e, section.group.id)}
-                    onDrop={handleGroupDrop}
+                    onDragOver={searchResult ? undefined : (e) => handleGroupDragOver(e, section.group.id)}
+                    onDrop={searchResult ? undefined : handleGroupDrop}
                     onDragLeave={(e) => {
                       if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setGroupDropTarget(null);
                     }}
@@ -608,10 +632,10 @@ const Sidebar = () => {
                     }}
                   >
                     <div
-                      onDragOver={(e) =>
+                      onDragOver={searchResult ? undefined : (e) =>
                         handleGroupHeaderDragOver(e, section.firstWsPosition, section.group.id)
                       }
-                      onDrop={handleWsDrop}
+                      onDrop={searchResult ? undefined : handleWsDrop}
                       style={{
                         borderBottom:
                           dropTarget?.edge === 'group-start' && dropTarget.groupId === section.group.id
@@ -620,18 +644,19 @@ const Sidebar = () => {
                       }}
                     >
                       <WorkspaceGroupHeader
-                        group={section.group}
-                        count={section.workspaces.length}
-                        onToggle={handleToggleGroup}
+                        group={group}
+                        count={searchResult ? section.workspaces.filter(({ ws }) => searchResult.visibleIds.has(ws.id)).length : section.workspaces.length}
+                        onToggle={searchResult ? () => {} : handleToggleGroup}
                         onRename={handleRenameGroup}
                         onUngroup={handleUngroup}
                         onDragStart={(e) => handleGroupDragStart(e, section.group.id)}
                         onDragEnd={handleDragEnd}
+                        draggable={!searchResult}
                       />
                     </div>
-                    {!section.group.collapsed &&
+                    {!group.collapsed &&
                       section.workspaces.map((entry) => renderWorkspaceRow(entry))}
-                    {!section.group.collapsed && section.workspaces.length === 0 && (
+                    {!group.collapsed && section.workspaces.length === 0 && (
                       <div
                         className={cn(
                           'flex h-6 items-center px-3 text-[11px] italic text-muted-foreground/50',
@@ -655,10 +680,10 @@ const Sidebar = () => {
                 <div
                   key="ungrouped"
                   className="min-h-[8px]"
-                  onDragOver={(e) =>
+                  onDragOver={searchResult ? undefined : (e) =>
                     handleUngroupedAreaDragOver(e, section.lastPosition)
                   }
-                  onDrop={handleWsDrop}
+                  onDrop={searchResult ? undefined : handleWsDrop}
                 >
                   {section.workspaces.map((entry) => renderWorkspaceRow(entry))}
                 </div>
@@ -671,14 +696,14 @@ const Sidebar = () => {
 
         <div className="shrink-0 border-t border-sidebar-border">
           {sidebarTab === 'workspace' && (
-            <div className="relative flex h-9 items-stretch">
+            <div className="relative mx-2 my-1 flex min-h-10 items-stretch">
               <button
-                className="flex flex-1 items-center gap-2 px-3 text-sm text-muted-foreground transition-colors hover:bg-sidebar-accent disabled:opacity-50"
+                className="flex min-w-0 flex-1 items-center gap-2 px-3 text-sm text-muted-foreground transition-colors hover:bg-sidebar-accent disabled:opacity-50"
                 onClick={() => setCreateWorkspaceOpen(true)}
                 aria-label={t('addWorkspace')}
               >
-                <Plus className="h-3.5 w-3.5" />
-                Workspace
+                <Plus className="h-3.5 w-3.5 shrink-0" />
+                <span className="truncate">{t('newWorkspace')}</span>
               </button>
               <ShortcutKey
                 mac="⌘N"
@@ -689,7 +714,7 @@ const Sidebar = () => {
                 )}
               />
               <button
-                className="flex w-9 items-center justify-center text-muted-foreground transition-colors hover:bg-sidebar-accent"
+                className="flex w-9 shrink-0 items-center justify-center text-muted-foreground transition-colors hover:bg-sidebar-accent"
                 onClick={handleCreateGroup}
                 aria-label={t('newGroup')}
                 title={t('newGroup')}

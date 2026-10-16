@@ -3,7 +3,7 @@ import { flushSync } from 'react-dom';
 
 // 터치 길게 누르기를 기존 HTML drag/drop 처리에 연결한다.
 export const startTouchDrag = (source: HTMLElement, initial: Pick<Touch, 'identifier' | 'clientX' | 'clientY'>,
-  onLongPress?: () => void): (() => void) => {
+  onLongPress?: () => void, { dragEnabled = true }: { dragEnabled?: boolean } = {}): (() => void) => {
   const doc = source.ownerDocument;
   let active = false;
   let finished = false;
@@ -93,7 +93,7 @@ export const startTouchDrag = (source: HTMLElement, initial: Pick<Touch, 'identi
     }
     if (!active) {
       if (Math.hypot(point.clientX - initial.clientX, point.clientY - initial.clientY) <= 8) return;
-      if (!armed) { cancel(); return; }
+      if (!armed || !dragEnabled) { cancel(); return; }
       beginDrag();
       if (!active) return;
     }
@@ -117,7 +117,7 @@ export const startTouchDrag = (source: HTMLElement, initial: Pick<Touch, 'identi
   const timer = setTimeout(() => {
     if (!source.isConnected) { cancel(); return; }
     armed = true;
-    if (!onLongPress) beginDrag();
+    if (dragEnabled && !onLongPress) beginDrag();
   }, 350);
   if (onLongPress) menuTimer = setTimeout(() => {
     if (!source.isConnected) { cancel(); return; }
@@ -141,18 +141,19 @@ export default function useTouchDrag() {
     if (event.touches.length !== 1) return;
     const target = event.target as HTMLElement;
     if (target.closest('[data-touch-drag-ignore]')) return;
-    const source = target.closest<HTMLElement>('[draggable="true"]');
+    const source = target.closest<HTMLElement>('[draggable]');
     if (!source || !event.currentTarget.contains(source)) return;
+    const menuTarget = target.closest<HTMLElement>('[data-touch-context-menu]');
+    if (!source.draggable && !menuTarget) return;
     const control = target.closest('input, textarea, button, a, [contenteditable="true"]');
     if (control && control !== source) return;
     // ContextMenuTrigger의 별도 길게 누르기 타이머와 충돌하지 않도록 한다.
     event.stopPropagation();
-    const menuTarget = target.closest<HTMLElement>('[data-touch-context-menu]');
     const touch = event.touches[0];
     cleanup.current = startTouchDrag(source, touch, menuTarget ? () => {
       menuTarget.dispatchEvent(new MouseEvent('contextmenu', {
         bubbles: true, cancelable: true, clientX: touch.clientX, clientY: touch.clientY,
       }));
-    } : undefined);
+    } : undefined, { dragEnabled: source.draggable });
   }, []);
 }

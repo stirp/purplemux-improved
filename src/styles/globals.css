@@ -394,6 +394,48 @@ html.app-viewport-active body {
   pointer-events: none;
 }
 
+.workspace-sidebar {
+  container-type: inline-size;
+  container-name: workspace-sidebar;
+}
+
+.workspace-tree-row-compact .workspace-tree-guides {
+  transform: translateX(-4px);
+}
+
+@media (pointer: fine), (pointer: none) {
+  .workspace-row-management {
+    display: none;
+  }
+
+  .workspace-tree-row:hover .workspace-row-management,
+  .workspace-tree-row:focus-within .workspace-row-management,
+  .workspace-tree-row[data-menu-open] .workspace-row-management {
+    display: flex;
+  }
+}
+
+@container workspace-sidebar (max-width: 280px) or (max-width: 18em) {
+  .workspace-status-label,
+  .workspace-child-count {
+    display: none;
+  }
+
+  .workspace-compact-status {
+    padding-inline: 0;
+  }
+
+  .workspace-tree-row-compact .workspace-row-management {
+    display: none;
+  }
+}
+
+@container workspace-sidebar (max-width: 200px) {
+  .workspace-tree-row-compact {
+    gap: 0.25rem;
+  }
+}
+
 @media (pointer: coarse) {
   .workspace-row-settings {
     visibility: hidden;

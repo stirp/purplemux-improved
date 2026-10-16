@@ -16,5 +16,13 @@
   "removeFromGroup": "Gruptan çıkar",
   "ungrouped": "Gruplanmamış",
   "defaultGroupName": "Yeni Grup",
-  "emptyGroup": "(boş)"
+  "emptyGroup": "(boş)",
+  "workspaceTab": "Çalışma alanları",
+  "sessionsTab": "Oturumlar",
+  "searchWorkspaces": "Çalışma alanı ara…",
+  "clearSearch": "Aramayı temizle",
+  "noMatchingWorkspaces": "Eşleşen çalışma alanı yok",
+  "statusNeedsInput": "Girdi bekliyor",
+  "statusBusy": "Çalışıyor",
+  "statusUnknown": "Bilinmiyor"
 }

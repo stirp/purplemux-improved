@@ -16,5 +16,13 @@
   "removeFromGroup": "Remove from group",
   "ungrouped": "Ungrouped",
   "defaultGroupName": "New Group",
-  "emptyGroup": "(empty)"
+  "emptyGroup": "(empty)",
+  "workspaceTab": "Workspaces",
+  "sessionsTab": "Sessions",
+  "searchWorkspaces": "Search workspaces…",
+  "clearSearch": "Clear search",
+  "noMatchingWorkspaces": "No matching workspaces",
+  "statusNeedsInput": "Awaiting input",
+  "statusBusy": "Running",
+  "statusUnknown": "Unknown"
 }

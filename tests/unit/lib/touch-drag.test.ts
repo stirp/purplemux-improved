@@ -31,7 +31,7 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-const setup = (onLongPress?: () => void) => {
+const setup = (onLongPress?: () => void, dragEnabled = true) => {
   const target = new EventTarget();
   const doc = Object.assign(new EventTarget(), { elementFromPoint: vi.fn(() => target) });
   const source = Object.assign(new EventTarget(), { ownerDocument: doc, isConnected: true, contains: (node: unknown) => node === doc });
@@ -43,11 +43,23 @@ const setup = (onLongPress?: () => void) => {
       if (type === 'dragover') event.preventDefault();
     });
   }
-  const cleanup = startTouchDrag(source as unknown as HTMLElement, touch(50), onLongPress);
+  const cleanup = startTouchDrag(source as unknown as HTMLElement, touch(50), onLongPress, { dragEnabled });
   return { doc, events, cleanup };
 };
 
 describe('touch drag', () => {
+  it.each([false, true])('never emits drag events when disabled, menu available=%s', (hasMenu) => {
+    const open = vi.fn();
+    const { doc, events, cleanup } = setup(hasMenu ? open : undefined, false);
+    vi.advanceTimersByTime(400);
+    expect(sendTouch(doc, 'touchmove', [touch(100)]).defaultPrevented).toBe(false);
+    vi.advanceTimersByTime(600);
+    sendTouch(doc, 'touchend', []);
+    expect(events).toEqual([]);
+    expect(open).not.toHaveBeenCalled();
+    cleanup();
+  });
+
   it.each(['click', 'pointerdown', 'touchstart'])('clears the release guard after %s instead of blocking the next action', (type) => {
     const { doc, cleanup } = setup(vi.fn());
     vi.advanceTimersByTime(650);

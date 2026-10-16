@@ -16,5 +16,13 @@
   "removeFromGroup": "從群組移除",
   "ungrouped": "未分群",
   "defaultGroupName": "新增群組",
-  "emptyGroup": "（空）"
+  "emptyGroup": "（空）",
+  "workspaceTab": "工作區",
+  "sessionsTab": "工作階段",
+  "searchWorkspaces": "搜尋工作區…",
+  "clearSearch": "清除搜尋",
+  "noMatchingWorkspaces": "沒有符合的工作區",
+  "statusNeedsInput": "待輸入",
+  "statusBusy": "執行中",
+  "statusUnknown": "狀態未知"
 }

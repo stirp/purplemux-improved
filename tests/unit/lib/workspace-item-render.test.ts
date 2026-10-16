@@ -41,5 +41,8 @@ describe('workspace settings component imports', () => {
     }));
     expect(html).toContain('Render test');
     expect(html).toContain('aria-label="settings: Render test"');
+    expect(html).toContain('title="Render test\n/tmp/project"');
+    expect(html).not.toContain('>/tmp/project</span>');
+    expect(html).not.toContain('workStatus_pending');
   });
 });
