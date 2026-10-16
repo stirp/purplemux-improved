@@ -161,6 +161,30 @@ describe('mobile workspace search', () => {
     expect(search(render()).props.value).toBe('');
   });
 
+  it.each([
+    { expanded: false, target: 'parent' },
+    { expanded: false, target: 'child' },
+    { expanded: true, target: 'parent' },
+  ])('selects $target in search without changing the original expansion ($expanded)', ({ expanded, target }) => {
+    const rowButton = (tree: ReactNode, id: string) => elements(elements(tree).find((element) => element.key === id))
+      .find((element) => element.type === 'button')!;
+    if (!expanded) rowButton(render(), 'parent').props.onClick!();
+    selectWorkspace.mockClear();
+    search(render()).props.onChange!({ target: { value: 'Grandchild' } });
+    let tree = render();
+    expect(rowButton(tree, 'parent').props['aria-expanded']).toBe(true);
+    rowButton(tree, target).props.onClick!();
+    expect(selectWorkspace).toHaveBeenCalledExactlyOnceWith(target);
+    tree = render(target);
+    expect(rowButton(tree, 'parent').props['aria-expanded']).toBe(true);
+    expect(elements(tree).some((element) => element.key === 'grandchild')).toBe(true);
+    search(tree).props.onChange!({ target: { value: '' } });
+    tree = render(target);
+    expect(rowButton(tree, 'parent').props['aria-expanded']).toBe(expanded);
+    expect(elements(tree).some((element) => element.key === 'child')).toBe(expanded);
+    expect(elements(tree).some((element) => element.key === 'grandchild')).toBe(false);
+  });
+
   it('restores explicit collapse after searching a hidden child', () => {
     const tree = render();
     const parent = elements(tree).find((element) => element.key === 'parent')!;

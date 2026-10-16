@@ -144,10 +144,11 @@ const MobileNavigationSheet = ({
   const handleToggleWorkspace = useCallback(
     (workspaceId: string) => {
       selectWorkspace(workspaceId);
+      if (searchResult) return;
       const parentId = workspaces.find((workspace) => workspace.id === workspaceId)?.parentWorkspaceId;
       setExpandedWsId(workspaceVisibility.expandedIds.has(workspaceId) ? parentId ?? null : workspaceId);
     },
-    [selectWorkspace, workspaceVisibility.expandedIds, workspaces],
+    [selectWorkspace, searchResult, workspaceVisibility.expandedIds, workspaces],
   );
 
   const handleSheetOpenChange = useCallback(

@@ -69,3 +69,24 @@ pnpm exec eslint src/components/features/mobile/mobile-navigation-sheet.tsx src/
 - 冲突标记扫描及 `git diff --check`、`git diff --cached --check`：通过；解决后 `git ls-files -u` 无条目。
 - 本次仅整合已有两项实现，未重新执行浏览器或生产构建；不能将前述历史浏览器记录视为本次运行。
 - 已暂存冲突解决及对应测试、规格记录，未创建合并提交或推送。
+
+## PR #49 审查修正后验证（2026-10-17）
+
+对应[审查意见](https://github.com/stirp/purplemux-improved/pull/49#discussion_r4296022375)，本次远端仅有这一条未解决审查线程。
+
+- 修复前：新增 3 项回归全部失败，清空查询后的父节点展开结果与搜索前相反。
+- 修复后：`pnpm exec vitest run tests/unit/lib/mobile-workspace-expansion.test.ts tests/unit/lib/workspace-search.test.ts tests/unit/lib/workspace-touch-menu.test.ts tests/unit/lib/workspace-menu-order.test.ts`，4 个文件、69 项通过。
+- 完整 `pnpm exec tsc --noEmit` 通过。
+- `pnpm exec eslint src/components/features/mobile/mobile-navigation-sheet.tsx tests/unit/lib/mobile-workspace-expansion.test.ts` 通过。
+- `git diff --check` 通过。
+
+独立浏览器会话 pr49-search 使用隔离数据及本轮真实组件编译（localhost:8147，390×844）：
+
+| 步骤 | 实际结果 |
+| --- | --- |
+| 收起 root | aria-expanded=false，列表 root/vibe/other |
+| 搜索 feat/mobile-sidebar，再点击 root | active=root，aria-expanded=true，结果 root/mobile |
+| 清空查询 | aria-expanded=false，恢复 root/vibe/other |
+| 再搜索并点击 mobile，清空查询 | active=mobile，root 仍 aria-expanded=false，恢复 root/vibe/other |
+
+浏览器 errors 输出为空。使用真实组件及模拟网络，未进行完整 Next.js 构建、真实会话/持久化 API、手机或系统输入法实机验收。本次没有提交、推送或发送审查回复。

@@ -25,3 +25,9 @@ KISS：只调整导航展示与操作入口。DRY：搜索、状态、触摸与�
 ## 合并兼容：共享删除确认框（2026-10-16）
 
 解决 `mobile-workspace-actions.tsx` 的导入冲突：保留 Sheet、完整元数据、触控布局及 Portal 事件范围检查；使用合入分支的 DeleteWorkspaceDialog 替代旧内联删除确认和删除函数，移除对应旧导入。复用共享安全删除流程，不复制其业务逻辑。规格补充依赖与兼容关系，菜单测试增加删除入口到共享组件的衔接。
+
+## PR #49：搜索点击污染原展开状态（2026-10-17）
+
+对应[审查意见](https://github.com/stirp/purplemux-improved/pull/49#discussion_r4296022375)。`handleToggleWorkspace` 保持调用共享选择处理器，在有效搜索结果存在时返回，不更新 expandedWsId；搜索展示继续由 searchResult 决定，普通导航行为保持原样。使用现有搜索结果判断，不新增搜索折叠副本或复杂状态同步。
+
+测试补充：原先收起时点击祖先、原先收起时选择子项目、原先展开时点击祖先。三种场景均验证选择回调、搜索临时展开及清空后的原状态，同时模拟 activeWorkspaceId 随选择更新。
