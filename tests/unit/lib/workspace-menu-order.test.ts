@@ -14,6 +14,7 @@ vi.mock('react', async (original) => ({
   useEffect: () => undefined,
   useCallback: (callback: unknown) => callback,
   useMemo: (compute: () => unknown) => compute(),
+  useId: () => 'workspace-menu-status',
   useRef: (current: unknown) => ({ current }),
   useState: (initial: unknown) => {
     const index = hooks.cursor++;
