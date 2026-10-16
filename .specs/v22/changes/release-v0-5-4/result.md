@@ -19,5 +19,12 @@
 - 菜单测试修复后重跑：11 项通过。
 - 最终 `pnpm test`：退出码 0；Vitest 的 145 个文件通过，1128 项通过、1 项跳过；CLI 测试 63 项全部通过。
 - 版本、包名、CLI 入口及文档相对链接检查通过；`git diff --check` 通过。
-- 远端冻结安装、构建、npm 与 GitHub Release 待标签推送后验证。
+- 发布提交：`d3ee80039586883ffce4bdb4b41e74267f9c55b6`；通过 `git push --atomic origin HEAD:refs/heads/main refs/tags/v0.5.4:refs/tags/v0.5.4` 同时推送 main 和附注标签。
+- `git ls-remote` 确认 GitHub 标签解引用后的提交与发布提交一致。
+- [GitHub Actions 38834540461](https://github.com/stirp/purplemux-improved/actions/runs/38834540461)：check、publish-npm、github-release 全部成功；Node v24.21.0 下冻结安装、ESLint、TypeScript、测试、版本校验及生产构建通过。
+- npm 使用 OIDC 与 provenance 发布，服务端于 2026-10-16 01:23:20 UTC 返回 HTTP 202，提示包正在处理中；首次 registry 查询仍返回版本不存在，随后独立核验成功。
+- [GitHub Release v0.5.4](https://github.com/stirp/purplemux-improved/releases/tag/v0.5.4)：2026-10-16 01:23:38 UTC 公开发布，非草稿、非预发布；assets 为空，符合暂停 Electron 自动发布的约定。
+- `curl https://registry.npmjs.org/purplemux-improved`：确认版本 0.5.4 存在，latest 为 0.5.4，gitHead 为发布提交，registry 发布时间为 2026-10-16 01:26:32.509 UTC。
+- 下载[官方 npm tarball](https://registry.npmjs.org/purplemux-improved/-/purplemux-improved-0.5.4.tgz)，以 Python hashlib 对照 registry 的 SHA-512 integrity 校验通过；tarfile 只读检查确认 package.json 版本与唯一 CLI 入口、LICENSE、CLI 文件、dist/server.js 和 .next/standalone 产物存在。
+- 远端成功结果在发布后以独立文档提交补录；v0.5.4 标签保持指向原发布提交。
 - 本次不进行浏览器和安装实机验收。
