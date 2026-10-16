@@ -6,16 +6,19 @@ permalink: /zh-CN/docs/cli-reference/index.html
 ---
 {% from "docs/callouts.njk" import callout %}
 
-`purplemux-improved` 提供两种使用方式:作为服务启动器(`purplemux-improved` / `purplemux-improved start`)和作为与运行中服务对话的 HTTP API 包装器(`purplemux-improved <subcommand>`)。
+使用 `purplemux-improved` / `purplemux-improved start` 启动服务，使用 `pmuxi <subcommand>` 通过 HTTP API 完成 CLI 操作。`pmuxi` 在任何情况下都不会启动服务，包括配置缺失或连接失败。
 
-## 一个二进制,两种角色
+## 服务与 CLI 命令
 
 | 形式 | 行为 |
 |---|---|
 | `purplemux-improved` | 启动服务。等价于 `purplemux-improved start`。 |
-| `purplemux-improved <subcommand>` | 与运行中的服务的 CLI HTTP API 通信。 |
+| `pmuxi` | 显示 CLI 帮助，不连接或启动服务。 |
+| `pmuxi <subcommand>` | 与运行中的服务的 CLI HTTP API 通信。 |
+| `pmuxi start` / `pmuxi server` | 报错退出，不启动服务。 |
+| `purplemux-improved <subcommand>` | 兼容已有 CLI 脚本，新命令建议使用 `pmuxi`。 |
 
-`bin/purplemux.js` 将已知子命令路由到 `bin/cli.js`；没有参数或使用 `start` 时启动服务，未知命令报错。
+安装 `purplemux-improved` 包后即可使用这两个命令。源码环境使用 `node bin/cli.js <subcommand>` 执行 CLI 操作。帮助和功能发现支持离线使用，业务操作需要已运行的服务。
 
 ## 启动服务
 
@@ -47,16 +50,16 @@ HOST=all purplemux-improved     # 全部绑定
 
 | 命令 | 用途 |
 |---|---|
-| `purplemux-improved workspaces` | 列出工作区 |
-| `purplemux-improved tab list [-w WS]` | 列出标签(可按工作区限定) |
-| `purplemux-improved tab create -w WS [-n NAME] [-t TYPE]` | 创建新标签 |
-| `purplemux-improved tab send -w WS TAB_ID CONTENT...` | 给标签发送输入 |
-| `purplemux-improved tab status -w WS TAB_ID` | 查看标签状态 |
-| `purplemux-improved tab result -w WS TAB_ID` | 抓取标签窗格当前内容 |
-| `purplemux-improved tab close -w WS TAB_ID` | 关闭标签 |
-| `purplemux-improved tab browser ...` | 驱动 `web-browser` 标签(仅 Electron) |
-| `purplemux-improved api-guide` | 打印完整 HTTP API 参考 |
-| `purplemux-improved help` | 显示用法 |
+| `pmuxi workspaces` | 列出工作区 |
+| `pmuxi tab list [-w WS]` | 列出标签(可按工作区限定) |
+| `pmuxi tab create -w WS [-n NAME] [-t TYPE]` | 创建新标签 |
+| `pmuxi tab send -w WS TAB_ID CONTENT...` | 给标签发送输入 |
+| `pmuxi tab status -w WS TAB_ID` | 查看标签状态 |
+| `pmuxi tab result -w WS TAB_ID` | 抓取标签窗格当前内容 |
+| `pmuxi tab close -w WS TAB_ID` | 关闭标签 |
+| `pmuxi tab browser ...` | 驱动 `web-browser` 标签(仅 Electron) |
+| `pmuxi api-guide` | 打印完整 HTTP API 参考 |
+| `pmuxi help` | 显示用法 |
 
 输出默认为 JSON。`--workspace` 和 `-w` 可互换。
 
@@ -79,32 +82,32 @@ HOST=all purplemux-improved     # 全部绑定
 
 | 子命令 | 返回内容 |
 |---|---|
-| `purplemux-improved tab browser url -w WS TAB_ID` | 当前 URL + 页面标题 |
-| `purplemux-improved tab browser screenshot -w WS TAB_ID [-o FILE] [--full]` | PNG。带 `-o` 保存到磁盘;不带则返回 base64。`--full` 整页截图。 |
-| `purplemux-improved tab browser console -w WS TAB_ID [--since MS] [--level LEVEL]` | 最近控制台条目(环形缓冲,500 条) |
-| `purplemux-improved tab browser network -w WS TAB_ID [--since MS] [--method M] [--url SUBSTR] [--status CODE] [--request ID]` | 最近网络条目;`--request ID` 抓取一条响应体 |
-| `purplemux-improved tab browser eval -w WS TAB_ID EXPR` | 执行 JS 表达式并序列化结果 |
+| `pmuxi tab browser url -w WS TAB_ID` | 当前 URL + 页面标题 |
+| `pmuxi tab browser screenshot -w WS TAB_ID [-o FILE] [--full]` | PNG。带 `-o` 保存到磁盘;不带则返回 base64。`--full` 整页截图。 |
+| `pmuxi tab browser console -w WS TAB_ID [--since MS] [--level LEVEL]` | 最近控制台条目(环形缓冲,500 条) |
+| `pmuxi tab browser network -w WS TAB_ID [--since MS] [--method M] [--url SUBSTR] [--status CODE] [--request ID]` | 最近网络条目;`--request ID` 抓取一条响应体 |
+| `pmuxi tab browser eval -w WS TAB_ID EXPR` | 执行 JS 表达式并序列化结果 |
 
 ## 示例
 
 ```bash
 # 找到工作区
-purplemux-improved workspaces
+pmuxi workspaces
 
 # 在 ws-MMKl07 工作区里创建一个 Claude 标签
-purplemux-improved tab create -w ws-MMKl07 -t claude-code -n "refactor auth"
+pmuxi tab create -w ws-MMKl07 -t claude-code -n "refactor auth"
 
 # 给它发提示(TAB_ID 来自 `tab list`)
-purplemux-improved tab send -w ws-MMKl07 tb-abc "Refactor src/lib/auth.ts to remove the cookie path"
+pmuxi tab send -w ws-MMKl07 tb-abc "Refactor src/lib/auth.ts to remove the cookie path"
 
 # 查看状态
-purplemux-improved tab status -w ws-MMKl07 tb-abc
+pmuxi tab status -w ws-MMKl07 tb-abc
 
 # 抓取窗格内容
-purplemux-improved tab result -w ws-MMKl07 tb-abc
+pmuxi tab result -w ws-MMKl07 tb-abc
 
 # 给一个 Web 浏览器标签整页截图
-purplemux-improved tab browser screenshot -w ws-MMKl07 tb-xyz -o page.png --full
+pmuxi tab browser screenshot -w ws-MMKl07 tb-xyz -o page.png --full
 ```
 
 ## 认证
@@ -119,7 +122,7 @@ purplemux-improved tab browser screenshot -w ws-MMKl07 tb-xyz -o page.png --full
 | `PMUX_TOKEN` | `~/.purplemux/cli-token` 的内容 | 作为 `x-pmux-token` 发送的 bearer token |
 
 ```bash
-PMUX_PORT=8022 PMUX_TOKEN=$(cat ~/.purplemux/cli-token) purplemux-improved workspaces
+PMUX_PORT=8022 PMUX_TOKEN=$(cat ~/.purplemux/cli-token) pmuxi workspaces
 ```
 
 {% call callout('warning') %}
@@ -132,7 +135,7 @@ CLI token 授予服务的完全访问权限。把它当作密码对待。不要�
 
 ## 完整 HTTP API
 
-`purplemux-improved api-guide` 打印每个 `/api/cli/*` endpoint 的完整 HTTP API 参考,包括请求体和响应结构 — 当你想直接用 `curl` 或其他运行时驱动 purplemux-improved 时很有用。
+`pmuxi api-guide` 打印每个 `/api/cli/*` endpoint 的完整 HTTP API 参考,包括请求体和响应结构 — 当你想直接用 `curl` 或其他运行时驱动 purplemux-improved 时很有用。
 
 ## 下一步
 
@@ -145,10 +148,10 @@ CLI token 授予服务的完全访问权限。把它当作密码对待。不要�
 从源码验证本分支时，将下面的 `purplemux-improved` 换成 `node bin/purplemux.js`，以免调用系统里安装的旧版本。
 
 ```bash
-purplemux-improved features                 # 离线查看全部 fork 命令及 HTTP 路径
-purplemux-improved worktree --help           # 查看整个命令组
-purplemux-improved worktree create --help    # 查看单条命令的必填/可选参数
-purplemux-improved help commit create        # 等价的帮助形式
+pmuxi features                 # 离线查看全部 fork 命令及 HTTP 路径
+pmuxi worktree --help           # 查看整个命令组
+pmuxi worktree create --help    # 查看单条命令的必填/可选参数
+pmuxi help commit create        # 等价的帮助形式
 ```
 
 帮助不需要启动服务。执行命令仍需本机运行的服务和 CLI token。普通输出为 JSON；参数错误、HTTP 错误、同步失败和批量清理部分失败均返回非零退出码；后两种保留完整 JSON，便于检查冲突和逐项结果。
@@ -176,9 +179,9 @@ purplemux-improved help commit create        # 等价的帮助形式
 复杂对象使用 JSON 参数或完整请求文件；请求文件的键名采用接口的 camelCase。显式参数覆盖文件中同名字段。未知字段/参数会在发送请求前报错。
 
 ```bash
-purplemux-improved worktree create -w ws-EXAMPLE --name "修复登录" --branch "fix/login" --base-ref "main"
-purplemux-improved worktree create --data @request.json
-cat "request.json" | purplemux-improved worktree create --data -
+pmuxi worktree create -w ws-EXAMPLE --name "修复登录" --branch "fix/login" --base-ref "main"
+pmuxi worktree create --data @request.json
+cat "request.json" | pmuxi worktree create --data -
 ```
 
 `--data` 仅包含该命令帮助列出的字段，不传 `action`。命令自身决定固定 action。GET 的字段进入查询字符串；其他命令通常进入 JSON body；`queue` 的 `workspaceId`、`tabId` 始终进入查询字符串；路径中的 `:workspaceId` / `:groupId` 由相应参数替换。上传使用二进制请求体。
@@ -186,20 +189,20 @@ cat "request.json" | purplemux-improved worktree create --data -
 ### 工作区、分组和标签
 
 ```bash
-purplemux-improved workspace directories --directory "/home/me/projects"
-purplemux-improved workspace create --directory "/home/me/projects/app" --name "App"
-purplemux-improved workspace list
-purplemux-improved workspace update -w ws-EXAMPLE --name "新名称"
-purplemux-improved group create --name "本周需求"
-purplemux-improved workspace update -w ws-EXAMPLE --group-id "GROUP_ID"
-purplemux-improved group update --group-id "GROUP_ID" --collapsed true
-purplemux-improved workspace reorder --items '[{"id":"ws-EXAMPLE","groupId":null}]'
-purplemux-improved group reorder --group-ids '["GROUP_ID"]'
-purplemux-improved tab rename -w ws-EXAMPLE TAB_ID "代码检查"
-purplemux-improved tab rename -w ws-EXAMPLE TAB_ID ""
+pmuxi workspace directories --directory "/home/me/projects"
+pmuxi workspace create --directory "/home/me/projects/app" --name "App"
+pmuxi workspace list
+pmuxi workspace update -w ws-EXAMPLE --name "新名称"
+pmuxi group create --name "本周需求"
+pmuxi workspace update -w ws-EXAMPLE --group-id "GROUP_ID"
+pmuxi group update --group-id "GROUP_ID" --collapsed true
+pmuxi workspace reorder --items '[{"id":"ws-EXAMPLE","groupId":null}]'
+pmuxi group reorder --group-ids '["GROUP_ID"]'
+pmuxi tab rename -w ws-EXAMPLE TAB_ID "代码检查"
+pmuxi tab rename -w ws-EXAMPLE TAB_ID ""
 
 # 保留原始会话记录；省略 --delete-sessions 时服务端默认删除记录
-purplemux-improved workspace delete -w ws-EXAMPLE --delete-sessions false
+pmuxi workspace delete -w ws-EXAMPLE --delete-sessions false
 ```
 
 排序请求按服务端规则提供完整的目标顺序。删除工作区不会自动删除磁盘工作树和分支；磁盘清理由 `worktree remove` / `cleanup` 完成。
@@ -207,10 +210,10 @@ purplemux-improved workspace delete -w ws-EXAMPLE --delete-sessions false
 ### 工作树创建、同步与交付
 
 ```bash
-purplemux-improved worktree source -w ws-EXAMPLE --directory-index 0
-purplemux-improved worktree generate-branch -w ws-EXAMPLE --title "修复登录" --base-ref "main"
-purplemux-improved worktree create -w ws-EXAMPLE --name "修复登录" --branch "fix/login" --base-ref "main"
-purplemux-improved worktree list -w ws-EXAMPLE > "worktrees.json"
+pmuxi worktree source -w ws-EXAMPLE --directory-index 0
+pmuxi worktree generate-branch -w ws-EXAMPLE --title "修复登录" --base-ref "main"
+pmuxi worktree create -w ws-EXAMPLE --name "修复登录" --branch "fix/login" --base-ref "main"
+pmuxi worktree list -w ws-EXAMPLE > "worktrees.json"
 ```
 
 分支名生成使用已有的无工具 Claude 能力；只返回建议名称，不创建分支。多目录工作区通过 `--directory-index` 选择仓库。
@@ -221,25 +224,25 @@ purplemux-improved worktree list -w ws-EXAMPLE > "worktrees.json"
 WT_DIR="/absolute/path/to/worktree"
 jq --arg dir "$WT_DIR" '{item: ([.repositories[] | .id as $repo | .worktrees[] | select(.directory == $dir) | {repositoryId:$repo,directory,head,branch}] | if length == 1 then .[0] else error("select exactly one worktree") end)}' "worktrees.json" > "item.json"
 cat "item.json"
-purplemux-improved worktree measure -w ws-EXAMPLE --data @item.json
-purplemux-improved worktree inspect-sync -w ws-EXAMPLE --data @item.json --target-ref "refs/remotes/origin/main" > "sync.json"
+pmuxi worktree measure -w ws-EXAMPLE --data @item.json
+pmuxi worktree inspect-sync -w ws-EXAMPLE --data @item.json --target-ref "refs/remotes/origin/main" > "sync.json"
 
 # 审阅 sync.json 后，将目标快照加入请求；merge/rebase 都要求 targetHead
 jq --slurpfile sync "sync.json" '. + {targetRef:$sync[0].targetRef,targetHead:$sync[0].targetHead}' "item.json" > "merge.json"
-purplemux-improved worktree merge -w ws-EXAMPLE --data @merge.json
+pmuxi worktree merge -w ws-EXAMPLE --data @merge.json
 ```
 
 `merge` 的 `item` 是实际被修改的工作树，`targetRef` 是合入该工作树的分支。需要最新远端状态时先执行 `worktree fetch -w ws-EXAMPLE --data @item.json`，再执行 `inspect-sync`。同步修改了 HEAD 或出现冲突后，重新读取列表和快照，再使用 `continue` / `abort`。`inspect-sync` 仍报告主工作树的 `main` 阻断；同步操作中仅 `merge` 可以修改主工作树，主工作树的 rebase、continue、abort 仍被阻断，合并冲突需在 Git 终端处理。服务端保留脏文件、会话占用、忽略文件冲突及目标版本变化检查，不会在 CLI 中自动刷新并绕过确认。
 
 ```bash
 # 以下操作使用重新检查过的 item.json
-purplemux-improved worktree push -w ws-EXAMPLE --data @item.json --remote origin
-purplemux-improved worktree generate-draft -w ws-EXAMPLE --data @item.json --remote origin --target-branch main --locale zh-CN > "draft.json"
+pmuxi worktree push -w ws-EXAMPLE --data @item.json --remote origin
+pmuxi worktree generate-draft -w ws-EXAMPLE --data @item.json --remote origin --target-branch main --locale zh-CN > "draft.json"
 
 # 审阅 title/body 后创建草稿；GitLab 改用 --provider gitlab
 jq --slurpfile draft "draft.json" '. + {title:$draft[0].title,body:$draft[0].body}' "item.json" > "review.json"
-purplemux-improved worktree create-draft -w ws-EXAMPLE --data @review.json --remote origin --target-branch main --provider github
-purplemux-improved worktree refresh-review -w ws-EXAMPLE --data @item.json
+pmuxi worktree create-draft -w ws-EXAMPLE --data @review.json --remote origin --target-branch main --provider github
+pmuxi worktree refresh-review -w ws-EXAMPLE --data @item.json
 ```
 
 `push` 和 `create-draft` 同样支持主工作树，不受检出分支名称影响；发布时忽略 `main` 标记，但继续校验快照、脏文件、进行中的 Git 操作及远端状态。删除与清理仍保护主工作树。
@@ -250,8 +253,8 @@ purplemux-improved worktree refresh-review -w ws-EXAMPLE --data @item.json
 
 ```bash
 jq '{items:[.item]}' "item.json" > "cleanup.json"
-purplemux-improved worktree preview-cleanup -w ws-EXAMPLE --data @cleanup.json
-purplemux-improved worktree cleanup -w ws-EXAMPLE --data @cleanup.json
+pmuxi worktree preview-cleanup -w ws-EXAMPLE --data @cleanup.json
+pmuxi worktree cleanup -w ws-EXAMPLE --data @cleanup.json
 ```
 
 ### AI 提交信息与提交
@@ -259,13 +262,13 @@ purplemux-improved worktree cleanup -w ws-EXAMPLE --data @cleanup.json
 `--session` 是 `tab list` 返回的 tmux `sessionName`，不是标签 ID 或 Agent 会话 ID。
 
 ```bash
-purplemux-improved tab list -w ws-EXAMPLE
-purplemux-improved commit inspect --session "TMUX_SESSION"
-purplemux-improved commit generate --session "TMUX_SESSION" --locale zh-CN > "commit-preview.json"
+pmuxi tab list -w ws-EXAMPLE
+pmuxi commit inspect --session "TMUX_SESSION"
+pmuxi commit generate --session "TMUX_SESSION" --locale zh-CN > "commit-preview.json"
 
 # 审阅文件列表和 title/body；仅提取提交所需字段
 jq '{snapshot,message:{title,body}}' "commit-preview.json" > "commit.json"
-purplemux-improved commit create --session "TMUX_SESSION" --data @commit.json
+pmuxi commit create --session "TMUX_SESSION" --data @commit.json
 ```
 
 `generate` 不提交；`create` 检查分支、HEAD 和变更树快照后提交。若文件变化导致快照失效，重新检查并生成请求。
@@ -273,24 +276,24 @@ purplemux-improved commit create --session "TMUX_SESSION" --data @commit.json
 ### 输入队列、附件与会话
 
 ```bash
-purplemux-improved queue add -w ws-EXAMPLE --tab-id TAB_ID --id msg-1 --text "完成后再补充测试"
-purplemux-improved queue list -w ws-EXAMPLE --tab-id TAB_ID
-purplemux-improved queue submit -w ws-EXAMPLE --tab-id TAB_ID
-purplemux-improved queue remove -w ws-EXAMPLE --tab-id TAB_ID --id msg-1
+pmuxi queue add -w ws-EXAMPLE --tab-id TAB_ID --id msg-1 --text "完成后再补充测试"
+pmuxi queue list -w ws-EXAMPLE --tab-id TAB_ID
+pmuxi queue submit -w ws-EXAMPLE --tab-id TAB_ID
+pmuxi queue remove -w ws-EXAMPLE --tab-id TAB_ID --id msg-1
 
-purplemux-improved upload file --file "./design.pdf" -w ws-EXAMPLE --tab-id TAB_ID > "attachment.json"
+pmuxi upload file --file "./design.pdf" -w ws-EXAMPLE --tab-id TAB_ID > "attachment.json"
 jq '{attachments:[.],text:"请检查附件"}' "attachment.json" > "message.json"
-purplemux-improved queue add -w ws-EXAMPLE --tab-id TAB_ID --id msg-2 --data @message.json
+pmuxi queue add -w ws-EXAMPLE --tab-id TAB_ID --id msg-2 --data @message.json
 
-purplemux-improved tab status -w ws-EXAMPLE TAB_ID
-purplemux-improved queue answer -w ws-EXAMPLE --tab-id TAB_ID --id answer-1 --agent-session-id AGENT_SESSION_ID --text "选择第一项"
-purplemux-improved session codex-status -w ws-EXAMPLE --tab-id TAB_ID --session-id AGENT_SESSION_ID
-purplemux-improved session codex --cwd "/absolute/path/to/repo" --days-back 30
-purplemux-improved session claude --tmux-session "TMUX_SESSION" --limit 20
-purplemux-improved session entries --jsonl-path "/allowed/session.jsonl" --before-byte 4096 --mode turn
+pmuxi tab status -w ws-EXAMPLE TAB_ID
+pmuxi queue answer -w ws-EXAMPLE --tab-id TAB_ID --id answer-1 --agent-session-id AGENT_SESSION_ID --text "选择第一项"
+pmuxi session codex-status -w ws-EXAMPLE --tab-id TAB_ID --session-id AGENT_SESSION_ID
+pmuxi session codex --cwd "/absolute/path/to/repo" --days-back 30
+pmuxi session claude --tmux-session "TMUX_SESSION" --limit 20
+pmuxi session entries --jsonl-path "/allowed/session.jsonl" --before-byte 4096 --mode turn
 
 # 默认仅移除历史/隐藏；显式 true 同时删除原始记录
-purplemux-improved session delete --provider codex --session-id AGENT_SESSION_ID --delete-original true
+pmuxi session delete --provider codex --session-id AGENT_SESSION_ID --delete-original true
 ```
 
 上传文件非空且最大 50 MiB。队列允许纯文本、纯附件或两者组合。`queue answer` 的 Agent 会话 ID 必须与当前状态一致，会话切换时服务端拒绝发送。状态栏响应的 `active:false` 表示未匹配当前活动会话。历史读取的 `beforeByte` 为字节游标，路径必须通过服务端会话目录校验。
@@ -298,11 +301,11 @@ purplemux-improved session delete --provider codex --session-id AGENT_SESSION_ID
 ### Codex 环境与生成提示词
 
 ```bash
-purplemux-improved config get
-purplemux-improved config set --codex-environment '{"EXAMPLE_VARIABLE":"value"}'
-purplemux-improved codex launch-args -w ws-EXAMPLE
-purplemux-improved config set --branch-name-provider claude
-purplemux-improved config set --data @prompts.json
+pmuxi config get
+pmuxi config set --codex-environment '{"EXAMPLE_VARIABLE":"value"}'
+pmuxi codex launch-args -w ws-EXAMPLE
+pmuxi config set --branch-name-provider claude
+pmuxi config set --data @prompts.json
 ```
 
 `codexEnvironment` 替换整张配置映射，仅影响后续启动的进程。`prompts.json` 可包含 `branchNamePrompt`、`commitMessagePrompt`、`reviewDescriptionPrompt`；变量和长度沿用服务端校验。`config get` 与 `codex launch-args` 会返回所配置的环境变量值。

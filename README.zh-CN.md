@@ -1,8 +1,8 @@
 # purplemux-improved
 
-基于 [subicura/purplemux](https://github.com/subicura/purplemux) 的改进分支。安装仅提供 `purplemux-improved` 命令，保留 `~/.purplemux` 数据目录以兼容现有配置。npm 安装命令需待本分支发布后使用；发布前请从源码运行。
+基于 [subicura/purplemux](https://github.com/subicura/purplemux) 的改进分支。安装提供启动服务的 `purplemux-improved` 和专用 CLI 命令 `pmuxi`，保留 `~/.purplemux` 数据目录以兼容现有配置。npm 安装命令需待本分支发布后使用；发布前请从源码运行。
 
-Fork 新增能力也提供 CLI 入口：运行 `purplemux features` 查看离线命令指南，或阅读 [CLI 使用示例](landing-src/docs/zh-CN/cli-reference.md#fork-新增能力)。源码环境使用 `node bin/purplemux.js features`。
+Fork 新增能力也提供 CLI 入口：运行 `pmuxi features` 查看离线命令指南，或阅读 [CLI 使用示例](landing-src/docs/zh-CN/cli-reference.md#fork-新增能力)。源码环境使用 `node bin/cli.js features`。`pmuxi` 无参数时显示帮助，任何情况下都不会启动服务；原有 `purplemux-improved <subcommand>` 调用继续兼容。
 
 ## Fork 后的主要改进
 
@@ -77,7 +77,7 @@ npx purplemux-improved@latest
 - **终端主题** — 深色 / 浅色模式,多种配色主题
 - **工作区 & 分组** — 以工作区为单位保存 / 恢复面板布局、标签与工作目录。通过拖拽将工作区组织为分组进行管理
 - **Git 工作流** — 支持 Side-by-side / Line-by-line 切换与语法高亮,以及行内 hunk 展开、分页历史标签。可从面板直接 fetch / pull / push (含 ahead/behind 指示) — 同步失败时 (dirty worktree、冲突) 一键 Ask Claude 或 Codex
-- **内置浏览器面板** — 在终端旁嵌入浏览器查看开发结果 (Electron)。可通过 `purplemux-improved` CLI 控制,并内置设备模拟器切换视口
+- **内置浏览器面板** — 在终端旁嵌入浏览器查看开发结果 (Electron)。可通过 `pmuxi` CLI 控制,并内置设备模拟器切换视口
 - **智能体标签** — 从新建标签菜单启动 Claude、Codex 或统一会话列表
 
 ### Claude Code 与 Codex 集成
@@ -152,8 +152,8 @@ purplemux-improved
 ### CLI 示例
 
 ```bash
-purplemux-improved tab create -w WS -t codex-cli -n "fix auth"
-purplemux-improved tab create -w WS -t agent-sessions
+pmuxi tab create -w WS -t codex-cli -n "fix auth"
+pmuxi tab create -w WS -t agent-sessions
 ```
 
 ### 从源码运行

@@ -6,16 +6,19 @@ permalink: /docs/cli-reference/index.html
 ---
 {% from "docs/callouts.njk" import callout %}
 
-`purplemux-improved` ships with two ways to use the binary: as a server starter (`purplemux-improved` / `purplemux-improved start`) and as an HTTP API wrapper (`purplemux-improved <subcommand>`) that talks to a running server.
+Use `purplemux-improved` / `purplemux-improved start` to start the server and `pmuxi <subcommand>` to operate it through the HTTP API. `pmuxi` never starts a server, including when configuration is missing or a connection fails.
 
-## Two roles, one binary
+## Server and CLI commands
 
 | Form | What it does |
 |---|---|
 | `purplemux-improved` | Start the server. Same as `purplemux-improved start`. |
-| `purplemux-improved <subcommand>` | Talk to a running server's CLI HTTP API. |
+| `pmuxi` | Show CLI help without connecting to or starting a server. |
+| `pmuxi <subcommand>` | Talk to a running server's CLI HTTP API. |
+| `pmuxi start` / `pmuxi server` | Fail without starting a server. |
+| `purplemux-improved <subcommand>` | Compatible with existing CLI scripts; prefer `pmuxi` for new commands. |
 
-The dispatcher in `bin/purplemux.js` routes known subcommands to `bin/cli.js`. No argument or `start` launches the server; unknown commands fail.
+Both commands are installed with the `purplemux-improved` package. From source, run `node bin/cli.js <subcommand>` for CLI operations. Help and feature discovery work offline; operations require an existing server.
 
 ## Starting the server
 
@@ -47,16 +50,16 @@ Operations require a running server; `help`, `features`, and command `--help` wo
 
 | Command | Purpose |
 |---|---|
-| `purplemux-improved workspaces` | List workspaces |
-| `purplemux-improved tab list [-w WS]` | List tabs (optionally scoped to a workspace) |
-| `purplemux-improved tab create -w WS [-n NAME] [-t TYPE]` | Create a new tab |
-| `purplemux-improved tab send -w WS TAB_ID CONTENT...` | Send input to a tab |
-| `purplemux-improved tab status -w WS TAB_ID` | Inspect a tab's status |
-| `purplemux-improved tab result -w WS TAB_ID` | Capture the tab pane's current content |
-| `purplemux-improved tab close -w WS TAB_ID` | Close a tab |
-| `purplemux-improved tab browser ...` | Drive a `web-browser` tab (Electron only) |
-| `purplemux-improved api-guide` | Print the full HTTP API reference |
-| `purplemux-improved help` | Show usage |
+| `pmuxi workspaces` | List workspaces |
+| `pmuxi tab list [-w WS]` | List tabs (optionally scoped to a workspace) |
+| `pmuxi tab create -w WS [-n NAME] [-t TYPE]` | Create a new tab |
+| `pmuxi tab send -w WS TAB_ID CONTENT...` | Send input to a tab |
+| `pmuxi tab status -w WS TAB_ID` | Inspect a tab's status |
+| `pmuxi tab result -w WS TAB_ID` | Capture the tab pane's current content |
+| `pmuxi tab close -w WS TAB_ID` | Close a tab |
+| `pmuxi tab browser ...` | Drive a `web-browser` tab (Electron only) |
+| `pmuxi api-guide` | Print the full HTTP API reference |
+| `pmuxi help` | Show usage |
 
 Output is JSON unless noted. `--workspace` and `-w` are interchangeable.
 
@@ -79,32 +82,32 @@ These only work when the tab's panel type is `web-browser`, and only in the macO
 
 | Subcommand | What it returns |
 |---|---|
-| `purplemux-improved tab browser url -w WS TAB_ID` | Current URL + page title |
-| `purplemux-improved tab browser screenshot -w WS TAB_ID [-o FILE] [--full]` | PNG. With `-o` saves to disk; without, returns base64. `--full` captures the full page. |
-| `purplemux-improved tab browser console -w WS TAB_ID [--since MS] [--level LEVEL]` | Recent console entries (ring buffer, 500 entries) |
-| `purplemux-improved tab browser network -w WS TAB_ID [--since MS] [--method M] [--url SUBSTR] [--status CODE] [--request ID]` | Recent network entries; `--request ID` fetches one body |
-| `purplemux-improved tab browser eval -w WS TAB_ID EXPR` | Evaluate a JS expression and serialize the result |
+| `pmuxi tab browser url -w WS TAB_ID` | Current URL + page title |
+| `pmuxi tab browser screenshot -w WS TAB_ID [-o FILE] [--full]` | PNG. With `-o` saves to disk; without, returns base64. `--full` captures the full page. |
+| `pmuxi tab browser console -w WS TAB_ID [--since MS] [--level LEVEL]` | Recent console entries (ring buffer, 500 entries) |
+| `pmuxi tab browser network -w WS TAB_ID [--since MS] [--method M] [--url SUBSTR] [--status CODE] [--request ID]` | Recent network entries; `--request ID` fetches one body |
+| `pmuxi tab browser eval -w WS TAB_ID EXPR` | Evaluate a JS expression and serialize the result |
 
 ## Examples
 
 ```bash
 # Find your workspace
-purplemux-improved workspaces
+pmuxi workspaces
 
 # Create a Claude tab in workspace ws-MMKl07
-purplemux-improved tab create -w ws-MMKl07 -t claude-code -n "refactor auth"
+pmuxi tab create -w ws-MMKl07 -t claude-code -n "refactor auth"
 
 # Send a prompt to it (TAB_ID comes from `tab list`)
-purplemux-improved tab send -w ws-MMKl07 tb-abc "Refactor src/lib/auth.ts to remove the cookie path"
+pmuxi tab send -w ws-MMKl07 tb-abc "Refactor src/lib/auth.ts to remove the cookie path"
 
 # Watch its state
-purplemux-improved tab status -w ws-MMKl07 tb-abc
+pmuxi tab status -w ws-MMKl07 tb-abc
 
 # Snapshot the pane
-purplemux-improved tab result -w ws-MMKl07 tb-abc
+pmuxi tab result -w ws-MMKl07 tb-abc
 
 # Screenshot a web-browser tab full-page
-purplemux-improved tab browser screenshot -w ws-MMKl07 tb-xyz -o page.png --full
+pmuxi tab browser screenshot -w ws-MMKl07 tb-xyz -o page.png --full
 ```
 
 ## Authentication
@@ -119,7 +122,7 @@ If you need to drive the CLI from another shell or a script that can't see `~/.p
 | `PMUX_TOKEN` | contents of `~/.purplemux/cli-token` | Bearer token sent as `x-pmux-token` |
 
 ```bash
-PMUX_PORT=8022 PMUX_TOKEN=$(cat ~/.purplemux/cli-token) purplemux-improved workspaces
+PMUX_PORT=8022 PMUX_TOKEN=$(cat ~/.purplemux/cli-token) pmuxi workspaces
 ```
 
 {% call callout('warning') %}
@@ -132,7 +135,7 @@ The CLI token grants full server access. Treat it like a password. Don't paste i
 
 ## Full HTTP API
 
-`purplemux-improved api-guide` prints the complete HTTP API reference for every `/api/cli/*` endpoint, including request bodies and response shapes — useful when you want to drive purplemux-improved directly from `curl` or another runtime.
+`pmuxi api-guide` prints the complete HTTP API reference for every `/api/cli/*` endpoint, including request bodies and response shapes — useful when you want to drive purplemux-improved directly from `curl` or another runtime.
 
 ## What's next
 
@@ -142,7 +145,7 @@ The CLI token grants full server access. Treat it like a password. Don't paste i
 
 ## Fork feature commands
 
-Run `purplemux-improved features` for the complete offline catalog, including required/optional fields and HTTP endpoints. `purplemux-improved worktree --help`, `purplemux-improved worktree create --help`, and `purplemux-improved help commit create` provide scoped help. From an unpublished source checkout, substitute `node bin/purplemux.js` for `purplemux` to use the current code.
+Run `pmuxi features` for the complete offline catalog, including required/optional fields and HTTP endpoints. `pmuxi worktree --help`, `pmuxi worktree create --help`, and `pmuxi help commit create` provide scoped help. From an unpublished source checkout, substitute `node bin/purplemux.js` for `purplemux` to use the current code.
 
 | Group | Commands |
 | --- | --- |
@@ -171,21 +174,21 @@ Output is JSON. HTTP/argument errors and business failures (sync conflicts or pa
 ### Examples
 
 ```bash
-purplemux-improved workspace directories --directory "/home/me/projects"
-purplemux-improved workspace create --directory "/home/me/projects/app" --name "App"
-purplemux-improved worktree source -w ws-EXAMPLE
-purplemux-improved worktree generate-branch -w ws-EXAMPLE --title "Fix login"
-purplemux-improved worktree create -w ws-EXAMPLE --name "Fix login" --branch "fix/login"
-purplemux-improved worktree list -w ws-EXAMPLE > "worktrees.json"
-purplemux-improved tab rename -w ws-EXAMPLE TAB_ID "Review"
-purplemux-improved queue add -w ws-EXAMPLE --tab-id TAB_ID --id msg-1 --text "Run tests next"
-purplemux-improved queue list -w ws-EXAMPLE --tab-id TAB_ID
-purplemux-improved queue submit -w ws-EXAMPLE --tab-id TAB_ID
-purplemux-improved upload file --file "./design.pdf" -w ws-EXAMPLE --tab-id TAB_ID
-purplemux-improved session codex --cwd "/home/me/projects/app"
-purplemux-improved session claude --tmux-session "TMUX_SESSION"
-purplemux-improved config set --codex-environment '{"EXAMPLE_VARIABLE":"value"}'
-purplemux-improved codex launch-args -w ws-EXAMPLE
+pmuxi workspace directories --directory "/home/me/projects"
+pmuxi workspace create --directory "/home/me/projects/app" --name "App"
+pmuxi worktree source -w ws-EXAMPLE
+pmuxi worktree generate-branch -w ws-EXAMPLE --title "Fix login"
+pmuxi worktree create -w ws-EXAMPLE --name "Fix login" --branch "fix/login"
+pmuxi worktree list -w ws-EXAMPLE > "worktrees.json"
+pmuxi tab rename -w ws-EXAMPLE TAB_ID "Review"
+pmuxi queue add -w ws-EXAMPLE --tab-id TAB_ID --id msg-1 --text "Run tests next"
+pmuxi queue list -w ws-EXAMPLE --tab-id TAB_ID
+pmuxi queue submit -w ws-EXAMPLE --tab-id TAB_ID
+pmuxi upload file --file "./design.pdf" -w ws-EXAMPLE --tab-id TAB_ID
+pmuxi session codex --cwd "/home/me/projects/app"
+pmuxi session claude --tmux-session "TMUX_SESSION"
+pmuxi config set --codex-environment '{"EXAMPLE_VARIABLE":"value"}'
+pmuxi codex launch-args -w ws-EXAMPLE
 ```
 
 Uploads accept nonempty files up to 50 MiB and return `{path,filename}`. Pass those objects in queue `attachments`. Queue messages require text or attachments. `queue answer` additionally requires `--agent-session-id`, obtained from `tab status`; stale session IDs are rejected.
@@ -195,14 +198,14 @@ Uploads accept nonempty files up to 50 MiB and return `{path,filename}`. Pass th
 Worktree actions take `item: {repositoryId,directory,head,branch,confirmedIgnoredPaths?}`; cleanup takes `items: [item,...]`. Obtain `repositoryId` from `worktree list`'s `repositories[].id` and the remaining fields from the selected `worktrees[]`. Save the reviewed object as `{"item":{...}}` in `item.json`.
 
 ```bash
-purplemux-improved worktree inspect-sync -w ws-EXAMPLE --data @item.json --target-ref refs/remotes/origin/main
-purplemux-improved worktree generate-draft -w ws-EXAMPLE --data @item.json --remote origin --target-branch main --locale en
-purplemux-improved worktree preview-cleanup -w ws-EXAMPLE --data @cleanup.json
-purplemux-improved commit inspect --session TMUX_SESSION
-purplemux-improved commit generate --session TMUX_SESSION --locale en > "commit-preview.json"
+pmuxi worktree inspect-sync -w ws-EXAMPLE --data @item.json --target-ref refs/remotes/origin/main
+pmuxi worktree generate-draft -w ws-EXAMPLE --data @item.json --remote origin --target-branch main --locale en
+pmuxi worktree preview-cleanup -w ws-EXAMPLE --data @cleanup.json
+pmuxi commit inspect --session TMUX_SESSION
+pmuxi commit generate --session TMUX_SESSION --locale en > "commit-preview.json"
 jq '{snapshot,message:{title,body}}' "commit-preview.json" > "commit.json"
 # Review the generated message and files before executing:
-purplemux-improved commit create --session TMUX_SESSION --data @commit.json
+pmuxi commit create --session TMUX_SESSION --data @commit.json
 ```
 
 `merge` and `rebase` require `targetRef` and `targetHead` from `inspect-sync`. The `item` is the worktree modified by the operation; `targetRef` is merged into it. Fetch first if fresh remote refs are needed. Re-read snapshots after HEAD changes, including conflicts, before `continue`/`abort`. `inspect-sync` reports `main` as a blocker; among synchronization operations, only `merge` may execute on the main worktree. Rebase, continue and abort remain blocked there, so resolve main-worktree merge conflicts in Git. `remove` takes flat snapshot fields rather than `item`, and preserves the branch unless `deleteBranch` is explicitly true. Cleanup retains ignored-file and active-session protection.

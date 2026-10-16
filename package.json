@@ -32,7 +32,8 @@
   ],
   "main": "dist-electron/main.js",
   "bin": {
-    "purplemux-improved": "./bin/purplemux.js"
+    "purplemux-improved": "./bin/purplemux.js",
+    "pmuxi": "./bin/cli.js"
   },
   "files": [
     "bin/",
