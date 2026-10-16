@@ -46,7 +46,8 @@ import MobileWorkspaceGroupHeader from '@/components/features/mobile/mobile-work
 import RenameGroupDialog from '@/components/features/workspace/rename-group-dialog';
 import MobileWorkspaceActions from '@/components/features/mobile/mobile-workspace-actions';
 import WorkspaceTreeGuides, { WORKSPACE_TREE_INDENT } from '@/components/features/workspace/workspace-tree-guides';
-import { getVisuallyOrderedWorkspaces, getWorkspaceVisibility, getWorkspaceTreePosition } from '@/lib/workspace-order';
+import { getVisuallyOrderedWorkspaces, getWorkspaceTreePosition } from '@/lib/workspace-order';
+import useWorkspaceExpansion from '@/hooks/use-workspace-expansion';
 import useTouchDrag from '@/hooks/use-touch-drag';
 import useNavigationDrag, { reorderNavigationIds } from '@/hooks/use-navigation-drag';
 
@@ -94,17 +95,8 @@ const MobileNavigationSheet = ({
   const sessionsBadge = attentionCount + busyCount;
   const [workspaceQuery, setWorkspaceQuery] = useState('');
   const searchResult = useMemo(() => searchWorkspaces(workspaces, workspaceQuery), [workspaces, workspaceQuery]);
-  const [expandedWsId, setExpandedWsId] = useState<string | null>(activeWorkspaceId);
-  const workspaceVisibility = useMemo(
-    () => getWorkspaceVisibility(workspaces, expandedWsId),
-    [workspaces, expandedWsId],
-  );
+  const { visibility: workspaceVisibility, toggleWorkspace, revealWorkspace } = useWorkspaceExpansion(workspaces, activeWorkspaceId, !!searchResult);
   const [renameGroupId, setRenameGroupId] = useState<string | null>(null);
-  const [prevOpen, setPrevOpen] = useState(open);
-  if (open !== prevOpen) {
-    setPrevOpen(open);
-    if (open) setExpandedWsId(activeWorkspaceId);
-  }
   const onTouchDragStart = useTouchDrag();
   const dragProps = useNavigationDrag((source, target, after) => {
     if (searchResult) return;
@@ -143,20 +135,10 @@ const MobileNavigationSheet = ({
 
   const handleToggleWorkspace = useCallback(
     (workspaceId: string) => {
-      selectWorkspace(workspaceId);
-      if (searchResult) return;
-      const parentId = workspaces.find((workspace) => workspace.id === workspaceId)?.parentWorkspaceId;
-      setExpandedWsId(workspaceVisibility.expandedIds.has(workspaceId) ? parentId ?? null : workspaceId);
+      selectWorkspace(workspaceId, { reveal: false });
+      toggleWorkspace(workspaceId, true);
     },
-    [selectWorkspace, searchResult, workspaceVisibility.expandedIds, workspaces],
-  );
-
-  const handleSheetOpenChange = useCallback(
-    (v: boolean) => {
-      onOpenChange(v);
-      if (v) setExpandedWsId(activeWorkspaceId);
-    },
-    [onOpenChange, activeWorkspaceId],
+    [selectWorkspace, toggleWorkspace],
   );
 
   const getTabDisplayName = (tab: ITab) => {
@@ -323,13 +305,14 @@ const MobileNavigationSheet = ({
     const depth = position.rails.length;
     const workspaceDragProps = searchResult ? { draggable: false, style: {} } : dragProps({ kind: 'workspace', id: ws.id });
     const layoutTabs = (workspaceLayouts[ws.id] ?? []).flatMap((pane) => [...pane.tabs].sort((a, b) => a.order - b.order));
+    const canExpand = position.childCount > 0 || layoutTabs.length > 0;
     const statusId = `mobile-workspace-status-${ws.id}`;
     return (
       <div key={ws.id} className="relative">
         <div className="pointer-events-none absolute inset-0 -translate-x-2"><WorkspaceTreeGuides position={position} expanded={isExpanded} mobile /></div>
         <MobileWorkspaceActions workspace={ws} tabs={layoutTabs} isActive={isActive} onCreated={(id) => {
           useWorkspaceStore.getState().switchWorkspace(id);
-          setExpandedWsId(id);
+          revealWorkspace(id);
         }}>
           <button
             {...workspaceDragProps}
@@ -342,11 +325,11 @@ const MobileNavigationSheet = ({
                 : 'text-foreground hover:bg-accent/50',
             )}
             onClick={() => handleToggleWorkspace(ws.id)}
-            aria-expanded={isExpanded}
+            aria-expanded={canExpand ? isExpanded : undefined}
             aria-current={isActive ? 'true' : undefined}
             aria-describedby={statusId}
           >
-            {isExpanded ? (
+            {!canExpand ? <span className="w-3.5 shrink-0" aria-hidden="true" /> : isExpanded ? (
               <ChevronDown size={14} className="shrink-0 text-muted-foreground" />
             ) : (
               <ChevronRight size={14} className="shrink-0 text-muted-foreground" />
@@ -369,7 +352,7 @@ const MobileNavigationSheet = ({
     : null;
 
   return (
-    <Sheet open={open} onOpenChange={handleSheetOpenChange}>
+    <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="left" style={viewport ? { ...viewport, right: undefined } : undefined} data-short-viewport={typeof viewport?.height === 'number' && viewport.height < 500 || undefined} className="mobile-navigation-sheet font-sans gap-0 bg-sidebar p-0 text-sidebar-foreground shadow-none" showCloseButton={false}>
         <SheetHeader className="shrink-0 flex-row items-center gap-2 px-3 py-1">
           <AppLogo className="min-w-0 flex-1 [&>span]:truncate" />

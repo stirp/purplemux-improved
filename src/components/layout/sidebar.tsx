@@ -18,7 +18,7 @@ import ShortcutKey from '@/components/shortcut-key';
 import useShortcutHints from '@/hooks/use-shortcut-hints';
 import { useRouter } from 'next/router';
 import { cn } from '@/lib/utils';
-import { getWorkspaceVisibility } from '@/lib/workspace-order';
+import useWorkspaceExpansion from '@/hooks/use-workspace-expansion';
 import { searchWorkspaces } from '@/lib/workspace-search';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -81,10 +81,7 @@ const Sidebar = () => {
   const revealedGroupId = useMemo(() => getSessionNavigationGroupId(
     workspaces, revealedWorkspaceId === activeWorkspaceId ? revealedWorkspaceId : null,
   ), [workspaces, revealedWorkspaceId, activeWorkspaceId]);
-  const workspaceVisibility = useMemo(
-    () => getWorkspaceVisibility(workspaces, activeWorkspaceId),
-    [workspaces, activeWorkspaceId],
-  );
+  const { visibility: workspaceVisibility, toggleWorkspace } = useWorkspaceExpansion(workspaces, activeWorkspaceId, !!searchResult);
   const collapsed = useWorkspaceStore((s) => s.sidebarCollapsed);
   const width = useWorkspaceStore((s) => s.sidebarWidth);
   const isLoading = useWorkspaceStore((s) => s.isLoading);
@@ -465,6 +462,7 @@ const Sidebar = () => {
           isActive={ws.id === activeWorkspaceId && router.pathname === '/' && !activeWebviewId}
           isDeleting={deletingIds.has(ws.id)}
           childrenExpanded={workspaceVisibility.parentIds.has(ws.id) ? (searchResult ?? workspaceVisibility).expandedIds.has(ws.id) : undefined}
+          onToggleExpanded={searchResult ? undefined : toggleWorkspace}
           shortcutLabel={flatIdx < 8 ? `⌘${flatIdx + 1}` : flatIdx === workspaces.length - 1 ? '⌘9' : undefined}
           showShortcut={showShortcuts}
           tabs={workspaceTabs[ws.id]}

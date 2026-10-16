@@ -1,17 +1,24 @@
 import { isValidElement, type ReactElement, type ReactNode } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import type { IWorkspace } from '@/types/terminal';
 
 // Run the sheet's event handlers with persistent hook state without mounting its portals.
 const hooks = vi.hoisted(() => ({ values: [] as unknown[], cursor: 0 }));
 const selectWorkspace = vi.hoisted(() => vi.fn());
-vi.mock('@/hooks/use-sidebar-actions', () => ({ useSelectWorkspace: () => selectWorkspace }));
+vi.mock('@/hooks/use-sidebar-actions', () => ({
+  default: Object.assign(
+    (select: (state: unknown) => unknown) => select({ workspaceRevealRequest: null }),
+    { getState: () => ({ revealWorkspace: vi.fn() }) },
+  ),
+  useSelectWorkspace: () => selectWorkspace,
+}));
 vi.mock('react', async (importOriginal) => ({
   ...await importOriginal<typeof import('react')>(),
   useMemo: (compute: () => unknown) => compute(),
   useCallback: (callback: unknown) => callback,
   useState: (initial: unknown) => {
     const index = hooks.cursor++;
-    if (index >= hooks.values.length) hooks.values[index] = initial;
+    if (index >= hooks.values.length) hooks.values[index] = typeof initial === 'function' ? initial() : initial;
     return [hooks.values[index], (next: unknown) => {
       hooks.values[index] = typeof next === 'function' ? next(hooks.values[index]) : next;
     }];
@@ -48,7 +55,7 @@ const elements = (node: ReactNode): Element[] => {
   return [node, ...elements(node.props.children)];
 };
 
-const render = (activeWorkspaceId = 'parent', onSelectSurface = vi.fn()) => {
+const render = (activeWorkspaceId = 'parent', onSelectSurface = vi.fn(), extraWorkspaces: IWorkspace[] = []) => {
   hooks.cursor = 0;
   return MobileNavigationSheet({
     open: true,
@@ -57,6 +64,7 @@ const render = (activeWorkspaceId = 'parent', onSelectSurface = vi.fn()) => {
       { id: 'parent', name: 'Parent', directories: ['/Users/test/project', '/srv/second'] },
       { id: 'child', name: 'Child', directories: ['/srv/child'], parentWorkspaceId: 'parent' },
       { id: 'grandchild', name: 'Grandchild', directories: [], parentWorkspaceId: 'child' },
+      ...extraWorkspaces,
     ],
     activeWorkspaceId,
     workspaceLayouts: {
@@ -81,7 +89,7 @@ describe('mobile workspace expansion', () => {
     const tree = render('grandchild');
     const row = elements(tree).find((element) => element.key === workspaceId)!;
     elements(row).find((element) => element.type === 'button')!.props.onClick!();
-    expect(selectWorkspace).toHaveBeenCalledExactlyOnceWith(workspaceId);
+    expect(selectWorkspace).toHaveBeenCalledExactlyOnceWith(workspaceId, { reveal: false });
   });
 
   it('passes complete directories to the actions panel without repeating them in rows', () => {
@@ -122,7 +130,7 @@ describe('mobile workspace expansion', () => {
     expect(elements(tree).some((element) => element.key === 'terminal')).toBe(false);
   });
 
-  it('honors explicit collapse of the active workspace and restores it on navigation reopen', () => {
+  it('honors explicit collapse of the active workspace when reopening navigation', () => {
     let tree = render();
     expect(elements(tree).some((element) => element.key === 'child')).toBe(true);
     const parent = elements(tree).find((element) => element.key === 'parent')!;
@@ -135,7 +143,40 @@ describe('mobile workspace expansion', () => {
 
     tree.props.onOpenChange(true);
     tree = render();
-    expect(elements(tree).some((element) => element.key === 'child')).toBe(true);
+    expect(elements(tree).some((element) => element.key === 'child')).toBe(false);
+  });
+
+  it('keeps multiple roots and nested expansion when switching and reopening ancestors', () => {
+    const extra: IWorkspace[] = [
+      { id: 'other', name: 'Other', directories: [] },
+      { id: 'other-child', name: 'Other child', directories: [], parentWorkspaceId: 'other' },
+    ];
+    let tree = render('parent', undefined, extra);
+    const click = (id: string) => elements(elements(tree).find((element) => element.key === id))
+      .find((element) => element.type === 'button')!.props.onClick!();
+    const visible = (id: string) => elements(tree).some((element) => element.key === id);
+    click('child');
+    tree = render('child', undefined, extra);
+    click('other');
+    tree = render('other', undefined, extra);
+    expect(visible('grandchild')).toBe(true);
+    expect(visible('other-child')).toBe(true);
+    click('parent');
+    tree = render('parent', undefined, extra);
+    expect(visible('child')).toBe(false);
+    expect(visible('grandchild')).toBe(false);
+    expect(visible('other-child')).toBe(true);
+    click('parent');
+    tree = render('parent', undefined, extra);
+    expect(visible('grandchild')).toBe(true);
+    expect(visible('other-child')).toBe(true);
+  });
+
+  it('does not expose a disclosure control on an empty leaf', () => {
+    const tree = render('grandchild');
+    const leaf = elements(elements(tree).find((element) => element.key === 'grandchild'))
+      .find((element) => element.type === 'button')!;
+    expect(leaf.props['aria-expanded']).toBeUndefined();
   });
 });
 
@@ -174,7 +215,7 @@ describe('mobile workspace search', () => {
     let tree = render();
     expect(rowButton(tree, 'parent').props['aria-expanded']).toBe(true);
     rowButton(tree, target).props.onClick!();
-    expect(selectWorkspace).toHaveBeenCalledExactlyOnceWith(target);
+    expect(selectWorkspace).toHaveBeenCalledExactlyOnceWith(target, { reveal: false });
     tree = render(target);
     expect(rowButton(tree, 'parent').props['aria-expanded']).toBe(true);
     expect(elements(tree).some((element) => element.key === 'grandchild')).toBe(true);
