@@ -39,6 +39,7 @@ import useWorkspaceStore from '@/hooks/use-workspace-store';
 import useSessionNavigation, { getSessionNavigationGroupId, toggleSessionNavigationGroup } from '@/hooks/use-session-navigation';
 import WorkspaceItem from '@/components/features/workspace/workspace-item';
 import CreateWorkspaceDialog from '@/components/features/workspace/create-workspace-dialog';
+import DeleteWorkspaceDialog from '@/components/features/workspace/delete-workspace-dialog';
 import WorkspaceGroupHeader from '@/components/features/workspace/workspace-group-header';
 import dynamic from 'next/dynamic';
 
@@ -220,44 +221,27 @@ const Sidebar = () => {
   );
 
   const handleDeleteConfirm = useCallback(async () => {
-    if (!deleteTarget) return;
+    if (!deleteTarget) return false;
 
     const { id } = deleteTarget;
-    setDeleteTarget(null);
     setDeletingIds((prev) => new Set(prev).add(id));
 
-    const isActive = id === activeWorkspaceId;
-    if (isActive) {
-      const idx = workspaces.findIndex((w) => w.id === id);
-      const adjacent = workspaces[idx + 1] || workspaces[idx - 1];
-      if (adjacent) {
-        selectWorkspace(adjacent.id);
-      }
-    }
-
     const store = useWorkspaceStore.getState();
-    store.markPendingDelete(id);
     try {
       const success = await store.deleteWorkspace(id);
 
-      if (!success) {
-        setDeletingIds((prev) => {
-          const next = new Set(prev);
-          next.delete(id);
-          return next;
-        });
-        return;
+      if (!success) return false;
+
+      if (id === activeWorkspaceId) {
+        const idx = workspaces.findIndex((w) => w.id === id);
+        const adjacent = workspaces[idx + 1] || workspaces[idx - 1];
+        if (adjacent) selectWorkspace(adjacent.id);
       }
 
       setFadingOutIds((prev) => new Set(prev).add(id));
       await new Promise<void>((resolve) => setTimeout(resolve, 150));
 
       store.removeWorkspace(id);
-      setDeletingIds((prev) => {
-        const next = new Set(prev);
-        next.delete(id);
-        return next;
-      });
       setFadingOutIds((prev) => {
         const next = new Set(prev);
         next.delete(id);
@@ -267,8 +251,13 @@ const Sidebar = () => {
       if (workspaces.length <= 1) {
         store.fetchWorkspaces();
       }
+      return true;
     } finally {
-      store.unmarkPendingDelete(id);
+      setDeletingIds((prev) => {
+        const next = new Set(prev);
+        next.delete(id);
+        return next;
+      });
     }
   }, [deleteTarget, activeWorkspaceId, workspaces, selectWorkspace]);
 
@@ -877,30 +866,10 @@ const Sidebar = () => {
       />}
       <CheatSheetDialog />
 
-      <AlertDialog
-        open={!!deleteTarget}
-        onOpenChange={(open) => {
-          if (!open) setDeleteTarget(null);
-        }}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>{t('deleteWorkspace')}</AlertDialogTitle>
-            <AlertDialogDescription>
-              {t('deleteWorkspaceConfirm', { name: deleteTarget?.name ?? '' })}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>{tc('cancel')}</AlertDialogCancel>
-            <AlertDialogAction
-              className="bg-ui-red hover:bg-ui-red/80"
-              onClick={handleDeleteConfirm}
-            >
-              {tc('delete')}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      {deleteTarget && <DeleteWorkspaceDialog
+        key={deleteTarget.id} workspace={deleteTarget}
+        onClose={() => setDeleteTarget(null)} onDeleteProject={handleDeleteConfirm}
+      />}
     </div>
   );
 };
