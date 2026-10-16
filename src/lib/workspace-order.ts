@@ -24,14 +24,19 @@ export const getWorkspaceTreePosition = (workspaces: IWorkspace[], workspaceId: 
   };
 };
 
-export const getWorkspaceVisibility = (workspaces: IWorkspace[], activeWorkspaceId: string | null) => {
+export const getWorkspaceAncestorIds = (workspaces: IWorkspace[], workspaceId: string | null) => {
   const byId = new Map(workspaces.map((workspace) => [workspace.id, workspace]));
   const expandedIds = new Set<string>();
-  let current = activeWorkspaceId ? byId.get(activeWorkspaceId) : undefined;
+  let current = workspaceId ? byId.get(workspaceId) : undefined;
   while (current && !expandedIds.has(current.id)) {
     expandedIds.add(current.id);
     current = current.parentWorkspaceId ? byId.get(current.parentWorkspaceId) : undefined;
   }
+  return expandedIds;
+};
+
+export const getWorkspaceVisibility = (workspaces: IWorkspace[], expandedIds: ReadonlySet<string>) => {
+  const byId = new Map(workspaces.map((workspace) => [workspace.id, workspace]));
 
   // Keep cycle members reachable even when no workspace in their branch is selected.
   const cycleIds = new Set<string>();
@@ -57,10 +62,17 @@ export const getWorkspaceVisibility = (workspaces: IWorkspace[], activeWorkspace
   const visibleIds = new Set<string>();
   for (const workspace of workspaces) {
     const parentId = workspace.parentWorkspaceId;
-    if (parentId && byId.has(parentId)) parentIds.add(parentId);
-    if (!parentId || !byId.has(parentId) || expandedIds.has(parentId) || cycleIds.has(workspace.id)) {
-      visibleIds.add(workspace.id);
+    if (parentId && parentId !== workspace.id && byId.has(parentId)) parentIds.add(parentId);
+    let current = workspace;
+    let visible = true;
+    while (!cycleIds.has(current.id) && current.parentWorkspaceId && byId.has(current.parentWorkspaceId)) {
+      if (!expandedIds.has(current.parentWorkspaceId)) {
+        visible = false;
+        break;
+      }
+      current = byId.get(current.parentWorkspaceId)!;
     }
+    if (visible) visibleIds.add(workspace.id);
   }
   return { expandedIds, parentIds, visibleIds };
 };

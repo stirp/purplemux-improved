@@ -8,17 +8,22 @@ import { useLayoutStore } from '@/hooks/use-layout';
 
 interface ISidebarActionsState {
   onSelectWorkspace: ((id: string) => void) | null;
+  workspaceRevealRequest: { workspaceId: string } | null;
+  revealWorkspace: (workspaceId: string) => void;
   register: (handler: (id: string) => void) => void;
   unregister: () => void;
 }
 
 const useSidebarActions = create<ISidebarActionsState>((set) => ({
   onSelectWorkspace: null,
+  workspaceRevealRequest: null,
+  revealWorkspace: (workspaceId) => set({ workspaceRevealRequest: { workspaceId } }),
   register: (handler) => set({ onSelectWorkspace: handler }),
   unregister: () => set({ onSelectWorkspace: null }),
 }));
 
-export const selectWorkspace = (workspaceId: string, navigateHome: () => void) => {
+export const selectWorkspace = (workspaceId: string, navigateHome: () => void, options?: { reveal?: boolean }) => {
+  if (options?.reveal !== false) useSidebarActions.getState().revealWorkspace(workspaceId);
   const registered = useSidebarActions.getState().onSelectWorkspace
     ?? useMobileLayoutActions.getState().onSelectWorkspace;
   useWebviewStore.getState().hide();
@@ -37,9 +42,9 @@ export const selectWorkspace = (workspaceId: string, navigateHome: () => void) =
 
 export const useSelectWorkspace = () => {
   const router = useRouter();
-  return (workspaceId: string) => selectWorkspace(workspaceId, () => {
+  return (workspaceId: string, options?: { reveal?: boolean }) => selectWorkspace(workspaceId, () => {
     if (router.pathname !== '/') router.push('/');
-  });
+  }, options);
 };
 
 export default useSidebarActions;

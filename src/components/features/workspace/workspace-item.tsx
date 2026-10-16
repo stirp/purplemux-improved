@@ -3,6 +3,7 @@ import { useCallback, useEffect, useId, useMemo, useState, memo } from 'react';
 import { Pencil, Trash2, FolderPlus, FolderMinus, Folder, GitBranch, ChevronDown, ChevronRight } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
 import {
   ContextMenu,
   ContextMenuContent,
@@ -29,6 +30,7 @@ interface IWorkspaceItemProps {
   isActive: boolean;
   isDeleting: boolean;
   childrenExpanded?: boolean;
+  onToggleExpanded?: (workspaceId: string) => void;
   shortcutLabel?: string;
   showShortcut: boolean;
   tabs?: ITab[];
@@ -42,6 +44,7 @@ const WorkspaceItem = ({
   isActive,
   isDeleting,
   childrenExpanded,
+  onToggleExpanded,
   shortcutLabel,
   showShortcut,
   tabs,
@@ -83,10 +86,10 @@ const WorkspaceItem = ({
   }, [workspace.id, startEditing]);
 
   const handleClick = useCallback(() => {
-    if (!isEditing && !isActive) {
+    if (!isEditing) {
       onSelect(workspace.id);
     }
-  }, [isEditing, isActive, onSelect, workspace.id]);
+  }, [isEditing, onSelect, workspace.id]);
 
   const handleMoveToGroup = useCallback((groupId: string | null) => {
     useWorkspaceStore.getState().moveWorkspaceToGroup(workspace.id, groupId);
@@ -147,13 +150,25 @@ const WorkspaceItem = ({
         render={<div />}
       >
         <WorkspaceTreeGuides position={position} expanded={childrenExpanded} />
-        <span className="flex w-3 shrink-0 items-center justify-center" aria-hidden="true">
-          {childrenExpanded !== undefined ? (
-            childrenExpanded
+        {childrenExpanded !== undefined ? (
+          <Button
+            variant="ghost" size="icon"
+            className="-my-1.5 -mx-1.5 h-8 w-6 shrink-0 text-muted-foreground [@media(pointer:coarse)]:h-11"
+            aria-label={workspace.name}
+            aria-expanded={childrenExpanded}
+            disabled={!onToggleExpanded || isDeleting}
+            draggable
+            data-touch-drag-ignore
+            onDragStart={(event) => { event.preventDefault(); event.stopPropagation(); }}
+            onDoubleClick={(event) => event.stopPropagation()}
+            onContextMenu={(event) => { event.preventDefault(); event.stopPropagation(); }}
+            onClick={(event) => { event.stopPropagation(); onToggleExpanded?.(workspace.id); }}
+          >
+            {childrenExpanded
               ? <ChevronDown className="h-3 w-3 text-muted-foreground" />
-              : <ChevronRight className="h-3 w-3 text-muted-foreground" />
-          ) : null}
-        </span>
+              : <ChevronRight className="h-3 w-3 text-muted-foreground" />}
+          </Button>
+        ) : <span className="w-3 shrink-0" aria-hidden="true" />}
         {workspace.worktree || depth > 0
           ? <GitBranch aria-hidden="true" className={cn('h-3.5 w-3.5 shrink-0', isActive ? 'text-ui-purple' : 'text-muted-foreground')} />
           : <Folder aria-hidden="true" className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />}

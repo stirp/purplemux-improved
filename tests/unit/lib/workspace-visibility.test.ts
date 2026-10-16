@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { getWorkspaceVisibility } from '@/lib/workspace-order';
+import { getWorkspaceAncestorIds, getWorkspaceVisibility } from '@/lib/workspace-order';
 import type { IWorkspace } from '@/types/terminal';
 
 const workspace = (id: string, parentWorkspaceId?: string): IWorkspace => ({
@@ -11,9 +11,9 @@ const workspaces = [
   workspace('b'), workspace('b1', 'b'), workspace('standalone'),
 ];
 const visible = (activeId: string | null, items = workspaces) =>
-  [...getWorkspaceVisibility(items, activeId).visibleIds];
+  [...getWorkspaceVisibility(items, getWorkspaceAncestorIds(items, activeId)).visibleIds];
 
-describe('workspace automatic expansion', () => {
+describe('workspace initial expansion', () => {
   it('shows only the selected root children and keeps other roots visible', () => {
     expect(visible('a')).toEqual(['a', 'a1', 'a2', 'b', 'standalone']);
     expect(visible('b')).toEqual(['a', 'b', 'b1', 'standalone']);
@@ -39,7 +39,7 @@ describe('workspace automatic expansion', () => {
 
   it('identifies branch indicators without mutating the full workspace list', () => {
     const before = structuredClone(workspaces);
-    const state = getWorkspaceVisibility(workspaces, 'a1');
+    const state = getWorkspaceVisibility(workspaces, getWorkspaceAncestorIds(workspaces, 'a1'));
     expect([...state.expandedIds]).toEqual(['a1', 'a']);
     expect([...state.parentIds]).toEqual(['a', 'a1', 'a2', 'b']);
     expect(workspaces).toEqual(before);
@@ -70,5 +70,24 @@ describe('workspace automatic expansion', () => {
     expect(visible(null, items)).toEqual(['a', 'b', 'x', 'y']);
     expect(visible('a', items)).toEqual(['a', 'b', 'child', 'x', 'y']);
     expect(visible('child', items)).toEqual(['a', 'b', 'child', 'grandchild', 'x', 'y']);
+  });
+});
+
+describe('independent workspace expansion', () => {
+  it('keeps multiple roots and sibling branches expanded', () => {
+    const expanded = new Set(['a', 'a1', 'a2', 'b']);
+    expect([...getWorkspaceVisibility(workspaces, expanded).visibleIds]).toEqual(workspaces.map((item) => item.id));
+  });
+
+  it('hides all descendants of a collapsed ancestor while retaining nested expansion', () => {
+    const expanded = new Set(['a1', 'a2', 'b']);
+    expect([...getWorkspaceVisibility(workspaces, expanded).visibleIds]).toEqual(['a', 'b', 'b1', 'standalone']);
+    expanded.add('a');
+    expect([...getWorkspaceVisibility(workspaces, expanded).visibleIds]).toEqual(workspaces.map((item) => item.id));
+  });
+
+  it('ignores deleted expansion ids and keeps orphan nodes accessible', () => {
+    const items = workspaces.filter((item) => item.id !== 'a');
+    expect([...getWorkspaceVisibility(items, new Set(['a', 'a1'])).visibleIds]).toEqual(['a1', 'a11', 'a2', 'b', 'standalone']);
   });
 });
