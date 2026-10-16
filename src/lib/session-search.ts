@@ -6,6 +6,7 @@ export interface ISessionSearchItem {
   session: IWorkSession;
   title?: string | null;
   workspaceName: string;
+  rootWorkspaceName?: string | null;
   workspaceDirectories?: string[];
 }
 
@@ -21,10 +22,10 @@ export const searchSessions = (items: ISessionSearchItem[], query: string): ISes
 
   return items.flatMap((item) => {
     const { session, title, workspaceName } = item;
-    const matchesProjectName = matches([workspaceName]);
+    const matchesProjectName = matches([workspaceName, item.rootWorkspaceName]);
     const olderEntries = session.olderEntries.filter((entry) => matchesProjectName || matchesEntry(entry));
     const matched = matches([
-      stripMarkdown(title ?? ''), workspaceName, ...(item.workspaceDirectories ?? []),
+      stripMarkdown(title ?? ''), workspaceName, item.rootWorkspaceName, ...(item.workspaceDirectories ?? []),
       session.navigation?.workspaceName, session.navigation?.workspaceDir, session.navigation?.agentSessionId,
       session.live?.workspaceName, session.live?.workspaceDir, session.live?.agentSessionId,
       stripMarkdown(session.live?.lastUserMessage ?? ''),

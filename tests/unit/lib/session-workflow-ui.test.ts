@@ -29,10 +29,14 @@ import { NotificationPanel } from '@/components/features/workspace/notification-
 import { toast } from 'sonner';
 import { reconcileSessionWorkflow } from '@/lib/session-workflow';
 import { navigateToSession } from '@/hooks/use-session-navigation';
+import type { IPaneNode } from '@/types/terminal';
 
 let container: HTMLDivElement;
 let root: Root;
-const layoutMock = vi.hoisted(() => ({ activeTab: null as null | { id: string; agentState: { providerId: string; sessionId: string } } }));
+const layoutMock = vi.hoisted(() => ({
+  activeTab: null as null | { id: string; agentState: { providerId: string; sessionId: string } },
+  workspaces: {} as Record<string, IPaneNode[]>,
+}));
 const initialWorkspace = useWorkspaceStore.getState();
 const initialTabs = useTabStore.getState();
 const initialHistory = useSessionHistoryStore.getState();
@@ -50,6 +54,7 @@ beforeEach(async () => {
   fetchMock.mockReset();
   vi.clearAllMocks();
   layoutMock.activeTab = null;
+  layoutMock.workspaces = {};
   useWorkspaceStore.setState({
     workspaces: [{ id: 'ws', name: 'Workspace', directories: [] }],
     sessionWorkflow: { statuses: {}, collapsed: {} },
@@ -64,7 +69,7 @@ beforeEach(async () => {
   container = document.createElement('div');
   document.body.append(container);
   root = createRoot(container);
-  await act(async () => root.render(createElement(NotificationPanel)));
+  await act(async () => root.render(createElement(NotificationPanel, { workspaceLayouts: layoutMock.workspaces })));
 });
 afterEach(async () => {
   await act(async () => root.unmount());
@@ -75,6 +80,48 @@ afterEach(async () => {
   vi.unstubAllGlobals();
 });
 describe('Sessions workflow controls', () => {
+  it('shows and searches the root name, current project and actual manual Tab title', async () => {
+    const latest = useSessionHistoryStore.getState().entries[0];
+    layoutMock.workspaces = { ws: [{ type: 'pane', id: 'pane', activeTabId: 't', tabs: [{ id: 't', name: 'Manual Tab title', sessionName: 'session', order: 0 }] }] };
+    await act(async () => {
+      root.render(createElement(NotificationPanel, { workspaceLayouts: layoutMock.workspaces }));
+      useWorkspaceStore.setState({ workspaces: [
+        { id: 'root', name: 'Root product', directories: [] },
+        { id: 'ws', name: 'Child task', directories: [], parentWorkspaceId: 'root' },
+      ] });
+      useSessionHistoryStore.setState({ entries: [latest, { ...latest, id: 'older', completedAt: 1, prompt: 'Earlier task' }] });
+      useTabStore.getState().initTab('t', { workspaceId: 'ws', panelType: 'codex-cli', agentSessionId: 's1', cliState: 'busy', lastUserMessage: 'Short prompt' });
+    });
+    expect(container.querySelector('[data-root-project="Root product"]')).not.toBeNull();
+    expect(container.querySelector('[title="Child task"]')).not.toBeNull();
+    expect(container.textContent).toContain('Manual Tab title');
+    await search('Root product');
+    expect(container.querySelector('[role="status"]')?.textContent).toBe('searchCount 1');
+    expect(container.textContent).toContain('Earlier task');
+    await act(async () => useWorkspaceStore.setState((state) => ({ workspaces: state.workspaces.map((workspace) => workspace.id === 'root' ? { ...workspace, name: 'Renamed root' } : workspace) })));
+    expect(container.textContent).toContain('searchEmpty');
+    await search('Renamed root');
+    expect(container.querySelectorAll('[data-root-project="Renamed root"]')).toHaveLength(2);
+    await search('Manual Tab title');
+    expect(container.querySelector('[role="status"]')?.textContent).toBe('searchCount 1');
+    expect(container.textContent).not.toContain('Earlier task');
+  });
+
+  it('uses shared renamed titles and never lends a reused Tab name to a historical identity', async () => {
+    layoutMock.workspaces = { ws: [{ type: 'pane', id: 'pane', activeTabId: 't', tabs: [{ id: 't', name: 'Old layout title', sessionName: 'session', order: 0 }] }] };
+    await act(async () => {
+      root.render(createElement(NotificationPanel, { workspaceLayouts: layoutMock.workspaces }));
+      useWorkspaceStore.setState({ sessionWorkflow: { statuses: {}, collapsed: {}, titles: { 'codex:s2': 'New shared title' }, renamedTabs: { t: true } } });
+      useTabStore.getState().initTab('t', { workspaceId: 'ws', panelType: 'codex-cli', agentSessionId: 's2', cliState: 'busy' });
+    });
+    expect(container.textContent).toContain('New shared title');
+    expect(container.textContent).not.toContain('Old layout title');
+    expect(container.querySelector('[data-session-id="s1"]')?.textContent).toContain('Implement work');
+    expect(container.querySelector('[data-session-id="s1"]')?.textContent).not.toContain('New shared title');
+    await search('New shared title');
+    expect(container.querySelector('[role="status"]')?.textContent).toBe('searchCount 1');
+  });
+
   it('always shows the current project name on history, earlier turns and search results', async () => {
     const latest = { ...useSessionHistoryStore.getState().entries[0], workspaceName: '  ' };
     await act(async () => {
@@ -116,6 +163,7 @@ describe('Sessions workflow controls', () => {
       useSessionHistoryStore.setState({ entries: [{ ...entry, workspaceName: '', workspaceDir: '/code/legacy-project/' }] });
     });
     expect(container.querySelector('[title="legacy-project"]')).not.toBeNull();
+    expect(container.querySelector('[data-root-project="unknownRootProject"]')).not.toBeNull();
     await act(async () => useSessionHistoryStore.setState({ entries: [{ ...entry, workspaceName: ' ', workspaceDir: null }] }));
     expect(container.querySelector('[title="ws"]')).not.toBeNull();
     await act(async () => useSessionHistoryStore.setState({ entries: [{ ...entry, workspaceId: '', workspaceName: '', workspaceDir: null }] }));
@@ -193,7 +241,7 @@ describe('Sessions workflow controls', () => {
 
   it('retains navigation and status editing in search results', async () => {
     await search('Implement');
-    const row = container.querySelector('[data-session-id="s1"] [class*="rounded-md"]') as HTMLElement;
+    const row = container.querySelector('[data-session-id="s1"] [data-session-navigation]') as HTMLElement;
     await act(async () => row.click());
     expect(navigateToSession).toHaveBeenCalledWith(expect.objectContaining({ agentSessionId: 's1' }), null);
     fetchMock.mockResolvedValueOnce({ ok: true, json: async () => ({ statuses: { 'codex:s1': 'completed' }, collapsed: {} }) });
@@ -202,7 +250,7 @@ describe('Sessions workflow controls', () => {
       select.value = 'completed';
       select.dispatchEvent(new Event('change', { bubbles: true }));
     });
-    expect(container.querySelector('section > button')?.textContent).toContain('workStatus_completed (1)');
+    expect(container.querySelector('section > button')?.textContent).toContain('workStatus_completed 1');
     expect(container.querySelector('input')!.value).toBe('Implement');
     await act(async () => (container.querySelector('[data-delete-session="s1"]') as HTMLButtonElement).click());
     expect(container.textContent).toContain('searchEmpty');
@@ -217,9 +265,9 @@ describe('Sessions workflow controls', () => {
       useSessionHistoryStore.setState({ entries: [] });
       useWorkspaceStore.setState({ sessionWorkflow: second });
       useTabStore.getState().initTab('t', { workspaceId: 'ws', panelType: 'codex-cli', agentProviderId: 'codex', agentSessionId: 'B', cliState: 'busy' });
-      root.render(createElement(NotificationPanel));
+      root.render(createElement(NotificationPanel, { workspaceLayouts: layoutMock.workspaces }));
     });
-    const row = container.querySelector('[data-session-id="A"] [class*="rounded-md"]') as HTMLElement;
+    const row = container.querySelector('[data-session-id="A"] [data-session-navigation]') as HTMLElement;
     expect(row).not.toBeNull();
     await act(async () => row.click());
     expect(navigateToSession).toHaveBeenLastCalledWith(expect.objectContaining({
@@ -238,22 +286,22 @@ describe('Sessions workflow controls', () => {
       useSessionHistoryStore.setState({ entries: [] });
       useWorkspaceStore.setState({ sessionWorkflow: saved });
     });
-    const row = container.querySelector('[data-session-id="A"] [class*="rounded-md"]') as HTMLElement;
+    const row = container.querySelector('[data-session-id="A"] [data-session-navigation]') as HTMLElement;
     await act(async () => row.click());
     expect(navigateToSession).toHaveBeenLastCalledWith(expect.objectContaining({ agentSessionId: 'A', workspaceDir: '/project' }), null);
     expect(container.querySelector('[data-delete-session="A"]')).not.toBeNull();
   });
   it('allows restoring old session A after its active tab is reused for B', async () => {
     layoutMock.activeTab = { id: 't', agentState: { providerId: 'codex', sessionId: 's2' } };
-    await act(async () => root.render(createElement(NotificationPanel)));
-    const historyRow = container.querySelector('[data-session-id="s1"] [class*="rounded-md"]') as HTMLElement;
+    await act(async () => root.render(createElement(NotificationPanel, { workspaceLayouts: layoutMock.workspaces })));
+    const historyRow = container.querySelector('[data-session-id="s1"] [data-session-navigation]') as HTMLElement;
     await act(async () => historyRow.click());
     expect(navigateToSession).toHaveBeenCalledWith(expect.objectContaining({ agentSessionId: 's1' }), null);
   });
   it('disables navigation only for the same active provider and session', async () => {
     layoutMock.activeTab = { id: 't', agentState: { providerId: 'codex', sessionId: 's1' } };
-    await act(async () => root.render(createElement(NotificationPanel)));
-    const historyRow = container.querySelector('[data-session-id="s1"] [class*="rounded-md"]') as HTMLElement;
+    await act(async () => root.render(createElement(NotificationPanel, { workspaceLayouts: layoutMock.workspaces })));
+    const historyRow = container.querySelector('[data-session-id="s1"] [data-session-navigation]') as HTMLElement;
     await act(async () => historyRow.click());
     expect(navigateToSession).not.toHaveBeenCalled();
   });
@@ -264,7 +312,7 @@ describe('Sessions workflow controls', () => {
       select.value = 'completed';
       select.dispatchEvent(new Event('change', { bubbles: true }));
     });
-    expect(container.querySelector('section > button')?.textContent).toContain('workStatus_completed (1)');
+    expect(container.querySelector('section > button')?.textContent).toContain('workStatus_completed 1');
     expect(fetchMock).toHaveBeenCalledWith('/api/session-workflow', expect.objectContaining({
       body: JSON.stringify({ key: 'codex:s1', status: 'completed' }),
     }));
@@ -274,14 +322,14 @@ describe('Sessions workflow controls', () => {
       currentSelect.value = 'auto';
       currentSelect.dispatchEvent(new Event('change', { bubbles: true }));
     });
-    expect(container.querySelector('section > button')?.textContent).toContain('workStatus_review (1)');
+    expect(container.querySelector('section > button')?.textContent).toContain('workStatus_review 1');
   });
   it('collapses a category while preserving its count and expands it again', async () => {
     const header = container.querySelector('section > button') as HTMLButtonElement;
     fetchMock.mockResolvedValueOnce({ ok: true, json: async () => ({ statuses: {}, collapsed: { review: true } }) });
     await act(async () => header.click());
     expect(header.getAttribute('aria-expanded')).toBe('false');
-    expect(header.textContent).toContain('(1)');
+    expect(header.textContent).toBe('workStatus_review 1');
     expect(container.querySelector('select')).toBeNull();
     fetchMock.mockResolvedValueOnce({ ok: true, json: async () => ({ statuses: {}, collapsed: { review: false } }) });
     await act(async () => header.click());
@@ -294,7 +342,7 @@ describe('Sessions workflow controls', () => {
       select.value = 'completed';
       select.dispatchEvent(new Event('change', { bubbles: true }));
     });
-    expect(container.querySelector('section > button')?.textContent).toContain('workStatus_review (1)');
+    expect(container.querySelector('section > button')?.textContent).toContain('workStatus_review 1');
     expect(toast.error).toHaveBeenCalledWith('workStatusSaveFailed');
     expect(select.disabled).toBe(false);
     expect(select.value).toBe('auto');

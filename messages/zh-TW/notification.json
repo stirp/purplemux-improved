@@ -1,7 +1,7 @@
 {
   "unknownWorkspace": "未知專案",
   "searchPlaceholder": "搜尋工作階段…",
-  "searchHint": "標題、工作區、工作階段 ID 或歷史摘要",
+  "searchHint": "根專案、專案、Tab 標題、工作階段 ID 或歷史摘要",
   "searchClear": "清除搜尋",
   "searchCount": "找到 {count} 個工作階段",
   "searchEmpty": "沒有符合的工作階段",
@@ -33,5 +33,9 @@
   "workStatusLabel": "工作狀態",
   "workStatusAuto": "自動判斷",
   "workStatusSaveFailed": "儲存工作狀態失敗，請重試",
-  "workRuntimeBusy": "模型執行中"
+  "workRuntimeBusy": "模型執行中",
+  "unknownRootProject": "未知根專案",
+  "rootProjectLabel": "根專案",
+  "projectLabel": "專案",
+  "untitledSession": "未命名工作階段"
 }

@@ -1,7 +1,7 @@
 {
   "unknownWorkspace": "Bilinmeyen proje",
   "searchPlaceholder": "Oturum ara…",
-  "searchHint": "Başlık, çalışma alanı, oturum kimliği veya geçmiş özeti",
+  "searchHint": "Kök proje, proje, sekme başlığı, oturum kimliği veya geçmiş",
   "searchClear": "Aramayı temizle",
   "searchCount": "{count} oturum bulundu",
   "searchEmpty": "Eşleşen oturum yok",
@@ -33,5 +33,9 @@
   "workStatusLabel": "İş durumu",
   "workStatusAuto": "Otomatik",
   "workStatusSaveFailed": "İş durumu kaydedilemedi. Tekrar deneyin.",
-  "workRuntimeBusy": "Model çalışıyor"
+  "workRuntimeBusy": "Model çalışıyor",
+  "unknownRootProject": "Bilinmeyen kök proje",
+  "rootProjectLabel": "Kök proje",
+  "projectLabel": "Proje",
+  "untitledSession": "Başlıksız oturum"
 }

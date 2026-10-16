@@ -451,7 +451,7 @@ const MobileNavigationSheet = ({
             })}
           </div>
         ) : (
-          <NotificationPanel onNavigated={() => onOpenChange(false)} className="px-3 pt-3 pb-3" />
+          <NotificationPanel workspaceLayouts={workspaceLayouts} onNavigated={() => onOpenChange(false)} className="px-3 pt-3 pb-3" />
         )}
 
         <div className="shrink-0 border-t">

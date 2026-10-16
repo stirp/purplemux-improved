@@ -1,7 +1,7 @@
 {
   "unknownWorkspace": "不明なプロジェクト",
   "searchPlaceholder": "セッションを検索…",
-  "searchHint": "タイトル、ワークスペース、セッション ID、履歴の要約",
+  "searchHint": "ルートプロジェクト、プロジェクト、タブ名、セッション ID、履歴",
   "searchClear": "検索をクリア",
   "searchCount": "{count} 件のセッション",
   "searchEmpty": "一致するセッションはありません",
@@ -33,5 +33,9 @@
   "workStatusLabel": "作業状態",
   "workStatusAuto": "自動判定",
   "workStatusSaveFailed": "作業状態を保存できませんでした。再試行してください。",
-  "workRuntimeBusy": "モデル実行中"
+  "workRuntimeBusy": "モデル実行中",
+  "unknownRootProject": "不明なルートプロジェクト",
+  "rootProjectLabel": "ルートプロジェクト",
+  "projectLabel": "プロジェクト",
+  "untitledSession": "無題のセッション"
 }

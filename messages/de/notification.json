@@ -1,7 +1,7 @@
 {
   "unknownWorkspace": "Unbekanntes Projekt",
   "searchPlaceholder": "Sitzungen suchen…",
-  "searchHint": "Titel, Arbeitsbereich, Sitzungs-ID oder Verlaufszusammenfassung",
+  "searchHint": "Stammprojekt, Projekt, Tab-Titel, Sitzungs-ID oder Verlauf",
   "searchClear": "Suche löschen",
   "searchCount": "{count} Sitzungen gefunden",
   "searchEmpty": "Keine passenden Sitzungen",
@@ -33,5 +33,9 @@
   "workStatusLabel": "Arbeitsstatus",
   "workStatusAuto": "Automatisch",
   "workStatusSaveFailed": "Status konnte nicht gespeichert werden. Bitte erneut versuchen.",
-  "workRuntimeBusy": "Modell arbeitet"
+  "workRuntimeBusy": "Modell arbeitet",
+  "unknownRootProject": "Unbekanntes Stammprojekt",
+  "rootProjectLabel": "Stammprojekt",
+  "projectLabel": "Projekt",
+  "untitledSession": "Unbenannte Sitzung"
 }
