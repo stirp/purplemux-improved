@@ -9,6 +9,7 @@ import {
   Globe,
   Plus,
   Settings,
+  Search,
   X,
 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
@@ -20,6 +21,11 @@ import useWorkspaceStore from '@/hooks/use-workspace-store';
 import { useSelectWorkspace } from '@/hooks/use-sidebar-actions';
 import IconRenderer from '@/components/features/settings/icon-renderer';
 import { cn } from '@/lib/utils';
+import useVisualViewport from '@/hooks/use-visual-viewport';
+import AppLogo from '@/components/layout/app-logo';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { searchWorkspaces } from '@/lib/workspace-search';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useNotificationCount, NotificationPanel } from '@/components/features/workspace/notification-sheet';
 import {
@@ -30,7 +36,7 @@ import {
 } from '@/components/ui/sheet';
 import type { IWorkspace, IWorkspaceGroup, IPaneNode, ITab, TPanelType } from '@/types/terminal';
 import useTabMetadataStore from '@/hooks/use-tab-metadata-store';
-import useTabStore, { selectWorkspacePortsLabel } from '@/hooks/use-tab-store';
+import useTabStore from '@/hooks/use-tab-store';
 import { formatTabTitle } from '@/lib/tab-title';
 import ProcessIcon from '@/components/icons/process-icon';
 import TabStatusIndicator from '@/components/features/workspace/tab-status-indicator';
@@ -43,14 +49,6 @@ import WorkspaceTreeGuides, { WORKSPACE_TREE_INDENT } from '@/components/feature
 import { getVisuallyOrderedWorkspaces, getWorkspaceVisibility, getWorkspaceTreePosition } from '@/lib/workspace-order';
 import useTouchDrag from '@/hooks/use-touch-drag';
 import useNavigationDrag, { reorderNavigationIds } from '@/hooks/use-navigation-drag';
-
-const WorkspacePortsLabel = ({ workspaceId }: { workspaceId: string }) => {
-  const label = useTabStore(
-    (state) => selectWorkspacePortsLabel(state.tabs, workspaceId),
-  );
-  if (!label) return null;
-  return <span className="mt-1 block truncate text-xs text-ui-green/80">{label}</span>;
-};
 
 interface IMobileNavigationSheetProps {
   open: boolean;
@@ -79,6 +77,7 @@ const MobileNavigationSheet = ({
   onOpenSettings,
   onReorderTabs,
 }: IMobileNavigationSheetProps) => {
+  const viewport = useVisualViewport(open);
   const t = useTranslations('mobile');
   const tt = useTranslations('terminal');
   const tc = useTranslations('common');
@@ -93,6 +92,8 @@ const MobileNavigationSheet = ({
   }, []);
   const { attentionCount, busyCount } = useNotificationCount();
   const sessionsBadge = attentionCount + busyCount;
+  const [workspaceQuery, setWorkspaceQuery] = useState('');
+  const searchResult = useMemo(() => searchWorkspaces(workspaces, workspaceQuery), [workspaces, workspaceQuery]);
   const [expandedWsId, setExpandedWsId] = useState<string | null>(activeWorkspaceId);
   const workspaceVisibility = useMemo(
     () => getWorkspaceVisibility(workspaces, expandedWsId),
@@ -106,6 +107,7 @@ const MobileNavigationSheet = ({
   }
   const onTouchDragStart = useTouchDrag();
   const dragProps = useNavigationDrag((source, target, after) => {
+    if (searchResult) return;
     if (source.kind === 'workspace' && target.kind === 'workspace') {
       const store = useWorkspaceStore.getState();
       const ids = store.workspaces.map((ws) => ws.id);
@@ -142,10 +144,11 @@ const MobileNavigationSheet = ({
   const handleToggleWorkspace = useCallback(
     (workspaceId: string) => {
       selectWorkspace(workspaceId);
+      if (searchResult) return;
       const parentId = workspaces.find((workspace) => workspace.id === workspaceId)?.parentWorkspaceId;
       setExpandedWsId(workspaceVisibility.expandedIds.has(workspaceId) ? parentId ?? null : workspaceId);
     },
-    [selectWorkspace, workspaceVisibility.expandedIds, workspaces],
+    [selectWorkspace, searchResult, workspaceVisibility.expandedIds, workspaces],
   );
 
   const handleSheetOpenChange = useCallback(
@@ -211,16 +214,17 @@ const MobileNavigationSheet = ({
       <div key={tab.id} className="relative flex items-center">
         <button
           className={cn(
-            'flex w-full select-none items-center gap-2 py-2.5 pr-4 text-left text-sm transition-colors',
+            'flex min-h-12 w-full select-none items-center gap-2 rounded-md border border-transparent py-2 pr-3 text-left text-sm transition-colors',
             indent,
             isTabActive
-              ? 'bg-accent font-medium text-foreground'
+              ? 'border-sidebar-border/60 bg-sidebar-accent font-medium text-foreground'
               : 'text-muted-foreground hover:bg-accent/50',
           )}
           onClick={() => {
             onSelectSurface(workspaceId, pane.id, tab.id);
           }}
-          {...dragProps({ kind: 'tab', id: tab.id, workspaceId, paneId: pane.id })}
+          {...(!searchResult ? dragProps({ kind: 'tab', id: tab.id, workspaceId, paneId: pane.id }) : { draggable: false })}
+          aria-current={isTabActive ? 'true' : undefined}
           onContextMenu={(e) => e.preventDefault()}
         >
           <TabStatusIndicator
@@ -245,7 +249,7 @@ const MobileNavigationSheet = ({
           </span>
           <div className="min-w-0 flex-1">
             <span className="block truncate">{getTabDisplayName(tab)}</span>
-            {agentSummary && (
+            {isTabActive && agentSummary && (
               <span className="block truncate text-xs text-muted-foreground/70">
                 {agentSummary}
               </span>
@@ -312,71 +316,50 @@ const MobileNavigationSheet = ({
   }, [workspaces, groups]);
 
   const renderWorkspaceRow = (ws: IWorkspace) => {
-    if (!workspaceVisibility.visibleIds.has(ws.id)) return null;
-    const isExpanded = workspaceVisibility.expandedIds.has(ws.id);
+    if (!(searchResult ?? workspaceVisibility).visibleIds.has(ws.id)) return null;
+    const isExpanded = (searchResult ?? workspaceVisibility).expandedIds.has(ws.id);
     const isActive = ws.id === activeWorkspaceId;
     const position = treePositions.get(ws.id)!;
     const depth = position.rails.length;
-    const workspaceDragProps = dragProps({ kind: 'workspace', id: ws.id });
+    const workspaceDragProps = searchResult ? { draggable: false, style: {} } : dragProps({ kind: 'workspace', id: ws.id });
+    const layoutTabs = (workspaceLayouts[ws.id] ?? []).flatMap((pane) => [...pane.tabs].sort((a, b) => a.order - b.order));
+    const statusId = `mobile-workspace-status-${ws.id}`;
     return (
       <div key={ws.id} className="relative">
-        <WorkspaceTreeGuides position={position} expanded={isExpanded} mobile />
-        <MobileWorkspaceActions workspace={ws} isRoot={depth === 0} onCreated={(id) => {
+        <div className="pointer-events-none absolute inset-0 -translate-x-2"><WorkspaceTreeGuides position={position} expanded={isExpanded} mobile /></div>
+        <MobileWorkspaceActions workspace={ws} tabs={layoutTabs} isActive={isActive} onCreated={(id) => {
           useWorkspaceStore.getState().switchWorkspace(id);
           setExpandedWsId(id);
         }}>
           <button
             {...workspaceDragProps}
             data-touch-context-menu
-            style={{ ...workspaceDragProps.style, paddingLeft: 16 + depth * WORKSPACE_TREE_INDENT }}
+            style={{ ...workspaceDragProps.style, paddingLeft: 8 + depth * WORKSPACE_TREE_INDENT }}
             className={cn(
-              'flex min-w-0 flex-1 select-none items-start gap-2 py-3 pr-1 text-left text-sm transition-colors',
+              'flex min-h-12 min-w-0 flex-1 select-none items-center gap-2 py-2 pr-1 text-left text-sm transition-colors focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ui-purple',
               isActive
-                ? 'bg-accent font-medium text-foreground'
+                ? 'font-medium text-sidebar-foreground'
                 : 'text-foreground hover:bg-accent/50',
             )}
             onClick={() => handleToggleWorkspace(ws.id)}
             aria-expanded={isExpanded}
+            aria-current={isActive ? 'true' : undefined}
+            aria-describedby={statusId}
           >
             {isExpanded ? (
-              <ChevronDown size={14} className="mt-1 shrink-0 text-muted-foreground" />
+              <ChevronDown size={14} className="shrink-0 text-muted-foreground" />
             ) : (
-              <ChevronRight size={14} className="mt-1 shrink-0 text-muted-foreground" />
+              <ChevronRight size={14} className="shrink-0 text-muted-foreground" />
             )}
-            <div className="min-w-0 flex-1">
-              <span className="flex items-center gap-1.5">
-                {ws.worktree || depth > 0 ? <GitBranch size={14} className="shrink-0 text-ui-blue" />
-                  : <Folder size={14} className="shrink-0 text-muted-foreground" />}
-                <span className="truncate" title={ws.name}>{ws.name}</span>
-                {position.childCount > 0 && <span className="shrink-0 rounded bg-muted px-1 text-[10px] text-muted-foreground">{position.childCount}</span>}
-              </span>
-              {ws.directories.map((directory, index) => (
-                <span
-                  key={`${index}:${directory}`}
-                  className="mt-0.5 block truncate text-xs text-muted-foreground"
-                  title={directory}
-                >
-                  {directory.replace(/^\/Users\/[^/]+/, '~')}
-                </span>
-              ))}
-              {ws.worktree && <span className="mt-0.5 block truncate text-xs text-muted-foreground" title={ws.worktree.branch}>
-                <span className="mr-1 rounded bg-muted px-1 text-[10px]">worktree</span>
-                {ws.worktree.branch}
-              </span>}
-              <WorkspacePortsLabel workspaceId={ws.id} />
-              {!isExpanded && (
-                <WorkspaceStatusIndicator
-                  workspaceId={ws.id}
-                  tabs={(workspaceLayouts[ws.id] ?? []).flatMap((pane) =>
-                    [...pane.tabs].sort((a, b) => a.order - b.order),
-                  )}
-                />
-              )}
-            </div>
+            {ws.worktree || depth > 0 ? <GitBranch size={16} className="shrink-0 text-ui-blue" />
+              : <Folder size={16} className="shrink-0 text-muted-foreground" />}
+            <span className="min-w-0 flex-1 truncate" title={ws.name}>{ws.name}</span>
+            {position.childCount > 0 && <span className="shrink-0 text-xs text-muted-foreground">{position.childCount}</span>}
+            <WorkspaceStatusIndicator id={statusId} workspaceId={ws.id} tabs={layoutTabs} compact />
           </button>
         </MobileWorkspaceActions>
         {/* Keep navigation independent of grid-track animation support on iOS 15. */}
-        {isExpanded && <div style={{ paddingLeft: depth * WORKSPACE_TREE_INDENT }}>{renderPaneTree(ws.id)}</div>}
+        {isExpanded && !searchResult && <div style={{ paddingLeft: depth * WORKSPACE_TREE_INDENT }}>{renderPaneTree(ws.id)}</div>}
       </div>
     );
   };
@@ -387,56 +370,70 @@ const MobileNavigationSheet = ({
 
   return (
     <Sheet open={open} onOpenChange={handleSheetOpenChange}>
-      <SheetContent side="left" className="w-72 gap-0 p-0" showCloseButton={false}>
-        <SheetHeader className="flex-row items-center border-b py-1.5 pl-1 pr-3">
-          <button
-            className="flex h-11 w-11 shrink-0 items-center justify-center text-muted-foreground focus-visible:outline-none"
-            onClick={() => onOpenChange(false)}
-            aria-label={t('closeMenu')}
-          >
+      <SheetContent side="left" style={viewport ? { ...viewport, right: undefined } : undefined} data-short-viewport={typeof viewport?.height === 'number' && viewport.height < 500 || undefined} className="mobile-navigation-sheet font-sans gap-0 bg-sidebar p-0 text-sidebar-foreground shadow-none" showCloseButton={false}>
+        <SheetHeader className="shrink-0 flex-row items-center gap-2 px-3 py-1">
+          <AppLogo className="min-w-0 flex-1 [&>span]:truncate" />
+          <SheetTitle className="sr-only">{ts('workspaceList')}</SheetTitle>
+          <Button variant="ghost" size="icon" className="size-11 shrink-0" onClick={() => onOpenChange(false)} aria-label={t('closeMenu')}>
             <X size={20} />
-          </button>
-          <SheetTitle className="sr-only">Navigation</SheetTitle>
-          <Tabs
-            value={mobileTab}
-            onValueChange={handleMobileTabChange}
-            className="min-w-0 flex-1 gap-0"
-          >
-            <TabsList className="h-7 w-full">
-              <TabsTrigger value="workspace" className="h-full flex-1 px-2.5 text-[11px] tracking-wide">
-                WORKSPACE
-              </TabsTrigger>
-              <TabsTrigger value="sessions" className="h-full flex-1 px-2.5 text-[11px] tracking-wide">
-                SESSIONS
-                {sessionsBadge > 0 && (
-                  <span className="ml-1 inline-flex h-3.5 min-w-3.5 items-center justify-center rounded bg-[var(--ui-coral)] px-0.5 text-[9px] font-medium leading-none text-white">
-                    {sessionsBadge}
-                  </span>
-                )}
-              </TabsTrigger>
-            </TabsList>
-          </Tabs>
+          </Button>
         </SheetHeader>
+        <Tabs
+          value={mobileTab}
+          onValueChange={handleMobileTabChange}
+          className="shrink-0 gap-0 px-3"
+        >
+          <TabsList className="h-auto min-h-12 w-full border border-sidebar-border/50">
+            <TabsTrigger value="workspace" className="min-h-11 flex-1 px-2.5 text-sm">
+              {ts('workspaceTab')}
+            </TabsTrigger>
+            <TabsTrigger value="sessions" className="min-h-11 flex-1 px-2.5 text-sm">
+              {ts('sessionsTab')}
+              {sessionsBadge > 0 && (
+                <span className="ml-1 inline-flex h-3.5 min-w-3.5 items-center justify-center rounded bg-[var(--ui-coral)] px-0.5 text-[9px] font-medium leading-none text-white">
+                  {sessionsBadge}
+                </span>
+              )}
+            </TabsTrigger>
+          </TabsList>
+        </Tabs>
+        {mobileTab === 'workspace' && <div className="relative mx-3 my-3 shrink-0">
+          <Search size={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+          <Input value={workspaceQuery} onChange={(event) => setWorkspaceQuery(event.target.value)}
+            placeholder={ts('searchWorkspaces')} aria-label={ts('searchWorkspaces')}
+            className="min-h-11 pl-9 pr-11 text-base shadow-none"
+            onKeyDown={(event) => {
+              if (event.key === 'Escape') {
+                event.stopPropagation();
+                if (!event.nativeEvent.isComposing) setWorkspaceQuery('');
+              }
+            }} />
+          {workspaceQuery && <Button variant="ghost" size="icon" className="absolute right-0 top-0 size-11" aria-label={ts('clearSearch')} onClick={() => setWorkspaceQuery('')}><X size={16} /></Button>}
+        </div>}
 
         {mobileTab === 'workspace' ? (
           <div
-            className="flex-1 overflow-y-auto overscroll-contain"
+            className="mobile-navigation-list min-h-0 flex-1 overflow-y-auto overscroll-contain px-2"
             onTouchStartCapture={onTouchDragStart}
             style={{ scrollbarWidth: 'none' }}
           >
+            {workspaces.length === 0 && <p className="px-3 py-6 text-sm text-muted-foreground">{ts('noWorkspaces')}</p>}
+            {searchResult?.visibleIds.size === 0 && workspaces.length > 0 && <p className="px-3 py-6 text-sm text-muted-foreground">{ts('noMatchingWorkspaces')}</p>}
             {sections.map((section) => {
               if (section.type === 'group') {
+                if (searchResult && !section.workspaces.some((ws) => searchResult.visibleIds.has(ws.id))) return null;
+                const group = searchResult ? { ...section.group, collapsed: false } : section.group;
                 return (
                   <div key={`group-${section.group.id}`} className="pt-1">
                     <MobileWorkspaceGroupHeader
-                      group={section.group}
-                      count={section.workspaces.length}
-                      onToggle={handleToggleGroup}
+                      group={group}
+                      count={searchResult ? section.workspaces.filter((ws) => searchResult.visibleIds.has(ws.id)).length : section.workspaces.length}
+                      onToggle={searchResult ? () => {} : handleToggleGroup}
                       onRenameRequest={handleRenameGroupRequest}
                       onUngroup={handleUngroupGroup}
                     />
-                    {!section.group.collapsed && (
-                      <div className="pl-4">
+                    {!group.collapsed && (
+                      <div>
                         {section.workspaces.map(renderWorkspaceRow)}
                         {section.workspaces.length === 0 && (
                           <div className="px-4 py-2 text-xs italic text-muted-foreground/50">
@@ -459,13 +456,13 @@ const MobileNavigationSheet = ({
 
         <div className="shrink-0 border-t">
           {mobileTab === 'workspace' && (
-            <div className="flex items-stretch">
+            <div className="flex items-stretch gap-1 px-3 pt-2">
               <button
-                className="flex flex-1 items-center gap-2 px-4 py-3 text-sm text-muted-foreground transition-colors hover:bg-accent"
+                className="flex min-h-11 flex-1 items-center justify-center gap-2 rounded-md border border-sidebar-border px-2 py-2 text-sm transition-colors hover:bg-accent"
                 onClick={onCreateWorkspace}
               >
                 <Plus size={16} />
-                Workspace
+                {ts('newWorkspace')}
               </button>
               <button
                 className="flex w-12 shrink-0 items-center justify-center text-muted-foreground transition-colors hover:bg-accent"
@@ -477,14 +474,14 @@ const MobileNavigationSheet = ({
             </div>
           )}
           <SidebarRateLimits />
-          <div className="flex items-center gap-0.5 px-3 pt-1 pb-4">
+          <div className="flex flex-wrap items-center gap-1 px-3 py-1">
             {sidebarItems.map((item) => {
               const isExternal = item.url.startsWith('http://') || item.url.startsWith('https://');
               const navPath = isExternal ? `/webview?url=${encodeURIComponent(item.url)}` : item.url;
               return (
                 <button
                   key={item.id}
-                  className="flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent"
+                  className="flex min-h-11 min-w-11 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent"
                   onClick={() => {
                     onOpenChange(false);
                     router.push(navPath);
@@ -492,19 +489,20 @@ const MobileNavigationSheet = ({
                   aria-label={item.name}
                   title={item.name}
                 >
-                  <IconRenderer name={item.icon} className="h-[15px] w-[15px]" />
+                  <IconRenderer name={item.icon} className="size-4" />
                 </button>
               );
             })}
             <button
-              className="flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent"
+              className="flex min-h-11 min-w-11 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent"
               onClick={() => {
                 onOpenChange(false);
                 onOpenSettings();
               }}
               aria-label={tc('settings')}
             >
-              <Settings size={15} />
+              <Settings size={16} />
+              <span className="ml-2 text-xs">{tc('settings')}</span>
             </button>
           </div>
         </div>

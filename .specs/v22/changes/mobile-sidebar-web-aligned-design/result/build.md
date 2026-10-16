@@ -1,0 +1,33 @@
+# 应用实施记录
+
+用户确认设计后，于 2026-10-16 实施。设计阶段的原型和结果仍保留于上级目录，不能将其视为应用验收证据。
+
+## 变更入口
+
+- `src/components/features/mobile/mobile-navigation-sheet.tsx`：自适应宽度、品牌与本地化页签、项目搜索、紧凑项目行、当前 Tab 摘要、触控尺寸及底部操作；使用现有 visualViewport Hook 适配软键盘可见区域。
+- `src/components/features/mobile/mobile-workspace-actions.tsx`：常显更多按钮，使用现有 Sheet 实现底部面板；完整名称、所有目录、分支、端口及现有状态可读；原管理、创建、移组、改名和删除流程保持复用。菜单关闭恢复触发器焦点，进入后续弹窗时不抢焦点。
+- `src/components/features/mobile/mobile-workspace-group-header.tsx`：独立语义按钮、44px 热区、计数右对齐，操作与折叠隔离。
+- `src/styles/globals.css`：移动侧栏专属宽度、安全区、窄屏状态文字收纳及短视口滚动；保留不支持容器查询的窄屏回退。
+- 三个已有测试文件同步新规格，并增加搜索过滤、IME Escape、恢复折叠、移动搜索长按和直接更多按钮的回归。
+
+## 复用与边界
+
+复用 `searchWorkspaces`、`WorkspaceStatusIndicator`、`useTouchDrag`、`useVisualViewport` 和全部既有业务弹窗。未新增依赖、持久化字段或后台接口，也未改造桌面侧栏。导航搜索中仅展示匹配项目及祖先，隐藏 Tab 列表，避免结果混入非项目匹配内容；清空恢复原导航。
+
+KISS：只调整导航展示与操作入口。DRY：搜索、状态、触摸与业务行为复用已有实现。单一职责：导航负责过滤与选择，项目操作组件负责面板及原业务弹窗。未增加收藏、最近访问或其他新业务。
+
+## 审查修正：详情复制菜单（2026-10-16）
+
+`mobile-workspace-actions.tsx` 的 onContextMenu/onKeyDown 在处理前检查 currentTarget 是否包含事件目标，仅处理行内 DOM 事件。Portal 中的详情事件不再执行 preventDefault，保留原生复制和键盘菜单行为；无需在详情增加阻断冒泡或新的复制实现。使用最小范围条件修复，保持既有手势及菜单复用。
+
+`workspace-touch-menu.test.ts` 增加目录/分支各自的 contextmenu、ContextMenu、Shift+F10 测试，实际挂载 Sheet Portal 并断言不取消默认行为。
+
+## 合并兼容：共享删除确认框（2026-10-16）
+
+解决 `mobile-workspace-actions.tsx` 的导入冲突：保留 Sheet、完整元数据、触控布局及 Portal 事件范围检查；使用合入分支的 DeleteWorkspaceDialog 替代旧内联删除确认和删除函数，移除对应旧导入。复用共享安全删除流程，不复制其业务逻辑。规格补充依赖与兼容关系，菜单测试增加删除入口到共享组件的衔接。
+
+## PR #49：搜索点击污染原展开状态（2026-10-17）
+
+对应[审查意见](https://github.com/stirp/purplemux-improved/pull/49#discussion_r4296022375)。`handleToggleWorkspace` 保持调用共享选择处理器，在有效搜索结果存在时返回，不更新 expandedWsId；搜索展示继续由 searchResult 决定，普通导航行为保持原样。使用现有搜索结果判断，不新增搜索折叠副本或复杂状态同步。
+
+测试补充：原先收起时点击祖先、原先收起时选择子项目、原先展开时点击祖先。三种场景均验证选择回调、搜索临时展开及清空后的原状态，同时模拟 activeWorkspaceId 随选择更新。

@@ -31,17 +31,18 @@ vi.mock('@/hooks/use-inline-edit', () => ({ default: () => ({ isEditing: false, 
 
 import WorkspaceItem from '@/components/features/workspace/workspace-item';
 import MobileWorkspaceActions from '@/components/features/mobile/mobile-workspace-actions';
+import DeleteWorkspaceDialog from '@/components/features/workspace/delete-workspace-dialog';
 import EditWorkspaceDialog from '@/components/features/workspace/edit-workspace-dialog';
 import CreateWorktreeDialog from '@/components/features/workspace/create-worktree-dialog';
 import WorktreeTreeDialog from '@/components/features/workspace/worktree-tree-dialog';
 import { ContextMenuContent, ContextMenuSub, ContextMenuSubTrigger } from '@/components/ui/context-menu';
-import { Popover, PopoverContent } from '@/components/ui/popover';
+import { Sheet } from '@/components/ui/sheet';
 import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 
 type Element = ReactElement<{
-  children?: ReactNode; disabled?: boolean; mode?: string; open?: boolean;
+  'data-mobile-workspace-menu'?: boolean; children?: ReactNode; disabled?: boolean; mode?: string; open?: boolean;
   onClick?: () => void | Promise<void>;
   onChange?: (event: { target: { value: string } }) => void;
   onValueChange?: (value: string) => void;
@@ -91,7 +92,7 @@ describe('workspace menu order', () => {
     const desktop = directChildren(find(renderDesktop(), ContextMenuContent));
     expect(desktop.map((item) => text(item.type === ContextMenuSub ? find(item, ContextMenuSubTrigger) : item))).toEqual(expected);
     hooks.values = [];
-    const mobile = directChildren(find(renderMobile(), PopoverContent));
+    const mobile = directChildren(elements(renderMobile()).find((element) => 'data-mobile-workspace-menu' in element.props)!);
     expect(mobile.map(text)).toEqual(expected);
     expect(mobile[4].type).toBe('hr');
   });
@@ -100,7 +101,7 @@ describe('workspace menu order', () => {
     store.workspaces[0].parentWorkspaceId = 'ws-parent';
     expect(find(renderDesktop(), ContextMenuSubTrigger).props.disabled).toBe(true);
     hooks.values = [];
-    const group = directChildren(find(renderMobile(), PopoverContent)).find((element) => text(element) === 'sidebar.moveToGroup');
+    const group = directChildren(elements(renderMobile()).find((element) => 'data-mobile-workspace-menu' in element.props)!).find((element) => text(element) === 'sidebar.moveToGroup');
     expect(group?.props.disabled).toBe(true);
   });
 
@@ -109,14 +110,15 @@ describe('workspace menu order', () => {
     ['workspace.worktreeTree.manageTitle', WorktreeTreeDialog, undefined],
     ['sidebar.moveToGroup', EditWorkspaceDialog, 'group'],
     ['terminal.rename', EditWorkspaceDialog, 'rename'],
+    ['common.delete', DeleteWorkspaceDialog, undefined],
   ] as const)('opens the intended mobile action for %s', (label, type, mode) => {
-    find(renderMobile(), Popover).props.onOpenChange!(true);
-    expect(find(renderMobile(), Popover).props.open).toBe(true);
-    const button = directChildren(find(renderMobile(), PopoverContent)).find((element) => text(element) === label)!;
+    find(renderMobile(), Sheet).props.onOpenChange!(true);
+    expect(find(renderMobile(), Sheet).props.open).toBe(true);
+    const button = directChildren(elements(renderMobile()).find((element) => 'data-mobile-workspace-menu' in element.props)!).find((element) => text(element) === label)!;
     button.props.onClick!();
     const tree = renderMobile();
     expect(find(tree, type).props.mode).toBe(mode);
-    expect(find(tree, Popover).props.open).toBe(false);
+    expect(find(tree, Sheet).props.open).toBe(false);
   });
 });
 

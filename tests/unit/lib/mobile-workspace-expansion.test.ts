@@ -17,6 +17,7 @@ vi.mock('react', async (importOriginal) => ({
     }];
   },
 }));
+vi.mock('@/hooks/use-visual-viewport', () => ({ default: () => undefined }));
 vi.mock('next-intl', () => ({ useTranslations: () => (key: string) => key }));
 vi.mock('next/router', () => ({ useRouter: () => ({ push: vi.fn() }) }));
 vi.mock('@/hooks/use-workspace-store', () => ({
@@ -36,9 +37,11 @@ vi.mock('@/components/features/workspace/notification-sheet', () => ({
   NotificationPanel: () => null,
 }));
 
+import { Input } from '@/components/ui/input';
+import MobileWorkspaceActions from '@/components/features/mobile/mobile-workspace-actions';
 import MobileNavigationSheet from '@/components/features/mobile/mobile-navigation-sheet';
 
-type Element = ReactElement<{ children?: ReactNode; 'aria-expanded'?: boolean; title?: string; onClick?: () => void; onOpenChange?: (open: boolean) => void }>;
+type Element = ReactElement<{ children?: ReactNode; 'aria-expanded'?: boolean; title?: string; workspace?: { directories: string[] }; onClick?: () => void; onOpenChange?: (open: boolean) => void; draggable?: boolean; value?: string; onChange?: (event: { target: { value: string } }) => void; onKeyDown?: (event: { key: string; nativeEvent: { isComposing: boolean }; stopPropagation: () => void }) => void }>;
 const elements = (node: ReactNode): Element[] => {
   if (Array.isArray(node)) return node.flatMap(elements);
   if (!isValidElement<Element['props']>(node)) return [];
@@ -81,16 +84,13 @@ describe('mobile workspace expansion', () => {
     expect(selectWorkspace).toHaveBeenCalledExactlyOnceWith(workspaceId);
   });
 
-  it('shows every directory, including child paths and collapsed workspace paths', () => {
-    let tree = render();
-    const paths = () => elements(tree).filter((element) => element.type === 'span' && element.props.title?.startsWith('/'));
-    expect(paths().map((element) => element.props.children)).toEqual(['~/project', '/srv/second', '/srv/child']);
-    expect(paths()[0].props.title).toBe('/Users/test/project');
-
-    const parent = elements(tree).find((element) => element.key === 'parent')!;
-    elements(parent).find((element) => element.type === 'button')!.props.onClick!();
-    tree = render();
-    expect(paths().map((element) => element.props.children)).toEqual(['~/project', '/srv/second']);
+  it('passes complete directories to the actions panel without repeating them in rows', () => {
+    const tree = render();
+    const actions = elements(tree).filter((element) => element.type === MobileWorkspaceActions);
+    expect(actions.map((element) => element.props.workspace?.directories)).toEqual([
+      ['/Users/test/project', '/srv/second'], ['/srv/child'],
+    ]);
+    expect(elements(tree).filter((element) => element.type === 'span' && element.props.title?.startsWith('/'))).toHaveLength(0);
   });
 
   it('keeps ancestor expansion consistent when opening and collapsing nested workspaces', () => {
@@ -136,5 +136,62 @@ describe('mobile workspace expansion', () => {
     tree.props.onOpenChange(true);
     tree = render();
     expect(elements(tree).some((element) => element.key === 'child')).toBe(true);
+  });
+});
+
+
+describe('mobile workspace search', () => {
+  const search = (tree: ReactNode) => elements(tree).find((element) => element.type === Input)!;
+  it('matches a child directory, retains ancestors and prevents sorting', () => {
+    search(render()).props.onChange!({ target: { value: '/srv/child' } });
+    const tree = render();
+    expect(elements(tree).filter((e) => ['parent', 'child', 'grandchild'].includes(String(e.key))).map((e) => e.key)).toEqual(['parent', 'child']);
+    const rows = elements(tree).filter((e) => e.type === 'button' && e.props['aria-expanded'] !== undefined);
+    expect(rows).toHaveLength(2);
+    expect(rows.every((e) => e.props.draggable === false)).toBe(true);
+  });
+
+  it('does not clear a composing query or let Escape close the sheet', () => {
+    search(render()).props.onChange!({ target: { value: '子项目' } });
+    const stop = vi.fn();
+    search(render()).props.onKeyDown!({ key: 'Escape', nativeEvent: { isComposing: true }, stopPropagation: stop });
+    expect(search(render()).props.value).toBe('子项目');
+    expect(stop).toHaveBeenCalledOnce();
+    search(render()).props.onKeyDown!({ key: 'Escape', nativeEvent: { isComposing: false }, stopPropagation: stop });
+    expect(search(render()).props.value).toBe('');
+  });
+
+  it.each([
+    { expanded: false, target: 'parent' },
+    { expanded: false, target: 'child' },
+    { expanded: true, target: 'parent' },
+  ])('selects $target in search without changing the original expansion ($expanded)', ({ expanded, target }) => {
+    const rowButton = (tree: ReactNode, id: string) => elements(elements(tree).find((element) => element.key === id))
+      .find((element) => element.type === 'button')!;
+    if (!expanded) rowButton(render(), 'parent').props.onClick!();
+    selectWorkspace.mockClear();
+    search(render()).props.onChange!({ target: { value: 'Grandchild' } });
+    let tree = render();
+    expect(rowButton(tree, 'parent').props['aria-expanded']).toBe(true);
+    rowButton(tree, target).props.onClick!();
+    expect(selectWorkspace).toHaveBeenCalledExactlyOnceWith(target);
+    tree = render(target);
+    expect(rowButton(tree, 'parent').props['aria-expanded']).toBe(true);
+    expect(elements(tree).some((element) => element.key === 'grandchild')).toBe(true);
+    search(tree).props.onChange!({ target: { value: '' } });
+    tree = render(target);
+    expect(rowButton(tree, 'parent').props['aria-expanded']).toBe(expanded);
+    expect(elements(tree).some((element) => element.key === 'child')).toBe(expanded);
+    expect(elements(tree).some((element) => element.key === 'grandchild')).toBe(false);
+  });
+
+  it('restores explicit collapse after searching a hidden child', () => {
+    const tree = render();
+    const parent = elements(tree).find((element) => element.key === 'parent')!;
+    elements(parent).find((element) => element.type === 'button')!.props.onClick!();
+    search(render()).props.onChange!({ target: { value: 'Child' } });
+    expect(elements(render()).some((element) => element.key === 'child')).toBe(true);
+    search(render()).props.onChange!({ target: { value: '' } });
+    expect(elements(render()).some((element) => element.key === 'child')).toBe(false);
   });
 });
