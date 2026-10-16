@@ -38,6 +38,7 @@ import { navigateToTab, useLayoutStore } from '@/hooks/use-layout';
 import { navigateToSession } from '@/hooks/use-session-navigation';
 import { findPane } from '@/lib/layout-tree';
 import type { ICurrentAction } from '@/types/status';
+import type { IPaneNode } from '@/types/terminal';
 import type { ISessionHistoryEntry, TSessionHistoryProvider } from '@/types/session-history';
 import { stripMarkdown } from '@/lib/strip-markdown';
 import { agentTabTitle } from '@/lib/agent-session-title';
@@ -307,12 +308,17 @@ const NotificationItem = ({
   );
 };
 
-export const NotificationPanel = ({ onNavigated, className }: { onNavigated?: () => void; className?: string }) => {
+interface INotificationPanelProps {
+  workspaceLayouts: Record<string, IPaneNode[]>;
+  onNavigated?: () => void;
+  className?: string;
+}
+
+export const NotificationPanel = ({ workspaceLayouts, onNavigated, className }: INotificationPanelProps) => {
   const t = useTranslations('notification');
   const tabs = useTabStore((s) => s.tabs);
   const workspaces = useWorkspaceStore((s) => s.workspaces);
   const workflow = useWorkspaceStore((s) => s.sessionWorkflow);
-  const workspaceLayouts = useWorkspaceLayouts();
   const historyEntries = useSessionHistoryStore((s) => s.entries);
   const { id: activeTabId, agentSessionId: activeSessionId, providerId: activeProviderId } = useActiveTab();
   const [expandedSessions, setExpandedSessions] = useState<Set<string>>(new Set());
@@ -462,6 +468,11 @@ export const NotificationPanel = ({ onNavigated, className }: { onNavigated?: ()
   );
 };
 
+const StandaloneNotificationPanel = ({ onNavigated }: { onNavigated: () => void }) => {
+  const workspaceLayouts = useWorkspaceLayouts();
+  return <NotificationPanel workspaceLayouts={workspaceLayouts} onNavigated={onNavigated} className="px-4 pb-4" />;
+};
+
 const NotificationSheet = ({ open, onOpenChange }: INotificationSheetProps) => {
   const t = useTranslations('notification');
   return (
@@ -471,7 +482,7 @@ const NotificationSheet = ({ open, onOpenChange }: INotificationSheetProps) => {
         <SheetHeader>
           <SheetTitle>{t('title')}</SheetTitle>
         </SheetHeader>
-        <NotificationPanel onNavigated={() => onOpenChange(false)} className="px-4 pb-4" />
+        {open && <StandaloneNotificationPanel onNavigated={() => onOpenChange(false)} />}
       </SheetContent>
     </Sheet>
   );

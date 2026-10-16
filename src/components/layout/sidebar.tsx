@@ -685,7 +685,7 @@ const Sidebar = () => {
             })}
           </div>
         ) : (
-          <NotificationPanel className="px-2 pt-2 pb-2" />
+          <NotificationPanel workspaceLayouts={workspaceLayouts} className="px-2 pt-2 pb-2" />
         )}
 
         <div className="shrink-0 border-t border-sidebar-border">

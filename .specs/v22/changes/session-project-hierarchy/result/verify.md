@@ -46,3 +46,19 @@ git diff --check
 浏览器检查为真实组件的隔离夹具，不等同于完整应用登录态侧栏或真机验收。未执行 iOS/Android 实机、软键盘、安全区、读屏、后端状态同步重连及生产构建；本次用实际组件浏览器编译、检查和相关回归测试验证展示改动。未知根项目是既有数据缺少可追溯关系时的明确回退，不代表补齐了历史根关系快照。
 
 夹具未提供终端 Meslo 字体和 favicon 静态资源，对应请求返回 404；截图使用浏览器可用字体，不作为应用自定义字体的验收证据。
+
+## PR #51 修正验证（独立于上述初次实施证据）
+
+```bash
+pnpm exec vitest run tests/unit/lib/session-layout-loading.test.ts tests/unit/lib/session-workflow-ui.test.ts tests/unit/lib/session-workflow-menu.test.ts tests/unit/lib/workspace-sidebar-search.test.ts tests/unit/lib/mobile-workspace-expansion.test.ts
+pnpm exec tsc --noEmit
+pnpm exec eslint src/components/features/workspace/notification-sheet.tsx src/components/features/mobile/mobile-navigation-sheet.tsx src/components/layout/sidebar.tsx tests/unit/lib/session-layout-loading.test.ts tests/unit/lib/session-workflow-ui.test.ts tests/unit/lib/session-workflow-menu.test.ts
+git diff --check
+```
+
+- 本轮相关测试 **42 项通过**。新增测试未模拟布局 hook 或 NotificationPanel，挂载真实 Sidebar、MobileLayout/MobileNavigationSheet 和 NotificationSheet，以延迟响应验证请求数量。
+- 桌面两个冷缓存项目仅发出两个布局请求；加载后显示父布局手动标题，父缓存更新使当前查询从无匹配恢复到新标题，不额外请求。
+- 移动 Sessions 持久标签、抽屉关闭时只发生父组件的两个初始请求；打开后只追加原有两个刷新请求，并展示刷新标题。
+- 独立通知抽屉关闭时零请求，打开后每项目一次，加载完成后重开复用缓存。
+- 完整 TypeScript、六个改动 TS/TSX 文件的 ESLint、差异格式检查通过。
+- 本轮只调整数据传递和加载生命周期，没有修改卡片样式；使用实际组件的 jsdom 集成测试验证请求与更新，未重跑生产构建、浏览器或真机验收，未将此前截图作为本轮运行结果。

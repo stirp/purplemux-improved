@@ -5,7 +5,6 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('next-intl', () => ({ useTranslations: () => (key: string, values?: { count: number }) => values ? `${key} ${values.count}` : key }));
 vi.mock('next/router', () => ({ useRouter: () => ({ pathname: '/' }) }));
-vi.mock('@/hooks/use-workspace-layouts', () => ({ default: () => layoutMock.workspaces }));
 vi.mock('@/hooks/use-layout', () => ({
   useLayoutStore: (select: (state: unknown) => unknown) => select({
     layout: layoutMock.activeTab ? { activePaneId: 'pane', root: {
@@ -30,12 +29,13 @@ import { NotificationPanel } from '@/components/features/workspace/notification-
 import { toast } from 'sonner';
 import { reconcileSessionWorkflow } from '@/lib/session-workflow';
 import { navigateToSession } from '@/hooks/use-session-navigation';
+import type { IPaneNode } from '@/types/terminal';
 
 let container: HTMLDivElement;
 let root: Root;
 const layoutMock = vi.hoisted(() => ({
   activeTab: null as null | { id: string; agentState: { providerId: string; sessionId: string } },
-  workspaces: {} as Record<string, { tabs: { id: string; name: string; title?: string }[] }[]>,
+  workspaces: {} as Record<string, IPaneNode[]>,
 }));
 const initialWorkspace = useWorkspaceStore.getState();
 const initialTabs = useTabStore.getState();
@@ -69,7 +69,7 @@ beforeEach(async () => {
   container = document.createElement('div');
   document.body.append(container);
   root = createRoot(container);
-  await act(async () => root.render(createElement(NotificationPanel)));
+  await act(async () => root.render(createElement(NotificationPanel, { workspaceLayouts: layoutMock.workspaces })));
 });
 afterEach(async () => {
   await act(async () => root.unmount());
@@ -82,8 +82,9 @@ afterEach(async () => {
 describe('Sessions workflow controls', () => {
   it('shows and searches the root name, current project and actual manual Tab title', async () => {
     const latest = useSessionHistoryStore.getState().entries[0];
-    layoutMock.workspaces = { ws: [{ tabs: [{ id: 't', name: 'Manual Tab title' }] }] };
+    layoutMock.workspaces = { ws: [{ type: 'pane', id: 'pane', activeTabId: 't', tabs: [{ id: 't', name: 'Manual Tab title', sessionName: 'session', order: 0 }] }] };
     await act(async () => {
+      root.render(createElement(NotificationPanel, { workspaceLayouts: layoutMock.workspaces }));
       useWorkspaceStore.setState({ workspaces: [
         { id: 'root', name: 'Root product', directories: [] },
         { id: 'ws', name: 'Child task', directories: [], parentWorkspaceId: 'root' },
@@ -107,8 +108,9 @@ describe('Sessions workflow controls', () => {
   });
 
   it('uses shared renamed titles and never lends a reused Tab name to a historical identity', async () => {
-    layoutMock.workspaces = { ws: [{ tabs: [{ id: 't', name: 'Old layout title' }] }] };
+    layoutMock.workspaces = { ws: [{ type: 'pane', id: 'pane', activeTabId: 't', tabs: [{ id: 't', name: 'Old layout title', sessionName: 'session', order: 0 }] }] };
     await act(async () => {
+      root.render(createElement(NotificationPanel, { workspaceLayouts: layoutMock.workspaces }));
       useWorkspaceStore.setState({ sessionWorkflow: { statuses: {}, collapsed: {}, titles: { 'codex:s2': 'New shared title' }, renamedTabs: { t: true } } });
       useTabStore.getState().initTab('t', { workspaceId: 'ws', panelType: 'codex-cli', agentSessionId: 's2', cliState: 'busy' });
     });
@@ -263,7 +265,7 @@ describe('Sessions workflow controls', () => {
       useSessionHistoryStore.setState({ entries: [] });
       useWorkspaceStore.setState({ sessionWorkflow: second });
       useTabStore.getState().initTab('t', { workspaceId: 'ws', panelType: 'codex-cli', agentProviderId: 'codex', agentSessionId: 'B', cliState: 'busy' });
-      root.render(createElement(NotificationPanel));
+      root.render(createElement(NotificationPanel, { workspaceLayouts: layoutMock.workspaces }));
     });
     const row = container.querySelector('[data-session-id="A"] [data-session-navigation]') as HTMLElement;
     expect(row).not.toBeNull();
@@ -291,14 +293,14 @@ describe('Sessions workflow controls', () => {
   });
   it('allows restoring old session A after its active tab is reused for B', async () => {
     layoutMock.activeTab = { id: 't', agentState: { providerId: 'codex', sessionId: 's2' } };
-    await act(async () => root.render(createElement(NotificationPanel)));
+    await act(async () => root.render(createElement(NotificationPanel, { workspaceLayouts: layoutMock.workspaces })));
     const historyRow = container.querySelector('[data-session-id="s1"] [data-session-navigation]') as HTMLElement;
     await act(async () => historyRow.click());
     expect(navigateToSession).toHaveBeenCalledWith(expect.objectContaining({ agentSessionId: 's1' }), null);
   });
   it('disables navigation only for the same active provider and session', async () => {
     layoutMock.activeTab = { id: 't', agentState: { providerId: 'codex', sessionId: 's1' } };
-    await act(async () => root.render(createElement(NotificationPanel)));
+    await act(async () => root.render(createElement(NotificationPanel, { workspaceLayouts: layoutMock.workspaces })));
     const historyRow = container.querySelector('[data-session-id="s1"] [data-session-navigation]') as HTMLElement;
     await act(async () => historyRow.click());
     expect(navigateToSession).not.toHaveBeenCalled();

@@ -4,7 +4,6 @@ import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('next-intl', () => ({ useTranslations: () => (key: string) => key }));
-vi.mock('@/hooks/use-workspace-layouts', () => ({ default: () => ({}) }));
 vi.mock('next/router', () => ({ useRouter: () => ({ pathname: '/' }) }));
 vi.mock('@/hooks/use-layout', () => ({ useLayoutStore: (select: (state: unknown) => unknown) => select({ layout: null }), navigateToTab: vi.fn() }));
 vi.mock('@/hooks/use-session-navigation', () => ({ navigateToSession: vi.fn() }));
@@ -36,7 +35,7 @@ beforeEach(async () => {
   container = document.createElement('div');
   document.body.append(container);
   root = createRoot(container);
-  await act(async () => root.render(createElement(NotificationPanel)));
+  await act(async () => root.render(createElement(NotificationPanel, { workspaceLayouts: {} })));
 });
 afterEach(async () => {
   await act(async () => root.unmount());
