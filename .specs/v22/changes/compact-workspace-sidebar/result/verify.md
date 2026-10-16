@@ -78,3 +78,27 @@ pnpm exec vitest run \
 截图：[窄侧栏状态悬停与聚焦](./sidebar-narrow-status-fix.png)。截图只裁去右侧空工作区，不重绘组件。浏览器 errors 输出为空。
 
 本轮触摸验证为 jsdom 及浏览器合成事件，未替代手机实机验收；仍未接入真实 Agent/WebSocket 或 Electron 原生窗口。独立浏览器会话和临时服务器已关闭，未重启用户实例。
+
+## PR #45 审查 5541655433 修正后验证（2026-10-16）
+
+针对[输入法 Escape](https://github.com/stirp/purplemux-improved/pull/45#discussion_r4289741042)及[行状态无障碍描述](https://github.com/stirp/purplemux-improved/pull/45#discussion_r4289741051)重新执行，以下均为本轮结果。
+
+- 修复前运行新增测试：中、日、韩查询的组合输入 Escape 共 3 项失败；行状态描述关联 1 项失败，复现两条审查意见。
+- 修复后运行本文开头 13 个测试文件，另加 `tests/unit/lib/workspace-sidebar-search.test.ts`：**14 个文件、135 项测试全部通过**。
+- 完整 `pnpm tsc --noEmit`：通过。
+- `pnpm exec eslint src/components/layout/sidebar.tsx src/components/features/workspace/workspace-item.tsx src/components/features/workspace/workspace-status-indicator.tsx tests/unit/lib/workspace-sidebar-search.test.ts tests/unit/lib/workspace-compact-status.test.ts`：通过。
+- `pnpm build`：通过，包含 Next.js 完整类型检查、生产构建、standalone 资源处理和 tsup 构建。
+- `git diff --check`：通过。
+
+浏览器继续使用隔离配置及本轮生产构建，通过 `agent-browser --session pr45-final` 访问 `http://127.0.0.1:8033`：
+
+| 验收 | 本轮证据 |
+| --- | --- |
+| CS-09 | 输入“树状”后保留匹配节点和祖先共 2 行；派发 compositionstart 和 `isComposing=true` 的 Escape 后查询及 2 行结果保留；compositionend 后普通 Escape 清空查询，恢复全部 7 行 |
+| CS-10 | 通过 Chromium CDP `Accessibility.getFullAXTree` 读取真实无障碍树：聚焦的“树状列表的优化”按钮 description 为“审批中 工作状态: 审批中”；MyVibeHarness 按钮 description 为“已完成 工作状态: 已完成” |
+| CS-10 窄侧栏 | 宽度设置为 160px 后再次聚焦并读取无障碍树，状态描述仍为“审批中 工作状态: 审批中”，focused=true |
+| CS-10 动态状态 | 组件测试确认待输入与并行执行共存时完整描述保留两种语义；断连后更新为未知，重连执行时更新为执行状态，人工完成后更新为完成，空状态不保留过期徽章 |
+
+本轮无页面运行时错误；检查脚本曾因重复顶层变量声明失败，改用独立函数作用域后重跑通过。临时固定调试端口的浏览器会话启动配置失败，改用独立默认会话完成验证，失败会话及最终会话均已清理。
+
+限制：输入法验证使用合成 composition/keyboard 事件，未进行系统输入法实机操作；无障碍验证使用 Chromium 无障碍树，未进行 NVDA/VoiceOver 朗读验收；未接入真实 Agent/WebSocket 或 Electron 原生窗口。未提交、推送、回复审查评论或重启用户运行实例。

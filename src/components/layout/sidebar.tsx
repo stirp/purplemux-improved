@@ -583,7 +583,12 @@ const Sidebar = () => {
             <Input
               value={workspaceQuery}
               onChange={(event) => setWorkspaceQuery(event.target.value)}
-              onKeyDown={(event) => { if (event.key === 'Escape') { event.stopPropagation(); setWorkspaceQuery(''); } }}
+              onKeyDown={(event) => {
+                if (event.key === 'Escape' && !event.nativeEvent.isComposing) {
+                  event.stopPropagation();
+                  setWorkspaceQuery('');
+                }
+              }}
               placeholder={t('searchWorkspaces')}
               aria-label={t('searchWorkspaces')}
               className="h-auto min-h-9 border-sidebar-border bg-background/70 py-2 pl-8 pr-8 text-xs shadow-none"

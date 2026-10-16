@@ -10,12 +10,13 @@ import type { ITab } from '@/types/terminal';
 import CompactTabIcon from '@/components/features/workspace/compact-tab-icon';
 
 interface IWorkspaceStatusIndicatorProps {
+  id?: string;
   workspaceId: string;
   tabs?: ITab[];
   compact?: boolean;
 }
 
-const WorkspaceStatusIndicator = ({ workspaceId, tabs: layoutTabs, compact = false }: IWorkspaceStatusIndicatorProps) => {
+const WorkspaceStatusIndicator = ({ id, workspaceId, tabs: layoutTabs, compact = false }: IWorkspaceStatusIndicatorProps) => {
   const t = useTranslations('terminal');
   const tw = useTranslations('notification');
   const ts = useTranslations('sidebar');
@@ -72,7 +73,7 @@ const WorkspaceStatusIndicator = ({ workspaceId, tabs: layoutTabs, compact = fal
       : busy ? 'text-ui-blue' : workStatus === 'review' ? 'bg-ui-amber/15 text-ui-amber'
         : workStatus === 'completed' ? 'text-ui-green' : 'text-ui-blue';
     const title = [label, `${tw('workStatusLabel')}: ${tw('workStatus_' + workStatus)}`, busy && ts('statusBusy')].filter(Boolean).join('\n');
-    return <span className={cn('workspace-compact-status inline-flex shrink-0 items-center gap-1 rounded px-1.5 py-0.5 text-[10px] leading-normal', color)} role="img" aria-label={title} title={title}>
+    return <span id={id} className={cn('workspace-compact-status inline-flex shrink-0 items-center gap-1 rounded px-1.5 py-0.5 text-[10px] leading-normal', color)} role="img" aria-label={title} title={title}>
       <Icon aria-hidden="true" className={cn('h-3 w-3 shrink-0', busy && !needsInput && !unknown && 'animate-spin motion-reduce:animate-none')} />
       {workStatus !== 'completed' || needsInput || busy || unknown
         ? <span className="workspace-status-label whitespace-nowrap">{label}</span> : null}

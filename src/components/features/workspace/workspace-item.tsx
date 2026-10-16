@@ -1,5 +1,5 @@
 import ContextMenuSettingsButton from "@/components/ui/context-menu-settings-button";
-import { useCallback, useEffect, useMemo, useState, memo } from 'react';
+import { useCallback, useEffect, useId, useMemo, useState, memo } from 'react';
 import { Pencil, Trash2, FolderPlus, FolderMinus, Folder, GitBranch, ChevronDown, ChevronRight } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
@@ -58,6 +58,7 @@ const WorkspaceItem = ({
   const [showTree, setShowTree] = useState(false);
   const workspaces = useWorkspaceStore((s) => s.workspaces);
   const [menuOpen, setMenuOpen] = useState(false);
+  const statusId = useId();
   const tm = useTranslations('workspace.worktreeManager');
   const treeLabel = useTranslations('workspace.worktreeTree');
   const position = useMemo(() => getWorkspaceTreePosition(workspaces, workspace.id), [workspaces, workspace.id]);
@@ -112,6 +113,7 @@ const WorkspaceItem = ({
         data-menu-open={menuOpen || undefined}
         title={details}
         aria-label={details}
+        aria-describedby={shortcutLabel && showShortcut ? undefined : statusId}
         className={cn(
           'workspace-tree-row workspace-tree-row-compact relative flex min-h-9 cursor-pointer items-center gap-1.5 rounded-md border border-transparent py-1.5 pr-1.5 transition-colors focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ui-purple [@media(pointer:coarse)]:min-h-11',
           isActive
@@ -172,7 +174,7 @@ const WorkspaceItem = ({
         {position.childCount > 0 && <span className="workspace-child-count shrink-0 px-0.5 text-[10px] tabular-nums text-muted-foreground">{position.childCount}</span>}
         {shortcutLabel && showShortcut ? (
           <span className="pointer-events-none shrink-0 rounded bg-muted px-1 py-0.5 text-[10px] font-medium leading-none text-muted-foreground">{shortcutLabel}</span>
-        ) : <WorkspaceStatusIndicator workspaceId={workspace.id} tabs={tabs} compact />}
+        ) : <WorkspaceStatusIndicator id={statusId} workspaceId={workspace.id} tabs={tabs} compact />}
         <div className="workspace-row-actions -my-1.5 flex shrink-0 items-center">
           {depth === 0 && workspace.directories.length > 0 && <span className="workspace-row-management"><WorktreeManagementButton name={workspace.name} onClick={() => setShowTree(true)} /></span>}
           <ContextMenuSettingsButton className="workspace-row-settings h-8 w-8" label={`${tc('settings')}: ${workspace.name}`} />

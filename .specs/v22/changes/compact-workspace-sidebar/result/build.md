@@ -34,3 +34,13 @@
 - 删除 200px 以下侧栏在 hover/focus/menu-open 时隐藏整个状态元素的规则；保留原有状态文字收起逻辑，状态图标及 title/aria-label 始终存在。
 - 扩展真实组件触摸测试矩阵，覆盖桌面、桌面搜索和移动导航；增加禁用拖拽后的移动测试。
 - 遵循 KISS/DRY：不新增手势定时器或菜单实现，不复制状态提示，不增加依赖或配置。
+
+## PR #45 审查 5541655433 修正（2026-10-16）
+
+对应[审查](https://github.com/stirp/purplemux-improved/pull/45#pullrequestreview-5541655433)的两条意见：
+
+- `sidebar.tsx`：Escape 清空逻辑增加 `nativeEvent.isComposing` 检查，组合输入期间保留查询及过滤结果，与既有会话搜索行为一致。
+- `workspace-item.tsx` / `workspace-status-indicator.tsx`：使用 React `useId` 为每行状态生成独立标识，行通过 `aria-describedby` 引用紧凑状态元素。无障碍描述读取现有完整 `aria-label`，随原有 store 订阅更新；不复制聚合逻辑、不改变状态优先级。快捷键提示替换状态徽章时不引用未渲染的徽章。
+- `workspace-sidebar-search.test.ts`：使用实际 Sidebar 组件验证中、日、韩查询的组合输入 Escape、组合结束后清空、列表恢复和事件隔离。
+- `workspace-compact-status.test.ts`：验证独立工作区描述关联、待输入与并行执行、审批、断连、执行、完成及无状态时移除徽章。
+- 同步本需求规格、界面约定和 `docs/STATUS.md`；遵循 KISS/DRY，只补事件条件和语义关联，未新增依赖或持久化数据。
