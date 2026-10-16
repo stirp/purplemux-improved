@@ -1,7 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import useTerminalWebSocket from '@/hooks/use-terminal-websocket';
 import useTerminal from '@/hooks/use-terminal';
-import { encodeStdout, encodeStdoutAck } from '@/lib/terminal-protocol';
+import { encodeStdout, encodeStdoutAck, encodeWebStdin } from '@/lib/terminal-protocol';
+import { terminalCommandInput } from '@/lib/terminal-custom-commands';
 import { TerminalWriteQueue, type TTerminalWriteCallback } from '@/lib/terminal-write-queue';
 
 vi.mock('react', () => ({
@@ -38,6 +39,25 @@ beforeEach(() => {
   vi.stubGlobal('document', { addEventListener: vi.fn() });
 });
 afterEach(() => { vi.useRealTimers(); vi.unstubAllGlobals(); });
+
+describe('terminal web input', () => {
+  it('frames a custom command as web input and never replays it after disconnect', () => {
+    const connection = useTerminalWebSocket({ onData: vi.fn() });
+    connection.connect('session');
+    const ws = MockWebSocket.instances[0];
+    ws.open();
+    connection.sendWebStdin(terminalCommandInput('pwd'));
+    expect(ws.send).toHaveBeenCalledExactlyOnceWith(encodeWebStdin('pwd\r'));
+    connection.disconnect();
+    connection.sendWebStdin(terminalCommandInput('ls'));
+    connection.connect('session');
+    const restored = MockWebSocket.instances[1];
+    restored.open();
+    expect(restored.send).not.toHaveBeenCalled();
+    expect(ws.send).toHaveBeenCalledTimes(1);
+    connection.disconnect();
+  });
+});
 
 describe('terminal output ACK lifecycle', () => {
   it('closes outstanding output on writer teardown and stays disconnected until remounted', () => {

@@ -18,6 +18,7 @@ import useIsMobileDevice from '@/hooks/use-is-mobile-device';
 import { resolveLineHeight } from '@/lib/terminal-line-height';
 import { toCtrlChar } from '@/lib/terminal-keys';
 import TerminalKeyBar from '@/components/features/workspace/terminal-key-bar';
+import TerminalCommandsBar from '@/components/features/workspace/terminal-commands-bar';
 import { useShallow } from 'zustand/react/shallow';
 import { buildClaudeLaunchCommand } from '@/lib/providers/claude/client';
 import { fetchCodexLaunchCommand } from '@/lib/providers/codex/client';
@@ -1430,6 +1431,9 @@ const PaneContainer = memo(({ paneId, paneNumber }: IPaneContainerProps) => {
                   isAgentPanel && 'py-0 pl-2 pr-0.5',
                 )}
               />
+              {activePanelType === 'terminal' && !noTabs && (
+                <TerminalCommandsBar key={activeTabId} sendStdin={sendWebStdin} connected={status === 'connected' && !sessionSwitching} />
+              )}
               {showKeyBar && !isAgentPanel && (
                 <TerminalKeyBar
                   sendStdin={sendStdin}

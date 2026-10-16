@@ -165,5 +165,18 @@
   "nativeCommandsOpen": "打开原生命令菜单",
   "nativeCommandsHint": "使用终端原生菜单选择并执行命令。",
   "nativeCommandsReturn": "取消输入并返回聊天",
-  "nativeCommandsQueuePending": "请先发送或移除排队消息，再打开原生命令菜单。"
+  "nativeCommandsQueuePending": "请先发送或移除排队消息，再打开原生命令菜单。",
+  "customCommands": "自定义命令",
+  "customCommandsManage": "管理自定义命令",
+  "customCommandsAdd": "添加命令",
+  "customCommandsDescription": "命令在各工作区共享。点击后会发送到当前终端并回车，请先确认终端当前输入状态。",
+  "customCommandsName": "名称",
+  "customCommandsContent": "命令内容",
+  "customCommandsNameInvalid": "请输入 1–40 个字符的名称。",
+  "customCommandsContentInvalid": "请输入不超过 4000 个字符的命令，除换行和制表符外不能包含控制字符。",
+  "customCommandsSaveFailed": "命令保存失败，已保留编辑内容，请重试。",
+  "customCommandsLoadFailed": "命令加载失败",
+  "customCommandsEmpty": "将常用命令保存下来，并为它们设置名称。",
+  "customCommandsDeleteConfirm": "确定删除此命令？",
+  "customCommandsLimit": "最多可保存 50 条命令。"
 }

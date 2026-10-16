@@ -1,4 +1,5 @@
 import fs from 'fs/promises';
+import { MAX_TERMINAL_COMMANDS, type ITerminalCommand } from '@/lib/terminal-custom-commands';
 import type { ISessionWorkflow, TWorkStatus } from '@/lib/session-workflow';
 import { reconcileSessionWorkflow, sessionWorkKey, type IWorkflowTab } from '@/lib/session-workflow';
 import type { ISessionHistoryEntry, TSessionHistoryProvider } from '@/types/session-history';
@@ -96,11 +97,12 @@ const normalizeWorkspaceOrder = (data: IWorkspacesData): void => {
   data.workspaces = getVisuallyOrderedWorkspaces(data.workspaces, groups);
 };
 
-const readWorkspacesFile = async (): Promise<IWorkspacesData | null> => {
+const readWorkspacesFile = async (strict = false): Promise<IWorkspacesData | null> => {
   let raw: string;
   try {
     raw = await fs.readFile(WORKSPACES_FILE, 'utf-8');
-  } catch {
+  } catch (error) {
+    if (strict && (error as NodeJS.ErrnoException).code !== 'ENOENT') throw error;
     return null;
   }
 
@@ -125,7 +127,8 @@ const readWorkspacesFile = async (): Promise<IWorkspacesData | null> => {
       }
     }
     return data;
-  } catch {
+  } catch (error) {
+    if (strict) throw error;
     log.warn('Failed to parse workspaces.json, starting empty');
     try {
       await fs.copyFile(WORKSPACES_FILE, WORKSPACES_FILE.replace(/\.json$/, '.json.bak'));
@@ -136,8 +139,8 @@ const readWorkspacesFile = async (): Promise<IWorkspacesData | null> => {
 
 const writeWorkspacesFile = async (data: IWorkspacesData): Promise<void> => {
   normalizeWorkspaceOrder(data);
-  const { workspaces, groups, activeWorkspaceId, sidebarCollapsed, sidebarWidth, sessionWorkflow } = data;
-  const contentKey = JSON.stringify({ workspaces, groups: groups ?? [], activeWorkspaceId, sidebarCollapsed, sidebarWidth, sessionWorkflow });
+  const { workspaces, groups, activeWorkspaceId, sidebarCollapsed, sidebarWidth, sessionWorkflow, terminalCommands } = data;
+  const contentKey = JSON.stringify({ workspaces, groups: groups ?? [], activeWorkspaceId, sidebarCollapsed, sidebarWidth, sessionWorkflow, terminalCommands });
 
   if (g.__purplemuxWorkspacesContentCache === contentKey) return;
 
@@ -302,6 +305,33 @@ export const getActiveWorkspaceId = async (): Promise<string | null> => {
   }
   return data?.workspaces[0]?.id ?? null;
 };
+
+export const getTerminalCommands = async (): Promise<ITerminalCommand[]> =>
+  (await readWorkspacesFile(true))?.terminalCommands ?? [];
+
+export const updateTerminalCommand = async (update:
+  | { action: 'create'; value: Omit<ITerminalCommand, 'id'> }
+  | { action: 'edit'; id: string; value: Omit<ITerminalCommand, 'id'> }
+  | { action: 'delete'; id: string }
+): Promise<ITerminalCommand[]> => withLock(async () => {
+  const data = (await readWorkspacesFile(true)) ?? emptyState();
+  const commands = data.terminalCommands ?? [];
+  if (update.action === 'create') {
+    if (commands.length >= MAX_TERMINAL_COMMANDS) {
+      throw Object.assign(new Error('Terminal command limit reached'), { status: 409 });
+    }
+    commands.push({ ...update.value, id: nanoid() });
+  } else {
+    const index = commands.findIndex((command) => command.id === update.id);
+    if (index === -1) throw Object.assign(new Error('Terminal command not found'), { status: 404 });
+    if (update.action === 'delete') commands.splice(index, 1);
+    else commands[index] = { ...update.value, id: update.id };
+  }
+  data.terminalCommands = commands;
+  await fs.mkdir(BASE_DIR, { recursive: true });
+  await writeWorkspacesFile(data);
+  return commands;
+});
 
 export const getWorkspaceById = async (wsId: string): Promise<IWorkspace | undefined> => {
   const data = await readWorkspacesFile();

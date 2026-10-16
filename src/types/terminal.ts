@@ -91,6 +91,7 @@ export interface IWorkspaceGroup {
 }
 
 export interface IWorkspacesData {
+  terminalCommands?: import('@/lib/terminal-custom-commands').ITerminalCommand[];
   sessionWorkflow?: import('@/lib/session-workflow').ISessionWorkflow;
   workspaces: IWorkspace[];
   groups?: IWorkspaceGroup[];
