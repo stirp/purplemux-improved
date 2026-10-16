@@ -161,6 +161,7 @@ const WorkspaceItem = ({
             data-touch-drag-ignore
             onDragStart={(event) => { event.preventDefault(); event.stopPropagation(); }}
             onDoubleClick={(event) => event.stopPropagation()}
+            onContextMenu={(event) => { event.preventDefault(); event.stopPropagation(); }}
             onClick={(event) => { event.stopPropagation(); onToggleExpanded?.(workspace.id); }}
           >
             {childrenExpanded

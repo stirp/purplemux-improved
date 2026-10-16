@@ -133,6 +133,23 @@ it('isolates disclosure drag and double click from row actions', async () => {
   expect(useWorkspaceStore.getState().activeWorkspaceId).toBe('a');
 });
 
+it.each(['button', 'svg'])('isolates disclosure %s context menus while preserving the row menu', async (target) => {
+  await mountTree();
+  const button = disclosure('B');
+  const element = target === 'svg' ? button.querySelector('svg')! : button;
+  const contextMenu = new MouseEvent('contextmenu', { bubbles: true, cancelable: true, button: 2 });
+  await act(async () => { element.dispatchEvent(contextMenu); });
+  expect(document.querySelector('[role="menu"]')).toBeNull();
+  expect(contextMenu.defaultPrevented).toBe(true);
+  expect(button.getAttribute('aria-expanded')).toBe('false');
+  expect(useWorkspaceStore.getState().activeWorkspaceId).toBe('a');
+  await act(async () => {
+    row('B')!.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true, button: 2 }));
+  });
+  expect(document.querySelector('[role="menu"]')).not.toBeNull();
+  expect(useWorkspaceStore.getState().activeWorkspaceId).toBe('a');
+});
+
 afterEach(async () => {
   await act(async () => root.unmount());
   container.remove();

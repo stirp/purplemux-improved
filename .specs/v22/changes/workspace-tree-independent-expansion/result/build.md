@@ -22,3 +22,9 @@
 - 移动项目行传入 `{ reveal: false }`，继续由本地 toggle 管理选择并收起；移动新建/接管仍请求揭示。搜索期间消费请求但不改变原展开集合；保留目标标记，防止异步选择在清空搜索后重新展开。
 - 删除桌面重复的局部揭示包装，复用公共选择入口（DRY）；请求与可见性解析分离，避免异步回调保存过时列表（单一职责、KISS）。
 - 新增 `tests/unit/lib/workspace-expansion-navigation.test.ts`，真实挂载 React Hook 并使用 Zustand、Sessions 导航和全局快捷键处理器；仅替换网络、路由及按键绑定层。
+
+## PR #52：展开按钮右键隔离
+
+对应[审查意见](https://github.com/stirp/purplemux-improved/pull/52#discussion_r4297959618)，审查提交 `8b6acba4f1337ae400580a1f70a44e7f66772650`。
+
+`WorkspaceItem` 的展开按钮补充 `onContextMenu`，调用 preventDefault 与 stopPropagation，避免右键事件进入祖先 ContextMenuTrigger。仅修改按钮事件边界，复用现有组件和菜单逻辑（KISS、单一职责）。`workspace-sidebar-search.test.ts` 增加按钮与 SVG 两个事件目标的组件回归，同时验证选中、展开状态不变和项目行右键菜单可用。

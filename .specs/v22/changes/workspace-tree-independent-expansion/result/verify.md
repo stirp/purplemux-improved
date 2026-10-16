@@ -91,3 +91,16 @@ git diff --check
 - 桌面旧回调：收起 A，保存旧展开回调，向最新 Store 添加 A1 下的新节点，再调用旧回调并选中新节点；新节点、A/A1 及 B/B1 均可见。
 - 移动 390×844：搜索选择 A11 后清空，活动 ID 为 a11，导航恢复为收起的 A 和展开的 B/B1；再次调用公共选择入口选择 a11，A/A1/A11 重新可见，B/B1 保留。
 - 浏览器覆盖上述导航交互；晚挂载请求与异步完成边界以最终 React/Zustand 回归验证。未执行生产构建、完整应用端到端或移动实机验收。
+
+## PR #52：展开按钮右键隔离验证
+
+日期：2026-10-17。对应[右键冒泡审查意见](https://github.com/stirp/purplemux-improved/pull/52#discussion_r4297959618)。
+
+- 修复前执行 `pnpm exec vitest run "tests/unit/lib/workspace-sidebar-search.test.ts"`：7 通过、2 失败，按钮及 SVG 的 contextmenu 均误开项目菜单。
+- 修复后执行 `pnpm exec vitest run "tests/unit/lib/workspace-sidebar-search.test.ts" "tests/unit/lib/workspace-touch-menu.test.ts" "tests/unit/lib/workspace-item-render.test.ts"`：**51 通过，0 失败**。新增回归还检查右键不改变展开/选中状态，项目行右键继续打开菜单。
+- `pnpm exec tsc --noEmit`：通过。
+- `pnpm exec eslint "src/components/features/workspace/workspace-item.tsx" "tests/unit/lib/workspace-sidebar-search.test.ts"`：通过，无错误或警告。
+- `git diff --check`：通过。
+- 浏览器：通过 `/tmp/workspace-expansion-review-preview.cjs` 重新打包当前真实组件，使用 agent-browser 独立会话 `pr52-disclosure-menu`。通过 `mouse down right` / `mouse up right` 在 B 的展开箭头中心执行真实右键，菜单数为 0、活动项目仍为 A、B 的 aria-expanded 仍为 false；随后在 B 的项目名处右键，正常显示创建工作树、管理、移组、重命名和删除菜单。
+
+本轮只验证桌面按钮事件边界；浏览器使用隔离组件及虚构数据，未运行完整应用端到端、生产构建或移动实机验收。测试与检查为本轮实际运行结果。
