@@ -2,15 +2,10 @@ import { useRef, useState, type ReactNode } from 'react';
 import { Folder, GitBranch, Pencil, Settings, Trash2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Button } from '@/components/ui/button';
-import {
-  AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle,
-  AlertDialogDescription, AlertDialogFooter,
-} from '@/components/ui/alert-dialog';
+import DeleteWorkspaceDialog from '@/components/features/workspace/delete-workspace-dialog';
 import EditWorkspaceDialog from '@/components/features/workspace/edit-workspace-dialog';
 import CreateWorktreeDialog from '@/components/features/workspace/create-worktree-dialog';
 import WorktreeTreeDialog from '@/components/features/workspace/worktree-tree-dialog';
-import useWorkspaceStore from '@/hooks/use-workspace-store';
 import type { IWorkspace } from '@/types/terminal';
 import WorktreeManagementButton from '@/components/features/workspace/worktree-management-button';
 
@@ -27,23 +22,6 @@ export default function MobileWorkspaceActions({ workspace, onCreated, children,
   const [menuOpen, setMenuOpen] = useState(false);
   const touchOrigin = useRef(false);
   const [action, setAction] = useState<'group' | 'rename' | 'tree' | 'create' | 'delete' | null>(null);
-  const [deleting, setDeleting] = useState(false);
-
-  const remove = async () => {
-    if (deleting) return;
-    setDeleting(true);
-    const store = useWorkspaceStore.getState();
-    store.markPendingDelete(workspace.id);
-    try {
-      if (await store.deleteWorkspace(workspace.id)) {
-        store.removeWorkspace(workspace.id);
-        setAction(null);
-      }
-    } finally {
-      store.unmarkPendingDelete(workspace.id);
-      setDeleting(false);
-    }
-  };
 
   const openAction = (next: typeof action) => {
     setMenuOpen(false);
@@ -111,21 +89,8 @@ export default function MobileWorkspaceActions({ workspace, onCreated, children,
       workspace={workspace} onClose={() => setAction(null)} onCreated={onCreated}
     />}
     {action === 'tree' && <WorktreeTreeDialog root={workspace} onClose={() => setAction(null)} onSelect={onCreated} />}
-    {action === 'delete' && <AlertDialog open onOpenChange={(open) => {
-      if (!open && !deleting) setAction(null);
-    }}>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>{ts('deleteWorkspace')}</AlertDialogTitle>
-          <AlertDialogDescription>
-            {ts('deleteWorkspaceConfirm', { name: workspace.name })}
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <Button variant="outline" disabled={deleting} onClick={() => setAction(null)}>{tc('cancel')}</Button>
-          <Button className="bg-ui-red hover:bg-ui-red/80" disabled={deleting} onClick={remove}>{tc('delete')}</Button>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>}
+    {action === 'delete' && <DeleteWorkspaceDialog
+      key={workspace.id} workspace={workspace} onClose={() => setAction(null)}
+    />}
   </>;
 }
