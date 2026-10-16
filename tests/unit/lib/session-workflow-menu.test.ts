@@ -4,6 +4,7 @@ import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('next-intl', () => ({ useTranslations: () => (key: string) => key }));
+vi.mock('@/hooks/use-workspace-layouts', () => ({ default: () => ({}) }));
 vi.mock('next/router', () => ({ useRouter: () => ({ pathname: '/' }) }));
 vi.mock('@/hooks/use-layout', () => ({ useLayoutStore: (select: (state: unknown) => unknown) => select({ layout: null }), navigateToTab: vi.fn() }));
 vi.mock('@/hooks/use-session-navigation', () => ({ navigateToSession: vi.fn() }));
@@ -46,13 +47,18 @@ afterEach(async () => {
   vi.useRealTimers();
   vi.unstubAllGlobals();
 });
-const row = () => container.querySelector('[data-session-row] [class*="rounded-md"]') as HTMLElement;
+const row = () => container.querySelector('[data-session-row] [data-session-navigation]') as HTMLElement;
 const touchEvent = (type: string, x = 10) => {
   const event = new Event(type, { bubbles: true, cancelable: true });
   Object.defineProperty(event, 'touches', { value: type === 'touchend' ? [] : [{ clientX: x, clientY: 10 }] });
   return event;
 };
 describe('entry-less session menu with real Base UI trigger', () => {
+  it('opens deletion from its explicit button without navigating', async () => {
+    await act(async () => (container.querySelector('[aria-label="deleteHistory"]') as HTMLButtonElement).click());
+    expect(document.querySelector('[role="alertdialog"]')).not.toBeNull();
+    expect(navigateToSession).not.toHaveBeenCalled();
+  });
   it('opens the delete menu on right click and opens its confirmation', async () => {
     await act(async () => row().dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true, button: 2 })));
     const item = document.querySelector('[role="menuitem"]') as HTMLElement;

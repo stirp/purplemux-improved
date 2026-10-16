@@ -3,7 +3,7 @@
   "title": "Notifications",
   "empty": "No sessions..",
   "searchPlaceholder": "Search sessions…",
-  "searchHint": "Title, workspace, session ID or history summary",
+  "searchHint": "Root project, project, Tab title, session ID or history",
   "searchClear": "Clear search",
   "searchCount": "{count, plural, one {# session found} other {# sessions found}}",
   "searchEmpty": "No matching sessions",
@@ -33,5 +33,9 @@
   "workStatusLabel": "Work status",
   "workStatusAuto": "Automatic",
   "workStatusSaveFailed": "Failed to save work status. Please retry.",
-  "workRuntimeBusy": "Model running"
+  "workRuntimeBusy": "Model running",
+  "unknownRootProject": "Unknown root project",
+  "rootProjectLabel": "Root project",
+  "projectLabel": "Project",
+  "untitledSession": "Untitled session"
 }

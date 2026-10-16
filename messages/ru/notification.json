@@ -1,7 +1,7 @@
 {
   "unknownWorkspace": "Неизвестный проект",
   "searchPlaceholder": "Поиск сеансов…",
-  "searchHint": "Название, рабочая область, ID сеанса или сводка истории",
+  "searchHint": "Корневой проект, проект, заголовок вкладки, ID сеанса или история",
   "searchClear": "Очистить поиск",
   "searchCount": "Найдено сеансов: {count}",
   "searchEmpty": "Совпадающих сеансов нет",
@@ -33,5 +33,9 @@
   "workStatusLabel": "Статус работы",
   "workStatusAuto": "Автоматически",
   "workStatusSaveFailed": "Не удалось сохранить статус. Повторите попытку.",
-  "workRuntimeBusy": "Модель работает"
+  "workRuntimeBusy": "Модель работает",
+  "unknownRootProject": "Неизвестный корневой проект",
+  "rootProjectLabel": "Корневой проект",
+  "projectLabel": "Проект",
+  "untitledSession": "Сеанс без названия"
 }

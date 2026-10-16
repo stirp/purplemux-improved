@@ -1,7 +1,7 @@
 {
   "unknownWorkspace": "Projeto desconhecido",
   "searchPlaceholder": "Buscar sessões…",
-  "searchHint": "Título, espaço de trabalho, ID da sessão ou resumo do histórico",
+  "searchHint": "Projeto raiz, projeto, título da aba, ID da sessão ou histórico",
   "searchClear": "Limpar busca",
   "searchCount": "{count} sessões encontradas",
   "searchEmpty": "Nenhuma sessão correspondente",
@@ -33,5 +33,9 @@
   "workStatusLabel": "Estado do trabalho",
   "workStatusAuto": "Automático",
   "workStatusSaveFailed": "Falha ao salvar o estado. Tente novamente.",
-  "workRuntimeBusy": "Modelo em execução"
+  "workRuntimeBusy": "Modelo em execução",
+  "unknownRootProject": "Projeto raiz desconhecido",
+  "rootProjectLabel": "Projeto raiz",
+  "projectLabel": "Projeto",
+  "untitledSession": "Sessão sem título"
 }

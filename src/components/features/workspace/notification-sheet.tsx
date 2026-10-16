@@ -6,6 +6,7 @@ import {
   Clock3,
   CheckCircle2,
   ChevronRight,
+  Folder,
   FileText,
   FilePen,
   FilePlus,
@@ -39,12 +40,13 @@ import { findPane } from '@/lib/layout-tree';
 import type { ICurrentAction } from '@/types/status';
 import type { ISessionHistoryEntry, TSessionHistoryProvider } from '@/types/session-history';
 import { stripMarkdown } from '@/lib/strip-markdown';
-import { agentSessionTitle } from '@/lib/agent-session-title';
+import { agentTabTitle } from '@/lib/agent-session-title';
 import { searchSessions } from '@/lib/session-search';
-import { sessionWorkspaceName } from '@/lib/session-workspace-name';
+import { sessionRootWorkspaceName, sessionWorkspaceName } from '@/lib/session-workspace-name';
 import ClaudeCodeIcon from '@/components/icons/claude-code-icon';
 import OpenAIIcon from '@/components/icons/openai-icon';
-import SessionHistoryActions from './session-history-actions';
+import SessionHistoryActions from '@/components/features/workspace/session-history-actions';
+import useWorkspaceLayouts from '@/hooks/use-workspace-layouts';
 
 const ACTION_ICONS: Record<string, typeof FileText> = {
   Read: FileText,
@@ -94,6 +96,7 @@ export const useNotificationCount = (): { busyCount: number; attentionCount: num
 interface INotificationItem {
   tabId: string;
   workspaceName: string;
+  rootWorkspaceName: string;
   workspaceId: string;
   lastUserMessage?: string | null;
   title?: string | null;
@@ -131,19 +134,34 @@ const formatNotificationTime = (ts: number): string => {
   return d.format('M/D HH:mm');
 };
 
+const SessionProjectName = ({ name, rootName }: { name: string; rootName: string }) => {
+  const t = useTranslations('notification');
+  return (
+    <div className="mb-2 text-xs leading-relaxed text-muted-foreground [overflow-wrap:anywhere]">
+      <Folder aria-hidden="true" className="mr-1 inline size-3 align-[-2px]" />
+      <span data-root-project={rootName}>
+        <span className="sr-only">{t('rootProjectLabel')}: </span>{rootName}
+      </span>
+      <ChevronRight aria-hidden="true" className="mx-1 inline size-3 align-[-2px]" />
+      <span className="text-foreground/75" title={name}>
+        <span className="sr-only">{t('projectLabel')}: </span>{name}
+      </span>
+    </div>
+  );
+};
 
-
-
-const SessionProjectName = ({ providerId, name }: { providerId: TSessionHistoryProvider; name: string }) => (
-  <div className="flex min-w-0 items-start gap-1 text-xs text-muted-foreground">
-    <span className="shrink-0"><ProviderBadge providerId={providerId} /></span>
-    <span className="min-w-0 whitespace-normal break-words [overflow-wrap:anywhere]" title={name}>{name}</span>
+const SessionTitle = ({ providerId, title, icon }: { providerId: TSessionHistoryProvider; title: string; icon?: React.ReactNode }) => (
+  <div className="flex items-start gap-2">
+    <span className="mt-1 shrink-0">{icon}</span>
+    <p className="min-w-0 flex-1 text-sm font-medium leading-snug text-foreground [overflow-wrap:anywhere]">{stripMarkdown(title)}</p>
+    <span className="mt-0.5 shrink-0"><ProviderBadge providerId={providerId} /></span>
   </div>
 );
 
 const SessionHistoryItem = ({
   entry,
   workspaceName,
+  rootWorkspaceName,
   title,
   isActiveSession,
   compact,
@@ -153,6 +171,7 @@ const SessionHistoryItem = ({
 }: {
   entry: ISessionHistoryEntry;
   workspaceName: string;
+  rootWorkspaceName: string;
   title?: string | null;
   isActiveSession?: boolean;
   compact?: boolean;
@@ -182,36 +201,28 @@ const SessionHistoryItem = ({
 
   if (compact) {
     return (
-      <div
-        className="rounded px-2 py-1.5 transition-colors hover:bg-muted cursor-pointer"
+      <button
+        type="button"
+        className="block w-full min-w-0 px-2 py-2 text-left transition-colors hover:bg-muted focus-visible:outline-2 focus-visible:outline-ring"
         onClick={onClick}
       >
-        <SessionProjectName providerId={entry.providerId} name={workspaceName} />
-        <div className="flex items-center justify-between gap-2">
-          {entry.prompt ? (
-            <p className="truncate text-xs text-foreground/70">
-              {stripMarkdown(entry.prompt)}
-            </p>
-          ) : (
-            <span />
-          )}
-          <span className="shrink-0 text-xs text-muted-foreground/40">
-            {formatNotificationTime(entry.completedAt)}
-          </span>
-        </div>
+        <SessionProjectName name={workspaceName} rootName={rootWorkspaceName} />
+        <SessionTitle providerId={entry.providerId} title={title || entry.prompt || t('untitledSession')} />
+        {entry.prompt && entry.prompt !== title && <p className="mt-1 text-xs text-muted-foreground [overflow-wrap:anywhere]">{stripMarkdown(entry.prompt)}</p>}
         {showResult && entry.result && (
-          <p className="mt-0.5 truncate text-xs text-muted-foreground/50">{stripMarkdown(entry.result)}</p>
+          <p className="mt-0.5 text-xs text-muted-foreground [overflow-wrap:anywhere]">{stripMarkdown(entry.result)}</p>
         )}
-        <p className="mt-0.5 truncate text-xs text-muted-foreground/40">
-          {durationText}
+        <p className="mt-1 text-xs text-muted-foreground [overflow-wrap:anywhere]">
+          {formatNotificationTime(entry.completedAt)} · {durationText}
           {summaryText && ` · ${summaryText}`}
         </p>
-      </div>
+      </button>
     );
   }
 
   return (
     <SessionHistoryActions
+      actionClassName="right-0 top-0 flex size-11 translate-y-0 items-center justify-center"
       provider={entry.providerId}
       sessionId={entry.agentSessionId}
       historyEntryId={entry.id}
@@ -225,40 +236,24 @@ const SessionHistoryItem = ({
         }));
       }}
     >
-      <div
-        className={cn(
-          'flex items-start gap-3 rounded-md pl-3 pr-10 py-2.5 transition-colors',
-          isActiveSession
-            ? 'bg-claude-active/10'
-            : 'hover:bg-muted cursor-pointer',
-        )}
+      <button
+        type="button"
+        data-session-navigation
+        aria-current={isActiveSession ? 'true' : undefined}
+        className="block w-full min-w-0 px-3 pb-2 pt-3 pr-12 text-left transition-colors hover:bg-muted/50 focus-visible:outline-2 focus-visible:outline-ring"
         onClick={isActiveSession ? undefined : onClick}
       >
-        <span className="mt-1 shrink-0">
-          {icon ?? (entry.cancelled
-            ? <XCircle className="h-3.5 w-3.5 text-muted-foreground/50" />
-            : <CheckCircle2 className={cn('h-3.5 w-3.5', entry.dismissedAt ? 'text-muted-foreground' : 'text-muted-foreground/50')} />
-          )}
-        </span>
-        <div className="min-w-0 flex-1">
-          <SessionProjectName providerId={entry.providerId} name={workspaceName} />
-          {(title || entry.prompt) && (
-            <p className={cn('mt-0.5 truncate text-sm', isActiveSession ? 'text-foreground' : 'text-muted-foreground')}>
-              {stripMarkdown(title || entry.prompt || '')}
-            </p>
-          )}
-          {entry.result && (
-            <p className="mt-0.5 truncate text-xs text-muted-foreground/50">
-              {stripMarkdown(entry.result)}
-            </p>
-          )}
-          <p className="mt-0.5 truncate text-xs text-muted-foreground/50">
-            {formatNotificationTime(entry.completedAt)} · {' '}
-            {durationText}
-            {summaryText && ` · ${summaryText}`}
-          </p>
-        </div>
-      </div>
+        <SessionProjectName name={workspaceName} rootName={rootWorkspaceName} />
+        <SessionTitle providerId={entry.providerId} title={title || entry.prompt || t('untitledSession')}
+          icon={icon ?? (entry.cancelled
+            ? <XCircle className="size-3.5 text-muted-foreground" />
+            : <CheckCircle2 className="size-3.5 text-muted-foreground" />)} />
+        {entry.result && <p className="mt-1 line-clamp-2 text-xs text-muted-foreground [overflow-wrap:anywhere]">{stripMarkdown(entry.result)}</p>}
+        <p className="mt-2 flex flex-wrap gap-x-1 text-xs text-muted-foreground">
+          <span>{formatNotificationTime(entry.completedAt)} · {durationText}</span>
+          {summaryText && <span>· {summaryText}</span>}
+        </p>
+      </button>
     </SessionHistoryActions>
   );
 };
@@ -289,52 +284,26 @@ const NotificationItem = ({
   };
 
   return (
-    <div
-      className={cn(
-        'flex items-start gap-3 rounded-md px-3 py-2.5 transition-colors',
-        isActiveTab
-          ? 'bg-claude-active/10'
-          : 'hover:bg-muted cursor-pointer',
-      )}
+    <button
+      type="button"
+      data-session-navigation
+      aria-current={isActiveTab ? 'true' : undefined}
+      className="block w-full min-w-0 px-3 pb-2 pt-3 pr-12 text-left transition-colors hover:bg-muted/50 focus-visible:outline-2 focus-visible:outline-ring"
       onClick={isActiveTab ? undefined : () => onNavigate?.(item.workspaceId, item.tabId)}
     >
-      <span className="mt-1 shrink-0">
-        {variant === 'pending' ? (
-          <Circle className="h-3.5 w-3.5 text-muted-foreground/50" />
-        ) : variant === 'done' ? (
-          <CheckCircle2 className="h-3.5 w-3.5 text-muted-foreground/50" />
-        ) : variant === 'needs-input' ? (
-          <span className="block h-2 w-2 rounded-full bg-ui-amber animate-pulse" />
-        ) : (
-          <Spinner className="h-3 w-3 text-claude-active/70" />
-        )}
-      </span>
-      <div className="min-w-0 flex-1">
-        <SessionProjectName providerId={item.providerId} name={item.workspaceName} />
-        {(item.dismissedAt || item.readyForReviewAt || item.busySince) && (
-          <p className="mt-0.5 text-xs text-muted-foreground/60">
-            {formatNotificationTime(item.dismissedAt ?? item.readyForReviewAt ?? item.busySince!)}
-          </p>
-        )}
-        {(item.title || item.lastUserMessage) && (
-          <p className={cn('mt-0.5 truncate text-sm', isActiveTab ? 'text-foreground' : 'text-muted-foreground')}>
-            {stripMarkdown(item.title || item.lastUserMessage || '')}
-          </p>
-        )}
-        {variant === 'done' ? (
-          item.lastAssistantMessage && (
-            <p className="mt-0.5 truncate text-xs text-muted-foreground/50">
-              {stripMarkdown(item.lastAssistantMessage)}
-            </p>
-          )
-        ) : !variant && (
-          <p className="mt-0.5 truncate text-xs text-muted-foreground/60">
-            {renderAction()}
-          </p>
-        )}
-
-      </div>
-    </div>
+      <SessionProjectName name={item.workspaceName} rootName={item.rootWorkspaceName} />
+      <SessionTitle providerId={item.providerId} title={item.title || item.lastUserMessage || t('untitledSession')}
+        icon={variant === 'pending' ? <Circle className="size-3.5 text-muted-foreground" />
+          : variant === 'done' ? <CheckCircle2 className="size-3.5 text-muted-foreground" />
+            : variant === 'needs-input' ? <span className="block size-2 rounded-full bg-ui-amber" />
+              : <Spinner className="size-3.5 text-claude-active" />} />
+      {variant === 'done' ? item.lastAssistantMessage && (
+        <p className="mt-1 line-clamp-2 text-xs text-muted-foreground [overflow-wrap:anywhere]">{stripMarkdown(item.lastAssistantMessage)}</p>
+      ) : !variant && <p className="mt-1 truncate text-xs text-muted-foreground">{renderAction()}</p>}
+      {(item.dismissedAt || item.readyForReviewAt || item.busySince) && (
+        <p className="mt-2 text-xs text-muted-foreground">{formatNotificationTime(item.dismissedAt ?? item.readyForReviewAt ?? item.busySince!)}</p>
+      )}
+    </button>
   );
 };
 
@@ -343,6 +312,7 @@ export const NotificationPanel = ({ onNavigated, className }: { onNavigated?: ()
   const tabs = useTabStore((s) => s.tabs);
   const workspaces = useWorkspaceStore((s) => s.workspaces);
   const workflow = useWorkspaceStore((s) => s.sessionWorkflow);
+  const workspaceLayouts = useWorkspaceLayouts();
   const historyEntries = useSessionHistoryStore((s) => s.entries);
   const { id: activeTabId, agentSessionId: activeSessionId, providerId: activeProviderId } = useActiveTab();
   const [expandedSessions, setExpandedSessions] = useState<Set<string>>(new Set());
@@ -354,13 +324,19 @@ export const NotificationPanel = ({ onNavigated, className }: { onNavigated?: ()
   const sessions = useMemo(() => collectWorkSessions(historyEntries, tabs, workflow), [historyEntries, tabs, workflow]);
   const searchItems = useMemo(() => sessions.map((session) => {
     const workspace = workspaces.find((ws) => ws.id === session.workspaceId);
+    const tab = session.live ? tabs[session.tabId] : undefined;
+    const layoutTab = tab ? workspaceLayouts[session.workspaceId]?.flatMap((pane) => pane.tabs).find((item) => item.id === session.tabId) : undefined;
+    const title = tab
+      ? agentTabTitle(layoutTab?.name ?? '', tab, workflow, session.tabId) || layoutTab?.title || tab.tabName
+      : workflow.titles?.[session.key];
     return {
       session,
-      title: session.live ? agentSessionTitle(tabs[session.tabId], workflow, session.tabId) : workflow.titles?.[session.key],
+      title: title || session.entry?.prompt || t('untitledSession'),
+      rootWorkspaceName: sessionRootWorkspaceName(session, workspaces) ?? t('unknownRootProject'),
       workspaceName: sessionWorkspaceName(session, workspace) ?? t('unknownWorkspace'),
       workspaceDirectories: workspace?.directories,
     };
-  }), [sessions, tabs, workflow, workspaces, t]);
+  }), [sessions, tabs, workflow, workspaces, workspaceLayouts, t]);
   const visibleItems = useMemo(() => searchSessions(searchItems, query), [searchItems, query]);
   const clearSearch = () => {
     setQuery('');
@@ -381,10 +357,10 @@ export const NotificationPanel = ({ onNavigated, className }: { onNavigated?: ()
     <div className={cn('flex min-h-0 flex-1 flex-col overflow-hidden', className)}>
       <div className="shrink-0 pb-3">
         <div className="relative">
-          <Search aria-hidden="true" className="pointer-events-none absolute left-2.5 top-2 h-4 w-4 text-muted-foreground" />
+          <Search aria-hidden="true" className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input ref={searchInput} type="search" value={query} aria-label={t('searchPlaceholder')}
             aria-describedby={searchHintId} placeholder={t('searchPlaceholder')}
-            className="pl-8 pr-9 [&::-webkit-search-cancel-button]:hidden"
+            className="min-h-11 pl-9 pr-11 text-base md:min-h-8 md:text-sm [&::-webkit-search-cancel-button]:hidden"
             onChange={(event) => setQuery(event.target.value)}
             onKeyDown={(event) => {
               if (event.key === 'Escape' && query && !event.nativeEvent.isComposing) {
@@ -394,7 +370,7 @@ export const NotificationPanel = ({ onNavigated, className }: { onNavigated?: ()
               }
             }} />
           {query && <Button type="button" variant="ghost" size="icon" aria-label={t('searchClear')}
-            className="absolute right-0 top-0" onClick={clearSearch}><X aria-hidden="true" /></Button>}
+            className="absolute right-0 top-0 size-11 md:size-8" onClick={clearSearch}><X aria-hidden="true" /></Button>}
         </div>
         <p id={searchHintId} className="mt-1.5 text-xs text-muted-foreground">{t('searchHint')}</p>
         <div role="status" aria-live="polite" aria-atomic="true" className="text-xs text-muted-foreground">
@@ -410,13 +386,13 @@ export const NotificationPanel = ({ onNavigated, className }: { onNavigated?: ()
           return (
             <section key={status} className="mb-4">
               <button type="button" disabled={saving || searching} aria-expanded={!collapsed}
-                className="mb-2 flex w-full items-center gap-1 text-left text-xs font-medium text-muted-foreground"
+                className="mb-1 flex min-h-11 w-full items-center gap-2 text-left text-xs font-medium text-muted-foreground md:min-h-8"
                 onClick={() => void save({ section: status, collapsed: !collapsed })}>
                 <ChevronRight className={cn('h-3 w-3 transition-transform', !collapsed && 'rotate-90')} />
-                {t('workStatus_' + status)} ({items.length})
+                {t('workStatus_' + status)} <span className="ml-auto tabular-nums">{items.length}</span>
               </button>
               {!collapsed && <div className="flex flex-col gap-2">
-                {items.map(({ session, title, workspaceName }) => {
+                {items.map(({ session, title, workspaceName, rootWorkspaceName }) => {
                   const entry = session.entry;
                   const target = entry ?? session.navigation;
                   const isActiveSession = target?.agentSessionId
@@ -431,7 +407,7 @@ export const NotificationPanel = ({ onNavigated, className }: { onNavigated?: ()
                   };
                   const liveItem = <NotificationItem item={{
                     tabId: session.tabId, workspaceId: session.workspaceId,
-                    workspaceName,
+                    workspaceName, rootWorkspaceName: rootWorkspaceName ?? t('unknownRootProject'),
                     providerId: target?.providerId ?? (session.key.startsWith('codex:') ? 'codex' : 'claude'),
                     agentSessionId: target?.agentSessionId,
                     lastUserMessage: session.live?.lastUserMessage,
@@ -441,20 +417,21 @@ export const NotificationPanel = ({ onNavigated, className }: { onNavigated?: ()
                   }} variant={session.live?.cliState === 'needs-input' ? 'needs-input' : session.live?.cliState === 'busy' ? undefined : status === 'completed' ? 'done' : 'pending'}
                     isActiveTab={isActiveSession} onNavigate={onClick} />;
                   return (
-                    <div key={session.key}>
-                      {entry && session.live?.cliState !== 'busy' && session.live?.cliState !== 'needs-input' ? <SessionHistoryItem entry={entry} workspaceName={workspaceName} title={title} isActiveSession={isActiveSession} onClick={onClick}
+                    <div key={session.key} className={cn('min-w-0 overflow-hidden rounded-lg border', isActiveSession ? 'border-claude-active/30 bg-claude-active/5' : 'border-border/60 bg-card')}>
+                      {entry && session.live?.cliState !== 'busy' && session.live?.cliState !== 'needs-input' ? <SessionHistoryItem entry={entry} workspaceName={workspaceName} rootWorkspaceName={rootWorkspaceName ?? t('unknownRootProject')} title={title} isActiveSession={isActiveSession} onClick={onClick}
                           icon={status === 'completed' ? <CheckCircle2 className="h-3.5 w-3.5 text-muted-foreground" />
                             : status === 'review' ? <Clock3 className="h-3.5 w-3.5 text-muted-foreground" />
                               : <Circle className="h-3.5 w-3.5 text-muted-foreground" />} />
                         : !entry && target?.agentSessionId
                           ? <SessionHistoryActions provider={target.providerId} sessionId={target.agentSessionId}
+                            actionClassName="right-0 top-0 flex size-11 translate-y-0 items-center justify-center"
                             label={session.live?.lastUserMessage} onDeleted={async () => {
                               forgetSessionWorkflow(target.providerId, target.agentSessionId);
                             }}><div>{liveItem}</div></SessionHistoryActions>
                           : liveItem}
-                      <div className="flex items-center gap-2 pl-9">
+                      <div className="flex flex-wrap items-center gap-x-2 border-t border-border/40 px-3 py-1">
                         <select aria-label={t('workStatusLabel')} disabled={saving}
-                          className="max-w-full rounded border bg-card px-1 py-0.5 text-xs text-muted-foreground"
+                          className="min-h-11 min-w-0 max-w-full rounded-md border border-border/60 bg-transparent px-2 text-xs text-muted-foreground md:min-h-8"
                           value={workflow.statuses[session.key] ?? 'auto'}
                           onChange={(event) => void save({ key: session.key, status: event.target.value === 'auto' ? null : event.target.value as TWorkStatus })}>
                           <option value="auto">{t('workStatusAuto')}</option>
@@ -462,19 +439,17 @@ export const NotificationPanel = ({ onNavigated, className }: { onNavigated?: ()
                         </select>
                         {session.live?.cliState === 'busy' && <span className="text-xs text-muted-foreground">{t('workRuntimeBusy')}</span>}
                         {session.live?.cliState === 'needs-input' && <span className="text-xs text-muted-foreground">{t('needsInputSection', { count: 1 })}</span>}
-                      </div>
-                      {session.olderEntries.length > 0 && <>
-                        <button type="button" aria-expanded={expanded} disabled={searching}
-                          className="mt-1 flex items-center gap-1 pl-9 text-xs text-muted-foreground"
+                        {session.olderEntries.length > 0 && <button type="button" aria-expanded={expanded} disabled={searching}
+                          className="ml-auto flex min-h-11 items-center gap-1 text-xs text-muted-foreground md:min-h-8"
                           onClick={() => toggleExpanded(session.key)}>
                           <ChevronRight className={cn('h-3 w-3', expanded && 'rotate-90')} />
                           {expanded && !searching ? t('showLess') : t('showMore', { count: session.olderEntries.length })}
-                        </button>
-                        {expanded && <div className="ml-5 border-l pl-2">
-                          {session.olderEntries.map((older) => <SessionHistoryItem key={older.id} entry={older} workspaceName={workspaceName} compact showResult={searching}
+                        </button>}
+                      </div>
+                      {session.olderEntries.length > 0 && expanded && <div className="mx-3 mb-2 border-l border-border pl-2">
+                          {session.olderEntries.map((older) => <SessionHistoryItem key={older.id} entry={older} workspaceName={workspaceName} rootWorkspaceName={rootWorkspaceName ?? t('unknownRootProject')} title={title} compact showResult={searching}
                             onClick={() => { onNavigated?.(); void navigateToSession(older, session.live ? session.tabId : null); }} />)}
-                        </div>}
-                      </>}
+                      </div>}
                     </div>
                   );
                 })}

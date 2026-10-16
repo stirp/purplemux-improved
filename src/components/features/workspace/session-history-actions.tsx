@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from '@/components/ui/context-menu';
 import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel } from '@/components/ui/alert-dialog';
+import { cn } from '@/lib/utils';
 
 interface ISessionHistoryActionsProps {
   provider: 'claude' | 'codex';
@@ -13,11 +14,12 @@ interface ISessionHistoryActionsProps {
   historyEntryId?: string;
   label?: string | null;
   disabled?: boolean;
+  actionClassName?: string;
   onDeleted: () => Promise<void>;
   children: ReactElement;
 }
 
-const SessionHistoryActions = ({ provider, sessionId, historyEntryId, label, disabled, onDeleted, children }: ISessionHistoryActionsProps) => {
+const SessionHistoryActions = ({ provider, sessionId, historyEntryId, label, disabled, actionClassName, onDeleted, children }: ISessionHistoryActionsProps) => {
   const t = useTranslations('session');
   const tc = useTranslations('common');
   const [open, setOpen] = useState(false);
@@ -69,7 +71,7 @@ const SessionHistoryActions = ({ provider, sessionId, historyEntryId, label, dis
       </ContextMenu>
       <button
         type="button"
-        className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1.5 text-muted-foreground hover:bg-accent hover:text-ui-red disabled:opacity-30"
+        className={cn('absolute right-2 top-1/2 -translate-y-1/2 rounded p-1.5 text-muted-foreground hover:bg-accent hover:text-ui-red disabled:opacity-30', actionClassName)}
         aria-label={t('deleteHistory')}
         title={t('deleteHistory')}
         disabled={disabled}
