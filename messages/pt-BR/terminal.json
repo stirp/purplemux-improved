@@ -165,5 +165,18 @@
   "nativeCommandsOpen": "Abrir menu nativo de comandos",
   "nativeCommandsHint": "Use o menu da CLI para selecionar e executar comandos.",
   "nativeCommandsReturn": "Cancelar entrada e voltar ao chat",
-  "nativeCommandsQueuePending": "Envie ou remova as mensagens na fila antes de abrir o menu nativo de comandos."
+  "nativeCommandsQueuePending": "Envie ou remova as mensagens na fila antes de abrir o menu nativo de comandos.",
+  "customCommands": "Custom commands",
+  "customCommandsManage": "Manage custom commands",
+  "customCommandsAdd": "Add command",
+  "customCommandsDescription": "Commands are shared across workspaces. Clicking a command sends it to the current terminal and presses Enter. Check the current terminal input before running.",
+  "customCommandsName": "Name",
+  "customCommandsContent": "Command",
+  "customCommandsNameInvalid": "Enter a name of 1–40 characters.",
+  "customCommandsContentInvalid": "Enter a command of up to 4000 characters, without control characters other than tabs and line breaks.",
+  "customCommandsSaveFailed": "Could not save the command. Your changes are still here; please retry.",
+  "customCommandsLoadFailed": "Could not load commands",
+  "customCommandsEmpty": "Save frequently used commands and give them a name.",
+  "customCommandsDeleteConfirm": "Delete this command?",
+  "customCommandsLimit": "You can save up to 50 commands."
 }

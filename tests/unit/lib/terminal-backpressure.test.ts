@@ -4,18 +4,18 @@ import { WebSocket } from 'ws';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const mocks = vi.hoisted(() => ({
-  spawn: vi.fn(), pause: vi.fn(), resume: vi.fn(),
+  spawn: vi.fn(), pause: vi.fn(), resume: vi.fn(), exitCopyMode: vi.fn(),
   onData: undefined as ((data: string) => void) | undefined,
   onExit: undefined as ((event: { exitCode: number; signal: number }) => void) | undefined,
 }));
 vi.mock('node-pty', () => ({ spawn: mocks.spawn }));
-vi.mock('@/lib/tmux', () => ({ hasSession: async () => true }));
+vi.mock('@/lib/tmux', () => ({ hasSession: async () => true, exitCopyMode: mocks.exitCopyMode }));
 vi.mock('@/lib/shell-env', () => ({ buildShellEnv: () => ({}) }));
 vi.mock('@/lib/pristine-env', () => ({ PRISTINE_ENV: {} }));
 vi.mock('@/lib/layout-store', () => ({ reconcileTabCwd: vi.fn() }));
 vi.mock('@/lib/logger', () => ({ createLogger: () => ({ debug: vi.fn(), warn: vi.fn(), error: vi.fn() }) }));
 import { handleConnection } from '@/lib/terminal-server';
-import { encodeStdoutAck, encodeResize, MSG_STDOUT_ACK } from '@/lib/terminal-protocol';
+import { encodeStdoutAck, encodeResize, encodeWebStdin, MSG_STDOUT_ACK } from '@/lib/terminal-protocol';
 import { TerminalWriteQueue } from '@/lib/terminal-write-queue';
 import { Terminal } from '@xterm/xterm';
 
@@ -45,6 +45,24 @@ beforeEach(async () => {
 afterEach(() => {
   ws.emit('close');
   vi.useRealTimers();
+});
+
+describe('terminal web input in copy mode', () => {
+  it('waits for copy-mode exit before writing and preserves command order', async () => {
+    let leaveCopyMode!: () => void;
+    mocks.exitCopyMode.mockImplementationOnce(() => new Promise<void>((resolve) => { leaveCopyMode = resolve; }));
+    const { write } = mocks.spawn.mock.results[0].value;
+    ws.emit('message', encodeWebStdin('pwd\r'));
+    ws.emit('message', encodeWebStdin('ls\r'));
+    await vi.advanceTimersByTimeAsync(0);
+    expect(mocks.exitCopyMode).toHaveBeenCalledExactlyOnceWith('fixture');
+    expect(write).not.toHaveBeenCalled();
+    leaveCopyMode();
+    await vi.advanceTimersByTimeAsync(0);
+    expect(write.mock.calls).toEqual([['pwd\r'], ['ls\r']]);
+    expect(mocks.exitCopyMode).toHaveBeenCalledTimes(2);
+    expect(mocks.exitCopyMode.mock.invocationCallOrder[1]).toBeLessThan(write.mock.invocationCallOrder[1]);
+  });
 });
 
 describe('terminal output backpressure', () => {

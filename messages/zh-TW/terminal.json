@@ -165,5 +165,18 @@
   "nativeCommandsOpen": "開啟原生命令選單",
   "nativeCommandsHint": "使用終端原生選單選擇並執行命令。",
   "nativeCommandsReturn": "取消輸入並返回聊天",
-  "nativeCommandsQueuePending": "請先傳送或移除排隊訊息，再開啟原生命令選單。"
+  "nativeCommandsQueuePending": "請先傳送或移除排隊訊息，再開啟原生命令選單。",
+  "customCommands": "自訂命令",
+  "customCommandsManage": "管理自訂命令",
+  "customCommandsAdd": "新增命令",
+  "customCommandsDescription": "命令在各工作區共用。點擊後會傳送到目前終端並按 Enter，請先確認終端目前的輸入狀態。",
+  "customCommandsName": "名稱",
+  "customCommandsContent": "命令內容",
+  "customCommandsNameInvalid": "請輸入 1–40 個字元的名稱。",
+  "customCommandsContentInvalid": "請輸入不超過 4000 個字元的命令，除了換行與定位字元外不能包含控制字元。",
+  "customCommandsSaveFailed": "命令儲存失敗，已保留編輯內容，請重試。",
+  "customCommandsLoadFailed": "命令載入失敗",
+  "customCommandsEmpty": "儲存常用命令，並為它們設定名稱。",
+  "customCommandsDeleteConfirm": "確定刪除此命令？",
+  "customCommandsLimit": "最多可儲存 50 條命令。"
 }

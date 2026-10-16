@@ -1,4 +1,6 @@
 import { useEffect, useRef } from 'react';
+import { mutate } from 'swr';
+import { TERMINAL_COMMANDS_URL } from '@/hooks/use-terminal-commands';
 import { toast } from 'sonner';
 import useWorkspaceStore from '@/hooks/use-workspace-store';
 import useConfigStore from '@/hooks/use-config-store';
@@ -86,6 +88,7 @@ const useSync = () => {
       const ws = new WebSocket(`${protocol}//${location.host}/api/sync`);
       wsRef.current = ws;
       ws.onopen = () => {
+        void mutate(TERMINAL_COMMANDS_URL);
         void useConfigStore.getState().syncConfig();
         void useWorkspaceStore.getState().syncWorkspaces();
       };
@@ -100,6 +103,7 @@ const useSync = () => {
           }
 
           if (data.type === 'workspace') {
+            void mutate(TERMINAL_COMMANDS_URL);
             useWorkspaceStore.getState().syncWorkspaces();
           }
 
