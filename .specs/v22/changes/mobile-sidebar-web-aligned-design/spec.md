@@ -9,6 +9,7 @@ depends_on:
   - ../../../v20/requirements/mobile-empty-workspace-selection.md
   - ../../../v21/features/worktree-tree/spec.md
   - ../compact-workspace-sidebar/spec.md
+  - ../workspace-delete-worktree/spec.md
 ---
 
 # 移动侧栏视觉与触控设计提案
@@ -43,6 +44,10 @@ depends_on:
 9. 工作区/会话、搜索、新建和设置采用本地化文字。底部新建、工具、设置均具备触控尺寸；工具多时换行，短屏或软键盘弹出时允许整体导航滚动，不能挤没列表。
 10. 复用既有数据、搜索、状态与菜单流程，无新后端、配置迁移、最近访问、收藏或自动操作。
 11. 详情面板中的目录、分支等元数据保留原生文本选择及复制菜单。工作区行的右键、长按及键盘菜单处理只作用于该行的 DOM 后代，不拦截通过 Portal 渲染的面板事件。
+
+## 合并兼容约定
+
+接入 [删除项目时可同时删除 Worktree](../workspace-delete-worktree/spec.md) 的共享 DeleteWorkspaceDialog。移动端继续使用底部操作面板及行级事件边界；删除菜单进入共享确认框，默认只删除项目，可选联动 Worktree 的范围、确认及安全检查完全沿用该增量规格。
 
 ## 应用验收
 

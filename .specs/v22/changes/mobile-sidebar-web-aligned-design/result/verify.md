@@ -60,3 +60,12 @@ pnpm exec eslint src/components/features/mobile/mobile-navigation-sheet.tsx src/
 - `git diff --check` 通过。
 - 浏览器独立会话 `mobile-sidebar-copy` 使用上述实际组件隔离环境。选中两个目录及一个分支，分别派发三种菜单事件，9 个结果均为 defaultPrevented=false、dispatchEvent=true，选区保留；工作区行 contextmenu 仍被自定义菜单接管且面板打开。浏览器运行错误为空。
 - 浏览器验证使用真实 DOM/Portal 和合成事件，未验证操作系统原生菜单呈现或剪贴板实际写入，未进行手机实机验收。未重新执行生产构建；本次以实际组件浏览器复核验证事件边界。
+
+## 合并冲突解决后验证（2026-10-16）
+
+- `pnpm exec vitest run tests/unit/lib/workspace-touch-menu.test.ts tests/unit/lib/workspace-menu-order.test.ts tests/unit/lib/mobile-workspace-expansion.test.ts tests/unit/lib/delete-workspace-dialog.test.ts`：4 个文件、82 项通过。
+- 完整 `pnpm exec tsc --noEmit`：通过。
+- `pnpm exec eslint src/components/features/mobile/mobile-workspace-actions.tsx tests/unit/lib/workspace-menu-order.test.ts`：通过。
+- 冲突标记扫描及 `git diff --check`、`git diff --cached --check`：通过；解决后 `git ls-files -u` 无条目。
+- 本次仅整合已有两项实现，未重新执行浏览器或生产构建；不能将前述历史浏览器记录视为本次运行。
+- 已暂存冲突解决及对应测试、规格记录，未创建合并提交或推送。

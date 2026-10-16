@@ -31,6 +31,7 @@ vi.mock('@/hooks/use-inline-edit', () => ({ default: () => ({ isEditing: false, 
 
 import WorkspaceItem from '@/components/features/workspace/workspace-item';
 import MobileWorkspaceActions from '@/components/features/mobile/mobile-workspace-actions';
+import DeleteWorkspaceDialog from '@/components/features/workspace/delete-workspace-dialog';
 import EditWorkspaceDialog from '@/components/features/workspace/edit-workspace-dialog';
 import CreateWorktreeDialog from '@/components/features/workspace/create-worktree-dialog';
 import WorktreeTreeDialog from '@/components/features/workspace/worktree-tree-dialog';
@@ -109,6 +110,7 @@ describe('workspace menu order', () => {
     ['workspace.worktreeTree.manageTitle', WorktreeTreeDialog, undefined],
     ['sidebar.moveToGroup', EditWorkspaceDialog, 'group'],
     ['terminal.rename', EditWorkspaceDialog, 'rename'],
+    ['common.delete', DeleteWorkspaceDialog, undefined],
   ] as const)('opens the intended mobile action for %s', (label, type, mode) => {
     find(renderMobile(), Sheet).props.onOpenChange!(true);
     expect(find(renderMobile(), Sheet).props.open).toBe(true);

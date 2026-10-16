@@ -21,3 +21,7 @@ KISS：只调整导航展示与操作入口。DRY：搜索、状态、触摸与�
 `mobile-workspace-actions.tsx` 的 onContextMenu/onKeyDown 在处理前检查 currentTarget 是否包含事件目标，仅处理行内 DOM 事件。Portal 中的详情事件不再执行 preventDefault，保留原生复制和键盘菜单行为；无需在详情增加阻断冒泡或新的复制实现。使用最小范围条件修复，保持既有手势及菜单复用。
 
 `workspace-touch-menu.test.ts` 增加目录/分支各自的 contextmenu、ContextMenu、Shift+F10 测试，实际挂载 Sheet Portal 并断言不取消默认行为。
+
+## 合并兼容：共享删除确认框（2026-10-16）
+
+解决 `mobile-workspace-actions.tsx` 的导入冲突：保留 Sheet、完整元数据、触控布局及 Portal 事件范围检查；使用合入分支的 DeleteWorkspaceDialog 替代旧内联删除确认和删除函数，移除对应旧导入。复用共享安全删除流程，不复制其业务逻辑。规格补充依赖与兼容关系，菜单测试增加删除入口到共享组件的衔接。
