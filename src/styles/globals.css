@@ -477,3 +477,53 @@ html.app-viewport-active body {
   color: var(--region-input-color, revert-layer);
   line-height: var(--region-input-line-height, revert-layer);
 }
+
+
+.mobile-navigation-sheet[data-side="left"] {
+  width: min(calc(100vw - 24px), 400px);
+  max-width: none;
+  height: 100%;
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+  container-type: inline-size;
+  container-name: mobile-navigation;
+}
+
+@supports (height: 100dvh) {
+  .mobile-navigation-sheet[data-side="left"] {
+    max-height: 100dvh;
+  }
+}
+
+@container mobile-navigation (max-width: 340px) {
+  .mobile-navigation-list .workspace-status-label {
+    display: none;
+  }
+  .mobile-navigation-list .workspace-compact-status {
+    padding-inline: 0;
+  }
+}
+
+@media (max-height: 500px) {
+  .mobile-navigation-sheet[data-side="left"] {
+    overflow-y: auto;
+  }
+  .mobile-navigation-list {
+    flex: none;
+    overflow-y: visible;
+  }
+}
+
+.mobile-navigation-sheet[data-short-viewport] {
+  overflow-y: auto;
+}
+.mobile-navigation-sheet[data-short-viewport] .mobile-navigation-list {
+  flex: none;
+  overflow-y: visible;
+}
+
+@media (max-width: 364px) {
+  .mobile-navigation-list .workspace-status-label {
+    display: none;
+  }
+}
