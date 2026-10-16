@@ -4,6 +4,8 @@
 
 Fork 新增能力也提供 CLI 入口：运行 `pmuxi features` 查看离线命令指南，或阅读 [CLI 使用示例](landing-src/docs/zh-CN/cli-reference.md#fork-新增能力)。源码环境使用 `node bin/cli.js features`。`pmuxi` 无参数时显示帮助，任何情况下都不会启动服务；原有 `purplemux-improved <subcommand>` 调用继续兼容。
 
+包内附带 AI 操作 Skill：运行 `pmuxi skill` 离线读取（源码环境用 `node bin/cli.js skill`）。参见 [AI 操作 Skill](landing-src/docs/zh-CN/cli-reference.md#ai-操作-skill) 将其注册到 Codex 或 Claude Code；安装 CLI 包不会自动注册 Skill。
+
 ## Fork 后的主要改进
 
 以下为基于提交 [`52140216`](https://github.com/stirp/purplemux-improved/commit/52140216d8bb5bfffed30d8d452f77b88339a4ae) 之后新增或增强的功能，重点改善多需求并行开发与 Claude Code / Codex 的 Web 交互体验。

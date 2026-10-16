@@ -12,7 +12,7 @@ const path = require('path');
 
 const CLI_COMMANDS = new Set([
   'workspaces', 'tab', 'memory', 'mem', 'api-guide', 'help',
-  'features', '--help', '-h', ...require('./feature-commands').groups,
+  'features', 'skill', '--help', '-h', ...require('./feature-commands').groups,
 ]);
 
 import('update-notifier')

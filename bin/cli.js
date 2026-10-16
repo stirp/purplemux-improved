@@ -254,6 +254,15 @@ const cmdApiGuide = async () => {
   process.stdout.write('\n' + features.help());
 };
 
+const cmdSkill = (args) => {
+  if (args.length === 1 && ['--help', '-h'].includes(args[0])) {
+    process.stdout.write('pmuxi skill\nPrint the bundled SKILL.md for AI agents (offline).\nCopy the output to your agent skill directory to enable discovery.\n');
+    return;
+  }
+  if (args.length) die('Usage: pmuxi skill [--help]');
+  process.stdout.write(fs.readFileSync(path.join(__dirname, 'skills', 'pmuxi', 'SKILL.md'), 'utf8'));
+};
+
 const upload = async (endpoint, data, headers) => {
   const resp = await fetch(`${BASE}${endpoint}`, {
     method: 'POST', headers: { ...headers, 'X-Pmux-Token': TOKEN }, body: data,
@@ -310,6 +319,7 @@ Commands:
   tab browser eval -w WS TAB_ID EXPR       Evaluate JS expression inside the tab; returns serialized value
   api-guide                                Print full HTTP API reference
   features                                 Show all fork feature commands (offline)
+  skill                                    Print the bundled AI agent SKILL.md (offline)
   ${features.groups.join(' | ')}
                                            Run '<group> --help' for usage
   help                                     Show this usage
@@ -328,6 +338,7 @@ const main = async () => {
 
   if (features.groups.includes(cmd)) return features.run(args, { api, requireEnv, out, upload });
   if (cmd === 'features') return process.stdout.write(features.help());
+  if (cmd === 'help' && sub === 'skill' && !rest.length) return cmdSkill(['--help']);
   if (cmd === 'help' && sub && features.groups.includes(sub)) {
     return process.stdout.write(features.help([sub, ...rest].join(' ')));
   }
@@ -350,6 +361,8 @@ const main = async () => {
       break;
     case 'api-guide':
       return cmdApiGuide();
+    case 'skill':
+      return cmdSkill(args.slice(1));
     case 'help':
     case '-h':
     case '--help':

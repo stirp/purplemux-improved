@@ -20,6 +20,34 @@ permalink: /zh-CN/docs/cli-reference/index.html
 
 安装 `purplemux-improved` 包后即可使用这两个命令。源码环境使用 `node bin/cli.js <subcommand>` 执行 CLI 操作。帮助和功能发现支持离线使用，业务操作需要已运行的服务。
 
+## AI 操作 Skill
+
+安装包包含 `bin/skills/pmuxi/SKILL.md`，指导 AI 定位工作区与标签、查询会话、处理输入队列、操作工作树及检查错误。离线读取完整内容：
+
+```bash
+pmuxi skill
+```
+
+也可以让 AI 执行该命令并按输出指导操作。源码环境在仓库根目录运行 `node "bin/cli.js" skill`。`pmuxi skill --help` 查看用法，旧入口 `purplemux-improved skill` 同样支持。
+
+CLI 安装不会自动写入 Agent 配置。需要自动发现时，选择所用 Agent 的目录手动注册。以下命令应在确认 `pmuxi skill` 可用后执行；`set -C` 防止覆盖已有同名文件。
+
+Codex（设置了 `CODEX_HOME` 时使用该目录）：
+
+```bash
+mkdir -p "${CODEX_HOME:-$HOME/.codex}/skills/pmuxi"
+(set -C; pmuxi skill > "${CODEX_HOME:-$HOME/.codex}/skills/pmuxi/SKILL.md")
+```
+
+Claude Code：
+
+```bash
+mkdir -p "$HOME/.claude/skills/pmuxi"
+(set -C; pmuxi skill > "$HOME/.claude/skills/pmuxi/SKILL.md")
+```
+
+注册后新建 Agent 会话以加载 Skill；Codex 可用 `$pmuxi`，Claude Code 可用 `/pmuxi` 显式调用，也可由 Agent 根据任务自动选择。升级 CLI 后，已复制的 Skill 不会自动更新：先查看新版 `pmuxi skill` 输出，再审阅并更新已有文件，保留需要的本地定制。
+
 ## 启动服务
 
 ```bash
@@ -46,7 +74,7 @@ HOST=all purplemux-improved     # 全部绑定
 
 ## 子命令
 
-除 `help`、`features` 和命令的 `--help` 外，执行操作需要一个运行中的服务。它们从 `~/.purplemux/port` 读端口、从 `~/.purplemux/cli-token` 读认证 token,这两个文件都会在服务启动时自动写好。
+除 `help`、`features`、`skill` 和命令的 `--help` 外，执行操作需要一个运行中的服务。它们从 `~/.purplemux/port` 读端口、从 `~/.purplemux/cli-token` 读认证 token,这两个文件都会在服务启动时自动写好。
 
 | 命令 | 用途 |
 |---|---|
@@ -59,6 +87,7 @@ HOST=all purplemux-improved     # 全部绑定
 | `pmuxi tab close -w WS TAB_ID` | 关闭标签 |
 | `pmuxi tab browser ...` | 驱动 `web-browser` 标签(仅 Electron) |
 | `pmuxi api-guide` | 打印完整 HTTP API 参考 |
+| `pmuxi skill` | 离线输出完整 AI 操作 Skill |
 | `pmuxi help` | 显示用法 |
 
 输出默认为 JSON。`--workspace` 和 `-w` 可互换。
