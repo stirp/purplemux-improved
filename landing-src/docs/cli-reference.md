@@ -20,6 +20,34 @@ Use `purplemux-improved` / `purplemux-improved start` to start the server and `p
 
 Both commands are installed with the `purplemux-improved` package. From source, run `node bin/cli.js <subcommand>` for CLI operations. Help and feature discovery work offline; operations require an existing server.
 
+## AI agent Skill
+
+The package includes `bin/skills/pmuxi/SKILL.md` to guide agents through workspace and tab selection, sessions, input queues, worktree operations, and error handling. Read the complete Skill offline:
+
+```bash
+pmuxi skill
+```
+
+You can ask an agent to run this command and follow its output. From the repository root, use `node "bin/cli.js" skill`. Run `pmuxi skill --help` for usage; `purplemux-improved skill` also works.
+
+Package installation does not write to agent configuration directories. To enable automatic discovery, manually register the Skill for your agent. Verify that `pmuxi skill` works before running the following commands; `set -C` prevents overwriting an existing file.
+
+Codex (uses `CODEX_HOME` when set):
+
+```bash
+mkdir -p "${CODEX_HOME:-$HOME/.codex}/skills/pmuxi"
+(set -C; pmuxi skill > "${CODEX_HOME:-$HOME/.codex}/skills/pmuxi/SKILL.md")
+```
+
+Claude Code:
+
+```bash
+mkdir -p "$HOME/.claude/skills/pmuxi"
+(set -C; pmuxi skill > "$HOME/.claude/skills/pmuxi/SKILL.md")
+```
+
+Start a new agent session to load the Skill. Invoke it explicitly with `$pmuxi` in Codex or `/pmuxi` in Claude Code, or let the agent select it based on the task. Copied Skills do not update automatically when the CLI is upgraded: review the new `pmuxi skill` output and update the existing file while preserving any local customizations.
+
 ## Starting the server
 
 ```bash
@@ -46,7 +74,7 @@ If `8022` is already in use the server warns and binds to a random free port ins
 
 ## Subcommands
 
-Operations require a running server; `help`, `features`, and command `--help` work offline. Requests read the port from `~/.purplemux/port` and the auth token from `~/.purplemux/cli-token`, both written automatically at server startup.
+Operations require a running server; `help`, `features`, `skill`, and command `--help` work offline. Requests read the port from `~/.purplemux/port` and the auth token from `~/.purplemux/cli-token`, both written automatically at server startup.
 
 | Command | Purpose |
 |---|---|
@@ -59,6 +87,7 @@ Operations require a running server; `help`, `features`, and command `--help` wo
 | `pmuxi tab close -w WS TAB_ID` | Close a tab |
 | `pmuxi tab browser ...` | Drive a `web-browser` tab (Electron only) |
 | `pmuxi api-guide` | Print the full HTTP API reference |
+| `pmuxi skill` | Print the complete AI agent Skill offline |
 | `pmuxi help` | Show usage |
 
 Output is JSON unless noted. `--workspace` and `-w` are interchangeable.
