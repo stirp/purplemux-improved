@@ -145,7 +145,7 @@ The CLI token grants full server access. Treat it like a password. Don't paste i
 
 ## Fork feature commands
 
-Run `pmuxi features` for the complete offline catalog, including required/optional fields and HTTP endpoints. `pmuxi worktree --help`, `pmuxi worktree create --help`, and `pmuxi help commit create` provide scoped help. From an unpublished source checkout, substitute `node bin/purplemux.js` for `purplemux` to use the current code.
+Run `pmuxi features` for the complete offline catalog, including required/optional fields and HTTP endpoints. `pmuxi worktree --help`, `pmuxi worktree create --help`, and `pmuxi help commit create` provide scoped help. From an unpublished source checkout, replace `pmuxi` with `node bin/cli.js` in the examples below to use the current code.
 
 | Group | Commands |
 | --- | --- |

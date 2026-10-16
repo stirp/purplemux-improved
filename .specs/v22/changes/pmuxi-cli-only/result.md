@@ -36,3 +36,14 @@
 - 未执行全局安装、发布、真实服务启动或浏览器/实机验收；运行测试使用本地 mock HTTP 服务和隔离 server 替身。
 - 本次验证 CLI 归档与 server bundle，未执行完整 Next.js 页面构建或生产安装包验收；打包检查不代表可发布的完整生产产物。
 - 其他语言保留兼容的旧 CLI 示例；本次同步中英文文档。
+
+## PR #46 审查修正
+
+依据：[审查意见](https://github.com/stirp/purplemux-improved/pull/46#discussion_r4295649549)。此前更新了示例命令，但遗漏了 Fork 功能章节中的源码替换说明。本次先补充同需求规格，再将中英文 CLI 参考统一为：将 `pmuxi` 替换成 `node bin/cli.js`。只修改文档，沿用已有入口，不增加实现或依赖。
+
+本次实际验证：
+
+- 检查两篇 CLI 参考均包含正确替换说明，且不再残留 `node bin/purplemux.js`；确认 `bin/cli.js` 路径存在。
+- 执行 `node bin/cli.js features`、`node bin/cli.js worktree --help`、`node bin/cli.js worktree create --help`、`node bin/cli.js help commit create`，四条均退出 0，输出包含 `pmuxi`。
+- `git diff --check` 通过。
+- 本次为纯文档修正，未重跑 TypeScript、ESLint、完整测试或构建；上文结果属于此前实现验证，不作为本次重新执行的结果。

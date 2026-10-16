@@ -145,7 +145,7 @@ CLI token 授予服务的完全访问权限。把它当作密码对待。不要�
 
 ## Fork 新增能力
 
-从源码验证本分支时，将下面的 `purplemux-improved` 换成 `node bin/purplemux.js`，以免调用系统里安装的旧版本。
+从源码验证本分支时，将下面示例中的 `pmuxi` 换成 `node bin/cli.js`，以免调用系统里安装的旧版本。
 
 ```bash
 pmuxi features                 # 离线查看全部 fork 命令及 HTTP 路径
