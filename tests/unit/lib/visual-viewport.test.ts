@@ -4,6 +4,11 @@ import { getViewportSnapshot, subscribeViewport } from '@/hooks/use-visual-viewp
 afterEach(() => vi.unstubAllGlobals());
 
 describe('visual viewport', () => {
+  it('does not move the shell above the viewport during negative overscroll', () => {
+    vi.stubGlobal('window', { visualViewport: { height: 900, offsetTop: -80, scale: 1 } });
+    expect(getViewportSnapshot()).toBe('900:0');
+  });
+
   it('tracks keyboard opening, viewport panning and keyboard dismissal', () => {
     const viewport = Object.assign(new EventTarget(), { height: 900, offsetTop: 0, scale: 1 });
     vi.stubGlobal('window', { visualViewport: viewport });

@@ -13,7 +13,7 @@ export const subscribeViewport = (onChange: () => void) => {
 export const getViewportSnapshot = () => {
   const viewport = window.visualViewport;
   if (!viewport || viewport.scale !== 1) return '';
-  return `${viewport.height}:${viewport.offsetTop}`;
+  return `${viewport.height}:${Math.max(0, viewport.offsetTop)}`;
 };
 
 const getServerSnapshot = () => '';
