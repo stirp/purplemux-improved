@@ -13,7 +13,10 @@ const fetchCommands = async (url: string): Promise<ITerminalCommand[]> => {
 const useTerminalCommands = () => {
   const { data, error, isLoading, mutate } = useSWR(TERMINAL_COMMANDS_URL, fetchCommands);
 
-  const save = async (method: 'POST' | 'PATCH' | 'DELETE', command: Partial<ITerminalCommand>) => {
+  const save = async (...[method, command]:
+    | [method: 'POST' | 'PATCH' | 'DELETE', command: Partial<ITerminalCommand>]
+    | [method: 'PUT', command: { ids: string[] }]
+  ) => {
     await mutate(async () => {
       const response = await fetch(TERMINAL_COMMANDS_URL, {
         method,

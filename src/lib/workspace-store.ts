@@ -313,14 +313,22 @@ export const updateTerminalCommand = async (update:
   | { action: 'create'; value: Omit<ITerminalCommand, 'id'> }
   | { action: 'edit'; id: string; value: Omit<ITerminalCommand, 'id'> }
   | { action: 'delete'; id: string }
+  | { action: 'reorder'; ids: string[] }
 ): Promise<ITerminalCommand[]> => withLock(async () => {
   const data = (await readWorkspacesFile(true)) ?? emptyState();
-  const commands = data.terminalCommands ?? [];
+  let commands = data.terminalCommands ?? [];
   if (update.action === 'create') {
     if (commands.length >= MAX_TERMINAL_COMMANDS) {
       throw Object.assign(new Error('Terminal command limit reached'), { status: 409 });
     }
     commands.push({ ...update.value, id: nanoid() });
+  } else if (update.action === 'reorder') {
+    const byId = new Map(commands.map((command) => [command.id, command]));
+    if (update.ids.length !== commands.length || new Set(update.ids).size !== update.ids.length
+      || update.ids.some((id) => !byId.has(id))) {
+      throw Object.assign(new Error('Terminal commands changed'), { status: 409 });
+    }
+    commands = update.ids.map((id) => byId.get(id)!);
   } else {
     const index = commands.findIndex((command) => command.id === update.id);
     if (index === -1) throw Object.assign(new Error('Terminal command not found'), { status: 404 });

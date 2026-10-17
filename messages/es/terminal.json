@@ -178,5 +178,8 @@
   "customCommandsLoadFailed": "Could not load commands",
   "customCommandsEmpty": "Save frequently used commands and give them a name.",
   "customCommandsDeleteConfirm": "Delete this command?",
-  "customCommandsLimit": "You can save up to 50 commands."
+  "customCommandsLimit": "You can save up to 50 commands.",
+  "customCommandsReorder": "Reorder {name}",
+  "customCommandsReorderHint": "Drag the handles to reorder. Changes save automatically.",
+  "customCommandsReorderFailed": "Could not save the order. Please retry."
 }
