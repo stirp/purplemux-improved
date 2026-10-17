@@ -44,3 +44,10 @@
 - 单一职责：操作系统差异集中在描述符路径适配器，访问策略仍留在原模块；两种平台共用边界检查及失败处理。
 
 参考：[Apple fcntl.h](https://github.com/apple-oss-distributions/xnu/blob/main/bsd/sys/fcntl.h)、[Apple syslimits.h](https://github.com/apple-oss-distributions/xnu/blob/main/bsd/sys/syslimits.h)、Koffi 包内 `doc/pages/functions.md`、`doc/pages/pointers.md`、`doc/pages/packaging.md`。
+
+## PR #58 修正：文本预览增长竞态
+
+- 对应[评审意见](https://github.com/stirp/purplemux-improved/pull/58#discussion_r4303201483)：原缓冲区受 stat 旧大小限制，文件随后增长会导致静默截断，超过 2 MiB 也无法检测。
+- 文本预览改为固定上限加 1 字节的缓冲区，从同一个已核验 FileHandle 循环读取至 EOF 或缓冲区满。累计读取超过上限返回 413；单次短读继续读取，恰好 2 MiB 仍可预览。初始 stat 的超限快速拒绝保留。
+- 复用现有错误响应与 finally 句柄释放，不新增依赖或平台分支（KISS/DRY）。每个文本预览请求最多分配 2 MiB + 1 字节读取缓冲区；不承诺并发改写期间的快照一致性。
+- HTTP 测试新增 8 项：空文件、从零增长、限内增长、恰好上限、增长超限、限内/超限短读、读取失败。使用真实临时文件，在安全打开完成后追加内容；短读测试限制每次读取 64 KiB，同时验证累计读取上限和句柄关闭。

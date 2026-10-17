@@ -1,9 +1,10 @@
 import { createServer, type Server } from 'node:http';
-import { mkdtemp, writeFile, rm } from 'node:fs/promises';
+import { appendFile, mkdtemp, writeFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
+import * as sessionFiles from '@/lib/session-files';
 import { MAX_TEXT_PREVIEW_BYTES } from '@/lib/session-files';
 
 const mocks = vi.hoisted(() => ({ session: vi.fn(), cli: vi.fn(), workspaces: vi.fn() }));
@@ -51,6 +52,8 @@ beforeEach(() => {
   mocks.cli.mockReturnValue(false);
   mocks.workspaces.mockResolvedValue({ workspaces: [{ directories: [directory] }] });
 });
+
+afterEach(() => vi.restoreAllMocks());
 
 afterAll(async () => {
   await new Promise<void>((resolve) => server.close(() => resolve()));
@@ -118,6 +121,91 @@ describe('authenticated file HTTP responses', () => {
     expect((await fetch(url(''))).status).toBe(404);
     expect((await fetch(`${origin}/api/session-files/etc/passwd`)).status).toBe(403);
     expect((await fetch(`${origin}/api/session-files/tmp/encoded%2Fslash`)).status).toBe(400);
+  });
+
+  it.each([
+    [0, 0],
+    [0, 2048],
+    [1024, 4096],
+    [1024, MAX_TEXT_PREVIEW_BYTES],
+    [1024, MAX_TEXT_PREVIEW_BYTES + 1],
+  ])('handles text growth from %i to %i bytes after stat', async (initialSize, finalSize) => {
+    const name = 'growing.txt';
+    const filename = path.join(directory, name);
+    await writeFile(filename, 'a'.repeat(initialSize));
+    const openFile = sessionFiles.openSessionFile;
+    const openSpy = vi.spyOn(sessionFiles, 'openSessionFile').mockImplementationOnce(async (...args) => {
+      const file = await openFile(...args);
+      vi.spyOn(file.handle, 'close');
+      await appendFile(filename, 'b'.repeat(finalSize - initialSize));
+      return file;
+    });
+
+    const response = await fetch(`${url(name)}?view=1`);
+    if (finalSize > MAX_TEXT_PREVIEW_BYTES) {
+      expect(response.status).toBe(413);
+      expect(await response.json()).toEqual({ error: 'File is too large to preview' });
+    } else {
+      expect(response.status).toBe(200);
+      expect(await response.text()).toBe(sessionFiles.renderSessionFileText(name,
+        'a'.repeat(initialSize) + 'b'.repeat(finalSize - initialSize)));
+    }
+    const { handle }: Awaited<ReturnType<typeof openFile>> = await openSpy.mock.results[0].value;
+    expect(handle.close).toHaveBeenCalledOnce();
+    await vi.mocked(handle.close).mock.results[0].value;
+    await expect(handle.stat()).rejects.toMatchObject({ code: 'EBADF' });
+  });
+
+  it.each([128 * 1024, MAX_TEXT_PREVIEW_BYTES + 100])('continues short reads for a %i-byte preview', async (size) => {
+    const name = 'short-reads.txt';
+    const filename = path.join(directory, name);
+    await writeFile(filename, '');
+    const openFile = sessionFiles.openSessionFile;
+    const openSpy = vi.spyOn(sessionFiles, 'openSessionFile').mockImplementationOnce(async (...args) => {
+      const file = await openFile(...args);
+      const read = file.handle.read.bind(file.handle);
+      vi.spyOn(file.handle, 'read').mockImplementation((options) => read({
+        ...options, length: Math.min(options!.length!, 64 * 1024),
+      }));
+      vi.spyOn(file.handle, 'close');
+      await appendFile(filename, 'x'.repeat(size));
+      return file;
+    });
+
+    const response = await fetch(`${url(name)}?view=1`);
+    if (size > MAX_TEXT_PREVIEW_BYTES) {
+      expect(response.status).toBe(413);
+      expect(await response.json()).toEqual({ error: 'File is too large to preview' });
+    } else {
+      expect(response.status).toBe(200);
+      expect(await response.text()).toBe(sessionFiles.renderSessionFileText(name, 'x'.repeat(size)));
+    }
+    const { handle }: Awaited<ReturnType<typeof openFile>> = await openSpy.mock.results[0].value;
+    const reads = vi.mocked(handle.read).mock;
+    expect(reads.calls.length).toBeGreaterThan(1);
+    const results = await Promise.all(reads.results.map((result) => result.value));
+    expect(results.reduce((sum, result) => sum + result.bytesRead, 0))
+      .toBe(Math.min(size, MAX_TEXT_PREVIEW_BYTES + 1));
+    expect(handle.close).toHaveBeenCalledOnce();
+    await vi.mocked(handle.close).mock.results[0].value;
+    await expect(handle.stat()).rejects.toMatchObject({ code: 'EBADF' });
+  });
+
+  it('closes the descriptor when reading a text preview fails', async () => {
+    const openFile = sessionFiles.openSessionFile;
+    const openSpy = vi.spyOn(sessionFiles, 'openSessionFile').mockImplementationOnce(async (...args) => {
+      const file = await openFile(...args);
+      vi.spyOn(file.handle, 'read').mockRejectedValueOnce(new Error('Read failed'));
+      vi.spyOn(file.handle, 'close');
+      return file;
+    });
+    const response = await fetch(`${url('中文 #.md')}?view=1`);
+    expect(response.status).toBe(500);
+    expect(await response.json()).toEqual({ error: 'Failed to read file' });
+    const { handle }: Awaited<ReturnType<typeof openFile>> = await openSpy.mock.results[0].value;
+    expect(handle.close).toHaveBeenCalledOnce();
+    await vi.mocked(handle.close).mock.results[0].value;
+    await expect(handle.stat()).rejects.toMatchObject({ code: 'EBADF' });
   });
 
   it('does not accept writes', async () => {

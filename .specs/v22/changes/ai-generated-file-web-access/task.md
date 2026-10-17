@@ -19,4 +19,11 @@
 - [x] 实现 macOS F_GETPATH 适配及 Linux 回归。
 - [x] 补齐平台、竞态、失败关闭测试和 macOS CI 入口。
 - [x] 验证类型、ESLint、Web/Electron 构建流程及原生依赖完整性，记录实机验证限制。
-- [ ] 在 macOS Apple Silicon、Intel 上运行新增原生测试及安装包实机验收（已配置 CI，当前无 Mac 环境，未执行）。
+- [x] 在 macOS Apple Silicon、Intel CI 上运行原生测试（PR #58 的 `70b2098` 已通过，见验证记录；不代表后续本地修正已跑 Mac CI）。
+- [ ] 在 macOS 上完成安装包实机验收（当前无 Mac 环境，未执行）。
+
+## PR #58：文本预览增长竞态
+
+- [x] 明确 stat 后增长、短读和 2 MiB 边界约定（FW-08）。
+- [x] 修复有界读取，补充增长及资源释放回归测试。
+- [x] 运行相关测试、完整类型检查、改动文件 ESLint 和生产构建，更新验证证据。

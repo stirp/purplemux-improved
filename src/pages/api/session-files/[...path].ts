@@ -34,12 +34,19 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     if (type.text && req.query.view === '1') {
       if (file.size > MAX_TEXT_PREVIEW_BYTES) throw new SessionFileError(413, 'File is too large to preview');
       // Bound the read even when a running agent grows the file after stat().
-      const buffer = Buffer.alloc(Math.min(file.size + 1, MAX_TEXT_PREVIEW_BYTES + 1));
-      const { bytesRead } = await file.handle.read(buffer, 0, buffer.length, 0);
-      if (bytesRead > MAX_TEXT_PREVIEW_BYTES) throw new SessionFileError(413, 'File is too large to preview');
+      const buffer = Buffer.alloc(MAX_TEXT_PREVIEW_BYTES + 1);
+      let totalBytesRead = 0;
+      while (totalBytesRead < buffer.length) {
+        const { bytesRead } = await file.handle.read({
+          buffer, offset: totalBytesRead, length: buffer.length - totalBytesRead, position: totalBytesRead,
+        });
+        if (bytesRead === 0) break;
+        totalBytesRead += bytesRead;
+      }
+      if (totalBytesRead > MAX_TEXT_PREVIEW_BYTES) throw new SessionFileError(413, 'File is too large to preview');
       res.setHeader('Content-Type', 'text/html; charset=utf-8');
       res.setHeader('Content-Security-Policy', "sandbox; default-src 'none'; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'");
-      return res.status(200).send(renderSessionFileText(file.name, buffer.subarray(0, bytesRead).toString('utf8')));
+      return res.status(200).send(renderSessionFileText(file.name, buffer.subarray(0, totalBytesRead).toString('utf8')));
     }
     res.setHeader('Content-Type', type.mime);
     const disposition = type.download ? 'attachment' : 'inline';

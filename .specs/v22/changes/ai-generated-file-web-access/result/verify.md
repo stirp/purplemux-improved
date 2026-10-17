@@ -98,3 +98,17 @@ FW-07 的模拟测试检查：Linux 不加载原生库；Darwin 使用同一个 
 原生测试不模拟平台或底层库，检查中文路径、目录改名/替换后描述符仍指向原文件、已关闭 fd 拒绝；这部分本次在 Linux 运行。既有竞态用例也继续验证越界拒绝与句柄关闭。
 
 `.github/workflows/session-file-access.yml` 已增加 `ubuntu-latest`、`macos-latest`、`macos-15-intel` 测试入口，尚未提交或触发 CI。macOS 的真实 F_GETPATH、Apple Silicon/Intel ABI、DMG/ZIP 签名及安装后运行仍待 Mac 环境执行，不能称为已通过实机验收。本次无界面改动，未重跑浏览器检查。
+
+## PR #58 后续验证：文本预览增长竞态
+
+本节记录本次 PR 评审修复，以上为历史实施证据。
+
+- 已核实修复前提交 `70b2098d29427ae4c41c008be16a20f210888e5b` 的 [Session file access CI](https://github.com/stirp/purplemux-improved/actions/runs/39044075554)：Ubuntu、macOS 默认架构、macOS Intel 均成功。因此上节“尚未触发 CI”的历史状态已更新；安装包实机验收仍未执行。这些结果不代表本次尚未提交的预览修正已通过 Mac CI。
+- 修复前运行 `pnpm exec vitest run tests/unit/api/session-files.test.ts`：10 项通过、4 项失败，复现限内增长截断及超限仍返回 200。
+- 修复后运行 `pnpm exec vitest run tests/unit/lib/opened-file-path.test.ts tests/unit/lib/opened-file-path-native.test.ts tests/unit/lib/session-files.test.ts tests/unit/api/session-files.test.ts`：4 个文件、49 项全部通过。本次执行环境为 Linux。
+- FW-08：覆盖空文件、从零增长、stat 后增长到 4 KiB、恰好 2 MiB 和超过 2 MiB；短读场景覆盖完整返回及 413，累计读取不超过上限加 1 字节。成功、超限和读取错误均验证描述符关闭（EBADF）。
+- 完整类型检查 `pnpm exec tsc --noEmit`：通过。首次检查发现测试 mock 返回值丢失类型导致隐式 any；补充返回类型标注后重跑通过。
+- 改动文件 ESLint：`pnpm exec eslint "src/pages/api/session-files/[...path].ts" "tests/unit/api/session-files.test.ts"` 通过。
+- 生产构建 `pnpm build`：Next.js、post-build、tsup 均通过，包含文件预览 API。
+- `git diff --check`、需求目录 Markdown 相对链接检查：通过。
+- 本次仅修改服务端有界读取与接口测试，未重跑浏览器或 Mac 实机验收。未提交、推送或发布。
