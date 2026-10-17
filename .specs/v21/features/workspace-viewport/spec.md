@@ -8,7 +8,7 @@ depends_on:
   - .specs/v20/features/terminal-rendering/spec.md
   - .specs/v20/features/interactive-questions/spec.md
 created: 2026-10-13
-updated: 2026-10-15
+updated: 2026-10-17
 assignee: ''
 ---
 
@@ -30,6 +30,19 @@ assignee: ''
 - 根层滚动规则兼容 `package.json` 中声明的 Firefox 111；离开工作区外壳后恢复其他页面的文档滚动。
 - Chrome 长对话中点击 Ask User Question 选项、用键盘切换选项及继续追加内容后，外层 timeline Panel 不产生额外纵向溢出或滚动，输入框和状态栏位置稳定；消息列表仍可正常滚动。
 - 浏览器和实机验收未执行时在[验证记录](../../result/verify-touch-viewport-scroll.md)明确标注。
+
+## 2026-10-17 iPad iOS 15.6 兼容修正
+
+用户反馈：“在 iPad iOS 15.6 版本上，手指沿着工作侧边栏往下滑，屏幕会往上移”，照片显示应用整体上移后底部露出空白。本次延续触屏视口需求，不改变侧栏内容或排序规则。
+
+- 在不支持 `overscroll-behavior` 的浏览器中，为桌面布局的工作侧栏补充原生触摸边界保护；列表中部保留自然方向滚动，列表顶部向下、底部向上及无可滚动内容时不得把手势传给页面。
+- 保护范围包含侧栏头部、底部及工作区/会话列表；嵌套可滚动区域仍可消费手势，不干扰侧栏之外的对话、终端或 Portal 弹层。
+- 继续支持点击、长按菜单和排序；多指缩放、缩放后的视口平移及横向手势不被纵向边界保护拦截，组件卸载后移除监听。
+- 工作区行的 React `onTouchStartCapture` 即使停止传播，边界保护也必须先记录侧栏内的触摸起点；侧栏外或 Portal 的起点不得启用保护。通过同时挂载真实 `useTouchDrag` 和边界保护 hook 的集成测试验证，不能仅用独立监听器夹具代替。
+- `visualViewport.offsetTop` 的负值不得把外壳移出屏幕顶部；合法的正偏移继续用于软键盘避让，缩放时沿用 CSS 回退。
+- 验证覆盖滚动中部、上下边界、短列表、嵌套容器、方向反转、手势取消、卸载清理和视口偏移；浏览器模拟与 iOS 15.6 实机结果分别记录。
+
+后续修正进度见[需求任务](../../changes/touch-viewport-scroll/task.md)。
 
 ## 实现与记录
 

@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import useTabStore from '@/hooks/use-tab-store';
 import useTouchDrag from '@/hooks/use-touch-drag';
+import useContainedTouchScroll from '@/hooks/use-contained-touch-scroll';
 import { useNotificationCount, NotificationPanel } from '@/components/features/workspace/notification-sheet';
 import AppLogo from '@/components/layout/app-logo';
 import ShortcutKey from '@/components/shortcut-key';
@@ -69,6 +70,7 @@ const handleLogout = async () => {
 
 const Sidebar = () => {
   const onTouchDragStart = useTouchDrag();
+  const touchScrollRef = useContainedTouchScroll();
   const t = useTranslations('sidebar');
   const tc = useTranslations('common');
   const router = useRouter();
@@ -477,6 +479,7 @@ const Sidebar = () => {
   return (
     <div className="relative flex shrink-0">
       <div
+        ref={touchScrollRef}
         className="workspace-sidebar region-typography-sidebar flex shrink-0 flex-col overflow-hidden border-r border-sidebar-border bg-sidebar font-sans"
         suppressHydrationWarning
         style={{
@@ -588,7 +591,7 @@ const Sidebar = () => {
 
         {sidebarTab === 'workspace' ? (
           <div
-            className="flex-1 space-y-3 overflow-y-auto px-2 pb-3 pt-1"
+            className="min-h-0 flex-1 space-y-3 overflow-y-auto overscroll-contain px-2 pb-3 pt-1"
             style={{ scrollbarWidth: 'none' }}
             onDragOver={(e) => {
               if (searchResult || dragIndex === null) return;
