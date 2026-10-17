@@ -11,6 +11,8 @@ interface IMobileWorkspaceGroupHeaderProps {
   onToggle: (groupId: string) => void;
   onRenameRequest: (groupId: string) => void;
   onUngroup: (groupId: string) => void;
+  dragProps: Pick<React.HTMLAttributes<HTMLButtonElement>,
+    'draggable' | 'onDragStart' | 'onDragOver' | 'onDragLeave' | 'onDrop' | 'onDragEnd' | 'style'>;
 }
 
 const MobileWorkspaceGroupHeader = ({
@@ -19,6 +21,7 @@ const MobileWorkspaceGroupHeader = ({
   onToggle,
   onRenameRequest,
   onUngroup,
+  dragProps,
 }: IMobileWorkspaceGroupHeaderProps) => {
   const t = useTranslations('sidebar');
   const [menuOpen, setMenuOpen] = useState(false);
@@ -43,7 +46,7 @@ const MobileWorkspaceGroupHeader = ({
 
   return (
     <div className="flex min-h-11 items-center px-1 text-xs font-medium text-muted-foreground">
-      <Button variant="ghost" className="h-auto min-h-11 min-w-0 flex-1 justify-start gap-2 px-2 text-xs aria-expanded:bg-transparent" onClick={handleToggle} aria-expanded={!group.collapsed}>
+      <Button {...dragProps} variant="ghost" className="h-auto min-h-11 min-w-0 flex-1 justify-start gap-2 px-2 text-xs aria-expanded:bg-transparent" onClick={handleToggle} aria-expanded={!group.collapsed} onContextMenu={(event) => event.preventDefault()}>
         <Icon size={12} className="shrink-0" />
         <span className="min-w-0 flex-1 truncate text-left">{group.name}</span>
         <span className="text-muted-foreground/70">{count}</span>
