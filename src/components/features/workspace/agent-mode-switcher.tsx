@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import useTabStore from '@/hooks/use-tab-store';
 import { getAgentPanelTypeFromProvider, isAgentPanel, isAgentRunning, tryAgentSwitch } from '@/lib/agent-switch-lock';
-import { applyAgentCheckResult, type IAgentCheckResponse } from '@/lib/agent-check';
+import { refreshDetectedAgent } from '@/lib/agent-check';
 import { cn } from '@/lib/utils';
 import type { TPanelType } from '@/types/terminal';
 
@@ -84,23 +84,12 @@ const AgentModeSwitcher = ({
         ]),
   ];
 
-  const refreshDetectedAgent = async () => {
-    try {
-      const res = await fetch(`/api/check-agent?session=${encodeURIComponent(sessionName)}`);
-      if (!res.ok) return;
-      const data = await res.json() as IAgentCheckResponse;
-      applyAgentCheckResult(tabId, data);
-    } catch {
-      // keep the last known local state if the live check fails
-    }
-  };
-
   const handleOpenChange = (next: boolean) => {
     if (!next) {
       setOpen(false);
       return;
     }
-    void refreshDetectedAgent().finally(() => setOpen(true));
+    void refreshDetectedAgent(tabId, sessionName).finally(() => setOpen(true));
   };
 
   const handleSelectMode = (mode: TModeButton) => {
