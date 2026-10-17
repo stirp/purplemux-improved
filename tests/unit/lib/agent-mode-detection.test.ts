@@ -56,6 +56,7 @@ beforeEach(() => {
 
 afterEach(async () => {
   await act(async () => root.unmount());
+  vi.useRealTimers();
   container.remove();
   window.removeEventListener('purplemux-start-agent', startAgent);
   vi.restoreAllMocks();
@@ -77,7 +78,7 @@ describe('view mode live agent detection', () => {
     });
     await render();
     await click('Select tab mode');
-    expect(fetch).toHaveBeenCalledWith('/api/check-agent?session=session%2Fwith%20space');
+    expect(fetch).toHaveBeenCalledWith('/api/check-agent?session=session%2Fwith%20space', { signal: expect.any(AbortSignal) });
     expect(button('Chat')).toBeDefined();
     expect(button('Start Claude')).toBeUndefined();
     await click('Chat');
@@ -145,5 +146,54 @@ describe('view mode live agent detection', () => {
     useTabStore.getState().setDetectedAgent('tab', { running: false, checkedAt: 20 });
     await refreshDetectedAgent('tab', sessionName);
     expect(useTabStore.getState().tabs.tab).toMatchObject({ agentProcess: false, agentProcessCheckedAt: 20 });
+  });
+
+  it.each([
+    [false, 'request'], [false, 'body'], [true, 'request'], [true, 'body'],
+  ] as const)('bounds a stalled %s desktop / %s check and ignores its late exit response', async (desktop, stage) => {
+    useTabStore.getState().setDetectedAgent('tab', { running: true, checkedAt: 1, providerId: 'claude' });
+    let finish!: () => void;
+    const gate = new Promise<void>((resolve) => { finish = resolve; });
+    // Deliberately ignore abort to verify that the deadline also guards late responses.
+    vi.mocked(fetch).mockImplementation(async () => {
+      if (stage === 'request') await gate;
+      return {
+        ok: true,
+        json: async () => {
+          if (stage === 'body') await gate;
+          return { running: false, checkedAt: 10 };
+        },
+      } as Response;
+    });
+    await render('terminal', desktop);
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+    await click('Select tab mode');
+    const signal = vi.mocked(fetch).mock.calls[0][1]?.signal;
+    await act(async () => { await vi.advanceTimersByTimeAsync(2_999); });
+    expect(button('Chat')).toBeUndefined();
+    expect(signal?.aborted).toBe(false);
+    await act(async () => { await vi.advanceTimersByTimeAsync(1); });
+    expect(signal?.aborted).toBe(true);
+    expect(button('Chat')).toBeDefined();
+    await click('Chat');
+    expect(switchPanel).toHaveBeenCalledWith('claude-code');
+    expect(startAgent).not.toHaveBeenCalled();
+    await act(async () => finish());
+    expect(useTabStore.getState().tabs.tab).toMatchObject({
+      agentProcess: true, agentProviderId: 'claude', agentProcessCheckedAt: 1,
+    });
+  });
+
+  it.each(['success', 'network', 'http', 'body'])('cleans the deadline timer after %s completion', async (outcome) => {
+    vi.useFakeTimers();
+    if (outcome === 'network') vi.mocked(fetch).mockRejectedValue(new Error('offline'));
+    if (outcome === 'http') vi.mocked(fetch).mockResolvedValue({ ok: false } as Response);
+    if (outcome === 'body') vi.mocked(fetch).mockResolvedValue({
+      ok: true, json: async () => { throw new Error('invalid JSON'); },
+    } as unknown as Response);
+    await refreshDetectedAgent('tab', sessionName);
+    expect(vi.getTimerCount()).toBe(0);
+    await vi.advanceTimersByTimeAsync(3_000);
+    expect(vi.mocked(fetch).mock.calls[0][1]?.signal?.aborted).toBe(false);
   });
 });

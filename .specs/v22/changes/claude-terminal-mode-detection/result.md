@@ -26,3 +26,23 @@
 - 组件交互运行于 jsdom，实时检测响应使用 mock；不是浏览器或 iPhone 实机验收。
 - 构建失败与历史记录 `.specs/v20/result/verify-mobile-empty-workspace-selection.md` 中的症状相同；未将历史结果当成本次通过证据，也未扩展修复登录页构建。
 - 未操作用户正在运行的 Claude 会话，也未发布或重启服务。
+
+## PR #55 审查修正：检测等待上限
+
+依据：[检测请求挂起会阻止模式菜单打开](https://github.com/stirp/purplemux-improved/pull/55#discussion_r4302680219)。本轮先补充原需求规格，再修改共用检测函数。
+
+- `refreshDetectedAgent` 用 3 秒截止时间约束请求与响应体读取，超时触发 AbortController，并完成菜单等待流程。Promise.race 的获胜结果才允许调用原状态更新函数，即使请求忽略中止、之后才返回，也不会改写已有身份。
+- 成功、网络错误、HTTP 非成功及 JSON 解析错误均在 finally 清理截止定时器；缺少会话名仍直接返回。
+- 桌面和移动端继续共用函数，不新增轮询、不改动进程扫描、工作状态或持久化格式，遵循 KISS/DRY。
+
+### 本轮验证（不复用前轮结果）
+
+| 检查 | 结果 |
+| --- | --- |
+| `node node_modules/vitest/vitest.mjs run tests/unit/lib/agent-mode-detection.test.ts tests/unit/lib/claude-session-detection.test.ts tests/unit/lib/tab-store-session-view.test.ts` | 3 文件、37 项通过；新增 4 项桌面/移动端请求或响应体挂起测试，验证第 2999ms 尚等待、第 3000ms 打开且仍可切换 Chat、请求被中止及迟到退出结果不改状态；新增 4 项成功/网络/HTTP/响应体失败后的定时器清理测试 |
+| `node node_modules/typescript/bin/tsc --noEmit` | 通过 |
+| `node node_modules/eslint/bin/eslint.js src/lib/agent-check.ts tests/unit/lib/agent-mode-detection.test.ts` | 通过 |
+| `git diff --check` | 通过 |
+| `node node_modules/next/dist/bin/next build --webpack` | 类型检查通过，webpack 编译通过（44 秒）；收集 /login 页面数据时再次出现 ReferenceError: self is not defined，完整构建未通过 |
+
+本轮组件回归使用 jsdom 与 mock 检测响应，未执行浏览器或手机实机验收。
