@@ -100,7 +100,12 @@ const MobileNavigationSheet = ({
   const onTouchDragStart = useTouchDrag();
   const dragProps = useNavigationDrag((source, target, after) => {
     if (searchResult) return;
-    if (source.kind === 'workspace' && target.kind === 'workspace') {
+    if (source.kind === 'group' && target.kind === 'group') {
+      const store = useWorkspaceStore.getState();
+      const ids = store.groups.map((group) => group.id);
+      const ordered = reorderNavigationIds(ids, source.id, target.id, after);
+      store.reorderGroups(ids.indexOf(source.id), ordered.indexOf(source.id));
+    } else if (source.kind === 'workspace' && target.kind === 'workspace') {
       const store = useWorkspaceStore.getState();
       const ids = store.workspaces.map((ws) => ws.id);
       const ordered = reorderNavigationIds(ids, source.id, target.id, after);
@@ -410,6 +415,7 @@ const MobileNavigationSheet = ({
                   <div key={`group-${section.group.id}`} className="pt-1">
                     <MobileWorkspaceGroupHeader
                       group={group}
+                      dragProps={searchResult ? { draggable: false } : dragProps({ kind: 'group', id: group.id })}
                       count={searchResult ? section.workspaces.filter((ws) => searchResult.visibleIds.has(ws.id)).length : section.workspaces.length}
                       onToggle={searchResult ? () => {} : handleToggleGroup}
                       onRenameRequest={handleRenameGroupRequest}

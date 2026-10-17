@@ -1,12 +1,13 @@
 import { useRef, useState, type DragEvent } from 'react';
 
 export type NavigationDragItem =
+  | { kind: 'group'; id: string }
   | { kind: 'workspace'; id: string }
   | { kind: 'tab'; id: string; workspaceId: string; paneId: string };
 
 export const canDropNavigationItem = (source: NavigationDragItem, target: NavigationDragItem) =>
   source.id !== target.id && source.kind === target.kind &&
-  (source.kind === 'workspace' || (target.kind === 'tab' &&
+  (source.kind !== 'tab' || (target.kind === 'tab' &&
     source.workspaceId === target.workspaceId && source.paneId === target.paneId));
 
 export const reorderNavigationIds = (ids: string[], source: string, target: string, after: boolean) => {
