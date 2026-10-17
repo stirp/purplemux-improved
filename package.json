@@ -84,6 +84,7 @@
     "diff": "^9.0.0",
     "electron-updater": "^6.8.3",
     "jose": "^6.2.2",
+    "koffi": "2.15.2",
     "lucide-react": "^1.7.0",
     "motion": "^12.38.0",
     "nanoid": "^5.1.7",

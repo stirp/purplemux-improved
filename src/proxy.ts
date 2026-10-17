@@ -22,7 +22,7 @@ export const proxy = async (request: NextRequest) => {
   const payload = token ? await verifySessionToken(token) : null;
   if (!payload) {
     if (request.nextUrl.pathname.startsWith('/api/')) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401, headers: { 'Cache-Control': 'no-store' } });
     }
     return NextResponse.redirect(new URL('/login', request.url));
   }
@@ -43,6 +43,7 @@ export const proxy = async (request: NextRequest) => {
 export const config = {
   matcher: [
     '/api/uploads/:path*',
+    '/api/session-files/:path*',
     '/((?!login|api/auth|api/install|api/cli/|api/status/hook|api/health|api/manifest|_next|favicon\\.ico|fonts|.*\\.(?:svg|png|ico|jpg|jpeg|webp|webmanifest|ttf|woff|woff2)).*)',
   ],
 };
