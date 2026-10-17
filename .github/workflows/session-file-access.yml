@@ -1,0 +1,35 @@
+name: Session file access
+
+on:
+  pull_request:
+    paths:
+      - 'src/lib/opened-file-path.ts'
+      - 'src/lib/session-files.ts'
+      - 'src/pages/api/session-files/**'
+      - 'tests/unit/lib/*file*.test.ts'
+      - 'tests/unit/api/session-files.test.ts'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - 'pnpm-workspace.yaml'
+      - '.github/workflows/session-file-access.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, macos-15-intel]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: pnpm/action-setup@v5
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec vitest run tests/unit/lib/opened-file-path.test.ts tests/unit/lib/opened-file-path-native.test.ts tests/unit/lib/session-files.test.ts tests/unit/api/session-files.test.ts

@@ -5,6 +5,7 @@ allowBuilds:
   electron: true
   electron-winstaller: false
   esbuild: false
+  koffi: false
   msw: false
   node-pty: true
   sharp: false

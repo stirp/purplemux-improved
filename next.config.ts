@@ -23,6 +23,7 @@ const nextConfig: NextConfig = {
   },
   output: 'standalone',
   bundlePagesRouterDependencies: true,
+  serverExternalPackages: ['koffi'],
   outputFileTracingExcludes: {
     '*': [
       './release/**',

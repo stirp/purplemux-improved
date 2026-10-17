@@ -1,8 +1,11 @@
 import { createContext, useContext, type AnchorHTMLAttributes } from 'react';
 import { defaultUrlTransform, type ExtraProps } from 'react-markdown';
 import useEditorFile from '@/hooks/use-editor-file';
+import useIsMobile from '@/hooks/use-is-mobile';
+import useIsMobileDevice from '@/hooks/use-is-mobile-device';
 import { parseEditorFileLink } from '@/lib/editor-url';
 import { openEditorTarget } from '@/lib/open-editor';
+import { buildSessionFileUrl } from '@/lib/session-file-url';
 
 export const EditorCwdContext = createContext<string | undefined>(undefined);
 
@@ -13,6 +16,11 @@ const EditorFileLink = ({ href, children, node: _node, ...props }: AnchorHTMLAtt
   const cwd = useContext(EditorCwdContext);
   const file = parseEditorFileLink(href ?? '', cwd);
   const target = useEditorFile(file);
+  const isMobile = useIsMobile();
+  const isMobileDevice = useIsMobileDevice();
+  if (file && (isMobile || isMobileDevice || !target)) {
+    return <a {...props} href={buildSessionFileUrl(file)} target="_blank" rel="noopener noreferrer">{children}</a>;
+  }
   if (!target) {
     return <a {...props} href={href?.startsWith('file:') ? undefined : href} target="_blank" rel="noopener noreferrer">{children}</a>;
   }
