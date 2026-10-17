@@ -1,8 +1,11 @@
-import { useId, useState } from 'react';
+import { useId, useState, type ReactNode } from 'react';
 import { useTranslations } from 'next-intl';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Pencil, Plus, Settings2, Trash2 } from 'lucide-react';
+import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, type DragEndEvent, type Modifier } from '@dnd-kit/core';
+import { SortableContext, useSortable, verticalListSortingStrategy, sortableKeyboardCoordinates, arrayMove } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+import { GripVertical, Pencil, Plus, Settings2, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -16,6 +19,35 @@ interface ITerminalCommandsBarProps {
   connected: boolean;
 }
 
+const restrictToVerticalAxis: Modifier = ({ transform }) => ({ ...transform, x: 0 });
+
+interface ISortableCommandProps {
+  command: ITerminalCommand;
+  disabled: boolean;
+  children: ReactNode;
+}
+
+const SortableCommand = ({ command, disabled, children }: ISortableCommandProps) => {
+  const t = useTranslations('terminal');
+  const { attributes, listeners, setNodeRef, setActivatorNodeRef, transform, transition, isDragging } = useSortable({
+    id: command.id,
+    disabled,
+  });
+
+  return (
+    <div ref={setNodeRef} className="relative space-y-2 rounded-md border bg-background p-3 pl-12"
+      style={{ transform: CSS.Translate.toString(transform), transition, zIndex: isDragging ? 1 : undefined }}>
+      <Button ref={setActivatorNodeRef} {...attributes} {...listeners} variant="ghost" size="icon-sm"
+        className="absolute left-2 top-3 touch-none cursor-grab text-muted-foreground active:cursor-grabbing"
+        disabled={disabled} aria-label={t('customCommandsReorder', { name: command.name })}
+        title={t('customCommandsReorder', { name: command.name })}>
+        <GripVertical className="size-4" />
+      </Button>
+      {children}
+    </div>
+  );
+};
+
 const TerminalCommandsBar = ({ sendStdin, connected }: ITerminalCommandsBarProps) => {
   const t = useTranslations('terminal');
   const tc = useTranslations('common');
@@ -24,6 +56,11 @@ const TerminalCommandsBar = ({ sendStdin, connected }: ITerminalCommandsBarProps
   const [editing, setEditing] = useState<string | null>(null);
   const [deleting, setDeleting] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [dragging, setDragging] = useState(false);
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+  );
   const formId = useId();
   const { register, handleSubmit, reset, formState: { errors } } = useForm<Omit<ITerminalCommand, 'id'>>({
     resolver: zodResolver(terminalCommandSchema),
@@ -64,6 +101,24 @@ const TerminalCommandsBar = ({ sendStdin, connected }: ITerminalCommandsBarProps
     }
   };
 
+  const reorder = async ({ active, over }: DragEndEvent) => {
+    setDragging(false);
+    if (busy || error || !over || active.id === over.id) return;
+    const from = commands.findIndex((command) => command.id === active.id);
+    const to = commands.findIndex((command) => command.id === over.id);
+    if (from === -1 || to === -1) return;
+    setBusy(true);
+    setDeleting(null);
+    try {
+      await save('PUT', { ids: arrayMove(commands, from, to).map((command) => command.id) });
+    } catch {
+      toast.error(t('customCommandsReorderFailed'));
+      await reload().catch(() => {});
+    } finally {
+      setBusy(false);
+    }
+  };
+
   return (
     <>
       <div role="toolbar" aria-label={t('customCommands')} className="flex shrink-0 items-center gap-2 border-t border-border bg-background px-3 py-1.5">
@@ -89,8 +144,19 @@ const TerminalCommandsBar = ({ sendStdin, connected }: ITerminalCommandsBarProps
           {error && <Button variant="ghost" size="sm" onClick={() => void reload().catch(() => {})}>{t('customCommandsLoadFailed')} · {tc('retry')}</Button>}
         </div>
       </div>
-      <Dialog open={open} onOpenChange={(value) => { if (!busy) setOpen(value); }}>
-        <DialogContent className="max-h-[85dvh] overflow-y-auto sm:max-w-lg" showCloseButton={!busy}>
+      <Dialog open={open} onOpenChange={(value, details) => {
+        if (busy || dragging) {
+          details.cancel();
+          if (dragging && details.reason === 'escape-key') details.allowPropagation();
+          return;
+        }
+        setOpen(value);
+      }}>
+        <DialogContent className="max-h-[85dvh] overflow-y-auto sm:max-w-lg" showCloseButton={!busy}
+          onKeyDown={(event) => {
+            // Base UI otherwise stops arrow keys before the document-level drag sensor receives them.
+            if (dragging && (event.key === 'ArrowUp' || event.key === 'ArrowDown')) event.preventBaseUIHandler();
+          }}>
           <DialogHeader>
             <DialogTitle>{t('customCommands')}</DialogTitle>
             <DialogDescription>{t('customCommandsDescription')}</DialogDescription>
@@ -121,24 +187,31 @@ const TerminalCommandsBar = ({ sendStdin, connected }: ITerminalCommandsBarProps
             <div className="space-y-3">
               {error && <Button variant="outline" onClick={() => void reload().catch(() => {})}>{t('customCommandsLoadFailed')} · {tc('retry')}</Button>}
               {!error && !isLoading && commands.length === 0 && <p className="text-sm text-muted-foreground">{t('customCommandsEmpty')}</p>}
-              {commands.map((command) => (
-                <div key={command.id} className="space-y-2 rounded-md border p-3">
-                  <div className="flex items-start gap-2">
-                    <div className="min-w-0 flex-1">
-                      <p className="break-words font-medium">{command.name}</p>
-                      <p className="mt-1 whitespace-pre-wrap break-all font-mono text-xs text-muted-foreground">{command.command}</p>
-                    </div>
-                    <Button variant="ghost" size="icon-sm" disabled={busy || !!error} aria-label={`${tc('edit')} ${command.name}`} onClick={() => edit(command)}><Pencil className="size-3.5" /></Button>
-                    <Button variant="ghost" size="icon-sm" disabled={busy || !!error} aria-label={`${tc('delete')} ${command.name}`} onClick={() => setDeleting(command.id)}><Trash2 className="size-3.5" /></Button>
-                  </div>
-                  {deleting === command.id && <div className="flex flex-wrap items-center justify-end gap-2">
-                    <p className="mr-auto text-xs">{t('customCommandsDeleteConfirm')}</p>
-                    <Button variant="outline" size="sm" disabled={busy} onClick={() => setDeleting(null)}>{tc('cancel')}</Button>
-                    <Button variant="destructive" size="sm" disabled={busy} onClick={() => void remove(command.id)}>{tc('delete')}</Button>
-                  </div>}
-                </div>
-              ))}
-              <Button variant="outline" disabled={busy || isLoading || !!error || commands.length >= MAX_TERMINAL_COMMANDS} onClick={() => edit()}><Plus className="size-4" />{t('customCommandsAdd')}</Button>
+              {commands.length > 1 && <p className="text-xs text-muted-foreground">{t('customCommandsReorderHint')}</p>}
+              <DndContext sensors={sensors} collisionDetection={closestCenter} modifiers={[restrictToVerticalAxis]}
+                onDragStart={() => setDragging(true)} onDragCancel={() => setDragging(false)}
+                onDragEnd={(event) => void reorder(event)}>
+                <SortableContext items={commands.map((command) => command.id)} strategy={verticalListSortingStrategy}>
+                  {commands.map((command) => (
+                    <SortableCommand key={command.id} command={command} disabled={busy || isLoading || !!error || commands.length < 2}>
+                      <div className="flex items-start gap-2">
+                        <div className="min-w-0 flex-1">
+                          <p className="break-words font-medium">{command.name}</p>
+                          <p className="mt-1 whitespace-pre-wrap break-all font-mono text-xs text-muted-foreground">{command.command}</p>
+                        </div>
+                        <Button variant="ghost" size="icon-sm" disabled={busy || dragging || !!error} aria-label={`${tc('edit')} ${command.name}`} onClick={() => edit(command)}><Pencil className="size-3.5" /></Button>
+                        <Button variant="ghost" size="icon-sm" disabled={busy || dragging || !!error} aria-label={`${tc('delete')} ${command.name}`} onClick={() => setDeleting(command.id)}><Trash2 className="size-3.5" /></Button>
+                      </div>
+                      {deleting === command.id && <div className="flex flex-wrap items-center justify-end gap-2">
+                        <p className="mr-auto text-xs">{t('customCommandsDeleteConfirm')}</p>
+                        <Button variant="outline" size="sm" disabled={busy || dragging} onClick={() => setDeleting(null)}>{tc('cancel')}</Button>
+                        <Button variant="destructive" size="sm" disabled={busy || dragging} onClick={() => void remove(command.id)}>{tc('delete')}</Button>
+                      </div>}
+                    </SortableCommand>
+                  ))}
+                </SortableContext>
+              </DndContext>
+              <Button variant="outline" disabled={busy || dragging || isLoading || !!error || commands.length >= MAX_TERMINAL_COMMANDS} onClick={() => edit()}><Plus className="size-4" />{t('customCommandsAdd')}</Button>
               {commands.length >= MAX_TERMINAL_COMMANDS && <p className="text-xs text-muted-foreground">{t('customCommandsLimit')}</p>}
             </div>
           )}

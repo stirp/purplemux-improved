@@ -178,5 +178,8 @@
   "customCommandsLoadFailed": "命令加载失败",
   "customCommandsEmpty": "将常用命令保存下来，并为它们设置名称。",
   "customCommandsDeleteConfirm": "确定删除此命令？",
-  "customCommandsLimit": "最多可保存 50 条命令。"
+  "customCommandsLimit": "最多可保存 50 条命令。",
+  "customCommandsReorder": "拖动排序：{name}",
+  "customCommandsReorderHint": "拖动左侧手柄调整顺序，松开后自动保存。",
+  "customCommandsReorderFailed": "排序保存失败，请重试。"
 }

@@ -34,6 +34,58 @@ beforeEach(() => {
 });
 
 describe('terminal command persistence', () => {
+  it('persists order while preserving concurrent edits, metadata and subsequent CRUD positions', async () => {
+    await updateTerminalCommand({ action: 'create', value });
+    const [first, second] = await updateTerminalCommand({ action: 'create', value: { name: '目录', command: 'pwd' } });
+    await Promise.all([
+      updateTerminalCommand({ action: 'edit', id: first.id, value: { name: '更新状态', command: 'git status -sb' } }),
+      updateTerminalCommand({ action: 'reorder', ids: [second.id, first.id] }),
+      updateActive({ sidebarWidth: 300 }),
+    ]);
+    expect(await getTerminalCommands()).toEqual([second, { id: first.id, name: '更新状态', command: 'git status -sb' }]);
+    expect(JSON.parse(mocks.files.get(file)!).sidebarWidth).toBe(300);
+    const afterCreate = await updateTerminalCommand({ action: 'create', value });
+    expect(afterCreate.map((command) => command.id)).toEqual([second.id, first.id, afterCreate[2].id]);
+    await updateTerminalCommand({ action: 'delete', id: first.id });
+    expect((await getTerminalCommands()).map((command) => command.id)).toEqual([second.id, afterCreate[2].id]);
+  });
+
+  it('rejects stale or duplicate ID sets without writing or broadcasting', async () => {
+    await updateTerminalCommand({ action: 'create', value });
+    const [first, second] = await updateTerminalCommand({ action: 'create', value });
+    const before = mocks.files.get(file);
+    mocks.broadcast.mockClear();
+    for (const ids of [[], [first.id], [first.id, 'missing'], [first.id, first.id], [first.id, second.id, 'extra']]) {
+      await expect(updateTerminalCommand({ action: 'reorder', ids })).rejects.toMatchObject({ status: 409 });
+    }
+    expect(mocks.files.get(file)).toBe(before);
+    expect(mocks.broadcast).not.toHaveBeenCalled();
+  });
+
+  it('does not overwrite concurrent creations or resurrect deleted commands', async () => {
+    const [first] = await updateTerminalCommand({ action: 'create', value });
+    await updateTerminalCommand({ action: 'create', value });
+    await expect(updateTerminalCommand({ action: 'reorder', ids: [first.id] })).rejects.toMatchObject({ status: 409 });
+    const commands = await getTerminalCommands();
+    await updateTerminalCommand({ action: 'delete', id: first.id });
+    await expect(updateTerminalCommand({ action: 'reorder', ids: commands.map((command) => command.id) })).rejects.toMatchObject({ status: 409 });
+    expect(await getTerminalCommands()).toEqual([commands[1]]);
+  });
+
+  it('retains persisted order on disk failure and broadcasts a successful retry', async () => {
+    await updateTerminalCommand({ action: 'create', value });
+    const [first, second] = await updateTerminalCommand({ action: 'create', value });
+    mocks.broadcast.mockClear();
+    mocks.fail = true;
+    await expect(updateTerminalCommand({ action: 'reorder', ids: [second.id, first.id] })).rejects.toThrow('disk full');
+    expect(await getTerminalCommands()).toEqual([first, second]);
+    expect(mocks.broadcast).not.toHaveBeenCalled();
+    mocks.fail = false;
+    await updateTerminalCommand({ action: 'reorder', ids: [second.id, first.id] });
+    expect(await getTerminalCommands()).toEqual([second, first]);
+    expect(mocks.broadcast).toHaveBeenCalledTimes(1);
+  });
+
   it('defaults old configurations to empty and persists create, edit, delete', async () => {
     expect(await getTerminalCommands()).toEqual([]);
     const [created] = await updateTerminalCommand({ action: 'create', value });

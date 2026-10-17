@@ -1,13 +1,24 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { terminalCommandSchema } from '@/lib/terminal-custom-commands';
+import { z } from 'zod';
+import { MAX_TERMINAL_COMMANDS, terminalCommandSchema } from '@/lib/terminal-custom-commands';
 import { getTerminalCommands, updateTerminalCommand } from '@/lib/workspace-store';
+
+const orderSchema = z.object({
+  ids: z.array(z.string().min(1).max(100)).max(MAX_TERMINAL_COMMANDS)
+    .refine((ids) => new Set(ids).size === ids.length),
+});
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   try {
     if (req.method === 'GET') return res.status(200).json(await getTerminalCommands());
-    if (!['POST', 'PATCH', 'DELETE'].includes(req.method ?? '')) {
-      res.setHeader('Allow', 'GET, POST, PATCH, DELETE');
+    if (!['POST', 'PATCH', 'DELETE', 'PUT'].includes(req.method ?? '')) {
+      res.setHeader('Allow', 'GET, POST, PATCH, DELETE, PUT');
       return res.status(405).json({ error: 'Method not allowed' });
+    }
+    if (req.method === 'PUT') {
+      const parsed = orderSchema.safeParse(req.body);
+      if (!parsed.success) return res.status(400).json({ error: 'Invalid command order' });
+      return res.status(200).json(await updateTerminalCommand({ action: 'reorder', ids: parsed.data.ids }));
     }
     const id = req.body?.id;
     if (req.method !== 'POST' && (typeof id !== 'string' || !id || id.length > 100)) {

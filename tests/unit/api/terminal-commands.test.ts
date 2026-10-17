@@ -54,7 +54,28 @@ describe('terminal command API', () => {
   it('returns read errors and rejects unsupported methods', async () => {
     mocks.get.mockRejectedValue(new Error('disk'));
     expect((await request('GET')).status).toHaveBeenCalledWith(500);
-    expect((await request('PUT')).status).toHaveBeenCalledWith(405);
+    const res = await request('OPTIONS');
+    expect(res.status).toHaveBeenCalledWith(405);
+    expect(res.setHeader).toHaveBeenCalledWith('Allow', 'GET, POST, PATCH, DELETE, PUT');
+  });
+  it('accepts ID-only ordering without updating command contents', async () => {
+    const commands = [{ id: 'two', name: 'B', command: 'pwd' }, { id: 'one', name: 'A', command: 'ls' }];
+    mocks.update.mockResolvedValue(commands);
+    const res = await request('PUT', { ids: ['two', 'one'] });
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.json).toHaveBeenCalledWith(commands);
+    expect(mocks.update).toHaveBeenCalledExactlyOnceWith({ action: 'reorder', ids: ['two', 'one'] });
+  });
+  it.each([null, {}, { ids: 'one' }, { ids: [1] }, { ids: [''] }, { ids: ['x'.repeat(101)] },
+    { ids: ['one', 'one'] }, { ids: Array.from({ length: 51 }, (_, i) => `${i}`) }])('rejects malformed order %j', async (body) => {
+    expect((await request('PUT', body)).status).toHaveBeenCalledWith(400);
+    expect(mocks.update).not.toHaveBeenCalled();
+  });
+  it.each([409, 500])('reports reorder failure %s', async (status) => {
+    mocks.update.mockRejectedValue(Object.assign(new Error('private path'), { status }));
+    const res = await request('PUT', { ids: ['one'] });
+    expect(res.status).toHaveBeenCalledWith(status);
+    expect(JSON.stringify(res.json.mock.calls)).not.toContain('private path');
   });
 });
 
