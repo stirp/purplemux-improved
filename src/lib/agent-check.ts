@@ -21,6 +21,17 @@ export interface IAgentCheckOutcome {
 export const isAgentPanelType = (value: unknown): value is TAgentPanelType =>
   value === 'claude-code' || value === 'codex-cli';
 
+export const refreshDetectedAgent = async (tabId: string, sessionName: string | null): Promise<void> => {
+  if (!sessionName) return;
+  try {
+    const res = await fetch(`/api/check-agent?session=${encodeURIComponent(sessionName)}`);
+    if (!res.ok) return;
+    applyAgentCheckResult(tabId, await res.json() as IAgentCheckResponse);
+  } catch {
+    // Keep the last known state when the live process check is unavailable.
+  }
+};
+
 export const applyAgentCheckResult = (
   tabId: string,
   data: IAgentCheckResponse,

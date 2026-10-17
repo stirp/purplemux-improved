@@ -17,6 +17,7 @@ import useGitStatusStore, {
 } from '@/hooks/use-git-status-store';
 import type { TGitStatusIndicatorTone } from '@/hooks/use-git-status-store';
 import { getAgentPanelTypeFromProvider, isAgentPanel, tryAgentSwitch } from '@/lib/agent-switch-lock';
+import { refreshDetectedAgent } from '@/lib/agent-check';
 import {
   Drawer,
   DrawerContent,
@@ -223,7 +224,9 @@ const MobileTabHeader = ({
             <button
               type="button"
               className="h-7 rounded border border-border/70 bg-muted/30 px-2 text-xs text-muted-foreground"
-              onClick={() => setModeDrawerOpen(true)}
+              onClick={() => {
+                void refreshDetectedAgent(tabId, sessionName).finally(() => setModeDrawerOpen(true));
+              }}
               aria-label="Select tab mode"
             >
               {getAgentLabel(panelType)}
