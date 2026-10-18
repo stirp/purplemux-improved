@@ -1429,9 +1429,21 @@ const PaneContainer = memo(({ paneId, paneNumber }: IPaneContainerProps) => {
                 )}
               />
               {activePanelType === 'terminal' && !noTabs && (
-                <TerminalCommandsBar key={activeTabId} sendStdin={sendWebStdin} connected={status === 'connected' && !sessionSwitching} />
+                <TerminalCommandsBar key={activeTabId} sendStdin={sendWebStdin} connected={status === 'connected' && !sessionSwitching}>
+                  {showKeyBar && (
+                    <TerminalKeyBar
+                      inline
+                      className="max-w-none py-0"
+                      sendStdin={sendStdin}
+                      ctrlActive={ctrlArmed}
+                      shiftActive={shiftArmed}
+                      setCtrlActive={setCtrlArmed}
+                      setShiftActive={setShiftArmed}
+                    />
+                  )}
+                </TerminalCommandsBar>
               )}
-              {showKeyBar && !isAgentPanel && (
+              {showKeyBar && !isAgentPanel && (activePanelType !== 'terminal' || noTabs) && (
                 <TerminalKeyBar
                   sendStdin={sendStdin}
                   ctrlActive={ctrlArmed}

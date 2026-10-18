@@ -18,6 +18,7 @@ import { MAX_TERMINAL_COMMANDS, terminalCommandInput, terminalCommandSchema, typ
 interface ITerminalCommandsBarProps {
   sendStdin: (data: string) => void;
   connected: boolean;
+  children?: ReactNode;
 }
 
 const restrictToVerticalAxis: Modifier = ({ transform }) => ({ ...transform, x: 0 });
@@ -49,7 +50,7 @@ const SortableCommand = ({ command, disabled, children }: ISortableCommandProps)
   );
 };
 
-const TerminalCommandsBar = ({ sendStdin, connected }: ITerminalCommandsBarProps) => {
+const TerminalCommandsBar = ({ sendStdin, connected, children }: ITerminalCommandsBarProps) => {
   const t = useTranslations('terminal');
   const tc = useTranslations('common');
   const { commands, isLoading, error, reload, save } = useTerminalCommands();
@@ -122,12 +123,12 @@ const TerminalCommandsBar = ({ sendStdin, connected }: ITerminalCommandsBarProps
 
   return (
     <>
-      <div role="toolbar" aria-label={t('customCommands')} className="flex shrink-0 items-center gap-2 border-t border-border bg-background px-3 py-1.5">
+      <div role="toolbar" aria-label={t('customCommands')} className="flex min-w-0 shrink-0 items-center gap-2 border-t border-border bg-background px-3 py-1.5">
         <Button variant="ghost" size="icon-sm" aria-label={t('customCommandsManage')} title={t('customCommandsManage')}
           onClick={() => { setEditing(null); setDeleting(null); setOpen(true); }}>
           <Settings2 className="size-4" />
         </Button>
-        <div className="flex min-w-0 flex-1 items-center gap-2 overflow-x-auto">
+        <div className="flex min-w-0 flex-1 items-center gap-2 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
           {commands.map((command) => (
             <Button key={command.id} variant="outline" size="sm" className="max-w-48 shrink-0 text-xs"
               title={command.command} disabled={!connected || !!error}
@@ -144,6 +145,7 @@ const TerminalCommandsBar = ({ sendStdin, connected }: ITerminalCommandsBarProps
           {isLoading && <span className="text-xs text-muted-foreground">{tc('loading')}</span>}
           {error && <Button variant="ghost" size="sm" onClick={() => void reload().catch(() => {})}>{t('customCommandsLoadFailed')} · {tc('retry')}</Button>}
         </div>
+        {children && <div className="flex min-w-0 flex-1 items-center justify-end border-l border-border pl-2">{children}</div>}
       </div>
       <Dialog open={open} onOpenChange={(value, details) => {
         if (busy || dragging) {

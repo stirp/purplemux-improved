@@ -5,6 +5,7 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { toCtrlChar } from '@/lib/terminal-keys';
 import TerminalKeyBar from '@/components/features/workspace/terminal-key-bar';
+import TerminalCommandsBar from '@/components/features/workspace/terminal-commands-bar';
 
 interface IMobileTerminalToolbarProps {
   sendStdin: (data: string) => void;
@@ -67,8 +68,8 @@ const MobileTerminalToolbar = ({ sendStdin, terminalConnected }: IMobileTerminal
   );
 
   return (
-    <div className="shrink-0 border-t border-border bg-background">
-      <div className="flex items-end gap-2 px-3 py-2">
+    <div className="min-w-0 shrink-0 bg-background">
+      {terminalConnected && <div className="flex items-end gap-2 border-t border-border px-3 py-2">
         <textarea
           ref={textareaRef}
           value={value}
@@ -103,10 +104,12 @@ const MobileTerminalToolbar = ({ sendStdin, terminalConnected }: IMobileTerminal
         >
           <SendHorizontal size={16} />
         </Button>
-      </div>
+      </div>}
 
-      <TerminalKeyBar className="border-t-0 pt-0" sendStdin={sendStdin}
-        ctrlActive={ctrlActive} shiftActive={shiftActive} setCtrlActive={setCtrlActive} setShiftActive={setShiftActive} />
+      <TerminalCommandsBar sendStdin={sendStdin} connected={terminalConnected}>
+        {terminalConnected && <TerminalKeyBar inline className="max-w-none py-0" sendStdin={sendStdin}
+          ctrlActive={ctrlActive} shiftActive={shiftActive} setCtrlActive={setCtrlActive} setShiftActive={setShiftActive} />}
+      </TerminalCommandsBar>
     </div>
   );
 };
