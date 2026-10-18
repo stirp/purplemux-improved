@@ -10,6 +10,7 @@ vi.mock('@/hooks/use-config-store', () => ({
   default: (selector: (state: unknown) => unknown) => selector({ editorPreset: settings.editorPreset, editorUrl: 'dev-box' }),
 }));
 vi.mock('next-intl', () => ({ useTranslations: () => (key: string) => key }));
+vi.mock('next/router', () => ({ useRouter: () => ({ asPath: '/' }) }));
 vi.mock('next-themes', () => ({ useTheme: () => ({ resolvedTheme: 'dark' }) }));
 vi.mock('@/hooks/use-is-mobile', () => ({ default: () => settings.mobile }));
 vi.mock('@/hooks/use-is-mobile-device', () => ({ default: () => settings.device }));
@@ -34,8 +35,8 @@ describe('assistant markdown editor links', () => {
         markdown: '[relative](../app.ts:12:3) [file](file:///repo/%E4%B8%AD%20%23.md) [web](https://example.com)',
       } }),
     ));
-    expect(html).toContain('href="/api/session-files/repo/app.ts?view=1#L12" target="_blank"');
-    expect(html).toContain('href="/api/session-files/repo/%E4%B8%AD%20%23.md?view=1"');
+    expect(html).toContain('href="/file-preview?file=%2Frepo%2Fapp.ts&amp;returnTo=%2F&amp;line=12" target="_self"');
+    expect(html).toContain('href="/file-preview?file=%2Frepo%2F%E4%B8%AD+%23.md&amp;returnTo=%2F"');
     expect(html).toContain('href="https://example.com"');
     expect(html).not.toContain('href="vscode:');
   });

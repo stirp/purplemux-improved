@@ -78,7 +78,7 @@ export const getSessionFileCsp = (host: string): string => {
   const { host: safeHost } = new URL(`http://${host}`);
   const resources = `http://${safeHost}/api/session-files/ https://${safeHost}/api/session-files/`;
   // Same-origin keeps SameSite cookies on relative assets; scripts remain disabled.
-  return `sandbox allow-same-origin; default-src 'none'; style-src ${resources} 'unsafe-inline'; img-src ${resources} data: blob:; font-src ${resources}; base-uri 'none'; form-action 'none'; frame-ancestors 'none'`;
+  return `sandbox allow-same-origin; default-src 'none'; style-src ${resources} 'unsafe-inline'; img-src ${resources} data: blob:; font-src ${resources}; base-uri 'none'; form-action 'none'; frame-ancestors 'self'`;
 };
 
 const escapeHtml = (text: string): string => text.replace(/[&<>"']/g, (char) => ({
