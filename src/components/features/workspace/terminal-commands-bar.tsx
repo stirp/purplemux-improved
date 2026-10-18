@@ -1,6 +1,6 @@
 import { useId, useState, type ReactNode } from 'react';
 import { useTranslations } from 'next-intl';
-import { useForm } from 'react-hook-form';
+import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, type DragEndEvent, type Modifier } from '@dnd-kit/core';
 import { SortableContext, useSortable, verticalListSortingStrategy, sortableKeyboardCoordinates, arrayMove } from '@dnd-kit/sortable';
@@ -8,6 +8,7 @@ import { CSS } from '@dnd-kit/utilities';
 import { GripVertical, Pencil, Plus, Settings2, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -62,13 +63,13 @@ const TerminalCommandsBar = ({ sendStdin, connected }: ITerminalCommandsBarProps
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
   );
   const formId = useId();
-  const { register, handleSubmit, reset, formState: { errors } } = useForm<Omit<ITerminalCommand, 'id'>>({
+  const { control, register, handleSubmit, reset, formState: { errors } } = useForm<Omit<ITerminalCommand, 'id'>>({
     resolver: zodResolver(terminalCommandSchema),
-    defaultValues: { name: '', command: '' },
+    defaultValues: { name: '', command: '', autoEnter: true },
   });
 
   const edit = (command?: ITerminalCommand) => {
-    reset(command ? { name: command.name, command: command.command } : { name: '', command: '' });
+    reset(command ? { name: command.name, command: command.command, autoEnter: command.autoEnter ?? true } : { name: '', command: '', autoEnter: true });
     setDeleting(null);
     setEditing(command?.id ?? '');
     setOpen(true);
@@ -131,7 +132,7 @@ const TerminalCommandsBar = ({ sendStdin, connected }: ITerminalCommandsBarProps
             <Button key={command.id} variant="outline" size="sm" className="max-w-48 shrink-0 text-xs"
               title={command.command} disabled={!connected || !!error}
               onPointerDown={(event) => event.preventDefault()}
-              onClick={() => { if (connected && !error) sendStdin(terminalCommandInput(command.command)); }}>
+              onClick={() => { if (connected && !error) sendStdin(terminalCommandInput(command.command, command.autoEnter)); }}>
               <span className="truncate">{command.name}</span>
             </Button>
           ))}
@@ -176,6 +177,16 @@ const TerminalCommandsBar = ({ sendStdin, connected }: ITerminalCommandsBarProps
                     className="font-mono" placeholder="git status" {...register('command')}
                     aria-invalid={!!errors.command} aria-describedby={errors.command ? `${formId}-command-error` : undefined} />
                   {errors.command && <p id={`${formId}-command-error`} role="alert" className="text-xs text-destructive">{t('customCommandsContentInvalid')}</p>}
+                </div>
+                <div className="space-y-1.5">
+                  <label className="flex items-center gap-2" htmlFor={`${formId}-auto-enter`}>
+                    <Controller name="autoEnter" control={control} render={({ field }) => (
+                      <Checkbox id={`${formId}-auto-enter`} checked={field.value ?? true} onCheckedChange={field.onChange}
+                        onBlur={field.onBlur} ref={field.ref} disabled={busy} aria-describedby={`${formId}-auto-enter-hint`} />
+                    )} />
+                    {t('customCommandsAutoEnter')}
+                  </label>
+                  <p id={`${formId}-auto-enter-hint`} className="text-xs text-muted-foreground">{t('customCommandsAutoEnterHint')}</p>
                 </div>
                 <div className="flex justify-end gap-2">
                   <Button type="button" variant="outline" onClick={() => setEditing(null)}>{tc('cancel')}</Button>

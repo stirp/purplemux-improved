@@ -169,7 +169,7 @@
   "customCommands": "Custom commands",
   "customCommandsManage": "Manage custom commands",
   "customCommandsAdd": "Add command",
-  "customCommandsDescription": "Commands are shared across workspaces. Clicking a command sends it to the current terminal and presses Enter. Check the current terminal input before running.",
+  "customCommandsDescription": "Befehle gelten für alle Arbeitsbereiche. Ein Klick sendet den Befehl an das aktuelle Terminal, je nach Einstellung mit abschließendem Enter. Vorher die aktuelle Eingabe prüfen.",
   "customCommandsName": "Name",
   "customCommandsContent": "Command",
   "customCommandsNameInvalid": "Enter a name of 1–40 characters.",
@@ -181,5 +181,13 @@
   "customCommandsLimit": "You can save up to 50 commands.",
   "customCommandsReorder": "Reorder {name}",
   "customCommandsReorderHint": "Drag the handles to reorder. Changes save automatically.",
-  "customCommandsReorderFailed": "Could not save the order. Please retry."
+  "customCommandsReorderFailed": "Could not save the order. Please retry.",
+  "keyBarManage": "Terminaltasten konfigurieren",
+  "keyBarDescription": "Sichtbare Tasten auswählen und mit den Pfeilen sortieren. Gilt für alle Arbeitsbereiche.",
+  "keyBarMoveUp": "{name} nach oben",
+  "keyBarMoveDown": "{name} nach unten",
+  "keyBarLoadFailed": "Terminaltasten konnten nicht geladen werden",
+  "keyBarSaveFailed": "Speichern fehlgeschlagen. Änderungen bleiben erhalten. Bitte erneut versuchen.",
+  "customCommandsAutoEnter": "Enter automatisch senden",
+  "customCommandsAutoEnterHint": "Wenn deaktiviert, wird kein abschließendes Enter ergänzt. Zeilenumbrüche im Befehl werden weiterhin gesendet."
 }

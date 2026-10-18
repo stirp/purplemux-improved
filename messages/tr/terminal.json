@@ -169,7 +169,7 @@
   "customCommands": "Custom commands",
   "customCommandsManage": "Manage custom commands",
   "customCommandsAdd": "Add command",
-  "customCommandsDescription": "Commands are shared across workspaces. Clicking a command sends it to the current terminal and presses Enter. Check the current terminal input before running.",
+  "customCommandsDescription": "Komutlar çalışma alanları arasında paylaşılır. Tıklama, komutu geçerli terminale isteğe bağlı son Enter ile gönderir. Göndermeden önce mevcut girdiyi kontrol edin.",
   "customCommandsName": "Name",
   "customCommandsContent": "Command",
   "customCommandsNameInvalid": "Enter a name of 1–40 characters.",
@@ -181,5 +181,13 @@
   "customCommandsLimit": "You can save up to 50 commands.",
   "customCommandsReorder": "Reorder {name}",
   "customCommandsReorderHint": "Drag the handles to reorder. Changes save automatically.",
-  "customCommandsReorderFailed": "Could not save the order. Please retry."
+  "customCommandsReorderFailed": "Could not save the order. Please retry.",
+  "keyBarManage": "Terminal tuşlarını yapılandır",
+  "keyBarDescription": "Görünür tuşları seçin ve oklarla sıralayın. Tüm çalışma alanlarında paylaşılır.",
+  "keyBarMoveUp": "{name} yukarı taşı",
+  "keyBarMoveDown": "{name} aşağı taşı",
+  "keyBarLoadFailed": "Terminal tuşları yüklenemedi",
+  "keyBarSaveFailed": "Kaydedilemedi. Değişiklikler korundu; yeniden deneyin.",
+  "customCommandsAutoEnter": "Otomatik Enter gönder",
+  "customCommandsAutoEnterHint": "Kapalıyken sona Enter eklenmez. Komuttaki satır sonları yine gönderilir."
 }

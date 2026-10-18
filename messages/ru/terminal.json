@@ -169,7 +169,7 @@
   "customCommands": "Custom commands",
   "customCommandsManage": "Manage custom commands",
   "customCommandsAdd": "Add command",
-  "customCommandsDescription": "Commands are shared across workspaces. Clicking a command sends it to the current terminal and presses Enter. Check the current terminal input before running.",
+  "customCommandsDescription": "Команды общие для всех рабочих пространств. Нажатие отправляет команду в текущий терминал с необязательным Enter в конце. Перед отправкой проверьте текущий ввод.",
   "customCommandsName": "Name",
   "customCommandsContent": "Command",
   "customCommandsNameInvalid": "Enter a name of 1–40 characters.",
@@ -181,5 +181,13 @@
   "customCommandsLimit": "You can save up to 50 commands.",
   "customCommandsReorder": "Reorder {name}",
   "customCommandsReorderHint": "Drag the handles to reorder. Changes save automatically.",
-  "customCommandsReorderFailed": "Could not save the order. Please retry."
+  "customCommandsReorderFailed": "Could not save the order. Please retry.",
+  "keyBarManage": "Настроить клавиши терминала",
+  "keyBarDescription": "Выберите видимые клавиши и измените порядок стрелками. Настройки общие для всех рабочих пространств.",
+  "keyBarMoveUp": "Переместить {name} вверх",
+  "keyBarMoveDown": "Переместить {name} вниз",
+  "keyBarLoadFailed": "Не удалось загрузить клавиши",
+  "keyBarSaveFailed": "Не удалось сохранить. Изменения сохранены в форме; повторите попытку.",
+  "customCommandsAutoEnter": "Автоматически нажимать Enter",
+  "customCommandsAutoEnterHint": "Если выключено, Enter в конце не добавляется. Переводы строк в самой команде отправляются."
 }
