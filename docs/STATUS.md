@@ -590,6 +590,8 @@ The idempotent guard at the top of the function (`prevState === newState`) block
 
 ## Session 工作状态（2026-10-13）
 
+Claude/Codex Chat 的桌面和移动面板共用顶部会话头部，提供工作状态选择，复用 Sessions 的推导、保存与同步逻辑；自动模式展示实际阶段。状态选择独立于桌面详情展开及移动详情 Sheet，不改变 TCliState 或停止模型。保存期间只读且保留原触发器，菜单关闭后由 Select 恢复焦点，避免成功或失败后键盘焦点丢失；保存结果不主动抢回用户已移走的焦点。元信息加载、断连、当前 Tab 与展示身份不一致、首次 fallback 状态尚未迁移或目标已删除时禁止编辑，避免缓存会话串写。
+
 2026-10-14：`sessionWorkflow.titles` 另外保存 Claude/Codex 在本应用中手动命名的会话标题，按代理与原生会话 ID 索引。尚无 ID 时按 Tab 暂存，首次绑定时迁移；删除会话清理标题。该字段只影响展示，不参与工作状态计算或修改代理原生会话文件。
 
 PR #36 Review：会话身份切换时，布局记录、状态管理与客户端状态均清除上一会话的摘要和用户消息回退，防止新身份短暂展示旧标题。`sessionWorkflow.renamedTabs` 与标题在同一配置写入中保存，标记当前 Tab 使用会话标题而非旧布局名称。

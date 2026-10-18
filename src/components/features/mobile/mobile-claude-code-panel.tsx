@@ -1,6 +1,5 @@
 import AgentStatusLine from '@/components/features/workspace/agent-status-line';
 import { useState, useCallback, useRef, useEffect } from 'react';
-import { ChevronDown } from 'lucide-react';
 import Spinner from '@/components/ui/spinner';
 import { toast } from 'sonner';
 import { useTranslations } from 'next-intl';
@@ -23,7 +22,7 @@ import ClaudeLogo from '@/components/icons/claude-logo';
 import type { ITrustPromptInfo, TTrustAnswer } from '@/lib/trust-prompt-detector';
 import WebInputBar from '@/components/features/workspace/web-input-bar';
 import QuickPromptBar from '@/components/features/workspace/quick-prompt-bar';
-import { MetaCompact } from '@/components/features/workspace/session-meta-content';
+import SessionMetaHeader from '@/components/features/workspace/session-meta-header';
 import MobileMetaSheet from './mobile-meta-sheet';
 import useQuickPrompts from '@/hooks/use-quick-prompts';
 import type { TCliState } from '@/types/timeline';
@@ -315,31 +314,16 @@ const MobileClaudeCodePanel = ({
 
   return (
     <div className="flex min-h-0 flex-1 flex-col bg-muted">
-      <div
-        className="flex shrink-0 cursor-pointer items-center justify-between border-b px-4 py-1.5 hover:bg-muted/30"
-        role="button"
-        tabIndex={0}
-        onClick={() => setMetaSheetOpen(true)}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            setMetaSheetOpen(true);
-          }
-        }}
-      >
-        <MetaCompact
-          title={meta.title}
-          totalCost={meta.totalCost}
-          branch={branch}
-          usedPercentage={meta.usedPercentage}
-          currentContextTokens={meta.currentContextTokens}
-          contextWindowSize={meta.contextWindowSize}
-        />
-        <ChevronDown
-          size={14}
-          className="shrink-0 text-muted-foreground"
-        />
-      </div>
+      <SessionMetaHeader
+        meta={meta}
+        branch={branch}
+        provider="claude"
+        tabId={tabId}
+        sessionId={sessionId}
+        statusDisabled={agentProcess === null || isTimelineLoading || !!resumingSessionId || wsStatus !== 'connected'}
+        expanded={metaSheetOpen}
+        onExpand={() => setMetaSheetOpen(true)}
+      />
 
       <div className="min-h-0 flex-1">
         <TimelineView

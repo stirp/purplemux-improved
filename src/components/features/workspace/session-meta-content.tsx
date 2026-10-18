@@ -92,7 +92,7 @@ export const MetaCompact = ({
   return (
     <div className="flex min-w-0 flex-1 items-center text-xs">
       <Tooltip>
-        <TooltipTrigger className="max-w-[200px] truncate text-sm font-medium text-foreground">
+        <TooltipTrigger className="max-w-full truncate text-sm font-medium text-foreground @min-[360px]:max-w-[200px] @min-[360px]:shrink-0">
           {truncatedTitle}
         </TooltipTrigger>
         {title.length > 30 && (
@@ -101,33 +101,35 @@ export const MetaCompact = ({
           </TooltipContent>
         )}
       </Tooltip>
-      {branch && (
-        <>
-          <Separator />
-          <div className="flex items-center gap-1 text-muted-foreground">
-            <GitBranch size={12} className="shrink-0" />
-            <span className="truncate font-mono">{branch}</span>
-          </div>
-        </>
-      )}
-      {totalCost !== null && totalCost > 0 && (
-        <>
-          <Separator />
-          <span className="shrink-0 font-mono text-muted-foreground">
-            {formatCost(totalCost)}
-          </span>
-        </>
-      )}
-      {contextPercentage !== null && (
-        <>
-          <Separator />
-          <ContextRing
-            percentage={contextPercentage}
-            currentTokens={currentContextTokens}
-            windowSize={contextWindowSize}
-          />
-        </>
-      )}
+      <div className="hidden min-w-0 flex-1 items-center @min-[360px]:flex">
+        {branch && (
+          <>
+            <Separator />
+            <div className="flex min-w-0 items-center gap-1 text-muted-foreground">
+              <GitBranch size={12} className="shrink-0" />
+              <span className="truncate font-mono">{branch}</span>
+            </div>
+          </>
+        )}
+        {totalCost !== null && totalCost > 0 && (
+          <>
+            <Separator />
+            <span className="shrink-0 font-mono text-muted-foreground">
+              {formatCost(totalCost)}
+            </span>
+          </>
+        )}
+        {contextPercentage !== null && (
+          <>
+            <Separator />
+            <ContextRing
+              percentage={contextPercentage}
+              currentTokens={currentContextTokens}
+              windowSize={contextWindowSize}
+            />
+          </>
+        )}
+      </div>
     </div>
   );
 };
