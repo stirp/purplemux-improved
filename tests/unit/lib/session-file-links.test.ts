@@ -7,6 +7,7 @@ import AssistantMessageItem from '@/components/features/timeline/assistant-messa
 import { EditorCwdContext } from '@/components/features/timeline/editor-file-link';
 
 vi.mock('next-intl', () => ({ useTranslations: () => (key: string) => key }));
+vi.mock('next/router', () => ({ useRouter: () => ({ asPath: '/?mode=chat#session' }) }));
 vi.mock('@/hooks/use-config-store', () => ({
   default: (selector: (state: unknown) => unknown) => selector({ editorPreset: 'vscode-remote', editorUrl: 'dev-box' }),
 }));
@@ -34,8 +35,8 @@ describe('mobile file link interaction', () => {
       } }),
     )));
     const anchor = container.querySelector('a')!;
-    expect(anchor.getAttribute('href')).toBe('/api/session-files/repo/report.md?view=1#L3');
-    expect(anchor.target).toBe('_blank');
+    expect(anchor.getAttribute('href')).toBe('/file-preview?file=%2Frepo%2Freport.md&returnTo=%2F%3Fmode%3Dchat%23session&line=3');
+    expect(anchor.target).toBe('_self');
     const click = new MouseEvent('click', { bubbles: true, cancelable: true });
     anchor.dispatchEvent(click);
     expect(click.defaultPrevented).toBe(false);
@@ -50,7 +51,7 @@ describe('mobile file link interaction', () => {
     )));
     await act(async () => container.querySelector('button')!.click());
     const link = document.querySelector<HTMLAnchorElement>('[role="dialog"] a')!;
-    expect(link.getAttribute('href')).toBe('/api/session-files/repo/report.html?view=1');
-    expect(link.target).toBe('_blank');
+    expect(link.getAttribute('href')).toBe('/file-preview?file=%2Frepo%2Freport.html&returnTo=%2F%3Fmode%3Dchat%23session');
+    expect(link.target).toBe('_self');
   });
 });

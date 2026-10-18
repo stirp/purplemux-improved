@@ -84,6 +84,7 @@ describe('authenticated file HTTP responses', () => {
     expect(response.status).toBe(200);
     expect(response.headers.get('content-type')).toBe('text/html; charset=utf-8');
     expect(response.headers.get('content-security-policy')).toContain('sandbox;');
+    expect(response.headers.get('content-security-policy')).toContain("frame-ancestors 'self'");
     const content = await response.text();
     expect(content).toContain('id="L2"');
     expect(content).toContain('&lt;script&gt;bad()&lt;/script&gt;');
@@ -94,6 +95,7 @@ describe('authenticated file HTTP responses', () => {
     const response = await fetch(`${url('report.html')}?view=1`);
     const policy = response.headers.get('content-security-policy');
     expect(policy).toContain('sandbox allow-same-origin;');
+    expect(policy).toContain("frame-ancestors 'self'");
     expect(policy).not.toContain('allow-scripts');
     expect(policy).toContain(`${origin}/api/session-files/`);
     expect(policy).toContain("default-src 'none'");

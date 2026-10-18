@@ -45,7 +45,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       }
       if (totalBytesRead > MAX_TEXT_PREVIEW_BYTES) throw new SessionFileError(413, 'File is too large to preview');
       res.setHeader('Content-Type', 'text/html; charset=utf-8');
-      res.setHeader('Content-Security-Policy', "sandbox; default-src 'none'; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'");
+      res.setHeader('Content-Security-Policy', "sandbox; default-src 'none'; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'; frame-ancestors 'self'");
       return res.status(200).send(renderSessionFileText(file.name, buffer.subarray(0, totalBytesRead).toString('utf8')));
     }
     res.setHeader('Content-Type', type.mime);
