@@ -116,3 +116,37 @@ git diff --check
 | 等待中聚焦另一会话按钮 | 响应后 `focusRetainedElsewhere=true`，原按钮未夺回焦点 |
 
 本次未重跑生产构建：修改限于选择器交互属性及提交保护，已执行完整类型检查、相关测试和真实浏览器验证；上文构建记录属于此前实现验证，不作为本次运行结果。
+
+## PR #59 P2：Portal 菜单与展开详情的事件隔离（2026-10-18）
+
+对应[审查意见](https://github.com/stirp/purplemux-improved/pull/59#discussion_r4306490789)，审查及修复基线为 `1dee94d8b9cafc5859d08ec6bd47234c05be0be3`。
+
+根因：状态菜单 Portal 的 DOM 不在 SessionMetaBar 的 containerRef 内，菜单选项的 mousedown 冒泡到 document，被已有详情关闭监听误判为外部点击。新增真实组件用例在修复前复现详情意外收起；新增 Escape 用例在当前 Base UI 版本已通过，也作为分层关闭行为的回归保护保留。
+
+修复在本业务 SelectContent 上阻止 mousedown 及 Escape 的冒泡，保留 Base UI 自身选择、菜单关闭和焦点恢复，不改第三方组件或全局事件监听。复用组件事件机制，改动局限于菜单边界，符合 KISS/单一职责。
+
+本次验证：
+
+```bash
+pnpm exec vitest run --maxWorkers=1 \
+  tests/unit/lib/chat-session-status.test.ts \
+  tests/unit/lib/session-workflow.test.ts \
+  tests/unit/lib/session-workflow-ui.test.ts \
+  tests/unit/lib/session-workflow-storage.test.ts \
+  tests/unit/lib/session-workflow-api.test.ts \
+  tests/unit/lib/session-workflow-reconnect.test.ts
+pnpm exec tsc --noEmit
+pnpm exec eslint src/components/features/workspace/session-work-status-select.tsx tests/unit/lib/chat-session-status.test.ts
+git diff --check
+```
+
+结果：**75 项通过**（Chat 真实组件交互 19 项），完整 TypeScript、改动文件 ESLint 和差异格式检查通过。
+
+CE-10 浏览器验证使用 agent-browser 独立 `pr59-menu` 会话，隔离页面 `/tmp/pr59-browser-5rvy_qmd` 重新打包真实组件，复用已有 CSS，元信息/保存请求为 fixture。真实鼠标和键盘操作结果：
+
+- 展开详情后打开菜单并选择已完成：状态更新，详情 `aria-expanded=true`。
+- 再次打开菜单后按 Escape：菜单 `aria-expanded=false`，详情仍为 `true`。
+- 再次按 Escape：详情变为 `false`。
+- 再次展开详情后点击外部按钮：详情变为 `false`。
+
+本次未重跑生产构建，已使用真实浏览器验证事件修复。未执行远端发布、真实多客户端或手机实机联调；隔离页面不连接用户工作区数据。

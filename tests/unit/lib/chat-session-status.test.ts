@@ -238,6 +238,37 @@ describe('Chat work status in the real metadata bar', () => {
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
+  it('keeps expanded details open when a portaled option receives a mouse press and saves', async () => {
+    await render();
+    await act(async () => details().click());
+    await open();
+    const option = [...document.querySelectorAll<HTMLElement>('[role="option"]')].find((item) => item.textContent === 'workStatus_completed')!;
+    expect(container.contains(option)).toBe(false);
+    await act(async () => option.dispatchEvent(new MouseEvent('mousedown', { bubbles: true })));
+    expect(details().getAttribute('aria-expanded')).toBe('true');
+    await act(async () => option.focus());
+    await act(async () => option.click());
+    expect(trigger().textContent).toContain('workStatus_completed');
+    expect(details().getAttribute('aria-expanded')).toBe('true');
+    await act(async () => document.body.dispatchEvent(new MouseEvent('mousedown', { bubbles: true })));
+    expect(details().getAttribute('aria-expanded')).toBe('false');
+  });
+
+  it('closes only the status popup on Escape, then closes details on a second Escape', async () => {
+    await render();
+    await act(async () => details().click());
+    await open();
+    const option = document.querySelector<HTMLElement>('[role="option"]')!;
+    await act(async () => option.focus());
+    await act(async () => option.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true })));
+    expect(trigger().getAttribute('aria-expanded')).toBe('false');
+    expect(details().getAttribute('aria-expanded')).toBe('true');
+    await vi.waitFor(() => expect(document.activeElement).toBe(trigger()));
+    await act(async () => trigger().dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true })));
+    expect(details().getAttribute('aria-expanded')).toBe('false');
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
   it('keeps mobile metadata readable but disables status when the optional tab ID is absent', async () => {
     await act(async () => root.render(createElement(SessionMetaHeader, {
       meta, provider: 'claude', sessionId: 'A', branch: null, expanded: false, onExpand: vi.fn(),

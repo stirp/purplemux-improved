@@ -62,7 +62,14 @@ const SessionWorkStatusSelect = ({ provider, tabId, sessionId, disabled }: ISess
         <Icon aria-hidden="true" className="size-3.5" />
         <span>{t('workStatus_' + status)}</span>
       </SelectTrigger>
-      <SelectContent align="end" className="shadow-none">
+      <SelectContent
+        align="end"
+        className="shadow-none"
+        onMouseDown={(event) => event.stopPropagation()}
+        onKeyDown={(event) => {
+          if (event.key === 'Escape') event.stopPropagation();
+        }}
+      >
         {WORK_STATUSES.map((value) => (
           <SelectItem key={value} value={value} className="[@media(pointer:coarse)]:min-h-11">
             {t('workStatus_' + value)}
