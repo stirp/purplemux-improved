@@ -48,6 +48,10 @@ import ClaudeCodeIcon from '@/components/icons/claude-code-icon';
 import OpenAIIcon from '@/components/icons/openai-icon';
 import SessionHistoryActions from '@/components/features/workspace/session-history-actions';
 import useWorkspaceLayouts from '@/hooks/use-workspace-layouts';
+import { toast } from 'sonner';
+import { sessionTagIds } from '@/lib/session-tags';
+import { SessionTagChips, SessionTagToolbar } from '@/components/features/workspace/session-tag-controls';
+import { SessionTagEditor, SessionTagManager, type ITagEditorSession } from '@/components/features/workspace/session-tag-dialogs';
 
 const ACTION_ICONS: Record<string, typeof FileText> = {
   Read: FileText,
@@ -316,6 +320,7 @@ interface INotificationPanelProps {
 
 export const NotificationPanel = ({ workspaceLayouts, onNavigated, className }: INotificationPanelProps) => {
   const t = useTranslations('notification');
+  const tt = useTranslations('notification.tags');
   const tabs = useTabStore((s) => s.tabs);
   const workspaces = useWorkspaceStore((s) => s.workspaces);
   const workflow = useWorkspaceStore((s) => s.sessionWorkflow);
@@ -323,9 +328,15 @@ export const NotificationPanel = ({ workspaceLayouts, onNavigated, className }: 
   const { id: activeTabId, agentSessionId: activeSessionId, providerId: activeProviderId } = useActiveTab();
   const [expandedSessions, setExpandedSessions] = useState<Set<string>>(new Set());
   const [query, setQuery] = useState('');
+  const [tagSelection, setTagSelection] = useState<string[]>([]);
+  const [tagEditor, setTagEditor] = useState<ITagEditorSession | null>(null);
+  const [tagManager, setTagManager] = useState(false);
+  const tags = workflow.tags ?? [];
+  const tagFilters = tagSelection.filter((id) => tags.some((tag) => tag.id === id));
   const searchInput = useRef<HTMLInputElement>(null);
   const searchHintId = useId();
   const searching = query.trim().length > 0;
+  const filtering = searching || tagFilters.length > 0;
   const { save, saving } = useSessionWorkflowMutation();
   const sessions = useMemo(() => collectWorkSessions(historyEntries, tabs, workflow), [historyEntries, tabs, workflow]);
   const searchItems = useMemo(() => sessions.map((session) => {
@@ -343,7 +354,10 @@ export const NotificationPanel = ({ workspaceLayouts, onNavigated, className }: 
       workspaceDirectories: workspace?.directories,
     };
   }), [sessions, tabs, workflow, workspaces, workspaceLayouts, t]);
-  const visibleItems = useMemo(() => searchSessions(searchItems, query), [searchItems, query]);
+  const matchedItems = useMemo(() => searchSessions(searchItems, query), [searchItems, query]);
+  const visibleItems = matchedItems.filter(({ session }) => tagFilters.every((id) => sessionTagIds(workflow, session).includes(id)));
+  const tagCounts: Record<string, number> = {};
+  for (const session of sessions) for (const id of sessionTagIds(workflow, session)) tagCounts[id] = (tagCounts[id] ?? 0) + 1;
   const clearSearch = () => {
     setQuery('');
     searchInput.current?.focus();
@@ -379,19 +393,21 @@ export const NotificationPanel = ({ workspaceLayouts, onNavigated, className }: 
             className="absolute right-0 top-0 size-11 md:size-8" onClick={clearSearch}><X aria-hidden="true" /></Button>}
         </div>
         <p id={searchHintId} className="mt-1.5 text-xs text-muted-foreground">{t('searchHint')}</p>
+        <SessionTagToolbar tags={tags} selected={tagFilters} onChange={setTagSelection} onManage={() => setTagManager(true)} counts={tagCounts} />
         <div role="status" aria-live="polite" aria-atomic="true" className="text-xs text-muted-foreground">
-          {searching && <p className="mt-1.5">{t('searchCount', { count: visibleItems.length })}</p>}
+          {filtering && <p className="mt-1.5">{t('searchCount', { count: visibleItems.length })}</p>}
         </div>
+        {filtering && <Button variant="ghost" size="xs" className="mt-1 min-h-11 text-xs text-muted-foreground md:min-h-8" onClick={() => { clearSearch(); setTagSelection([]); }}>{tt('clearAll')}</Button>}
       </div>
       <div className="min-h-0 flex-1 overflow-y-auto" style={{ scrollbarWidth: 'none' }}>
-        {visibleItems.length === 0 && <p className="py-8 text-center text-sm text-muted-foreground">{t(searching ? 'searchEmpty' : 'empty')}</p>}
+        {visibleItems.length === 0 && <p className="py-8 text-center text-sm text-muted-foreground">{t(filtering ? 'searchEmpty' : 'empty')}</p>}
         {WORK_STATUSES.map((status) => {
           const items = visibleItems.filter(({ session }) => session.status === status);
           if (!items.length) return null;
-          const collapsed = !searching && (workflow.collapsed[status] ?? false);
+          const collapsed = !filtering && (workflow.collapsed[status] ?? false);
           return (
             <section key={status} className="mb-4">
-              <button type="button" disabled={saving || searching} aria-expanded={!collapsed}
+              <button type="button" disabled={saving || filtering} aria-expanded={!collapsed}
                 className="mb-1 flex min-h-11 w-full items-center gap-2 text-left text-xs font-medium text-muted-foreground md:min-h-8"
                 onClick={() => void save({ section: status, collapsed: !collapsed })}>
                 <ChevronRight className={cn('h-3 w-3 transition-transform', !collapsed && 'rotate-90')} />
@@ -435,6 +451,8 @@ export const NotificationPanel = ({ workspaceLayouts, onNavigated, className }: 
                               forgetSessionWorkflow(target.providerId, target.agentSessionId);
                             }}><div>{liveItem}</div></SessionHistoryActions>
                           : liveItem}
+                      <SessionTagChips title={title || t('untitledSession')} tags={sessionTagIds(workflow, session).flatMap((id) => tags.filter((tag) => tag.id === id))}
+                        onFilter={(id) => setTagSelection([id])} onEdit={() => setTagEditor({ key: session.key, title: title || t('untitledSession'), ids: sessionTagIds(workflow, session), revision: workflow.tagsRevision ?? 0 })} />
                       <div className="flex flex-wrap items-center gap-x-2 border-t border-border/40 px-3 py-1">
                         <select aria-label={t('workStatusLabel')} disabled={saving}
                           className="min-h-11 min-w-0 max-w-full rounded-md border border-border/60 bg-transparent px-2 text-xs text-muted-foreground md:min-h-8"
@@ -464,6 +482,11 @@ export const NotificationPanel = ({ workspaceLayouts, onNavigated, className }: 
           );
         })}
       </div>
+      {tagEditor && <SessionTagEditor session={tagEditor} workflow={workflow} onClose={() => setTagEditor(null)} onSaved={(ids) => {
+        setTagEditor(null);
+        toast.success(tt(tagFilters.some((id) => !ids.includes(id)) ? 'savedOutsideFilter' : 'saved'));
+      }} />}
+      {tagManager && <SessionTagManager workflow={workflow} counts={tagCounts} onClose={() => setTagManager(false)} />}
     </div>
   );
 };

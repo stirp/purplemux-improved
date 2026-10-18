@@ -19,7 +19,7 @@ vi.mock('@/lib/sync-server', () => ({ broadcastSync: mocks.broadcast }));
 vi.mock('@/lib/tmux', () => ({}));
 vi.mock('@/lib/layout-store', () => ({}));
 vi.mock('@/lib/providers/registry', () => ({ listProviders: () => [] }));
-import { getWorkspaces, updateSessionWorkflow, updateActive, synchronizeSessionWorkflow, removeSessionWorkflow } from '@/lib/workspace-store';
+import { getWorkspaces, updateSessionWorkflow, updateSessionTags, updateActive, synchronizeSessionWorkflow, removeSessionWorkflow } from '@/lib/workspace-store';
 
 import { addSessionHistoryEntry, getSessionHistory, removeSessionHistory } from '@/lib/session-history';
 import { collectWorkSessions, aggregateWorkStatus } from '@/lib/session-workflow';
@@ -41,6 +41,91 @@ beforeEach(() => {
     sidebarCollapsed: false, sidebarWidth: 240 }));
 });
 describe('persistent workflow preferences', () => {
+  const tag = { id: 'resident', name: 'Resident', color: 'purple' as const };
+  const revision = async () => (await getWorkspaces()).sessionWorkflow?.tagsRevision ?? 0;
+  it('atomically creates tags and assignments, persists on reload and preserves status', async () => {
+    await synchronizeSessionWorkflow([makeEntry('s1')]);
+    await updateSessionWorkflow({ key: 'codex:s1', status: 'completed' });
+    const saved = await updateSessionTags({ action: 'assign', revision: 0, key: 'codex:s1', tagIds: [tag.id], newTags: [tag] });
+    expect(saved.tags).toEqual([tag]);
+    expect((await getWorkspaces()).sessionWorkflow?.sessionTags).toEqual({ 'codex:s1': [tag.id] });
+    expect(saved.statuses['codex:s1']).toBe('completed');
+    expect(mocks.broadcast).toHaveBeenCalledWith({ type: 'workspace' });
+    const before = mocks.files.get(file);
+    mocks.fail = true;
+    await expect(updateSessionTags({ action: 'assign', revision: 1, key: 'codex:s1', tagIds: ['new'], newTags: [{ ...tag, id: 'new', name: 'New' }] })).rejects.toThrow('disk full');
+    expect(mocks.files.get(file)).toBe(before);
+    mocks.fail = false;
+    await updateSessionTags({ action: 'assign', revision: 1, key: 'codex:s1', tagIds: [], newTags: [] });
+    expect((await getWorkspaces()).sessionWorkflow?.sessionTags).toEqual({});
+  });
+  it('rejects stale edits and serializes parallel catalog creation', async () => {
+    const results = await Promise.allSettled([
+      updateSessionTags({ action: 'create', revision: 0, tag }),
+      updateSessionTags({ action: 'create', revision: 0, tag: { ...tag, id: 'other', name: 'Other' } }),
+    ]);
+    expect(results.filter((result) => result.status === 'fulfilled')).toHaveLength(1);
+    expect(results.filter((result) => result.status === 'rejected')).toHaveLength(1);
+    expect((await getWorkspaces()).sessionWorkflow?.tags).toEqual([tag]);
+  });
+  it('migrates temporary tags on binding, consumes them, and rejects a late fallback save', async () => {
+    const tabs = { t: { workspaceId: 'ws', panelType: 'codex-cli' } };
+    await updateSessionTags({ action: 'assign', revision: 0, key: 'codex:tab:t', tagIds: [tag.id], newTags: [tag] }, () => tabs);
+    await synchronizeSessionWorkflow([], { t: { ...tabs.t, agentSessionId: 'A' } });
+    expect((await getWorkspaces()).sessionWorkflow?.sessionTags).toEqual({ 'codex:A': [tag.id] });
+    await expect(updateSessionTags({ action: 'assign', revision: 1, key: 'codex:tab:t', tagIds: [tag.id], newTags: [] }, () => ({ t: { ...tabs.t, agentSessionId: 'A' } }))).rejects.toMatchObject({ code: 'conflict' });
+    await synchronizeSessionWorkflow([], { t: { ...tabs.t, agentSessionId: 'B' } });
+    expect((await getWorkspaces()).sessionWorkflow?.sessionTags).toEqual({ 'codex:A': [tag.id] });
+    await synchronizeSessionWorkflow([], {});
+    expect((await getWorkspaces()).sessionWorkflow?.sessionTags).toEqual({ 'codex:A': [tag.id] });
+  });
+  it.each(['tagged', 'cleared', 'hidden'] as const)('consumes reused tab indices after binding (%s)', async (scenario) => {
+    const tab = { workspaceId: 'ws', panelType: 'codex-cli' };
+    await synchronizeSessionWorkflow([], { t: { ...tab, agentSessionId: 'A' } });
+    await updateSessionTags({ action: 'assign', revision: 0, key: 'codex:A', tagIds: ['resident'], newTags: [tag] });
+    await updateSessionWorkflow({ key: 'codex:A', status: 'completed' });
+    await updateSessionTags({ action: 'assign', revision: await revision(), key: 'codex:tab:t', tagIds: ['new'], newTags: [{ ...tag, id: 'new', name: 'New' }] }, () => ({ t: tab }));
+    expect((await getWorkspaces()).sessionWorkflow?.sessions?.['codex:tab:t']).toBeDefined();
+    if (scenario === 'cleared') await updateSessionTags({ action: 'assign', revision: await revision(), key: 'codex:tab:t', tagIds: [], newTags: [] }, () => ({ t: tab }));
+    if (scenario === 'hidden') mocks.files.set('/workflow-test/.purplemux/hidden-sessions.json', JSON.stringify(['codex:B']));
+    else await updateSessionWorkflow({ key: 'codex:B', status: 'completed' });
+    const bound = { t: { ...tab, agentSessionId: 'B' } };
+    await synchronizeSessionWorkflow([], bound);
+    const expectedKeys = scenario === 'hidden' ? ['codex:A'] : ['codex:A', 'codex:B'];
+    for (const tabs of [bound, {}]) {
+      await synchronizeSessionWorkflow([], tabs);
+      const saved = (await getWorkspaces()).sessionWorkflow!;
+      expect(saved.sessionTags).toEqual(scenario === 'tagged' ? { 'codex:A': ['resident'], 'codex:B': ['new'] } : { 'codex:A': ['resident'] });
+      expect(Object.keys(saved.sessions!).sort()).toEqual(expectedKeys);
+      const sessions = collectWorkSessions([], tabs, saved);
+      expect(sessions.map((session) => session.key).sort()).toEqual(expectedKeys);
+      expect(sessions.every((session) => session.navigation?.agentSessionId)).toBe(true);
+      expect(aggregateWorkStatus(sessions.map((session) => session.status))).toBe('completed');
+      expect(JSON.parse(mocks.files.get(file)!).sessionWorkflow.sessions).not.toHaveProperty('codex:tab:t');
+    }
+  });
+  it('cleans removed sessions and never applies temporary tags to hidden identities', async () => {
+    await updateSessionTags({ action: 'assign', revision: 0, key: 'codex:tab:t', tagIds: [tag.id], newTags: [tag] }, () => ({ t: { workspaceId: 'ws', panelType: 'codex-cli' } }));
+    mocks.files.set('/workflow-test/.purplemux/hidden-sessions.json', JSON.stringify(['codex:A']));
+    await synchronizeSessionWorkflow([], { t: { workspaceId: 'ws', panelType: 'codex-cli', agentSessionId: 'A' } });
+    expect((await getWorkspaces()).sessionWorkflow?.sessionTags).toEqual({});
+    await expect(updateSessionTags({ action: 'assign', revision: await revision(), key: 'codex:A', tagIds: [tag.id], newTags: [] })).rejects.toMatchObject({ code: 'missing' });
+    await synchronizeSessionWorkflow([makeEntry('s1')]);
+    await updateSessionTags({ action: 'assign', revision: await revision(), key: 'codex:s1', tagIds: [tag.id], newTags: [] });
+    await removeSessionWorkflow('codex', 's1');
+    expect((await getWorkspaces()).sessionWorkflow?.sessionTags).toEqual({});
+    expect((await getWorkspaces()).sessionWorkflow?.tags).toEqual([tag]);
+  });
+  it('deletes tag associations without deleting sessions, other tags or statuses', async () => {
+    await synchronizeSessionWorkflow([makeEntry('s1'), makeEntry('s2')]);
+    await updateSessionTags({ action: 'assign', revision: 0, key: 'codex:s1', tagIds: [tag.id, 'other'], newTags: [tag, { ...tag, id: 'other', name: 'Other' }] });
+    await updateSessionTags({ action: 'assign', revision: 1, key: 'codex:s2', tagIds: [tag.id], newTags: [] });
+    await updateSessionWorkflow({ key: 'codex:s2', status: 'completed' });
+    const saved = await updateSessionTags({ action: 'delete', revision: 2, id: tag.id });
+    expect(saved.sessionTags).toEqual({ 'codex:s1': ['other'] });
+    expect(Object.keys(saved.sessions!)).toHaveLength(2);
+    expect(saved.statuses['codex:s2']).toBe('completed');
+  });
   it('persists a tab title across the first native session binding and clears it on deletion', async () => {
     await updateSessionWorkflow({ key: 'claude:tab:t', title: 'Renamed session' });
     await synchronizeSessionWorkflow([], { t: { workspaceId: 'ws', panelType: 'claude-code', agentSessionId: 'A' } });

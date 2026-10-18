@@ -1,5 +1,6 @@
 import type { ISessionHistoryEntry, TSessionNavigationTarget } from '@/types/session-history';
 import type { TCliState } from '@/types/timeline';
+import type { ISessionTag } from '@/lib/session-tags';
 
 export const WORK_STATUSES = ['pending', 'in-progress', 'review', 'completed'] as const;
 export type TWorkStatus = typeof WORK_STATUSES[number];
@@ -11,6 +12,9 @@ export interface ISessionWorkflow {
   sessions?: Record<string, IWorkflowSessionRecord>;
   tabBindings?: Record<string, string>;
   deleted?: string[];
+  tags?: ISessionTag[];
+  sessionTags?: Record<string, string[]>;
+  tagsRevision?: number;
 }
 export interface IWorkflowSessionRecord {
   workspaceId: string;
@@ -100,17 +104,23 @@ export const reconcileSessionWorkflow = (
     ...workflow, statuses: { ...workflow.statuses },
     titles: { ...workflow.titles },
     sessions: { ...workflow.sessions }, tabBindings: { ...workflow.tabBindings },
+    ...(workflow.sessionTags ? { sessionTags: { ...workflow.sessionTags } } : {}),
   };
   const deleted = new Set(next.deleted);
   for (const key of deleted) {
     delete next.statuses[key];
     delete next.sessions![key];
+    delete next.sessionTags?.[key];
   }
   for (const [tabId, tab] of Object.entries(tabs)) {
     if (!tab.agentSessionId) continue;
     const provider = tab.agentProviderId === 'codex' || tab.panelType === 'codex-cli' ? 'codex' : 'claude';
     const fallback = sessionWorkKey(provider, null, `tab:${tabId}`);
     const key = sessionWorkKey(provider, tab.agentSessionId, '');
+    if (next.sessionTags?.[fallback]) {
+      if (!deleted.has(key)) next.sessionTags[key] = [...new Set([...(next.sessionTags[key] ?? []), ...next.sessionTags[fallback]])];
+      delete next.sessionTags[fallback];
+    }
     if (next.titles![fallback] !== undefined) {
       if (!deleted.has(key)) next.titles![key] = next.titles![fallback];
       delete next.titles![fallback];
@@ -118,17 +128,21 @@ export const reconcileSessionWorkflow = (
     if (!next.tabBindings![fallback]) {
       if (!deleted.has(key) && next.statuses[fallback] !== undefined && next.statuses[key] === undefined) next.statuses[key] = next.statuses[fallback];
       delete next.statuses[fallback];
-      delete next.sessions![fallback];
     }
+    delete next.sessions![fallback];
     next.tabBindings![fallback] = key;
   }
   for (const session of collectWorkSessions(entries, tabs, { ...next, statuses: {} })) {
-    if (session.live && !session.live.agentSessionId && !next.statuses[session.key]) continue;
+    if (session.live && !session.live.agentSessionId && !next.statuses[session.key] && !next.sessionTags?.[session.key]?.length) continue;
     next.sessions![session.key] = {
       workspaceId: session.workspaceId, tabId: session.tabId, status: session.status, entry: session.entry,
       navigation: session.navigation,
     };
   }
+  if (workflow.tagsRevision !== undefined && (
+    JSON.stringify(workflow.sessionTags) !== JSON.stringify(next.sessionTags)
+    || JSON.stringify(workflow.tabBindings ?? {}) !== JSON.stringify(next.tabBindings)
+  )) next.tagsRevision = workflow.tagsRevision + 1;
   return next;
 };
 

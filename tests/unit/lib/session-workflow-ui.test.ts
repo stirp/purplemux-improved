@@ -5,6 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('next-intl', () => ({ useTranslations: () => (key: string, values?: { count: number }) => values ? `${key} ${values.count}` : key }));
 vi.mock('next/router', () => ({ useRouter: () => ({ pathname: '/' }) }));
+vi.mock('@/hooks/use-is-mobile', () => ({ default: () => false }));
 vi.mock('@/hooks/use-layout', () => ({
   useLayoutStore: (select: (state: unknown) => unknown) => select({
     layout: layoutMock.activeTab ? { activePaneId: 'pane', root: {

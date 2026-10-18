@@ -12,9 +12,11 @@ export const forgetSessionWorkflow = (provider: TSessionHistoryProvider, session
     const workflow = state.sessionWorkflow;
     const statuses = { ...workflow.statuses };
     const sessions = { ...workflow.sessions };
+    const sessionTags = { ...workflow.sessionTags };
     delete statuses[key];
     delete sessions[key];
-    return { sessionWorkflow: { ...workflow, statuses, sessions, deleted: [...new Set([...(workflow.deleted ?? []), key])] } };
+    delete sessionTags[key];
+    return { sessionWorkflow: { ...workflow, statuses, sessions, sessionTags, deleted: [...new Set([...(workflow.deleted ?? []), key])] } };
   });
 };
 
