@@ -19,7 +19,6 @@ import MobileClaudeCodePanel from '@/components/features/mobile/mobile-claude-co
 import MobileCodexPanel from '@/components/features/mobile/mobile-codex-panel';
 import AgentSessionsPanel from '@/components/features/workspace/agent-sessions-panel';
 import MobileTerminalToolbar from '@/components/features/mobile/mobile-terminal-toolbar';
-import TerminalCommandsBar from '@/components/features/workspace/terminal-commands-bar';
 import PaneAgentModePrompt from '@/components/features/workspace/pane-agent-mode-prompt';
 import { formatTabTitle, isShellProcess } from '@/lib/tab-title';
 import { isAppShortcut, isClearShortcut, isFocusInputShortcut, isShiftEnter } from '@/lib/keyboard-shortcuts';
@@ -875,10 +874,7 @@ const MobileSurfaceView = ({
         </div>
       )}
       {!isAgentPanel && !isWebBrowser && !isDiff && !isAgentSessionList && (
-        <TerminalCommandsBar key={activeTabId} sendStdin={sendWebStdin} connected={status === 'connected'} />
-      )}
-      {!isAgentPanel && !isWebBrowser && !isDiff && !isAgentSessionList && status === 'connected' && (
-        <MobileTerminalToolbar sendStdin={sendWebStdin} terminalConnected={status === 'connected'} />
+        <MobileTerminalToolbar key={activeTabId} sendStdin={sendWebStdin} terminalConnected={status === 'connected'} />
       )}
 
       {agentModePrompt && agentModePrompt.tabId === activeTabId && panelType === 'terminal' && (

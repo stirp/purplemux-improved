@@ -48,6 +48,7 @@ beforeEach(() => {
   vi.stubGlobal('PointerEvent', MouseEvent);
   vi.stubGlobal('ResizeObserver', class { observe() {} unobserve() {} disconnect() {} });
   vi.stubGlobal('fetch', vi.fn(async (_url: string, options?: RequestInit) => {
+    if (_url === '/api/terminal-commands') return { ok: true, json: async () => [] };
     if (!options) return { ok: !failLoad, json: async () => keys };
     if (saveGate) await saveGate;
     if (failSave) return { ok: false };
@@ -73,7 +74,7 @@ describe('terminal key bar', () => {
     await act(async () => root.render(createElement(SWRConfig, {
       value: { provider: () => cache, dedupingInterval: 0, shouldRetryOnError: false },
     }, createElement(MobileTerminalToolbar, { sendStdin: send, terminalConnected: true }))));
-    expect(toolbarNames()[1]).toBe('F12');
+    expect(button('F12').parentElement?.firstElementChild).toBe(button('F12'));
     expect(toolbarNames()).not.toContain('Tab');
     await click('F12');
     expect(send).toHaveBeenCalledExactlyOnceWith('\x1b[24~');

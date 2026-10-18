@@ -1,0 +1,722 @@
+[
+  {
+    "mode": "desktop",
+    "height": 45,
+    "input": false,
+    "lists": [
+      {
+        "end": 134,
+        "scrollable": true,
+        "total": 248,
+        "width": 114
+      },
+      {
+        "end": 886,
+        "scrollable": true,
+        "total": 968,
+        "width": 82
+      }
+    ],
+    "pageWidth": 320,
+    "settings": [
+      {
+        "bottom": 351,
+        "label": "管理自定义命令",
+        "left": 20,
+        "right": 48,
+        "top": 323
+      }
+    ],
+    "settingsVisible": true,
+    "singleRow": true,
+    "width": 320
+  },
+  {
+    "mode": "?mode=mobile",
+    "height": 45,
+    "input": true,
+    "lists": [
+      {
+        "end": 134,
+        "scrollable": true,
+        "total": 248,
+        "width": 114
+      },
+      {
+        "end": 886,
+        "scrollable": true,
+        "total": 968,
+        "width": 82
+      }
+    ],
+    "pageWidth": 320,
+    "settings": [
+      {
+        "bottom": 400,
+        "label": "管理自定义命令",
+        "left": 20,
+        "right": 48,
+        "top": 372
+      }
+    ],
+    "settingsVisible": true,
+    "singleRow": true,
+    "width": 320
+  },
+  {
+    "mode": "?long=1",
+    "height": 45,
+    "input": false,
+    "lists": [
+      {
+        "end": 1523,
+        "scrollable": true,
+        "total": 1637,
+        "width": 114
+      },
+      {
+        "end": 886,
+        "scrollable": true,
+        "total": 968,
+        "width": 82
+      }
+    ],
+    "pageWidth": 320,
+    "settings": [
+      {
+        "bottom": 351,
+        "label": "管理自定义命令",
+        "left": 20,
+        "right": 48,
+        "top": 323
+      }
+    ],
+    "settingsVisible": true,
+    "singleRow": true,
+    "width": 320
+  },
+  {
+    "mode": "?empty=1",
+    "height": 41,
+    "input": false,
+    "lists": [
+      {
+        "end": 0,
+        "scrollable": true,
+        "total": 114,
+        "width": 114
+      },
+      {
+        "end": 0,
+        "scrollable": true,
+        "total": 0,
+        "width": 0
+      }
+    ],
+    "pageWidth": 320,
+    "settings": [
+      {
+        "bottom": 349,
+        "label": "管理自定义命令",
+        "left": 20,
+        "right": 48,
+        "top": 321
+      }
+    ],
+    "settingsVisible": true,
+    "singleRow": true,
+    "width": 320
+  },
+  {
+    "mode": "?mode=hidden",
+    "height": 41,
+    "input": false,
+    "lists": [
+      {
+        "end": 4,
+        "scrollable": true,
+        "total": 248,
+        "width": 244
+      }
+    ],
+    "pageWidth": 320,
+    "settings": [
+      {
+        "bottom": 349,
+        "label": "管理自定义命令",
+        "left": 20,
+        "right": 48,
+        "top": 321
+      }
+    ],
+    "settingsVisible": true,
+    "singleRow": true,
+    "width": 320
+  },
+  {
+    "mode": "?mode=offline",
+    "height": 41,
+    "input": false,
+    "lists": [
+      {
+        "end": 4,
+        "scrollable": true,
+        "total": 248,
+        "width": 244
+      }
+    ],
+    "pageWidth": 320,
+    "settings": [
+      {
+        "bottom": 349,
+        "label": "管理自定义命令",
+        "left": 20,
+        "right": 48,
+        "top": 321
+      }
+    ],
+    "settingsVisible": true,
+    "singleRow": true,
+    "width": 320
+  },
+  {
+    "mode": "desktop",
+    "height": 45,
+    "input": false,
+    "lists": [
+      {
+        "end": 99,
+        "scrollable": true,
+        "total": 248,
+        "width": 149
+      },
+      {
+        "end": 851,
+        "scrollable": true,
+        "total": 968,
+        "width": 117
+      }
+    ],
+    "pageWidth": 390,
+    "settings": [
+      {
+        "bottom": 351,
+        "label": "管理自定义命令",
+        "left": 20,
+        "right": 48,
+        "top": 323
+      }
+    ],
+    "settingsVisible": true,
+    "singleRow": true,
+    "width": 390
+  },
+  {
+    "mode": "?mode=mobile",
+    "height": 45,
+    "input": true,
+    "lists": [
+      {
+        "end": 99,
+        "scrollable": true,
+        "total": 248,
+        "width": 149
+      },
+      {
+        "end": 851,
+        "scrollable": true,
+        "total": 968,
+        "width": 117
+      }
+    ],
+    "pageWidth": 390,
+    "settings": [
+      {
+        "bottom": 400,
+        "label": "管理自定义命令",
+        "left": 20,
+        "right": 48,
+        "top": 372
+      }
+    ],
+    "settingsVisible": true,
+    "singleRow": true,
+    "width": 390
+  },
+  {
+    "mode": "?long=1",
+    "height": 45,
+    "input": false,
+    "lists": [
+      {
+        "end": 1488,
+        "scrollable": true,
+        "total": 1637,
+        "width": 149
+      },
+      {
+        "end": 851,
+        "scrollable": true,
+        "total": 968,
+        "width": 117
+      }
+    ],
+    "pageWidth": 390,
+    "settings": [
+      {
+        "bottom": 351,
+        "label": "管理自定义命令",
+        "left": 20,
+        "right": 48,
+        "top": 323
+      }
+    ],
+    "settingsVisible": true,
+    "singleRow": true,
+    "width": 390
+  },
+  {
+    "mode": "?empty=1",
+    "height": 41,
+    "input": false,
+    "lists": [
+      {
+        "end": 0,
+        "scrollable": true,
+        "total": 149,
+        "width": 149
+      },
+      {
+        "end": 0,
+        "scrollable": true,
+        "total": 0,
+        "width": 0
+      }
+    ],
+    "pageWidth": 390,
+    "settings": [
+      {
+        "bottom": 349,
+        "label": "管理自定义命令",
+        "left": 20,
+        "right": 48,
+        "top": 321
+      }
+    ],
+    "settingsVisible": true,
+    "singleRow": true,
+    "width": 390
+  },
+  {
+    "mode": "?mode=hidden",
+    "height": 41,
+    "input": false,
+    "lists": [
+      {
+        "end": 0,
+        "scrollable": true,
+        "total": 314,
+        "width": 314
+      }
+    ],
+    "pageWidth": 390,
+    "settings": [
+      {
+        "bottom": 349,
+        "label": "管理自定义命令",
+        "left": 20,
+        "right": 48,
+        "top": 321
+      }
+    ],
+    "settingsVisible": true,
+    "singleRow": true,
+    "width": 390
+  },
+  {
+    "mode": "?mode=offline",
+    "height": 41,
+    "input": false,
+    "lists": [
+      {
+        "end": 0,
+        "scrollable": true,
+        "total": 314,
+        "width": 314
+      }
+    ],
+    "pageWidth": 390,
+    "settings": [
+      {
+        "bottom": 349,
+        "label": "管理自定义命令",
+        "left": 20,
+        "right": 48,
+        "top": 321
+      }
+    ],
+    "settingsVisible": true,
+    "singleRow": true,
+    "width": 390
+  },
+  {
+    "mode": "desktop",
+    "height": 45,
+    "input": false,
+    "lists": [
+      {
+        "end": 11,
+        "scrollable": true,
+        "total": 248,
+        "width": 237
+      },
+      {
+        "end": 763,
+        "scrollable": true,
+        "total": 968,
+        "width": 205
+      }
+    ],
+    "pageWidth": 567,
+    "settings": [
+      {
+        "bottom": 351,
+        "label": "管理自定义命令",
+        "left": 20,
+        "right": 48,
+        "top": 323
+      }
+    ],
+    "settingsVisible": true,
+    "singleRow": true,
+    "width": 567
+  },
+  {
+    "mode": "?mode=mobile",
+    "height": 45,
+    "input": true,
+    "lists": [
+      {
+        "end": 11,
+        "scrollable": true,
+        "total": 248,
+        "width": 237
+      },
+      {
+        "end": 763,
+        "scrollable": true,
+        "total": 968,
+        "width": 205
+      }
+    ],
+    "pageWidth": 567,
+    "settings": [
+      {
+        "bottom": 400,
+        "label": "管理自定义命令",
+        "left": 20,
+        "right": 48,
+        "top": 372
+      }
+    ],
+    "settingsVisible": true,
+    "singleRow": true,
+    "width": 567
+  },
+  {
+    "mode": "?long=1",
+    "height": 45,
+    "input": false,
+    "lists": [
+      {
+        "end": 1400,
+        "scrollable": true,
+        "total": 1637,
+        "width": 237
+      },
+      {
+        "end": 763,
+        "scrollable": true,
+        "total": 968,
+        "width": 205
+      }
+    ],
+    "pageWidth": 567,
+    "settings": [
+      {
+        "bottom": 351,
+        "label": "管理自定义命令",
+        "left": 20,
+        "right": 48,
+        "top": 323
+      }
+    ],
+    "settingsVisible": true,
+    "singleRow": true,
+    "width": 567
+  },
+  {
+    "mode": "?empty=1",
+    "height": 41,
+    "input": false,
+    "lists": [
+      {
+        "end": 0,
+        "scrollable": true,
+        "total": 237,
+        "width": 237
+      },
+      {
+        "end": 0,
+        "scrollable": true,
+        "total": 0,
+        "width": 0
+      }
+    ],
+    "pageWidth": 567,
+    "settings": [
+      {
+        "bottom": 349,
+        "label": "管理自定义命令",
+        "left": 20,
+        "right": 48,
+        "top": 321
+      }
+    ],
+    "settingsVisible": true,
+    "singleRow": true,
+    "width": 567
+  },
+  {
+    "mode": "?mode=hidden",
+    "height": 41,
+    "input": false,
+    "lists": [
+      {
+        "end": 0,
+        "scrollable": true,
+        "total": 491,
+        "width": 491
+      }
+    ],
+    "pageWidth": 567,
+    "settings": [
+      {
+        "bottom": 349,
+        "label": "管理自定义命令",
+        "left": 20,
+        "right": 48,
+        "top": 321
+      }
+    ],
+    "settingsVisible": true,
+    "singleRow": true,
+    "width": 567
+  },
+  {
+    "mode": "?mode=offline",
+    "height": 41,
+    "input": false,
+    "lists": [
+      {
+        "end": 0,
+        "scrollable": true,
+        "total": 491,
+        "width": 491
+      }
+    ],
+    "pageWidth": 567,
+    "settings": [
+      {
+        "bottom": 349,
+        "label": "管理自定义命令",
+        "left": 20,
+        "right": 48,
+        "top": 321
+      }
+    ],
+    "settingsVisible": true,
+    "singleRow": true,
+    "width": 567
+  },
+  {
+    "mode": "desktop",
+    "height": 45,
+    "input": false,
+    "lists": [
+      {
+        "end": 0,
+        "scrollable": true,
+        "total": 594,
+        "width": 594
+      },
+      {
+        "end": 406,
+        "scrollable": true,
+        "total": 968,
+        "width": 562
+      }
+    ],
+    "pageWidth": 1280,
+    "settings": [
+      {
+        "bottom": 351,
+        "label": "管理自定义命令",
+        "left": 20,
+        "right": 48,
+        "top": 323
+      }
+    ],
+    "settingsVisible": true,
+    "singleRow": true,
+    "width": 1280
+  },
+  {
+    "mode": "?mode=mobile",
+    "height": 45,
+    "input": true,
+    "lists": [
+      {
+        "end": 0,
+        "scrollable": true,
+        "total": 594,
+        "width": 594
+      },
+      {
+        "end": 406,
+        "scrollable": true,
+        "total": 968,
+        "width": 562
+      }
+    ],
+    "pageWidth": 1280,
+    "settings": [
+      {
+        "bottom": 400,
+        "label": "管理自定义命令",
+        "left": 20,
+        "right": 48,
+        "top": 372
+      }
+    ],
+    "settingsVisible": true,
+    "singleRow": true,
+    "width": 1280
+  },
+  {
+    "mode": "?long=1",
+    "height": 45,
+    "input": false,
+    "lists": [
+      {
+        "end": 1043,
+        "scrollable": true,
+        "total": 1637,
+        "width": 594
+      },
+      {
+        "end": 406,
+        "scrollable": true,
+        "total": 968,
+        "width": 562
+      }
+    ],
+    "pageWidth": 1280,
+    "settings": [
+      {
+        "bottom": 351,
+        "label": "管理自定义命令",
+        "left": 20,
+        "right": 48,
+        "top": 323
+      }
+    ],
+    "settingsVisible": true,
+    "singleRow": true,
+    "width": 1280
+  },
+  {
+    "mode": "?empty=1",
+    "height": 41,
+    "input": false,
+    "lists": [
+      {
+        "end": 0,
+        "scrollable": true,
+        "total": 594,
+        "width": 594
+      },
+      {
+        "end": 0,
+        "scrollable": true,
+        "total": 0,
+        "width": 0
+      }
+    ],
+    "pageWidth": 1280,
+    "settings": [
+      {
+        "bottom": 349,
+        "label": "管理自定义命令",
+        "left": 20,
+        "right": 48,
+        "top": 321
+      }
+    ],
+    "settingsVisible": true,
+    "singleRow": true,
+    "width": 1280
+  },
+  {
+    "mode": "?mode=hidden",
+    "height": 41,
+    "input": false,
+    "lists": [
+      {
+        "end": 0,
+        "scrollable": true,
+        "total": 1204,
+        "width": 1204
+      }
+    ],
+    "pageWidth": 1280,
+    "settings": [
+      {
+        "bottom": 349,
+        "label": "管理自定义命令",
+        "left": 20,
+        "right": 48,
+        "top": 321
+      }
+    ],
+    "settingsVisible": true,
+    "singleRow": true,
+    "width": 1280
+  },
+  {
+    "mode": "?mode=offline",
+    "height": 41,
+    "input": false,
+    "lists": [
+      {
+        "end": 0,
+        "scrollable": true,
+        "total": 1204,
+        "width": 1204
+      }
+    ],
+    "pageWidth": 1280,
+    "settings": [
+      {
+        "bottom": 349,
+        "label": "管理自定义命令",
+        "left": 20,
+        "right": 48,
+        "top": 321
+      }
+    ],
+    "settingsVisible": true,
+    "singleRow": true,
+    "width": 1280
+  }
+]
