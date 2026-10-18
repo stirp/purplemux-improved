@@ -52,11 +52,15 @@ All tmux invocations go through `tmux.ts`. Do not call tmux directly via `child_
 | Function | tmux command | Purpose |
 | --- | --- | --- |
 | `listSessions()` | `tmux -L purple ls -F '#{session_name}'` | List sessions with the `pt-` prefix |
-| `createSession(name, cols, rows, cwd)` | `tmux -L purple new-session -d -s {name} -x {cols} -y {rows}` | Create a background session |
+| `createSession(name, cols, rows, cwd)` | `tmux -L purple new-session -d -s {name} -x {cols} -y {rows} -c {cwd} ...` | Create a background session |
 | `killSession(name)` | SIGTERM → `kill-session` → recheck → SIGKILL fallback | End a session (process group level) |
 | `hasSession(name)` | `tmux -L purple has-session -t {name}` | Check whether a session exists |
 | `cleanDeadSessions()` | `listSessions` + `hasSession` loop | Clean up dead sessions |
 | `scanSessions()` | Called at server start | Scan and clean existing sessions |
+
+`createSession` validates the target directory and starts the tmux client from `/`, so a new daemon is independent of worktree deletion. On Linux, a multi-argument `/usr/bin/env -C` launch changes directory before any shell starts, avoiding shell initialization warnings. Other platforms use a POSIX `/bin/sh` bootstrap that changes directory before executing the existing isolated login-shell command. The directory is passed as a separate argument, not interpolated into shell code. This also handles an existing tmux 3.7c daemon whose own cwd was deleted: that version skips its directory change when `getcwd()` fails, even with `-c`. Both launch paths bypass the cached default shell, allowing fish to start only after the directory is valid. Existing sessions are not restarted.
+
+Relative targets are resolved against the application cwd before validation and launch, so changing the tmux client cwd does not change their meaning. Every target-directory argument passed to tmux escapes a trailing semicolon with one additional backslash: tmux parses trailing semicolons as command separators even with separate argv entries. Filesystem validation uses the unescaped absolute path; persisted Tab/workspace path formats are unchanged.
 
 ### Information Lookup
 

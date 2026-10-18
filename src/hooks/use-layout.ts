@@ -470,7 +470,7 @@ const useLayoutStore = create<ILayoutState>((set, get) => ({
       if (!res.ok) throw new Error();
       const newTab: ITab = await res.json();
 
-      if (command || resumeSessionId) {
+      if ((command || resumeSessionId) && (!cwd || newTab.cwd === cwd)) {
         useTabStore.getState().initTab(newTab.id, { panelType, sessionView: 'check' });
       }
 

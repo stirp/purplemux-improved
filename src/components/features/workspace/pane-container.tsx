@@ -708,9 +708,6 @@ const PaneContainer = memo(({ paneId, paneNumber }: IPaneContainerProps) => {
     const newTab = await createTabInPane(paneId, panelType, options?.command, options?.resumeSessionId);
     if (newTab) {
       useTabStore.getState().initTab(newTab.id, { panelType, workspaceId: layoutWsId ?? '' });
-      if (options?.command || options?.resumeSessionId) {
-        useTabStore.getState().setSessionView(newTab.id, 'check');
-      }
       const currentTabId = activeTabIdRef.current;
       const currentTitle = currentTabId
         ? useTabMetadataStore.getState().metadata[currentTabId]?.title

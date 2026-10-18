@@ -40,9 +40,20 @@ export const createSession = async (
   rows: number,
   cwd?: string,
 ): Promise<void> => {
+  const shellCwd = path.resolve(cwd || PRISTINE_ENV.HOME || '/');
+  if (!(await fs.stat(shellCwd)).isDirectory()) {
+    throw new Error(`Terminal working directory is not a directory: ${shellCwd}`);
+  }
+  // tmux는 argv 끝의 세미콜론도 명령 구분자로 해석하고 직전 백슬래시 하나를 제거한다.
+  const tmuxCwd = shellCwd.replace(/;$/, '\\;');
   // tmux 서버 global env cache를 우회하기 위해 `env -i $SHELL -l`을 명령으로 직접 넘긴다.
   // execFile의 env 옵션은 tmux 서버가 이미 떠있는 경우 무시되므로 의존하지 않는다.
   const shellCmd = buildShellLaunchCommand();
+  // tmux 3.7c는 서버 cwd가 삭제되면 -c도 무시한다. Linux에서는 셸 초기화 전 이동해
+  // getcwd 경고까지 방지하고, env -C가 없는 플랫폼에서는 POSIX 셸로 복구한다.
+  const shellArgs = isLinux
+    ? ['/usr/bin/env', '-C', tmuxCwd, '/bin/sh', '-c', `exec ${shellCmd}`]
+    : ['/bin/sh', '-c', `cd -- "$1" && exec ${shellCmd}`, 'purplemux-shell', tmuxCwd];
   await execFile(
     'tmux',
     [
@@ -53,11 +64,12 @@ export const createSession = async (
       '-s', name,
       '-x', String(cols),
       '-y', String(rows),
-      shellCmd,
+      '-c', tmuxCwd,
+      ...shellArgs,
     ],
     {
       timeout: CMD_TIMEOUT,
-      cwd: cwd || PRISTINE_ENV.HOME || '/',
+      cwd: '/',
     },
   );
   await applyConfig();

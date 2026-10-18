@@ -45,7 +45,9 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       return res.status(404).json({ error: 'Pane not found' });
     }
 
-    if (resumeSessionId && provider && !command) {
+    const cwdLost = Boolean(cwd && tab.cwd !== cwd);
+    const shouldResume = Boolean(resumeSessionId && provider && !command && !cwdLost);
+    if (shouldResume && provider) {
       provider.writeSessionId(tab, resumeSessionId);
       await updateTabAgentSessionId(tab.sessionName, provider, resumeSessionId);
     }
@@ -63,12 +65,12 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
         lastEvent: null,
         eventSeq: 0,
       });
-      if (command) {
+      if (command && !cwdLost) {
         getStatusManager().markAgentLaunch(tab.id);
       }
     }
 
-    if (resumeSessionId && provider && !command) {
+    if (shouldResume && provider) {
       setTimeout(async () => {
         try {
           const resumeCmd = await provider.buildResumeCommand(resumeSessionId, { workspaceId: wsId });

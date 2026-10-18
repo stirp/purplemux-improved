@@ -203,9 +203,6 @@ const MobileTerminalPage = () => {
     const newTab = await layout.createTabInPane(currentPane.id, panelType, cmd, options?.resumeSessionId);
     if (newTab) {
       useTabStore.getState().initTab(newTab.id, { panelType, workspaceId: activeWorkspaceId ?? '' });
-      if (cmd || options?.resumeSessionId) {
-        useTabStore.getState().setSessionView(newTab.id, 'check');
-      }
     }
   }, [currentPane, ensureAgentInstalled, layout, activeWorkspaceId, t]);
 

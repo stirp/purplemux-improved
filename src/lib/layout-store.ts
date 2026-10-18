@@ -303,11 +303,16 @@ export const addTabToPane = async (wsId: string, paneId: string, name?: string, 
     if (!pane) return null;
 
     const isWebBrowser = panelType === 'web-browser';
+    const effectiveCwd = isWebBrowser ? cwd : await resolveExistingDir(cwd);
+    const cwdLost = Boolean(cwd && cwd !== effectiveCwd);
     const tabId = generateTabId();
     const sessionName = workspaceSessionName(wsId, paneId, tabId);
     if (!isWebBrowser) {
-      await createSession(sessionName, 80, 24, cwd);
-      if (command) {
+      await createSession(sessionName, 80, 24, effectiveCwd);
+      if (cwdLost) {
+        log.warn(`tab cwd missing, falling back to ${effectiveCwd}: ${sessionName} (was ${cwd})`);
+      }
+      if (command && !cwdLost) {
         await sendKeys(sessionName, command);
       }
     }
@@ -315,7 +320,7 @@ export const addTabToPane = async (wsId: string, paneId: string, name?: string, 
     const nextOrder = pane.tabs.length > 0 ? Math.max(...pane.tabs.map((t) => t.order)) + 1 : 0;
     const defaultName = defaultTabNameForPanelType(panelType as ITab['panelType']);
     const tabName = name?.trim() || defaultName;
-    const tab: ITab = { id: tabId, sessionName, name: tabName, order: nextOrder, ...(cwd ? { cwd } : {}), ...(panelType ? { panelType: panelType as ITab['panelType'] } : {}) };
+    const tab: ITab = { id: tabId, sessionName, name: tabName, order: nextOrder, ...(cwd ? { cwd: effectiveCwd } : {}), ...(panelType ? { panelType: panelType as ITab['panelType'] } : {}) };
 
     pane.tabs.push(tab);
     pane.activeTabId = tabId;
