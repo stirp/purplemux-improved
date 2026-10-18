@@ -62,3 +62,26 @@ git diff --check
 - 手机验证为 Chromium 390×844 视口模拟，非手机实机；未单独执行原生触摸事件或软键盘遮挡验证。
 - 未执行完整生产构建、全仓测试和真实断网重连浏览器场景；连接刷新沿用既有同步机制，自定义命令断线禁用/不补发由回归测试覆盖。
 - 按键失败与存储故障由自动化测试模拟；没有向实际磁盘注入故障。
+
+## 合并冲突修复（2026-10-18）
+
+- 本次用户要求修复已有合并冲突。唯一冲突位于 `src/lib/workspace-store.ts` 的导入区；同时保留终端按键配置与会话标签的导入，其他自动合并内容保持原样。
+- 行为依据本需求及 [会话自定义标签规格](../../session-custom-tags/spec.md)，未改变两项需求的验收约定。
+- 本轮重新运行以下检查，7 个测试文件共 108 项通过；完整 TypeScript、该文件 ESLint 和差异格式检查通过：
+
+```bash
+pnpm exec vitest run --maxWorkers=2 \
+  tests/unit/lib/terminal-commands-storage.test.ts \
+  tests/unit/api/terminal-commands.test.ts \
+  tests/unit/api/terminal-keys.test.ts \
+  tests/unit/lib/session-tags.test.ts \
+  tests/unit/lib/session-tags-api.test.ts \
+  tests/unit/lib/session-workflow-storage.test.ts \
+  tests/unit/lib/workspace-reorder.test.ts
+pnpm exec tsc --noEmit
+pnpm exec eslint src/lib/workspace-store.ts
+git diff --check
+git diff --cached --check
+```
+
+- 该轮仅合并依赖导入，不涉及界面或功能逻辑变更，未重新执行浏览器验证或生产构建。已标记冲突解决，不创建提交或推送。

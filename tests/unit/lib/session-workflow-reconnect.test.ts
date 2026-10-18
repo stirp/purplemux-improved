@@ -19,7 +19,10 @@ it('pulls work status and collapsed preferences on initial connect and reconnect
   const initialWorkspace = useWorkspaceStore.getState();
   const data = (collapsed: boolean) => ({
     workspaces: [{ id: 'ws', name: 'Work', directories: [] }], groups: [],
-    sessionWorkflow: { statuses: { 'codex:s1': collapsed ? 'completed' : 'review' }, collapsed: { review: collapsed } },
+    sessionWorkflow: { statuses: { 'codex:s1': collapsed ? 'completed' : 'review' }, collapsed: { review: collapsed },
+      tags: [{ id: 'resident', name: collapsed ? 'Updated assistant' : 'Assistant', color: 'purple' }],
+      sessionTags: { 'codex:s1': collapsed ? ['resident'] : [] }, tagsRevision: collapsed ? 2 : 1,
+    },
   });
   const fetchMock = vi.fn()
     .mockResolvedValueOnce({ ok: true, json: async () => data(false) })
