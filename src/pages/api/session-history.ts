@@ -1,10 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { z } from 'zod';
-import { hideSession } from '@/lib/hidden-sessions';
 import { deleteOriginalSession, SessionInUseError } from '@/lib/delete-session';
-import { removeSessionHistory } from '@/lib/session-history';
-import { removeSessionWorkflow } from '@/lib/workspace-store';
-import { getStatusManager } from '@/lib/status-manager';
+import { removeSessionRecords } from '@/lib/remove-session-records';
 
 const schema = z.object({
   provider: z.enum(['claude', 'codex']),
@@ -22,13 +19,11 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   if (!result.success) return res.status(400).json({ error: 'Invalid session' });
   try {
     const { provider, sessionId, historyEntryId, deleteOriginal } = result.data;
-    if (sessionId) {
-      if (deleteOriginal) await deleteOriginalSession(provider, sessionId);
-      await hideSession(provider, sessionId);
+    if (sessionId && deleteOriginal) {
+      await deleteOriginalSession(provider, sessionId, undefined, (id) => removeSessionRecords(provider, id));
+    } else {
+      await removeSessionRecords(provider, sessionId, historyEntryId);
     }
-    const entries = await removeSessionHistory(provider, sessionId, historyEntryId);
-    await removeSessionWorkflow(provider, sessionId, historyEntryId);
-    getStatusManager().broadcast({ type: 'session-history:sync', entries });
     return res.status(204).end();
   } catch (error) {
     if (error instanceof SessionInUseError) return res.status(409).json({ error: 'session-in-use' });

@@ -4,7 +4,8 @@ import { resolveLayoutDir } from '@/lib/layout-store';
 import { getAllPanesInfo } from '@/lib/tmux';
 import { deleteOriginalSession } from '@/lib/delete-session';
 import { getSessionHistory, removeSessionHistory } from '@/lib/session-history';
-import { hideSession, sessionHistoryKey } from '@/lib/hidden-sessions';
+import { sessionHistoryKey } from '@/lib/hidden-sessions';
+import { removeSessionRecords } from '@/lib/remove-session-records';
 import { getStatusManager } from '@/lib/status-manager';
 import type { ITab } from '@/types/terminal';
 import type { TSessionHistoryProvider } from '@/types/session-history';
@@ -81,12 +82,12 @@ export const deleteWorkspaceSessions = async (
       if ([...panes.keys()].some((name) => name.startsWith(`pt-${workspaceId}-`))) {
         throw new Error('Workspace sessions are still running');
       }
-      await deleteOriginalSession(provider, sessionId, workspaceId);
+      await deleteOriginalSession(provider, sessionId, workspaceId, (id) => removeSessionRecords(provider, id));
       progress.deleted.push(key);
       await writeProgress(workspaceId, progress);
+    } else {
+      await removeSessionRecords(provider, sessionId);
     }
-    await hideSession(provider, sessionId);
-    await removeSessionHistory(provider, sessionId);
   }
   for (const entry of await getSessionHistory()) {
     if (entry.workspaceId === workspaceId && !entry.agentSessionId) {

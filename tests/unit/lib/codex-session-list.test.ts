@@ -43,16 +43,27 @@ afterEach(async () => {
   await fs.rm(mocks.home, { recursive: true, force: true });
 });
 
-const writeSession = async (id: string, cwd = '/project') => {
+const writeSession = async (id: string, cwd = '/project', source?: unknown) => {
   const file = path.join(day, `${id}.jsonl`);
   await fs.writeFile(file, [
-    { type: 'session_meta', payload: { id, timestamp: '2026-10-10T00:00:00Z', cwd } },
+    { type: 'session_meta', payload: { id, timestamp: '2026-10-10T00:00:00Z', cwd, source } },
     { type: 'event_msg', payload: { type: 'user_message', message: 'hello' } },
   ].map((entry) => JSON.stringify(entry)).join('\n') + '\n');
   return file;
 };
 
 describe('Codex session list', () => {
+  it('never offers internal review, compaction or spawned agents as resumable project sessions', async () => {
+    await writeSession('main', '/project', 'cli');
+    await writeSession('legacy');
+    await writeSession('review', '/project', { subagent: 'review' });
+    await writeSession('compact', '/project', { subagent: 'compact' });
+    await writeSession('spawn', '/project', { subagent: { thread_spawn: { parent_thread_id: 'main' } } });
+    const result = await list.listCodexSessions({ cwd: '/project', daysBack: 1 });
+    expect(result.sessions.map((entry) => entry.sessionId).sort()).toEqual(['legacy', 'main']);
+    expect(result.scannedFiles).toBe(5);
+    expect(mocks.stats).toHaveBeenCalledTimes(2);
+  });
   it('bounds concurrent loads while preserving filtering, metadata, counts and sorting', async () => {
     const files = await Promise.all(Array.from({ length: 35 }, (_, i) => writeSession(`s-${i}`)));
     await writeSession('elsewhere', '/other');

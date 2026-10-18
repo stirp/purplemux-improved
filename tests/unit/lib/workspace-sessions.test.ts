@@ -5,11 +5,12 @@ import path from 'node:path';
 import type { ITab } from '@/types/terminal';
 const mocks = vi.hoisted(() => ({
   root: '', statuses: {} as Record<string, unknown>, history: [] as Record<string, unknown>[],
-  panes: vi.fn(), remove: vi.fn(), hide: vi.fn(), broadcast: vi.fn(), forget: vi.fn(),
+  panes: vi.fn(), remove: vi.fn(), hide: vi.fn(), broadcast: vi.fn(), forget: vi.fn(), workflow: vi.fn(),
 }));
 vi.mock('@/lib/tmux', () => ({ getAllPanesInfo: mocks.panes }));
 vi.mock('@/lib/layout-store', () => ({ resolveLayoutDir: (id: string) => path.join(mocks.root, id) }));
 vi.mock('@/lib/delete-session', () => ({ deleteOriginalSession: mocks.remove }));
+vi.mock('@/lib/workspace-store', () => ({ removeSessionWorkflow: mocks.workflow }));
 vi.mock('@/lib/hidden-sessions', () => ({ hideSession: mocks.hide, sessionHistoryKey: (provider: string, id: string) => `${provider}:${id}` }));
 vi.mock('@/lib/status-manager', () => ({ getStatusManager: () => ({
   getAllForClient: () => mocks.statuses, broadcast: mocks.broadcast, removeWorkspaceTabs: mocks.forget,
@@ -18,6 +19,7 @@ vi.mock('@/lib/session-history', () => ({
   getSessionHistory: async () => mocks.history,
   removeSessionHistory: async (provider: string, sessionId: string | null, id?: string) => {
     mocks.history = mocks.history.filter((e) => e.providerId !== provider || (sessionId ? e.agentSessionId !== sessionId : e.id !== id));
+    return mocks.history;
   },
 }));
 import { collectWorkspaceSessions, deleteWorkspaceSessions } from '@/lib/workspace-sessions';
@@ -30,6 +32,7 @@ beforeEach(async () => {
   mocks.statuses = {};
   mocks.history = [];
   mocks.panes.mockResolvedValue(new Map());
+  mocks.remove.mockImplementation(async (_provider, id, _workspace, onDeleted) => { await onDeleted(id); });
 });
 afterEach(async () => { await fs.rm(mocks.root, { recursive: true, force: true }); });
 
@@ -58,7 +61,9 @@ describe('workspace native session cleanup', () => {
     ];
     const sessions = await collectWorkspaceSessions('ws-one', [tab('two', 'claude')]);
     await deleteWorkspaceSessions('ws-one', sessions);
-    expect(mocks.remove.mock.calls).toEqual([['claude', 'two', 'ws-one'], ['codex', 'one', 'ws-one']]);
+    expect(mocks.remove.mock.calls).toEqual([
+      ['claude', 'two', 'ws-one', expect.any(Function)], ['codex', 'one', 'ws-one', expect.any(Function)],
+    ]);
     expect(mocks.hide).toHaveBeenCalledTimes(2);
     expect(mocks.history.map((e) => e.id)).toEqual(['c']);
     expect(mocks.forget).toHaveBeenCalledWith('ws-one', false);
@@ -88,5 +93,20 @@ describe('workspace native session cleanup', () => {
     await expect(deleteWorkspaceSessions('ws-one', sessions)).rejects.toThrow('active');
     expect(mocks.hide).not.toHaveBeenCalled();
     expect(mocks.history).toHaveLength(1);
+  });
+  it('cleans and broadcasts a descendant even if workspace parent deletion fails', async () => {
+    mocks.history = [
+      { id: 'review-entry', workspaceId: 'ws-other', providerId: 'codex', agentSessionId: 'review' },
+      { id: 'parent-entry', workspaceId: 'ws-one', providerId: 'codex', agentSessionId: 'parent' },
+    ];
+    mocks.remove.mockImplementationOnce(async (_provider, _id, _workspace, onDeleted) => {
+      await onDeleted('review');
+      throw new Error('parent refused');
+    });
+    await expect(deleteWorkspaceSessions('ws-one', [{ provider: 'codex', sessionId: 'parent' }])).rejects.toThrow('parent refused');
+    expect(mocks.hide).toHaveBeenCalledExactlyOnceWith('codex', 'review');
+    expect(mocks.workflow).toHaveBeenCalledExactlyOnceWith('codex', 'review', undefined);
+    expect(mocks.history.map((entry) => entry.id)).toEqual(['parent-entry']);
+    expect(mocks.broadcast).toHaveBeenCalledWith({ type: 'session-history:sync', entries: mocks.history });
   });
 });
