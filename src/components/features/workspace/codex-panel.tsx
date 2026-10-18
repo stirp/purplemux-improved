@@ -332,6 +332,9 @@ const CodexPanel = ({
     <div className={cn('flex min-h-0 w-full flex-1 flex-col', className)}>
       {displayMeta ? (
         <SessionMetaBar
+          provider="codex"
+          tabId={tabId}
+          statusDisabled={isHeaderLoading || !!resumingSessionId || wsStatus !== 'connected'}
           meta={sessionTitle ? { ...displayMeta.meta, title: sessionTitle } : displayMeta.meta}
           sessionName={sessionName}
           sessionId={displayMeta.sessionId}

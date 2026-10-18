@@ -1,13 +1,14 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
-import { MetaCompact, MetaDetail } from '@/components/features/workspace/session-meta-content';
+import { MetaDetail } from '@/components/features/workspace/session-meta-content';
 import type { ISessionMetaData } from '@/hooks/use-session-meta';
 import useGitBranch from '@/hooks/use-git-branch';
 import useGitStatus from '@/hooks/use-git-status';
 import useTmuxInfo from '@/hooks/use-tmux-info';
 import useMessageCounts from '@/hooks/use-message-counts';
+import SessionMetaHeader from '@/components/features/workspace/session-meta-header';
+import type { TSessionHistoryProvider } from '@/types/session-history';
 
 export const SessionMetaBarSkeleton = () => (
   <div className="shrink-0 border-b">
@@ -25,11 +26,14 @@ interface ISessionMetaBarProps {
   sessionName: string;
   sessionId: string | null;
   jsonlPath: string | null;
+  provider: TSessionHistoryProvider;
+  tabId: string;
+  statusDisabled?: boolean;
 }
 
 const RELATIVE_TIME_INTERVAL_MS = 60_000;
 
-const SessionMetaBar = ({ meta, sessionName, sessionId, jsonlPath }: ISessionMetaBarProps) => {
+const SessionMetaBar = ({ meta, sessionName, sessionId, jsonlPath, provider, tabId, statusDisabled }: ISessionMetaBarProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const toggleExpanded = useCallback(() => setIsExpanded((prev) => !prev), []);
   const collapse = useCallback(() => setIsExpanded(false), []);
@@ -69,35 +73,17 @@ const SessionMetaBar = ({ meta, sessionName, sessionId, jsonlPath }: ISessionMet
   }, [isExpanded, collapse]);
 
   return (
-    <div ref={containerRef} className="relative shrink-0 border-b">
-      <div
-        className="flex cursor-pointer items-center justify-between px-4 py-1.5 hover:bg-muted/30"
-        role="button"
-        tabIndex={0}
-        onClick={toggleExpanded}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            toggleExpanded();
-          }
-        }}
-      >
-        <MetaCompact
-          title={meta.title}
-          totalCost={meta.totalCost}
-          branch={branch}
-          usedPercentage={meta.usedPercentage}
-          currentContextTokens={meta.currentContextTokens}
-          contextWindowSize={meta.contextWindowSize}
-        />
-        <ChevronDown
-          size={14}
-          className={cn(
-            'shrink-0 text-muted-foreground transition-transform duration-150',
-            isExpanded && 'rotate-180',
-          )}
-        />
-      </div>
+    <div ref={containerRef} className="relative shrink-0">
+      <SessionMetaHeader
+        meta={meta}
+        branch={branch}
+        provider={provider}
+        tabId={tabId}
+        sessionId={sessionId}
+        statusDisabled={statusDisabled}
+        expanded={isExpanded}
+        onExpand={toggleExpanded}
+      />
       <div
         className={cn(
           'absolute inset-x-0 top-full z-10 origin-top border-b bg-background shadow-sm transition-all duration-150 ease-out',

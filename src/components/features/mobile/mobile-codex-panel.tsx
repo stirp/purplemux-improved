@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { ChevronDown, Plus } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import Spinner from '@/components/ui/spinner';
@@ -20,7 +20,7 @@ import TimelineView from '@/components/features/timeline/timeline-view';
 import WebInputBar from '@/components/features/workspace/web-input-bar';
 import QuickPromptBar from '@/components/features/workspace/quick-prompt-bar';
 import useQuickPrompts from '@/hooks/use-quick-prompts';
-import { MetaCompact } from '@/components/features/workspace/session-meta-content';
+import SessionMetaHeader from '@/components/features/workspace/session-meta-header';
 import MobileMetaSheet from './mobile-meta-sheet';
 import CodexSessionListView from '@/components/features/workspace/codex-session-list-view';
 import AgentStatusLine from '@/components/features/workspace/agent-status-line';
@@ -315,31 +315,16 @@ const MobileCodexPanel = ({
 
   return (
     <div className="flex min-h-0 flex-1 flex-col bg-muted">
-      <div
-        className="flex shrink-0 cursor-pointer items-center justify-between border-b px-4 py-1.5 hover:bg-muted/30"
-        role="button"
-        tabIndex={0}
-        onClick={() => setMetaSheetOpen(true)}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            setMetaSheetOpen(true);
-          }
-        }}
-      >
-        <MetaCompact
-          title={meta.title}
-          totalCost={meta.totalCost}
-          branch={branch}
-          usedPercentage={meta.usedPercentage}
-          currentContextTokens={meta.currentContextTokens}
-          contextWindowSize={meta.contextWindowSize}
-        />
-        <ChevronDown
-          size={14}
-          className="shrink-0 text-muted-foreground"
-        />
-      </div>
+      <SessionMetaHeader
+        meta={meta}
+        branch={branch}
+        provider="codex"
+        tabId={tabId}
+        sessionId={sessionId}
+        statusDisabled={agentProcess === null || isTimelineLoading || !!resumingSessionId || wsStatus !== 'connected'}
+        expanded={metaSheetOpen}
+        onExpand={() => setMetaSheetOpen(true)}
+      />
       <div className="min-h-0 flex-1">
         <TimelineView
           cwd={cwd}
