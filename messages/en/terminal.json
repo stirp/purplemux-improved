@@ -169,7 +169,7 @@
   "customCommands": "Custom commands",
   "customCommandsManage": "Manage custom commands",
   "customCommandsAdd": "Add command",
-  "customCommandsDescription": "Commands are shared across workspaces. Clicking a command sends it to the current terminal and presses Enter. Check the current terminal input before running.",
+  "customCommandsDescription": "Commands are shared across workspaces. Clicking sends the command to the current terminal, with an optional final Enter. Check the current terminal input before sending.",
   "customCommandsName": "Name",
   "customCommandsContent": "Command",
   "customCommandsNameInvalid": "Enter a name of 1–40 characters.",
@@ -181,5 +181,13 @@
   "customCommandsLimit": "You can save up to 50 commands.",
   "customCommandsReorder": "Reorder {name}",
   "customCommandsReorderHint": "Drag the handles to reorder. Changes save automatically.",
-  "customCommandsReorderFailed": "Could not save the order. Please retry."
+  "customCommandsReorderFailed": "Could not save the order. Please retry.",
+  "keyBarManage": "Configure terminal keys",
+  "keyBarDescription": "Select the keys to show and use the arrows to change their order. Shared across workspaces.",
+  "keyBarMoveUp": "Move {name} up",
+  "keyBarMoveDown": "Move {name} down",
+  "keyBarLoadFailed": "Could not load terminal keys",
+  "keyBarSaveFailed": "Could not save terminal keys. Your changes are kept; please retry.",
+  "customCommandsAutoEnter": "Automatically press Enter",
+  "customCommandsAutoEnterHint": "When off, no final Enter is added. Line breaks already in the command are still sent."
 }

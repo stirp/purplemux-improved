@@ -1,5 +1,6 @@
 import fs from 'fs/promises';
 import { MAX_TERMINAL_COMMANDS, type ITerminalCommand } from '@/lib/terminal-custom-commands';
+import { normalizeTerminalKeys, terminalKeysSchema, type ITerminalKeySetting } from '@/lib/terminal-keys';
 import type { ISessionWorkflow, TWorkStatus } from '@/lib/session-workflow';
 import { reconcileSessionWorkflow, sessionWorkKey, type IWorkflowTab } from '@/lib/session-workflow';
 import type { ISessionHistoryEntry, TSessionHistoryProvider } from '@/types/session-history';
@@ -139,8 +140,8 @@ const readWorkspacesFile = async (strict = false): Promise<IWorkspacesData | nul
 
 const writeWorkspacesFile = async (data: IWorkspacesData): Promise<void> => {
   normalizeWorkspaceOrder(data);
-  const { workspaces, groups, activeWorkspaceId, sidebarCollapsed, sidebarWidth, sessionWorkflow, terminalCommands } = data;
-  const contentKey = JSON.stringify({ workspaces, groups: groups ?? [], activeWorkspaceId, sidebarCollapsed, sidebarWidth, sessionWorkflow, terminalCommands });
+  const { workspaces, groups, activeWorkspaceId, sidebarCollapsed, sidebarWidth, sessionWorkflow, terminalCommands, terminalKeys } = data;
+  const contentKey = JSON.stringify({ workspaces, groups: groups ?? [], activeWorkspaceId, sidebarCollapsed, sidebarWidth, sessionWorkflow, terminalCommands, terminalKeys });
 
   if (g.__purplemuxWorkspacesContentCache === contentKey) return;
 
@@ -309,6 +310,18 @@ export const getActiveWorkspaceId = async (): Promise<string | null> => {
 export const getTerminalCommands = async (): Promise<ITerminalCommand[]> =>
   (await readWorkspacesFile(true))?.terminalCommands ?? [];
 
+export const getTerminalKeys = async (): Promise<ITerminalKeySetting[]> =>
+  normalizeTerminalKeys((await readWorkspacesFile(true))?.terminalKeys);
+
+export const updateTerminalKeys = async (keys: ITerminalKeySetting[]): Promise<ITerminalKeySetting[]> => withLock(async () => {
+  const parsed = terminalKeysSchema.parse(keys);
+  const data = (await readWorkspacesFile(true)) ?? emptyState();
+  data.terminalKeys = parsed;
+  await fs.mkdir(BASE_DIR, { recursive: true });
+  await writeWorkspacesFile(data);
+  return parsed;
+});
+
 export const updateTerminalCommand = async (update:
   | { action: 'create'; value: Omit<ITerminalCommand, 'id'> }
   | { action: 'edit'; id: string; value: Omit<ITerminalCommand, 'id'> }
@@ -333,7 +346,7 @@ export const updateTerminalCommand = async (update:
     const index = commands.findIndex((command) => command.id === update.id);
     if (index === -1) throw Object.assign(new Error('Terminal command not found'), { status: 404 });
     if (update.action === 'delete') commands.splice(index, 1);
-    else commands[index] = { ...update.value, id: update.id };
+    else commands[index] = { ...commands[index], ...update.value, id: update.id };
   }
   data.terminalCommands = commands;
   await fs.mkdir(BASE_DIR, { recursive: true });

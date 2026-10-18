@@ -169,7 +169,7 @@
   "customCommands": "自訂命令",
   "customCommandsManage": "管理自訂命令",
   "customCommandsAdd": "新增命令",
-  "customCommandsDescription": "命令在各工作區共用。點擊後會傳送到目前終端並按 Enter，請先確認終端目前的輸入狀態。",
+  "customCommandsDescription": "命令在所有工作區共用。點擊後傳送到目前終端，是否加入 Enter 由各命令設定決定。傳送前請確認終端目前的輸入狀態。",
   "customCommandsName": "名稱",
   "customCommandsContent": "命令內容",
   "customCommandsNameInvalid": "請輸入 1–40 個字元的名稱。",
@@ -181,5 +181,13 @@
   "customCommandsLimit": "最多可儲存 50 條命令。",
   "customCommandsReorder": "拖動排序：{name}",
   "customCommandsReorderHint": "拖動左側手柄調整順序，放開後自動儲存。",
-  "customCommandsReorderFailed": "排序儲存失敗，請重試。"
+  "customCommandsReorderFailed": "排序儲存失敗，請重試。",
+  "keyBarManage": "設定終端按鍵",
+  "keyBarDescription": "勾選要顯示的按鍵，使用上下箭頭調整順序。設定在所有工作區共用。",
+  "keyBarMoveUp": "上移 {name}",
+  "keyBarMoveDown": "下移 {name}",
+  "keyBarLoadFailed": "無法載入終端按鍵",
+  "keyBarSaveFailed": "儲存終端按鍵失敗，已保留修改，請重試。",
+  "customCommandsAutoEnter": "自動按下 Enter",
+  "customCommandsAutoEnterHint": "關閉後不額外加入末尾 Enter；命令本身包含的換行仍會傳送。"
 }

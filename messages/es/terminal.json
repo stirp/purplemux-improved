@@ -169,7 +169,7 @@
   "customCommands": "Custom commands",
   "customCommandsManage": "Manage custom commands",
   "customCommandsAdd": "Add command",
-  "customCommandsDescription": "Commands are shared across workspaces. Clicking a command sends it to the current terminal and presses Enter. Check the current terminal input before running.",
+  "customCommandsDescription": "Los comandos se comparten entre espacios de trabajo. Al hacer clic se envían al terminal actual, con un Enter final opcional. Comprueba la entrada actual antes de enviarlos.",
   "customCommandsName": "Name",
   "customCommandsContent": "Command",
   "customCommandsNameInvalid": "Enter a name of 1–40 characters.",
@@ -181,5 +181,13 @@
   "customCommandsLimit": "You can save up to 50 commands.",
   "customCommandsReorder": "Reorder {name}",
   "customCommandsReorderHint": "Drag the handles to reorder. Changes save automatically.",
-  "customCommandsReorderFailed": "Could not save the order. Please retry."
+  "customCommandsReorderFailed": "Could not save the order. Please retry.",
+  "keyBarManage": "Configurar teclas del terminal",
+  "keyBarDescription": "Selecciona las teclas visibles y usa las flechas para ordenarlas. Se comparte entre espacios de trabajo.",
+  "keyBarMoveUp": "Subir {name}",
+  "keyBarMoveDown": "Bajar {name}",
+  "keyBarLoadFailed": "No se pudieron cargar las teclas",
+  "keyBarSaveFailed": "No se pudieron guardar las teclas. Los cambios se conservan; inténtalo de nuevo.",
+  "customCommandsAutoEnter": "Pulsar Enter automáticamente",
+  "customCommandsAutoEnterHint": "Si se desactiva, no se añade Enter al final. Se siguen enviando los saltos de línea del comando."
 }

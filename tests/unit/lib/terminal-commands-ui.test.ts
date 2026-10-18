@@ -11,7 +11,7 @@ vi.mock('sonner', () => ({ toast: mocks }));
 
 let root: Root;
 let container: HTMLDivElement;
-let commands: { id: string; name: string; command: string }[];
+let commands: { id: string; name: string; command: string; autoEnter?: boolean }[];
 let failSave: boolean;
 let failLoad: boolean;
 let saveGate: Promise<void> | undefined;
@@ -53,6 +53,7 @@ beforeEach(() => {
   saveGate = undefined;
   cache = new Map();
   vi.stubGlobal('IS_REACT_ACT_ENVIRONMENT', true);
+  vi.stubGlobal('PointerEvent', MouseEvent);
   vi.stubGlobal('ResizeObserver', class { observe() {} unobserve() {} disconnect() {} });
   vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(function (this: HTMLElement) {
     const rows = Array.from(document.querySelectorAll('[class*="pl-12"]'));
@@ -84,6 +85,35 @@ afterEach(async () => {
 });
 
 describe('terminal command interactions', () => {
+  it('defaults old commands to Enter, retains a disabled draft on failure, persists and sends without Enter', async () => {
+    await render();
+    await click('customCommandsManage');
+    await click('edit 状态');
+    const checkbox = () => document.querySelector('[role="checkbox"]') as HTMLElement;
+    expect(checkbox().getAttribute('aria-checked')).toBe('true');
+    await act(async () => checkbox().click());
+    failSave = true;
+    await click('save');
+    expect(checkbox().getAttribute('aria-checked')).toBe('false');
+    expect(commands[0].autoEnter).toBeUndefined();
+    failSave = false;
+    await click('save');
+    expect(commands[0].autoEnter).toBe(false);
+    await click('edit 状态');
+    expect(checkbox().getAttribute('aria-checked')).toBe('false');
+    await click('cancel');
+    await click('Close');
+    expect(send).not.toHaveBeenCalled();
+    await click('状态');
+    expect(send).toHaveBeenLastCalledWith('git status');
+    await click('customCommandsManage');
+    await click('edit 状态');
+    await act(async () => checkbox().click());
+    await click('save');
+    await click('Close');
+    await click('状态');
+    expect(send).toHaveBeenLastCalledWith('git status\r');
+  });
   it('cancels dragging from the focused handle without closing, then allows closing normally', async () => {
     commands.push({ id: 'two', name: '目录', command: 'pwd' });
     await render();
@@ -209,7 +239,7 @@ describe('terminal command interactions', () => {
     expect(commands).toHaveLength(1);
     failSave = false;
     await click('save');
-    expect(commands[1]).toEqual({ id: 'two', name: '打印目录', command: 'pwd' });
+    expect(commands[1]).toEqual({ id: 'two', name: '打印目录', command: 'pwd', autoEnter: true });
     await click('edit 打印目录');
     await fill('input', '目录');
     await click('save');
@@ -262,7 +292,7 @@ describe('terminal command interactions', () => {
     const command = 'echo\t"中文 café 😀"\necho done';
     await fill('textarea', command);
     await click('save');
-    expect(commands[1]).toEqual({ id: 'two', name: '粘贴命令', command });
+    expect(commands[1]).toEqual({ id: 'two', name: '粘贴命令', command, autoEnter: true });
     expect(send).not.toHaveBeenCalled();
   });
 });

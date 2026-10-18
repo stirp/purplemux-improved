@@ -14,6 +14,18 @@ const request = async (method: string, body?: unknown) => {
 beforeEach(() => { vi.resetAllMocks(); mocks.get.mockResolvedValue([]); mocks.update.mockResolvedValue([]); });
 
 describe('terminal command API', () => {
+  it.each(['POST', 'PATCH'])('%s accepts boolean autoEnter and rejects other types', async (method) => {
+    for (const autoEnter of [true, false]) {
+      const body = { id: 'one', name: 'A', command: 'ls', autoEnter };
+      expect((await request(method, body)).status).toHaveBeenCalledWith(200);
+      expect(mocks.update).toHaveBeenLastCalledWith(expect.objectContaining({ value: { name: 'A', command: 'ls', autoEnter } }));
+    }
+    mocks.update.mockClear();
+    for (const autoEnter of ['false', 0, null, {}]) {
+      expect((await request(method, { id: 'one', name: 'A', command: 'ls', autoEnter })).status).toHaveBeenCalledWith(400);
+    }
+    expect(mocks.update).not.toHaveBeenCalled();
+  });
   it('loads commands and trims names while preserving shell whitespace', async () => {
     expect((await request('GET')).status).toHaveBeenCalledWith(200);
     expect((await request('POST', { name: ' 状态 ', command: '  git status  ' })).status).toHaveBeenCalledWith(200);
@@ -80,6 +92,15 @@ describe('terminal command API', () => {
 });
 
 describe('terminal input framing', () => {
+  it.each([
+    ['git status', 'git status'],
+    ['  pwd  ', '  pwd  '],
+    ['echo a\r\necho b', 'echo a\recho b'],
+    ['pwd\n', 'pwd\r'],
+    ['pwd\r', 'pwd\r'],
+  ])('does not append Enter when disabled for %j', (command, expected) => {
+    expect(terminalCommandInput(command, false)).toBe(expected);
+  });
   it.each([
     ['git status', 'git status\r'],
     ['printf a\nprintf b', 'printf a\rprintf b\r'],

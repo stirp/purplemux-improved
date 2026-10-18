@@ -20,7 +20,8 @@ vi.mock('@/lib/sync-server', () => ({ broadcastSync: mocks.broadcast }));
 vi.mock('@/lib/tmux', () => ({}));
 vi.mock('@/lib/layout-store', () => ({}));
 vi.mock('@/lib/providers/registry', () => ({ listProviders: () => [] }));
-import { getTerminalCommands, updateTerminalCommand, updateActive } from '@/lib/workspace-store';
+import { getTerminalCommands, updateTerminalCommand, updateActive, getTerminalKeys, updateTerminalKeys } from '@/lib/workspace-store';
+import { DEFAULT_TERMINAL_KEYS } from '@/lib/terminal-keys';
 
 const file = '/terminal-commands-test/.purplemux/workspaces.json';
 const value = { name: '查看状态', command: 'git status' };
@@ -34,6 +35,49 @@ beforeEach(() => {
 });
 
 describe('terminal command persistence', () => {
+  it('persists autoEnter across editing and sorting, preserving it when an old client omits it', async () => {
+    const [first] = await updateTerminalCommand({ action: 'create', value: { ...value, autoEnter: false } });
+    await updateTerminalCommand({ action: 'edit', id: first.id, value: { ...value, name: '新名称' } });
+    const [, second] = await updateTerminalCommand({ action: 'create', value });
+    await updateTerminalCommand({ action: 'reorder', ids: [second.id, first.id] });
+    expect((await getTerminalCommands())[1].autoEnter).toBe(false);
+    await updateTerminalCommand({ action: 'edit', id: first.id, value: { ...value, autoEnter: true } });
+    expect((await getTerminalCommands())[1].autoEnter).toBe(true);
+  });
+
+  it('persists key order and visibility without losing concurrent command and workspace changes', async () => {
+    expect(await getTerminalKeys()).toEqual(DEFAULT_TERMINAL_KEYS);
+    const keys = [...DEFAULT_TERMINAL_KEYS].reverse().map((key) => ({ ...key, visible: key.id !== 'ctrl' }));
+    await Promise.all([
+      updateTerminalKeys(keys),
+      updateTerminalCommand({ action: 'create', value }),
+      updateActive({ sidebarWidth: 333 }),
+    ]);
+    expect(await getTerminalKeys()).toEqual(keys);
+    expect(await getTerminalCommands()).toHaveLength(1);
+    expect(JSON.parse(mocks.files.get(file)!).sidebarWidth).toBe(333);
+    await updateTerminalKeys(DEFAULT_TERMINAL_KEYS);
+    expect(await getTerminalKeys()).toEqual(DEFAULT_TERMINAL_KEYS);
+  });
+
+  it('does not write or broadcast invalid keys, failed writes or corrupt reads', async () => {
+    const before = mocks.files.get(file);
+    await expect(updateTerminalKeys([])).rejects.toThrow();
+    mocks.fail = true;
+    await expect(updateTerminalKeys(DEFAULT_TERMINAL_KEYS)).rejects.toThrow('disk full');
+    expect(mocks.files.get(file)).toBe(before);
+    expect(mocks.broadcast).not.toHaveBeenCalled();
+    mocks.fail = false;
+    await updateTerminalKeys(DEFAULT_TERMINAL_KEYS.map((key) => ({ ...key, visible: false })));
+    expect((await getTerminalKeys()).every((key) => !key.visible)).toBe(true);
+    mocks.readFail = true;
+    await expect(getTerminalKeys()).rejects.toThrow('Denied');
+    await expect(updateTerminalKeys(DEFAULT_TERMINAL_KEYS)).rejects.toThrow('Denied');
+    mocks.readFail = false;
+    mocks.files.set(file, '{broken');
+    await expect(updateTerminalKeys(DEFAULT_TERMINAL_KEYS)).rejects.toThrow();
+    expect(mocks.files.get(file)).toBe('{broken');
+  });
   it('persists order while preserving concurrent edits, metadata and subsequent CRUD positions', async () => {
     await updateTerminalCommand({ action: 'create', value });
     const [first, second] = await updateTerminalCommand({ action: 'create', value: { name: '目录', command: 'pwd' } });

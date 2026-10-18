@@ -3,7 +3,8 @@ import { SendHorizontal } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import { CTRL_TOGGLE, SHIFT_TOGGLE, TERMINAL_KEYS, toCtrlChar, type IKeyDef } from '@/lib/terminal-keys';
+import { toCtrlChar } from '@/lib/terminal-keys';
+import TerminalKeyBar from '@/components/features/workspace/terminal-key-bar';
 
 interface IMobileTerminalToolbarProps {
   sendStdin: (data: string) => void;
@@ -13,9 +14,6 @@ interface IMobileTerminalToolbarProps {
 const LINE_HEIGHT = 20;
 const PADDING_Y = 16;
 const MAX_ROWS = 3;
-const NERD_FONT_STYLE = { fontFamily: 'MesloLGLDZ, monospace' } as const;
-
-const KEYS = TERMINAL_KEYS;
 
 const MobileTerminalToolbar = ({ sendStdin, terminalConnected }: IMobileTerminalToolbarProps) => {
   const t = useTranslations('mobile');
@@ -68,23 +66,6 @@ const MobileTerminalToolbar = ({ sendStdin, terminalConnected }: IMobileTerminal
     [ctrlActive, shiftActive, value, sendStdin],
   );
 
-  const handleKeyButton = useCallback(
-    (key: IKeyDef) => {
-      if (key.value === CTRL_TOGGLE) {
-        setCtrlActive((prev) => !prev);
-        return;
-      }
-      if (key.value === SHIFT_TOGGLE) {
-        setShiftActive((prev) => !prev);
-        return;
-      }
-      sendStdin(key.value);
-      if (ctrlActive) setCtrlActive(false);
-      if (shiftActive) setShiftActive(false);
-    },
-    [ctrlActive, shiftActive, sendStdin],
-  );
-
   return (
     <div className="shrink-0 border-t border-border bg-background">
       <div className="flex items-end gap-2 px-3 py-2">
@@ -124,30 +105,8 @@ const MobileTerminalToolbar = ({ sendStdin, terminalConnected }: IMobileTerminal
         </Button>
       </div>
 
-      <div
-        className="flex items-center gap-1 overflow-x-auto px-3 pb-2"
-        style={{ scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch' }}
-      >
-        {KEYS.map((key) => (
-          <button
-            key={key.label}
-            className={cn(
-              'shrink-0 rounded-md border px-2.5 py-1 text-xs font-medium transition-colors',
-              (key.value === CTRL_TOGGLE && ctrlActive) || (key.value === SHIFT_TOGGLE && shiftActive)
-                ? 'border-claude-active bg-claude-active/20 text-claude-active'
-                : 'border-border bg-muted/50 text-muted-foreground active:bg-muted',
-            )}
-            onClick={() => handleKeyButton(key)}
-          >
-            <span
-              className={cn('inline-block', key.rotate && 'rotate-90')}
-              style={key.nerd ? NERD_FONT_STYLE : undefined}
-            >
-              {key.label}
-            </span>
-          </button>
-        ))}
-      </div>
+      <TerminalKeyBar className="border-t-0 pt-0" sendStdin={sendStdin}
+        ctrlActive={ctrlActive} shiftActive={shiftActive} setCtrlActive={setCtrlActive} setShiftActive={setShiftActive} />
     </div>
   );
 };

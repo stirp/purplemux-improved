@@ -169,7 +169,7 @@
   "customCommands": "Custom commands",
   "customCommandsManage": "Manage custom commands",
   "customCommandsAdd": "Add command",
-  "customCommandsDescription": "Commands are shared across workspaces. Clicking a command sends it to the current terminal and presses Enter. Check the current terminal input before running.",
+  "customCommandsDescription": "コマンドはワークスペース間で共有されます。クリックすると現在のターミナルに送信し、設定に応じて Enter を追加します。送信前に現在の入力を確認してください。",
   "customCommandsName": "Name",
   "customCommandsContent": "Command",
   "customCommandsNameInvalid": "Enter a name of 1–40 characters.",
@@ -181,5 +181,13 @@
   "customCommandsLimit": "You can save up to 50 commands.",
   "customCommandsReorder": "Reorder {name}",
   "customCommandsReorderHint": "Drag the handles to reorder. Changes save automatically.",
-  "customCommandsReorderFailed": "Could not save the order. Please retry."
+  "customCommandsReorderFailed": "Could not save the order. Please retry.",
+  "keyBarManage": "ターミナルキーの設定",
+  "keyBarDescription": "表示するキーを選択し、矢印で順序を変更します。設定はワークスペース間で共有されます。",
+  "keyBarMoveUp": "{name} を上へ",
+  "keyBarMoveDown": "{name} を下へ",
+  "keyBarLoadFailed": "ターミナルキーを読み込めませんでした",
+  "keyBarSaveFailed": "保存できませんでした。変更は保持されています。再試行してください。",
+  "customCommandsAutoEnter": "自動で Enter を送信",
+  "customCommandsAutoEnterHint": "オフの場合、末尾に Enter を追加しません。コマンド内の改行は送信されます。"
 }
