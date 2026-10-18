@@ -3,6 +3,7 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 
 const mocks = vi.hoisted(() => ({
   files: new Map<string, string>(), native: vi.fn(), broadcast: vi.fn(), workspaceBroadcast: vi.fn(),
+  live: [] as string[], failWrite: vi.fn(),
 }));
 vi.mock('os', () => ({ default: { homedir: () => '/cascade-test' } }));
 vi.mock('fs/promises', () => ({ default: {
@@ -11,7 +12,10 @@ vi.mock('fs/promises', () => ({ default: {
     return mocks.files.get(file)!;
   },
   mkdir: async () => {},
-  writeFile: async (file: string, content: string) => { mocks.files.set(file, content); },
+  writeFile: async (file: string, content: string) => {
+    if (mocks.failWrite(file, content)) throw new Error('disk full');
+    mocks.files.set(file, content);
+  },
   rename: async (from: string, to: string) => { mocks.files.set(to, mocks.files.get(from)!); mocks.files.delete(from); },
   unlink: async (file: string) => { mocks.files.delete(file); },
 } }));
@@ -21,7 +25,7 @@ vi.mock('@/lib/layout-store', () => ({}));
 vi.mock('@/lib/providers/registry', () => ({ listProviders: () => [] }));
 vi.mock('@/lib/status-manager', () => ({ getStatusManager: () => ({ getAllForClient: () => ({}), broadcast: mocks.broadcast }) }));
 vi.mock('@/lib/delete-codex-session', () => ({ deleteCodexSession: mocks.native }));
-vi.mock('@/lib/codex-session-family', () => ({ collectCodexSessionFamily: async () => ['review', 'sibling', 'parent'] }));
+vi.mock('@/lib/codex-session-family', () => ({ collectCodexSessionFamily: async () => [...mocks.live.filter((id) => id !== 'parent'), 'parent'] }));
 vi.mock('@/lib/codex-session-list', () => ({ clearCodexSessionListCache: vi.fn() }));
 
 import handler from '@/pages/api/session-history';
@@ -41,7 +45,9 @@ const initialHistory = [entry('parent'), entry('review-turn-1', 'review'), entry
 
 beforeEach(async () => {
   vi.clearAllMocks();
-  mocks.native.mockReset().mockResolvedValue(undefined);
+  mocks.live = ['review', 'sibling', 'parent'];
+  mocks.native.mockReset().mockImplementation(async (id: string) => { mocks.live = mocks.live.filter((liveId) => liveId !== id); });
+  mocks.failWrite.mockReset().mockReturnValue(false);
   mocks.files.clear();
   const shared = globalThis as { __purplemuxSessionHistoryContentCache?: string; __purplemuxWorkspacesContentCache?: string };
   shared.__purplemuxSessionHistoryContentCache = undefined;
@@ -60,10 +66,10 @@ beforeEach(async () => {
   mocks.workspaceBroadcast.mockClear();
 });
 
-const remove = async (deleteOriginal = true) => {
+const remove = async (deleteOriginal = true, handle = handler) => {
   const res = { status: vi.fn(), json: vi.fn(), end: vi.fn(), setHeader: vi.fn() };
   res.status.mockReturnValue(res);
-  await handler({ method: 'DELETE', body: { provider: 'codex', sessionId: 'parent', deleteOriginal } } as NextApiRequest, res as unknown as NextApiResponse);
+  await handle({ method: 'DELETE', body: { provider: 'codex', sessionId: 'parent', deleteOriginal } } as NextApiRequest, res as unknown as NextApiResponse);
   return res;
 };
 
@@ -82,6 +88,57 @@ const assertDeleted = async (ids: string[]) => {
 };
 
 describe('cascade deletion with application history and workflow storage', () => {
+  it.each(['hidden-sessions.json', 'workspaces.json', 'session-history.json'])(
+    'retries a vanished descendant after %s write failure and module reload', async (fileName) => {
+      mocks.failWrite.mockImplementation((file: string) => file.endsWith(`/${fileName}.tmp`));
+      expect((await remove()).status).toHaveBeenCalledWith(500);
+      expect(mocks.live).toEqual(['sibling', 'parent']);
+      const progressPath = '/cascade-test/.purplemux/session-deletions/codex/parent.json';
+      expect(JSON.parse(mocks.files.get(progressPath)!).pending).toEqual(['review', 'sibling', 'parent']);
+      mocks.failWrite.mockReturnValue(false);
+      vi.resetModules();
+      const retryHandler = (await import('@/pages/api/session-history')).default;
+      expect((await remove(true, retryHandler)).status).toHaveBeenCalledWith(204);
+      expect(mocks.native.mock.calls.map(([id]) => id)).toEqual(['review', 'review', 'sibling', 'parent']);
+      await assertDeleted(['review', 'sibling', 'parent']);
+      expect(mocks.files.has(progressPath)).toBe(false);
+      expect(mocks.broadcast).toHaveBeenLastCalledWith({ type: 'session-history:sync', entries: await getSessionHistory() });
+      const sessions = collectWorkSessions(await getSessionHistory(), {}, (await getWorkspaces()).sessionWorkflow!);
+      expect(sessions.map((item) => item.key).sort()).toEqual(['claude:review', 'codex:other']);
+      expect(aggregateWorkStatus(sessions.map((item) => item.status))).toBe('completed');
+    },
+  );
+
+  it('does not delete native files if the initial plan cannot be persisted', async () => {
+    mocks.failWrite.mockImplementation((file: string) => file.includes('/session-deletions/'));
+    expect((await remove()).status).toHaveBeenCalledWith(500);
+    expect(mocks.native).not.toHaveBeenCalled();
+    expect(mocks.broadcast).not.toHaveBeenCalled();
+    expect(await readHiddenSessions()).toEqual(new Set());
+  });
+
+  it('preserves missing members while incorporating newly discovered descendants on retry', async () => {
+    mocks.failWrite.mockImplementation((file: string) => file.endsWith('/hidden-sessions.json.tmp'));
+    expect((await remove()).status).toHaveBeenCalledWith(500);
+    mocks.live.unshift('new-descendant');
+    mocks.failWrite.mockReturnValue(false);
+    expect((await remove()).status).toHaveBeenCalledWith(204);
+    expect(mocks.native.mock.calls.map(([id]) => id)).toEqual(['review', 'new-descendant', 'review', 'sibling', 'parent']);
+    await assertDeleted(['review', 'new-descendant', 'sibling', 'parent']);
+  });
+
+  it('retains a member if progress persistence fails after native and application cleanup', async () => {
+    const progressPath = '/cascade-test/.purplemux/session-deletions/codex/parent.json';
+    mocks.failWrite.mockImplementation((file: string, content: string) =>
+      file === `${progressPath}.tmp` && !JSON.parse(content).pending.includes('review'));
+    expect((await remove()).status).toHaveBeenCalledWith(500);
+    await assertDeleted(['review']);
+    expect(JSON.parse(mocks.files.get(progressPath)!).pending).toContain('review');
+    mocks.failWrite.mockReturnValue(false);
+    expect((await remove()).status).toHaveBeenCalledWith(204);
+    await assertDeleted(['review', 'sibling', 'parent']);
+    expect(mocks.files.has(progressPath)).toBe(false);
+  });
   it('removes recovered descendants and all their rounds, states and titles, while preserving other identities', async () => {
     const before = collectWorkSessions(initialHistory, {}, (await getWorkspaces()).sessionWorkflow!);
     expect(aggregateWorkStatus(before.map((item) => item.status))).toBe('in-progress');

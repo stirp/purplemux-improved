@@ -20,6 +20,12 @@ vi.mock('@/lib/process-utils', () => ({ isProcessRunning: mocks.running }));
 vi.mock('@/lib/delete-codex-session', () => ({ deleteCodexSession: mocks.codex }));
 vi.mock('@/lib/codex-session-list', () => ({ clearCodexSessionListCache: mocks.clearCache }));
 vi.mock('@/lib/codex-session-family', () => ({ collectCodexSessionFamily: mocks.family }));
+vi.mock('@/lib/codex-deletion-progress', () => ({
+  withCodexDeletionLock: async (_id: string, action: () => Promise<void>) => action(),
+  readCodexDeletionProgress: async () => [],
+  writeCodexDeletionProgress: async () => {},
+  clearCodexDeletionProgress: async () => {},
+}));
 import { deleteOriginalSession, SessionInUseError } from '@/lib/delete-session';
 
 const missing = () => Object.assign(new Error('Missing'), { code: 'ENOENT' });

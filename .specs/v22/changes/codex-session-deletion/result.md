@@ -77,3 +77,34 @@ KISS/DRY：沿用原生删除协议、现有活动状态保护及 SWR 缓存机�
 | `git diff --check` | 通过 |
 
 本轮未新增真实用户数据清理，未执行完整 Next.js 生产构建、浏览器或实机验收，未提交、发布或重启应用。
+
+## PR #63：原生文件消失后的应用清理重试
+
+2026-10-18，处理 [PR #63 的 P2 意见](https://github.com/stirp/purplemux-improved/pull/63#discussion_r4306581366)，审查基线 `561b49da852473cb187d33296be32d6d42476db8`。该意见成立：上一轮回调清理失败后，下一次仅扫描 rollout，丢失已经完成原生删除的子 ID。
+
+实施：
+
+- 新增 `src/lib/codex-deletion-progress.ts`，以原父 ID 为键保存 `{version: 1, pending: [...]}`。在任何原生删除前原子写入计划，每个成员的原生删除和应用清理均成功后才保存剩余成员；最后移除计划文件。
+- `deleteOriginalSession` 将磁盘计划与重新扫描的成员合并，新发现后代先于计划中的祖先执行，缺失 rollout 的未完成成员继续通过已有幂等原生删除分支补做应用清理。
+- 使用 `globalThis` 上的父 ID 锁串行执行同父请求，避免重复模块或并发重试覆盖待处理记录。无文件视为首次请求；损坏、重复 ID、非法 ID 或父身份不符的计划中止删除。
+- 初始计划保存失败时不执行原生删除；推进写入失败仍保留原计划，重试幂等处理该成员。计划不依赖工作区存在，不新增后台恢复或真实数据清理。
+- [数据目录指南](../../../../docs/DATA-DIR.md) 同步记录新增文件、锁和重试语义。
+
+本轮实际验证：
+
+| 命令 | 结果 |
+| --- | --- |
+| `pnpm exec vitest run tests/unit/lib/codex-deletion-progress.test.ts tests/unit/lib/codex-session-records-deletion.test.ts tests/unit/lib/delete-session.test.ts tests/unit/lib/session-history-api.test.ts tests/unit/lib/workspace-sessions.test.ts tests/unit/lib/session-workflow-storage.test.ts tests/unit/lib/session-history-removal.test.ts tests/unit/lib/workspace-delete.test.ts tests/unit/lib/session-list-cache.test.ts` | 76 项通过 |
+| `PMUX_CODEX_INTEGRATION=1 pnpm exec vitest run tests/unit/lib/codex-session-deletion-native.test.ts` | 1 项通过 |
+| `pnpm exec tsc --noEmit` | 完整类型检查通过 |
+| `pnpm exec eslint src/lib/codex-deletion-progress.ts src/lib/delete-session.ts tests/unit/lib/codex-deletion-progress.test.ts tests/unit/lib/codex-session-records-deletion.test.ts tests/unit/lib/delete-session.test.ts tests/unit/lib/codex-session-deletion-native.test.ts` | 无错误、无警告 |
+| `pnpm build:server` | 服务端构建通过 |
+| `git diff --check` | 通过 |
+
+验收条件 7 对应证据：
+
+- API/存储集成分别注入 hidden-sessions、workspaces、session-history 写入失败；原生删除 mock 同步从扫描集合移除子 ID。重载模块后重试原父 ID，所有应用记录清除，成功广播、状态汇总和无关身份保留均通过。
+- 实际临时文件验证权限、模块重载读取、损坏计划拒绝；不同模块实例的同父请求保持串行，失败释放锁，不阻塞无关父 ID。
+- 真实 Codex CLI 集成在删除 review 文件后故意使应用回调失败，确认父文件仍存在，重载删除模块再重试；回调顺序为归档后代、review（失败）、review（重试）、父会话。验证进度文件移除、原生文件/索引/列表清理及无关 fork 保留。
+
+限制：使用模块重载验证持久状态恢复，未重启实际用户服务；未执行完整 Next.js 生产构建、浏览器或移动实机验收。没有新增真实会话清理、提交、推送或 PR 评论。

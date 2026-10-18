@@ -22,6 +22,8 @@ File permissions are `0600` for anything containing a secret (config, tokens, la
 ├── statusline.sh            # statusline → POST /api/status/statusline (generated, 0755)
 ├── rate-limits.json         # latest statusline JSON written by statusline.sh
 ├── session-history.json     # completed Claude session log (cross-workspace)
+├── session-deletions/
+│   └── codex/{parentId}.json # pending native + application cleanup members
 ├── quick-prompts.json       # custom quick prompts + disabled builtins
 ├── sidebar-items.json       # custom sidebar items + disabled builtins
 ├── vapid-keys.json          # Web Push VAPID keypair (generated)
@@ -121,6 +123,10 @@ Claude CLI writes its statusline JSON via stdin → `statusline.sh` → `POST /a
 ### `session-history.json` — `src/lib/session-history.ts`
 
 Cross-workspace log of completed Claude sessions (max 200 entries, version 1). Keyed by `IHistoryEntry` (prompt, result, duration, tool usage, touched files).
+
+### `session-deletions/codex/{parentId}.json` — `src/lib/codex-deletion-progress.ts`
+
+Pending Codex cascade deletion, stored as `{ "version": 1, "pending": ["child-id", "parent-id"] }` with mode `0600` and atomic replacement. The plan is written before deleting native rollouts. A member leaves the plan only after native deletion and application record cleanup both succeed. Retrying the original parent ID reads this plan even when descendant rollouts have disappeared, and merges newly discovered descendants. A shared per-parent in-process lock serializes requests across server/API module instances. Completed plans are removed; malformed plans stop deletion. There is no automatic background retry.
 
 ### `quick-prompts.json`, `sidebar-items.json` — `src/lib/{quick-prompts,sidebar-items}-store.ts`
 

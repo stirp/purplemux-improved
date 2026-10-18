@@ -84,7 +84,19 @@ it.runIf(process.env.PMUX_CODEX_INTEGRATION === '1')('removes a session family f
     const { deleteOriginalSession } = await import('@/lib/delete-session');
     const { listCodexSessions } = await import('@/lib/codex-session-list');
     expect((await listCodexSessions({ cwd: '/tmp/pmux-native-fixture', daysBack: 1 })).sessions).toHaveLength(2);
-    await deleteOriginalSession('codex', parent);
+    let failCleanup = true;
+    const cleanup = vi.fn(async (id: string) => {
+      if (id === review && failCleanup) throw new Error('application storage unavailable');
+    });
+    await expect(deleteOriginalSession('codex', parent, undefined, cleanup)).rejects.toThrow('application storage unavailable');
+    await expect(fs.access(files[1])).rejects.toMatchObject({ code: 'ENOENT' });
+    await expect(fs.access(files[0])).resolves.toBeUndefined();
+    vi.resetModules();
+    const retry = (await import('@/lib/delete-session')).deleteOriginalSession;
+    failCleanup = false;
+    await retry('codex', parent, undefined, cleanup);
+    expect(cleanup.mock.calls.map(([id]) => id)).toEqual([nested, review, review, parent]);
+    await expect(fs.access(path.join(mocks.home, '.purplemux/session-deletions/codex', `${parent}.json`))).rejects.toMatchObject({ code: 'ENOENT' });
     for (const file of files) await expect(fs.access(file)).rejects.toMatchObject({ code: 'ENOENT' });
     await expect(fs.access(otherFile)).resolves.toBeUndefined();
     expect((await listCodexSessions({ cwd: '/tmp/pmux-native-fixture', daysBack: 1 })).sessions.map((entry) => entry.sessionId)).toEqual([other]);
