@@ -17,7 +17,7 @@ vi.mock('@/lib/layout-store', () => ({
   collectAllTabs: (root: { tabs: unknown[] }) => root.tabs, removeLayoutFile: mocks.removeLayout,
 }));
 vi.mock('@/lib/workspace-sessions', () => ({ collectWorkspaceSessions: mocks.collect, deleteWorkspaceSessions: mocks.cleanup }));
-import { deleteWorkspace } from '@/lib/workspace-store';
+import { deleteWorkspace, removeSessionWorkflow, updateWorkspaceDirectories } from '@/lib/workspace-store';
 const file = '/workspace-delete-test/.purplemux/workspaces.json';
 const tabs = [{ id: 'tab', sessionName: 'pt-ws-one-tab', agentState: { providerId: 'codex', sessionId: 'thread' } }];
 const workspaces = () => JSON.parse(mocks.files.get(file)!).workspaces;
@@ -68,5 +68,32 @@ describe('workspace deletion with original sessions', () => {
     await deleteWorkspace('ws-one');
     expect(mocks.collect).toHaveBeenCalledWith('ws-one', []);
     expect(mocks.cleanup).toHaveBeenCalledOnce();
+  });
+  it('allows cleanup to acquire the workspace lock and preserves its writes and concurrent updates', async () => {
+    mocks.files.set(file, JSON.stringify({
+      workspaces: [
+        { id: 'ws-one', name: 'One', directories: ['/repo'] },
+        { id: 'ws-two', name: 'Two', directories: ['/other'] },
+      ], groups: [], activeWorkspaceId: 'ws-one',
+      sessionWorkflow: { statuses: { 'codex:thread': 'completed' }, collapsed: {}, sessions: {} },
+    }));
+    mocks.cleanup.mockImplementation(async () => {
+      await removeSessionWorkflow('codex', 'thread');
+      await updateWorkspaceDirectories('ws-two', ['/updated']);
+    });
+    expect(await deleteWorkspace('ws-one')).toBe(true);
+    const data = JSON.parse(mocks.files.get(file)!);
+    expect(data.sessionWorkflow.deleted).toContain('codex:thread');
+    expect(data.sessionWorkflow.statuses).toEqual({});
+    expect(data.workspaces).toEqual([expect.objectContaining({ id: 'ws-two', directories: ['/updated'] })]);
+    expect(data.activeWorkspaceId).toBe('ws-two');
+  });
+  it('retains the workspace if a terminal reappears during cleanup', async () => {
+    mocks.cleanup.mockImplementation(async () => {
+      mocks.panes.mockResolvedValue(new Map([['pt-ws-one-new-tab', {}]]));
+    });
+    await expect(deleteWorkspace('ws-one')).rejects.toThrow('still running');
+    expect(workspaces()).toHaveLength(1);
+    expect(mocks.removeLayout).not.toHaveBeenCalled();
   });
 });

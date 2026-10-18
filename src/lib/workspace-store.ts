@@ -62,17 +62,21 @@ const LEGACY_TABS_FILE = path.join(BASE_DIR, 'tabs.json');
 
 const g = globalThis as unknown as {
   __purplemuxWorkspaceLock?: Promise<void>;
+  __ptWorkspaceDeletionLock?: Promise<void>;
   __purplemuxWorkspacesContentCache?: string;
 };
 if (!g.__purplemuxWorkspaceLock) g.__purplemuxWorkspaceLock = Promise.resolve();
 
-const withLock = async <T>(fn: () => Promise<T>): Promise<T> => {
+const withLock = async <T>(
+  fn: () => Promise<T>,
+  key: '__purplemuxWorkspaceLock' | '__ptWorkspaceDeletionLock' = '__purplemuxWorkspaceLock',
+): Promise<T> => {
   let release: () => void;
   const next = new Promise<void>((r) => {
     release = r;
   });
-  const prev = g.__purplemuxWorkspaceLock!;
-  g.__purplemuxWorkspaceLock = next;
+  const prev = g[key];
+  g[key] = next;
   await prev;
   try {
     return await fn();
@@ -400,48 +404,61 @@ export const createWorkspace = async (directory: string, name?: string, layoutOp
 
 export const deleteWorkspace = async (workspaceId: string, deleteSessions = true): Promise<boolean> =>
   withLock(async () => {
-    const data = (await readWorkspacesFile()) ?? emptyState();
-    const idx = data.workspaces.findIndex((w) => w.id === workspaceId);
-    if (idx === -1) return false;
-
-    const ws = data.workspaces[idx];
-
-    const layout = await readLayoutFile(resolveLayoutFile(workspaceId));
-    const tabs = layout ? collectAllTabs(layout.root) : [];
     const { collectWorkspaceSessions, deleteWorkspaceSessions } = await import('@/lib/workspace-sessions');
-    const sessions = deleteSessions ? await collectWorkspaceSessions(workspaceId, tabs) : [];
-    const panes = await getAllPanesInfo({ strict: true });
-    const terminalNames = new Set([
-      ...tabs.map((tab) => tab.sessionName),
-      ...[...panes.keys()].filter((name) => name.startsWith(`pt-${workspaceId}-`)).map((name) => name.split(':')[0]),
-    ]);
-    for (const name of terminalNames) await killSession(name);
-    const remaining = await getAllPanesInfo({ strict: true });
-    if ([...remaining.keys()].some((name) => terminalNames.has(name.split(':')[0]) || name.startsWith(`pt-${workspaceId}-`))) {
-      throw new Error('Workspace sessions are still running');
-    }
-    if (deleteSessions) await deleteWorkspaceSessions(workspaceId, sessions);
-    await removeLayoutFile(workspaceId);
-
-    data.workspaces.splice(idx, 1);
-    if (deleteSessions && data.sessionWorkflow?.sessions) {
-      for (const [key, record] of Object.entries(data.sessionWorkflow.sessions)) {
-        if (record.workspaceId !== workspaceId) continue;
-        data.sessionWorkflow.deleted = [...new Set([...(data.sessionWorkflow.deleted ?? []), key])];
-        delete data.sessionWorkflow.sessions[key];
-        delete data.sessionWorkflow.statuses[key];
-        delete data.sessionWorkflow.titles?.[key];
-        forgetSessionTags(data.sessionWorkflow, key);
+    const preparation = await withLock(async () => {
+      const data = await readWorkspacesFile(true);
+      if (!data?.workspaces.some((workspace) => workspace.id === workspaceId)) return null;
+      const layout = await readLayoutFile(resolveLayoutFile(workspaceId));
+      const tabs = layout ? collectAllTabs(layout.root) : [];
+      const sessions = deleteSessions ? await collectWorkspaceSessions(workspaceId, tabs) : [];
+      const panes = await getAllPanesInfo({ strict: true });
+      const terminalNames = new Set([
+        ...tabs.map((tab) => tab.sessionName),
+        ...[...panes.keys()].filter((name) => name.startsWith(`pt-${workspaceId}-`)).map((name) => name.split(':')[0]),
+      ]);
+      for (const name of terminalNames) await killSession(name);
+      const remaining = await getAllPanesInfo({ strict: true });
+      if ([...remaining.keys()].some((name) => terminalNames.has(name.split(':')[0]) || name.startsWith(`pt-${workspaceId}-`))) {
+        throw new Error('Workspace sessions are still running');
       }
-    }
-    for (const child of data.workspaces) {
-      if (child.parentWorkspaceId === workspaceId) delete child.parentWorkspaceId;
-    }
+      return { sessions, terminalNames };
+    });
+    if (!preparation) return false;
 
-    await writeWorkspacesFile(data);
-    log.info(`Deleted: ${workspaceId} (${ws.name})`);
-    return true;
-  });
+    // Session cleanup acquires the workspace lock when persisting deletion markers.
+    if (deleteSessions) await deleteWorkspaceSessions(workspaceId, preparation.sessions);
+    return withLock(async () => {
+      const data = await readWorkspacesFile(true);
+      const idx = data?.workspaces.findIndex((workspace) => workspace.id === workspaceId) ?? -1;
+      if (!data || idx === -1) return false;
+      const ws = data.workspaces[idx];
+      const remaining = await getAllPanesInfo({ strict: true });
+      if ([...remaining.keys()].some((name) => preparation.terminalNames.has(name.split(':')[0]) || name.startsWith(`pt-${workspaceId}-`))) {
+        throw new Error('Workspace sessions are still running');
+      }
+      await removeLayoutFile(workspaceId);
+
+      data.workspaces.splice(idx, 1);
+      if (data.activeWorkspaceId === workspaceId) data.activeWorkspaceId = data.workspaces[0]?.id;
+      if (deleteSessions && data.sessionWorkflow?.sessions) {
+        for (const [key, record] of Object.entries(data.sessionWorkflow.sessions)) {
+          if (record.workspaceId !== workspaceId) continue;
+          data.sessionWorkflow.deleted = [...new Set([...(data.sessionWorkflow.deleted ?? []), key])];
+          delete data.sessionWorkflow.sessions[key];
+          delete data.sessionWorkflow.statuses[key];
+          delete data.sessionWorkflow.titles?.[key];
+          forgetSessionTags(data.sessionWorkflow, key);
+        }
+      }
+      for (const child of data.workspaces) {
+        if (child.parentWorkspaceId === workspaceId) delete child.parentWorkspaceId;
+      }
+
+      await writeWorkspacesFile(data);
+      log.info(`Deleted: ${workspaceId} (${ws.name})`);
+      return true;
+    });
+  }, '__ptWorkspaceDeletionLock');
 
 export const renameWorkspace = async (workspaceId: string, name: string): Promise<IWorkspace | null> =>
   withLock(async () => {

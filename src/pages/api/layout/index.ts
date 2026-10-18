@@ -14,7 +14,8 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   if (req.method === 'GET') {
     try {
       const ws = await getWorkspaceById(wsId);
-      const layout = await getLayout(wsId, ws?.directories[0]);
+      if (!ws) return res.status(404).json({ error: 'Workspace not found' });
+      const layout = await getLayout(wsId, ws.directories[0]);
       return res.status(200).json(layout);
     } catch (err) {
       log.error(`GET failed: ${err instanceof Error ? err.message : err}`);
