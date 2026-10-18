@@ -1,7 +1,8 @@
 import fs from 'fs/promises';
 import { MAX_TERMINAL_COMMANDS, type ITerminalCommand } from '@/lib/terminal-custom-commands';
+import { applySessionTagUpdate, forgetSessionTags, type TSessionTagUpdate } from '@/lib/session-tags';
 import type { ISessionWorkflow, TWorkStatus } from '@/lib/session-workflow';
-import { reconcileSessionWorkflow, sessionWorkKey, type IWorkflowTab } from '@/lib/session-workflow';
+import { collectWorkSessions, reconcileSessionWorkflow, sessionWorkKey, type IWorkflowTab } from '@/lib/session-workflow';
 import type { ISessionHistoryEntry, TSessionHistoryProvider } from '@/types/session-history';
 import { readHiddenSessions } from '@/lib/hidden-sessions';
 import path from 'path';
@@ -417,6 +418,7 @@ export const deleteWorkspace = async (workspaceId: string, deleteSessions = true
         delete data.sessionWorkflow.sessions[key];
         delete data.sessionWorkflow.statuses[key];
         delete data.sessionWorkflow.titles?.[key];
+        forgetSessionTags(data.sessionWorkflow, key);
       }
     }
     for (const child of data.workspaces) {
@@ -637,6 +639,32 @@ export const updateSessionWorkflow = async (update:
   return workflow;
 });
 
+export const updateSessionTags = async (
+  update: TSessionTagUpdate, getTabs: () => Record<string, IWorkflowTab> = () => ({}),
+): Promise<ISessionWorkflow> => withLock(async () => {
+  const data = (await readWorkspacesFile(true)) ?? emptyState();
+  const current = data.sessionWorkflow ?? { statuses: {}, collapsed: {} };
+  const hidden = await readHiddenSessions();
+  if (hidden.size) current.deleted = [...new Set([...(current.deleted ?? []), ...hidden])];
+  const workspaces = new Map(data.workspaces.map((workspace) => [workspace.id, workspace]));
+  const tabs = Object.fromEntries(Object.entries(getTabs()).flatMap(([id, tab]) => {
+    const workspace = workspaces.get(tab.workspaceId);
+    return workspace ? [[id, { ...tab, workspaceName: workspace.name, workspaceDir: workspace.directories[0] ?? null }]] : [];
+  }));
+  const workflow = reconcileSessionWorkflow(current, [], tabs);
+  if (update.action === 'assign' && !workflow.sessions?.[update.key]) {
+    const session = collectWorkSessions([], tabs, workflow).find((item) => item.key === update.key);
+    if (session) workflow.sessions![session.key] = {
+      workspaceId: session.workspaceId, tabId: session.tabId, status: session.status,
+      entry: session.entry, navigation: session.navigation,
+    };
+  }
+  data.sessionWorkflow = applySessionTagUpdate(workflow, update);
+  await fs.mkdir(BASE_DIR, { recursive: true });
+  await writeWorkspacesFile(data);
+  return data.sessionWorkflow;
+});
+
 export const synchronizeSessionWorkflow = async (
   entries: ISessionHistoryEntry[], tabs: Record<string, IWorkflowTab> = {},
 ): Promise<void> => withLock(async () => {
@@ -678,5 +706,6 @@ export const removeSessionWorkflow = async (
   delete data.sessionWorkflow.statuses[key];
   delete data.sessionWorkflow.titles?.[key];
   delete data.sessionWorkflow.sessions?.[key];
+  forgetSessionTags(data.sessionWorkflow, key);
   await writeWorkspacesFile(data);
 });
