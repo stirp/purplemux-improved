@@ -7,6 +7,7 @@ import useGitStatusStore from '@/hooks/use-git-status-store';
 import { useLayoutStore } from '@/hooks/use-layout';
 import { formatTabTitle } from '@/lib/tab-title';
 import { collectAllTabs } from '@/lib/layout-tree';
+import { invalidateSessionLists } from '@/lib/session-list-cache';
 import type { ILastEvent, TStatusServerMessage } from '@/types/status';
 
 const RECONNECT_BASE = 1_000;
@@ -128,6 +129,7 @@ const useAgentStatus = () => {
 
             case 'session-history:sync':
               useSessionHistoryStore.getState().syncFromServer(msg.entries);
+              void invalidateSessionLists();
               break;
 
             case 'session-history:update':

@@ -4,6 +4,7 @@ const mocks = vi.hoisted(() => ({
   statuses: {} as Record<string, unknown>,
   codex: vi.fn(async () => {}),
   clearCache: vi.fn(),
+  family: vi.fn(async (id: string) => [id]),
   running: vi.fn(async () => false),
   readdir: vi.fn(),
   lstat: vi.fn(),
@@ -18,6 +19,7 @@ vi.mock('@/lib/status-manager', () => ({ getStatusManager: () => ({ getAllForCli
 vi.mock('@/lib/process-utils', () => ({ isProcessRunning: mocks.running }));
 vi.mock('@/lib/delete-codex-session', () => ({ deleteCodexSession: mocks.codex }));
 vi.mock('@/lib/codex-session-list', () => ({ clearCodexSessionListCache: mocks.clearCache }));
+vi.mock('@/lib/codex-session-family', () => ({ collectCodexSessionFamily: mocks.family }));
 import { deleteOriginalSession, SessionInUseError } from '@/lib/delete-session';
 
 const missing = () => Object.assign(new Error('Missing'), { code: 'ENOENT' });
@@ -26,11 +28,51 @@ const stat = (directory = false, symlink = false) => ({ isFile: () => !directory
 beforeEach(() => {
   vi.clearAllMocks();
   mocks.statuses = {};
+  mocks.family.mockReset().mockImplementation(async (id: string) => [id]);
   mocks.readdir.mockImplementation(async (file: string) => file.endsWith('/sessions') ? [] : [{ name: 'project', isDirectory: () => true }]);
   mocks.lstat.mockImplementation(async (file: string) => file.endsWith('.jsonl') ? stat() : stat(true));
 });
 
 describe('delete original tool session', () => {
+  it('reports each successful member before attempting the next native deletion', async () => {
+    mocks.family.mockResolvedValueOnce(['review', 'id-1']);
+    const completed: string[] = [];
+    mocks.codex.mockImplementationOnce(async () => {}).mockImplementationOnce(async () => {
+      expect(completed).toEqual(['review']);
+      throw new Error('parent refused');
+    });
+    await expect(deleteOriginalSession('codex', 'id-1', undefined, async (id) => { completed.push(id); })).rejects.toThrow('parent refused');
+    expect(completed).toEqual(['review']);
+  });
+  it('stops and reports a records-cleanup failure instead of deleting further members', async () => {
+    mocks.family.mockResolvedValueOnce(['review', 'id-1']);
+    await expect(deleteOriginalSession('codex', 'id-1', undefined, async () => { throw new Error('disk full'); })).rejects.toThrow('disk full');
+    expect(mocks.codex.mock.calls).toEqual([['review']]);
+    expect(mocks.clearCache).toHaveBeenCalledOnce();
+  });
+  it('deletes all descendants before the selected parent', async () => {
+    mocks.family.mockResolvedValueOnce(['grandchild', 'review', 'id-1']);
+    await deleteOriginalSession('codex', 'id-1');
+    expect(mocks.codex.mock.calls).toEqual([['grandchild'], ['review'], ['id-1']]);
+  });
+  it('checks every descendant before deleting any member', async () => {
+    mocks.family.mockResolvedValueOnce(['review', 'active-child', 'id-1']);
+    mocks.statuses = { tab: { agentProviderId: 'codex', agentSessionId: 'active-child', cliState: 'idle' } };
+    await expect(deleteOriginalSession('codex', 'id-1')).rejects.toBeInstanceOf(SessionInUseError);
+    expect(mocks.codex).not.toHaveBeenCalled();
+  });
+  it('stops at a child failure, preserves the parent and clears partially stale metadata', async () => {
+    mocks.family.mockResolvedValueOnce(['review', 'id-1']);
+    mocks.codex.mockRejectedValueOnce(new Error('native failure'));
+    await expect(deleteOriginalSession('codex', 'id-1')).rejects.toThrow('native failure');
+    expect(mocks.codex.mock.calls).toEqual([['review']]);
+    expect(mocks.clearCache).toHaveBeenCalledOnce();
+  });
+  it('does not delete on a family scan failure', async () => {
+    mocks.family.mockRejectedValueOnce(new Error('permission denied'));
+    await expect(deleteOriginalSession('codex', 'id-1')).rejects.toThrow('permission denied');
+    expect(mocks.codex).not.toHaveBeenCalled();
+  });
   it('uses native Codex deletion and clears cached session metadata', async () => {
     await deleteOriginalSession('codex', 'id-1');
     expect(mocks.codex).toHaveBeenCalledExactlyOnceWith('id-1');

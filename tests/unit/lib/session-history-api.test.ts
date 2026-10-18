@@ -3,7 +3,7 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 
 const mocks = vi.hoisted(() => ({
   hide: vi.fn(async () => {}),
-  deleteOriginal: vi.fn(async () => {}),
+  deleteOriginal: vi.fn(async (_provider: string, id: string, _workspace: string | undefined, onDeleted: (id: string) => Promise<void>) => { await onDeleted(id); }),
   hidden: new Set<string>(),
   remove: vi.fn(async () => []),
   broadcast: vi.fn(),
@@ -44,7 +44,8 @@ describe('history management API', () => {
   it('only deletes original tool records with the explicit option', async () => {
     const res = response();
     await removeHandler({ method: 'DELETE', body: { provider: 'codex', sessionId: 'session-1', deleteOriginal: true } } as NextApiRequest, res as unknown as NextApiResponse);
-    expect(mocks.deleteOriginal).toHaveBeenCalledExactlyOnceWith('codex', 'session-1');
+    expect(mocks.deleteOriginal).toHaveBeenCalledExactlyOnceWith('codex', 'session-1', undefined, expect.any(Function));
+    expect(mocks.hide).toHaveBeenCalledWith('codex', 'session-1');
     expect(res.status).toHaveBeenCalledWith(204);
   });
   it('does not hide an active session after deletion is refused', async () => {

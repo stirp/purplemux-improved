@@ -23,6 +23,22 @@ const child = () => {
 };
 
 describe('Codex native deletion protocol', () => {
+  it('allows a retry after the exact selected rollout was already removed', async () => {
+    const { reply } = child();
+    const result = deleteCodexSession('id-1');
+    await Promise.resolve();
+    reply({ id: 1, result: {} });
+    reply({ id: 2, error: { code: -32600, message: 'no rollout found for thread id id-1' } });
+    await expect(result).resolves.toBeUndefined();
+  });
+  it('does not suppress a different missing-rollout error', async () => {
+    const { reply } = child();
+    const result = deleteCodexSession('id-1');
+    await Promise.resolve();
+    reply({ id: 1, result: {} });
+    reply({ id: 2, error: { code: -32600, message: 'no rollout found for thread id other' } });
+    await expect(result).rejects.toThrow('other');
+  });
   it('initializes before deleting exactly the selected thread and waits for acknowledgement', async () => {
     const { process, reply, requests } = child();
     const result = deleteCodexSession('id-1');

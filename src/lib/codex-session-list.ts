@@ -7,6 +7,7 @@ import { createLogger } from '@/lib/logger';
 import { readCodexSessionStats } from '@/lib/stats/jsonl-parser-codex';
 import { createSessionMetaCache, type ISessionMetaCache } from '@/lib/session-meta-cache';
 import { runWithConcurrency } from '@/lib/bounded-concurrency';
+import { isCodexSubagent } from '@/lib/codex-session-family';
 
 const log = createLogger('codex-session-list');
 
@@ -47,6 +48,7 @@ interface ICodexSessionMetaPayload {
   timestamp?: string;
   cwd?: string;
   model?: string;
+  source?: unknown;
 }
 
 interface ICodexUserMessagePayload {
@@ -93,6 +95,7 @@ const extractMeta = async (jsonlPath: string): Promise<ICodexSessionEntry | null
           throw new Error('first-line-not-session-meta');
         }
         const payload = parsed.payload;
+        if (isCodexSubagent(payload.source)) return null;
         if (!payload.id) throw new Error('session-meta-missing-id');
         session_id = payload.id;
         const startedRaw = payload.timestamp ?? parsed.timestamp;

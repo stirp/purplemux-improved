@@ -38,7 +38,6 @@ export const useCodexSessions = (
     {
       revalidateOnFocus: false,
       dedupingInterval: 30_000,
-      keepPreviousData: true,
     },
   );
 

@@ -5,6 +5,7 @@ import { getStatusManager } from '@/lib/status-manager';
 import { isProcessRunning } from '@/lib/process-utils';
 import { deleteCodexSession } from '@/lib/delete-codex-session';
 import { clearCodexSessionListCache } from '@/lib/codex-session-list';
+import { collectCodexSessionFamily } from '@/lib/codex-session-family';
 
 export class SessionInUseError extends Error {
   constructor() { super('Session is in use'); }
@@ -68,13 +69,28 @@ const removeClaudeSession = async (sessionId: string, closedWorkspaceId?: string
   }
 };
 
-export const deleteOriginalSession = async (provider: 'claude' | 'codex', sessionId: string, closedWorkspaceId?: string): Promise<void> => {
+export const deleteOriginalSession = async (
+  provider: 'claude' | 'codex',
+  sessionId: string,
+  closedWorkspaceId?: string,
+  onDeleted?: (sessionId: string) => Promise<void>,
+): Promise<void> => {
   if (!/^[a-zA-Z0-9_-]{1,128}$/.test(sessionId)) throw new Error('Invalid session ID');
   assertNotInUse(provider, sessionId, closedWorkspaceId);
   if (provider === 'codex') {
-    await deleteCodexSession(sessionId);
-    clearCodexSessionListCache();
+    const family = await collectCodexSessionFamily(sessionId);
+    for (const id of family) assertNotInUse('codex', id, closedWorkspaceId);
+    try {
+      for (const id of family) {
+        assertNotInUse('codex', id, closedWorkspaceId);
+        await deleteCodexSession(id);
+        await onDeleted?.(id);
+      }
+    } finally {
+      clearCodexSessionListCache();
+    }
   } else {
     await removeClaudeSession(sessionId, closedWorkspaceId);
+    await onDeleted?.(sessionId);
   }
 };

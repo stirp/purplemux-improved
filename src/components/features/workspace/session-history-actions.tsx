@@ -7,6 +7,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from '@/components/ui/context-menu';
 import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel } from '@/components/ui/alert-dialog';
 import { cn } from '@/lib/utils';
+import { invalidateSessionLists } from '@/lib/session-list-cache';
 
 interface ISessionHistoryActionsProps {
   provider: 'claude' | 'codex';
@@ -48,6 +49,7 @@ const SessionHistoryActions = ({ provider, sessionId, historyEntryId, label, dis
       if (!response.ok) throw new Error('Delete failed');
       setOpen(false);
       setRemoved(true);
+      await invalidateSessionLists();
       await onDeleted();
     } catch {
       toast.error(t('deleteFailed'));

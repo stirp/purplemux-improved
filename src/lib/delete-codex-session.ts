@@ -28,10 +28,16 @@ export const deleteCodexSession = async (sessionId: string): Promise<void> => {
     child.stdin.on('error', finish);
     child.on('exit', () => finish(new Error('Codex exited before confirming deletion')));
     lines.on('line', (line) => {
-      let response: { id?: number; error?: { message?: string } };
+      let response: { id?: number; error?: { code?: number; message?: string } };
       try { response = JSON.parse(line); } catch { return; }
       if (response.id !== 1 && response.id !== 2) return;
       if (response.error) {
+        // A retry may reach a parent whose rollout was already removed.
+        if (initialized && response.id === 2 && response.error.code === -32600
+          && response.error.message === `no rollout found for thread id ${sessionId}`) {
+          finish();
+          return;
+        }
         finish(new Error(response.error.message ?? 'Codex session deletion failed'));
       } else if (response.id === 1 && !initialized) {
         initialized = true;
