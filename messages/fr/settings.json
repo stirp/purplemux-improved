@@ -338,5 +338,17 @@
       "input": "Message input",
       "terminal": "Terminal (including agent terminals)"
     }
+  },
+  "linuxStartup": {
+    "title": "Ouvrir l’application à la connexion",
+    "description": "Ouvre la fenêtre après la connexion au bureau Linux.",
+    "packagedOnly": "Disponible dans l’application Linux installée.",
+    "stablePathRequired": "Déplacez l’application vers un emplacement permanent.",
+    "enabled": "Démarrage du bureau activé",
+    "disabled": "Démarrage du bureau désactivé",
+    "saveFailed": "Impossible d’enregistrer les paramètres. Réessayez.",
+    "loadFailed": "Impossible de lire les paramètres. Connectez-vous au serveur local et réessayez.",
+    "retry": "Réessayer",
+    "serverHint": "Pour démarrer en arrière-plan avant la connexion, exécutez purplemux-improved autostart enable --boot avec le CLI installé."
   }
 }

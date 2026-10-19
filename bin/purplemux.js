@@ -23,7 +23,14 @@ import('update-notifier')
 
 const cmd = process.argv[2];
 
-if (cmd && CLI_COMMANDS.has(cmd)) {
+if (cmd === 'autostart') {
+  try {
+    require('./autostart').main(process.argv.slice(3));
+  } catch (error) {
+    process.stderr.write(`error: ${error.message}\n`);
+    process.exitCode = 1;
+  }
+} else if (cmd && CLI_COMMANDS.has(cmd)) {
   require('./cli.js');
 } else if (!cmd || cmd === 'start') {
   process.env.NODE_ENV = process.env.NODE_ENV || 'production';

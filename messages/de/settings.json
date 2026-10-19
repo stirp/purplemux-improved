@@ -338,5 +338,17 @@
       "input": "Message input",
       "terminal": "Terminal (including agent terminals)"
     }
+  },
+  "linuxStartup": {
+    "title": "Desktop-App bei Anmeldung öffnen",
+    "description": "Öffnet das Fenster nach der Anmeldung am Linux-Desktop.",
+    "packagedOnly": "In der installierten Linux-Desktop-App verfügbar.",
+    "stablePathRequired": "Verschieben Sie die App zuerst an einen dauerhaften Speicherort.",
+    "enabled": "Desktop-Autostart aktiviert",
+    "disabled": "Desktop-Autostart deaktiviert",
+    "saveFailed": "Starteinstellungen konnten nicht gespeichert werden. Erneut versuchen.",
+    "loadFailed": "Starteinstellungen konnten nicht gelesen werden. Mit dem lokalen Server verbinden und erneut versuchen.",
+    "retry": "Erneut versuchen",
+    "serverHint": "Für den Hintergrundstart vor der Anmeldung führen Sie purplemux-improved autostart enable --boot mit der installierten CLI aus."
   }
 }

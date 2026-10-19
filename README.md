@@ -56,6 +56,8 @@ Open [http://localhost:8022](http://localhost:8022) in your browser. Done.
 
 Prefer a native app? Grab the macOS Electron build from the [latest release](https://github.com/stirp/purplemux-improved/releases/latest) (`.dmg` for Apple Silicon & Intel).
 
+Linux startup: use `purplemux-improved autostart enable --boot` for a systemd user service that starts before login, `autostart status` to inspect it, and `autostart disable` to disable future starts. These commands leave the running server unchanged. Packaged Linux desktop apps also offer a login startup switch under Settings → System. See the [Linux startup guide](docs/07-user/user-guide/linux-autostart.md).
+
 ## Why purplemux-improved
 
 - **Multi-session dashboard** — See working/needs-input status for every Claude Code and Codex session at a glance
@@ -116,7 +118,7 @@ Plus
 | Platform | Status | Notes |
 |---|---|---|
 | macOS (Apple Silicon / Intel) | ✅ | Electron app included |
-| Linux | ✅ | No Electron |
+| Linux | ✅ | Background autostart; Electron AppImage build available (check Releases for published packages) |
 | Windows | ❌ | Not supported |
 
 ## Install details

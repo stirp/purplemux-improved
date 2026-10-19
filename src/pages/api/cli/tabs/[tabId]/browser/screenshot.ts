@@ -1,5 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { withBrowserTab } from '@/lib/cli-utils';
+import { BrowserBridgeUnavailableError } from '@/lib/browser-bridge-rpc';
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   await withBrowserTab(req, res, 'GET', async ({ tabId, bridge }) => {
@@ -17,6 +18,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       res.setHeader('Content-Length', String(buf.byteLength));
       res.status(200).end(buf);
     } catch (err) {
+      if (err instanceof BrowserBridgeUnavailableError) throw err;
       const msg = err instanceof Error ? err.message : 'capture failed';
       res.status(409).json({ error: msg });
     }

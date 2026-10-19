@@ -338,5 +338,17 @@
       "input": "訊息輸入框",
       "terminal": "終端機（含 Agent 終端機）"
     }
+  },
+  "linuxStartup": {
+    "title": "登入後開啟桌面應用程式",
+    "description": "登入 Linux 圖形桌面後自動開啟應用程式視窗。",
+    "packagedOnly": "安裝 Linux 桌面應用程式後可用。",
+    "stablePathRequired": "請將應用程式移到固定位置後再啟用自動啟動。",
+    "enabled": "已啟用桌面自動啟動",
+    "disabled": "已關閉桌面自動啟動",
+    "saveFailed": "儲存啟動設定失敗，請重試。",
+    "loadFailed": "讀取啟動設定失敗，請連接本機伺服器後重試。",
+    "retry": "重試",
+    "serverHint": "若要在登入前啟動背景服務，請透過已安裝的命令列程式執行 purplemux-improved autostart enable --boot。"
   }
 }

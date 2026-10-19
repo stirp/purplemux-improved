@@ -22,6 +22,11 @@ mac:
   entitlementsInherit: build-resources/entitlements.mac.plist
   notarize: true
 
+linux:
+  target: AppImage
+  category: Development
+  icon: build-resources/icon.png
+
 publish:
   provider: github
   owner: stirp

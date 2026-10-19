@@ -57,6 +57,7 @@ import BranchNameSettings from '@/components/features/settings/branch-name-setti
 import GitGenerationPromptSettings from '@/components/features/settings/git-generation-prompt-settings';
 import { AgentEnvironmentSettings } from '@/components/features/settings/codex-environment-settings';
 import BrowserStorageSettings from '@/components/features/settings/browser-storage-settings';
+import { LinuxStartupSettings } from '@/components/features/settings/linux-startup-settings';
 
 type TSettingsTab = 'general' | 'appearance' | 'terminal' | 'notification' | 'editor' | 'claude' | 'auth' | 'tailscale' | 'quick-prompts' | 'sidebar-items' | 'system';
 
@@ -1236,6 +1237,8 @@ const SystemTab = () => {
           </div>
         )}
       </div>
+
+      <LinuxStartupSettings />
 
       {isMacElectron && (
         <div className="flex items-center justify-between gap-3">

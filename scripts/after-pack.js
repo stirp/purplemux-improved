@@ -5,10 +5,11 @@ const path = require('path');
 exports.default = async (context) => {
   const appRoot = path.join(context.appOutDir, `${context.packager.appInfo.productFilename}.app`);
   const contents = path.join(appRoot, 'Contents');
-  const resources = path.join(contents, 'Resources');
+  const isMac = context.electronPlatformName === 'darwin';
+  const resources = isMac ? path.join(contents, 'Resources') : path.join(context.appOutDir, 'resources');
   const unpacked = path.join(resources, 'app.asar.unpacked');
 
-  if (process.platform === 'darwin') {
+  if (isMac) {
     const appExecutable = path.join(contents, 'MacOS', context.packager.appInfo.productFilename);
     const nodeExecutable = path.join(resources, 'purplemux-node');
     if (fs.existsSync(appExecutable)) {
