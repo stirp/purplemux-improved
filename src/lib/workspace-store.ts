@@ -381,6 +381,12 @@ export const getWorkspaceById = async (wsId: string): Promise<IWorkspace | undef
 
 export const readScheduledTasks = async () => (await readWorkspacesFile(true))?.scheduledTasks ?? [];
 
+export const readWorkspaceScheduledTasks = async (workspaceId: string) => {
+  const data = await readWorkspacesFile(true);
+  if (!data?.workspaces.some((workspace) => workspace.id === workspaceId)) return null;
+  return (data.scheduledTasks ?? []).filter((task) => task.workspaceId === workspaceId);
+};
+
 export const mutateScheduledTasks = async <T>(update: (
   tasks: NonNullable<IWorkspacesData['scheduledTasks']>, workspaces: IWorkspace[],
 ) => T | Promise<T>): Promise<T> => withLock(async () => {

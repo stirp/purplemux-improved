@@ -1,12 +1,15 @@
 import { nanoid } from 'nanoid';
-import { mutateScheduledTasks, readScheduledTasks } from '@/lib/workspace-store';
+import { mutateScheduledTasks, readWorkspaceScheduledTasks } from '@/lib/workspace-store';
 import { scheduledTaskSchema, nextTaskRun, isTaskRunning, MAX_SCHEDULED_TASKS, type TScheduledTaskInput } from '@/lib/scheduled-tasks';
 import { validateTaskDirectory } from '@/lib/scheduled-task-runner';
 
 export const taskError = (code: string, status: number) => Object.assign(new Error(code), { code, status });
 
-export const listScheduledTasks = async (workspaceId: string) =>
-  (await readScheduledTasks()).filter((task) => task.workspaceId === workspaceId);
+export const listScheduledTasks = async (workspaceId: string) => {
+  const tasks = await readWorkspaceScheduledTasks(workspaceId);
+  if (!tasks) throw taskError('notFound', 404);
+  return tasks;
+};
 
 export const saveScheduledTask = async (workspaceId: string, input: TScheduledTaskInput, id?: string) => {
   const parsed = scheduledTaskSchema.safeParse(input);

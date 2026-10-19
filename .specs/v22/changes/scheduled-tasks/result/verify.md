@@ -95,3 +95,29 @@ git diff --check
 | 10：释放孤立任务额度 | 50 条历史孤立任务清理后并发创建成功，有效任务仍受 50 条限制；启动清理孤立 running；真实删除工作区两种会话删除模式均清理未运行任务，保留运行占用，其他工作区不变；删除失败保留任务；运行结果保存后清理并释放并发额度 | 通过 |
 
 本轮仅修改日历、调度、存储及测试，未修改 UI 或 API 输入结构；重新执行了 UI/API 自动化回归和服务端构建，未重新执行完整 Next.js 构建、浏览器或实机验收。上文浏览器与完整构建记录属于初次实施，不作为本轮执行证据。未进行 Git 提交、发布或替换运行实例。
+
+## PR #69 列表查询修复验证
+
+针对[审查意见](https://github.com/stirp/purplemux-improved/pull/69#discussion_r4315706169)，修复前运行 `scheduled-task-service.test.ts`：20 项通过、3 项失败，分别复现未知工作区返回空数组、已删除工作区返回空数组、已删除但保留运行记录的工作区返回孤立任务的问题。
+
+修复后执行以下检查：
+
+```bash
+pnpm exec vitest run --maxWorkers=1 --testTimeout=20000 \
+  "tests/unit/lib/scheduled-task-service.test.ts" \
+  "tests/unit/api/scheduled-tasks.test.ts" \
+  "tests/unit/lib/workspace-delete.test.ts" \
+  "tests/unit/lib/scheduled-tasks-ui.test.ts" \
+  "tests/unit/lib/terminal-commands-storage.test.ts"
+pnpm exec tsc --noEmit
+pnpm exec eslint "src/lib/workspace-store.ts" \
+  "src/lib/scheduled-task-service.ts" "tests/unit/lib/scheduled-task-service.test.ts"
+pnpm build:server
+git diff --check
+```
+
+结果：5 个测试文件共 69 项通过；完整 TypeScript、改动文件 ESLint、服务端 tsup 构建和差异格式检查通过，需求目录的相对链接及依赖路径检查通过。
+
+验收 11 由 API handler、service、workspace-store 组合测试覆盖（仅底层文件系统使用内存替身）：有效空工作区及旧配置返回 200 空数组；有效有任务工作区按归属返回任务；未知、已删除和仍保留孤立运行记录的工作区返回 404 notFound；读取错误及损坏 JSON 返回 500 storage；GET 不写入或清理文件。既有 API、UI、调度和工作区删除回归通过。
+
+本轮未重新执行完整 Next.js 构建、真实 HTTP 服务或浏览器验收；未提交、推送、修改 GitHub 审查讨论或发布。前述 110 项测试及浏览器记录属于之前修复轮，不计入本轮证据。

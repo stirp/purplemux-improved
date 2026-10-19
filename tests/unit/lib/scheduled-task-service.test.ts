@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { MAX_SCHEDULED_TASKS, type IScheduledTask, type TScheduledTaskInput } from '@/lib/scheduled-tasks';
 import type { TTaskExecution } from '@/lib/scheduled-task-runner';
+import type { NextApiRequest, NextApiResponse } from 'next';
 
 const mocks = vi.hoisted(() => ({ files: new Map<string, string>(), fail: false, readFail: false, directory: true, failedWrites: 0 }));
 vi.mock('os', () => ({ default: { homedir: () => '/scheduled-test' } }));
@@ -25,6 +26,7 @@ vi.mock('@/lib/shell-env', () => ({ buildShellEnv: vi.fn(), defaultShell: vi.fn(
 import { readScheduledTasks, mutateScheduledTasks, updateActive } from '@/lib/workspace-store';
 import { saveScheduledTask, changeScheduledTask, listScheduledTasks } from '@/lib/scheduled-task-service';
 import { ScheduledTaskScheduler } from '@/lib/scheduled-task-scheduler';
+import scheduledTasksHandler from '@/pages/api/scheduled-tasks';
 
 const file = '/scheduled-test/.purplemux/workspaces.json';
 const value: TScheduledTaskInput = { name: 'test', kind: 'shell', cwd: '/tmp', content: 'pwd', timeoutMinutes: 30, enabled: true,
@@ -32,6 +34,11 @@ const value: TScheduledTaskInput = { name: 'test', kind: 'shell', cwd: '/tmp', c
 const execute = vi.fn<(_: IScheduledTask, signal: AbortSignal) => Promise<TTaskExecution>>();
 let scheduler: ScheduledTaskScheduler;
 const create = async (changes: Partial<TScheduledTaskInput> = {}) => (await saveScheduledTask('ws', { ...value, ...changes })).at(-1)!;
+const getTasks = async (workspaceId: string) => {
+  const res = { status: vi.fn().mockReturnThis(), json: vi.fn().mockReturnThis(), setHeader: vi.fn() };
+  await scheduledTasksHandler({ method: 'GET', query: { workspaceId } } as unknown as NextApiRequest, res as unknown as NextApiResponse);
+  return res;
+};
 beforeEach(() => {
   vi.useFakeTimers(); vi.setSystemTime('2026-10-19T00:59:50Z'); vi.clearAllMocks();
   mocks.files.clear(); mocks.fail = false; mocks.readFail = false; mocks.directory = true; mocks.failedWrites = 0;
@@ -43,6 +50,38 @@ beforeEach(() => {
 afterEach(async () => { mocks.fail = false; mocks.readFail = false; await scheduler.stop(); vi.useRealTimers(); });
 
 describe('scheduled task persistence and lifecycle', () => {
+  it('returns an empty list for an existing workspace in old storage without writing', async () => {
+    const before = mocks.files.get(file);
+    mocks.fail = true;
+    const response = await getTasks('ws');
+    expect(response.status).toHaveBeenLastCalledWith(200);
+    expect(response.json).toHaveBeenCalledWith([]);
+    expect(mocks.failedWrites).toBe(0);
+    expect(mocks.files.get(file)).toBe(before);
+  });
+  it.each(['unknown', 'deleted', 'deleted-running'])('returns notFound for %s workspaces without changing storage', async (scenario) => {
+    const task = await create();
+    const data = JSON.parse(mocks.files.get(file)!);
+    if (scenario !== 'unknown') {
+      data.workspaces = [];
+      data.scheduledTasks = scenario === 'deleted' ? [] : [{ ...task, runs: [{ id: 'run', status: 'running', trigger: 'manual', startedAt: new Date().toISOString(), output: '' }] }];
+      mocks.files.set(file, JSON.stringify(data));
+    }
+    const workspaceId = scenario === 'unknown' ? 'missing' : 'ws';
+    const before = mocks.files.get(file);
+    await expect(listScheduledTasks(workspaceId)).rejects.toMatchObject({ status: 404, code: 'notFound' });
+    const response = await getTasks(workspaceId);
+    expect(response.status).toHaveBeenLastCalledWith(404);
+    expect(response.json).toHaveBeenCalledWith({ error: 'notFound' });
+    expect(mocks.files.get(file)).toBe(before);
+  });
+  it.each(['read', 'json'])('preserves storage errors on GET: %s', async (failure) => {
+    if (failure === 'read') mocks.readFail = true;
+    else mocks.files.set(file, '{');
+    const response = await getTasks('ws');
+    expect(response.status).toHaveBeenLastCalledWith(500);
+    expect(response.json).toHaveBeenCalledWith({ error: 'storage' });
+  });
   it('cleans legacy orphan tasks before checking the creation limit, preserving other workspaces', async () => {
     const task = await create();
     const data = JSON.parse(mocks.files.get(file)!);
@@ -69,9 +108,13 @@ describe('scheduled task persistence and lifecycle', () => {
   });
   it('supports old files and concurrent creates without overwriting workspace changes', async () => {
     expect(await readScheduledTasks()).toEqual([]);
+    await mutateScheduledTasks((_, workspaces) => { workspaces.push({ id: 'other', name: 'Other', directories: ['/tmp'] }); });
     await Promise.all([create(), create({ kind: 'codex' }), create({ kind: 'claude' }), updateActive({ sidebarWidth: 333 })]);
     expect(await listScheduledTasks('ws')).toHaveLength(3);
     expect(await listScheduledTasks('other')).toEqual([]);
+    const response = await getTasks('ws');
+    expect(response.status).toHaveBeenLastCalledWith(200);
+    expect(response.json).toHaveBeenCalledWith(await listScheduledTasks('ws'));
     expect(JSON.parse(mocks.files.get(file)!).sidebarWidth).toBe(333);
   });
   it('validates directories, ownership and one-time dates without corrupting data', async () => {
