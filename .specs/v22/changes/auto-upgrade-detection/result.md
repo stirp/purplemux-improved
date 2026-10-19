@@ -77,3 +77,25 @@
 | `git diff --check` 与 `node --check bin/server-supervisor.cjs` | 均通过 |
 
 新增端口测试模拟 `PORT=0` 和请求端口回退后的就绪握手，检查升级与回退使用实际端口、拒绝再次换端口；没有占用用户实际服务端口。macOS 测试模拟 Squirrel 的退出时安装副作用，验证忙碌/未知阻断不调用原生更新器、普通退出无待安装更新，以及随后显式重试只下载一次。未执行真实 npm 升级或 macOS 实机安装。本轮没有界面或 Next.js 代码变更，未重新运行完整 Next.js 构建或浏览器验收，前文相关结果属于上一轮。
+
+## PR #68 审查修复：即时忙碌状态与安装请求并发
+
+对应 [review-5572942747](https://github.com/stirp/purplemux-improved/pull/68#pullrequestreview-5572942747) 的两项 P2；本轮先补充规格，再添加回归测试并修复。
+
+- `src/lib/app-update-manager.ts` 在首次异步空闲检查前同步发布 `checking`。复用已有状态，使 HTTP/IPC 即时快照驱动按钮禁用及 2 秒轮询，无需新增状态或界面分支。
+- 分别记录在途检测与安装 Promise；重复同类操作合并，安装进行中不插入检测。用户在后台检测期间点击安装，会等待该次检测结束并使用最新结果；失败或无新版时不沿用旧版本安装。空闲检查阻断即结束本次操作，后来空闲仍须用户重新点击，没有增加等待会话空闲的自动重启队列。
+- `tests/unit/lib/app-update-manager.test.ts` 覆盖即时状态、检测后使用新版本且仅安装一次、离线/同版/旧版不安装及后续重试、阻断后的显式重试、安装期间检测合并。`tests/unit/lib/app-update-api.test.ts` 注入真实管理器，验证空闲检查未完成时 HTTP 202 已返回忙碌快照。
+
+修复前运行两个测试文件，17 项通过、4 项失败：管理器和 HTTP 快照均错误返回 `available`，检测期间的安装请求未触发下载或空闲检查。修复后本轮验证如下：
+
+| 命令或检查 | 本轮结果 |
+| --- | --- |
+| `pnpm exec vitest run tests/unit/lib/app-update-manager.test.ts tests/unit/lib/app-update-guard.test.ts tests/unit/lib/desktop-updater.test.ts tests/unit/lib/app-update-api.test.ts tests/unit/lib/app-update-download.test.ts` | 35 项全部通过 |
+| `pnpm exec tsc --noEmit` | 通过，完整应用类型检查 |
+| `pnpm exec tsc --noEmit -p electron/tsconfig.json` | 通过，完整桌面类型检查 |
+| `pnpm exec eslint src/lib/app-update-manager.ts tests/unit/lib/app-update-manager.test.ts tests/unit/lib/app-update-api.test.ts` | 通过 |
+| `pnpm build:server` | 通过 |
+| `pnpm build:electron:main` | 通过 |
+| `git diff --check` | 通过 |
+
+本轮仅修改共用管理器、相关测试与本需求文档；沿用状态与界面消费逻辑（DRY），用两个在途操作记录实现明确的并发约定（KISS/YAGNI），平台下载和重启依赖保持分离（单一职责）。未重新执行 CLI 测试、完整 Next.js 构建或浏览器/桌面实机验收；未执行真实升级重启，历史相关结果不作为本轮验证。运行环境仍为 Linux / Node v22.14.0，不能替代项目要求的 Node 24 发布验收。

@@ -2,6 +2,16 @@ import { describe, expect, it, vi } from 'vitest';
 import { createAppUpdateManager } from '@/lib/app-update-manager';
 import { isNewerVersion, isStableVersion } from '@/lib/app-update-version';
 
+const deferred = <T>() => {
+  let resolve!: (value: T) => void;
+  let reject!: (error: Error) => void;
+  const promise = new Promise<T>((resolvePromise, rejectPromise) => {
+    resolve = resolvePromise;
+    reject = rejectPromise;
+  });
+  return { promise, resolve, reject };
+};
+
 const setup = () => {
   const deps = {
     currentVersion: '0.5.6', supported: true,
@@ -53,6 +63,86 @@ describe('application updates', () => {
     expect(manager.getState().phase).toBe('blocked');
     expect(deps.download).not.toHaveBeenCalled();
     expect(deps.restart).not.toHaveBeenCalled();
+  });
+  it('publishes busy state synchronously while the first idle check is pending', async () => {
+    const { deps, manager } = setup();
+    await manager.check();
+    const idle = deferred<void>();
+    deps.assertIdle.mockReturnValueOnce(idle.promise);
+    const installation = manager.install();
+    const snapshot = manager.getState();
+    expect(deps.download).not.toHaveBeenCalled();
+    idle.reject(new Error('busy'));
+    await installation;
+    expect(snapshot.phase).toBe('checking');
+    expect(manager.getState().phase).toBe('blocked');
+    expect(deps.restart).not.toHaveBeenCalled();
+  });
+  it('installs the refreshed version once after an in-flight background check', async () => {
+    const { deps, manager } = setup();
+    await manager.check();
+    const latest = deferred<string>();
+    deps.latest.mockReturnValueOnce(latest.promise);
+    const checking = manager.check();
+    const installation = manager.install();
+    const duplicate = manager.install();
+    const anotherCheck = manager.check();
+    expect(deps.assertIdle).not.toHaveBeenCalled();
+    latest.resolve('0.7.0');
+    await Promise.all([checking, installation, duplicate, anotherCheck]);
+    expect(deps.latest).toHaveBeenCalledTimes(2);
+    expect(deps.download).toHaveBeenCalledExactlyOnceWith('0.7.0');
+    expect(deps.assertIdle).toHaveBeenCalledTimes(2);
+    expect(deps.restart).toHaveBeenCalledExactlyOnceWith('/staged');
+  });
+  it.each(['offline', '0.5.6', '0.5.5'])('does not install stale metadata after a check returns %s', async (result) => {
+    const { deps, manager } = setup();
+    await manager.check();
+    const latest = deferred<string>();
+    deps.latest.mockReturnValueOnce(latest.promise);
+    const checking = manager.check();
+    const installation = manager.install();
+    if (result === 'offline') latest.reject(new Error('offline'));
+    else latest.resolve(result);
+    await Promise.all([checking, installation]);
+    expect(manager.getState().phase).toBe(result === 'offline' ? 'error' : 'idle');
+    expect(deps.assertIdle).not.toHaveBeenCalled();
+    expect(deps.download).not.toHaveBeenCalled();
+    expect(deps.restart).not.toHaveBeenCalled();
+    await manager.check();
+    await manager.install();
+    expect(deps.restart).toHaveBeenCalledTimes(1);
+  });
+  it('requires a new explicit click if installation after a background check is blocked', async () => {
+    const { deps, manager } = setup();
+    await manager.check();
+    const latest = deferred<string>();
+    deps.latest.mockReturnValueOnce(latest.promise);
+    deps.assertIdle.mockRejectedValueOnce(new Error('busy'));
+    const checking = manager.check();
+    const installation = manager.install();
+    latest.resolve('0.6.0');
+    await Promise.all([checking, installation]);
+    expect(manager.getState().phase).toBe('blocked');
+    await manager.check();
+    expect(deps.assertIdle).toHaveBeenCalledTimes(1);
+    expect(deps.download).not.toHaveBeenCalled();
+    expect(deps.restart).not.toHaveBeenCalled();
+    await manager.install();
+    expect(deps.restart).toHaveBeenCalledTimes(1);
+  });
+  it('does not run a background check during installation', async () => {
+    const { deps, manager } = setup();
+    await manager.check();
+    const download = deferred<string>();
+    deps.download.mockReturnValueOnce(download.promise);
+    const installation = manager.install();
+    await vi.waitFor(() => expect(deps.download).toHaveBeenCalledTimes(1));
+    const checking = manager.check();
+    download.resolve('/staged');
+    await Promise.all([installation, checking]);
+    expect(deps.latest).toHaveBeenCalledTimes(1);
+    expect(deps.restart).toHaveBeenCalledTimes(1);
   });
   it('rechecks after download and retains the package for an explicit retry', async () => {
     const { deps, manager } = setup();

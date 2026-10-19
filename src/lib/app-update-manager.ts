@@ -15,15 +15,11 @@ export const createAppUpdateManager = (deps: IUpdateDependencies) => {
     currentVersion: deps.currentVersion, latestVersion: null, phase: 'idle',
     supported: deps.supported, progress: null, checkedAt: null, error: null,
   };
-  let operation: Promise<void> | null = null;
+  let checkOperation: Promise<void> | null = null;
+  let installOperation: Promise<void> | null = null;
   let downloaded: { version: string; directory: string } | null = null;
   const patch = (value: Partial<IAppUpdateState>) => { state = { ...state, ...value }; };
-  const exclusive = (run: () => Promise<void>) => {
-    if (operation) return operation;
-    operation = run().finally(() => { operation = null; });
-    return operation;
-  };
-  const check = () => exclusive(async () => {
+  const runCheck = async () => {
     if (downloaded || state.phase === 'restarting') return;
     patch({ phase: 'checking', error: null });
     try {
@@ -33,8 +29,14 @@ export const createAppUpdateManager = (deps: IUpdateDependencies) => {
     } catch (error) {
       patch({ phase: 'error', latestVersion: null, error: error instanceof Error ? error.message : String(error) });
     }
-  });
-  const install = () => exclusive(async () => {
+  };
+  const check = () => {
+    if (installOperation) return installOperation;
+    if (checkOperation) return checkOperation;
+    checkOperation = runCheck().finally(() => { checkOperation = null; });
+    return checkOperation;
+  };
+  const runInstall = async () => {
     if (state.phase === 'restarting') return;
     if (!deps.supported) {
       patch({ phase: 'error', error: 'One-click upgrades require a production server started with purplemux-improved.' });
@@ -42,7 +44,7 @@ export const createAppUpdateManager = (deps: IUpdateDependencies) => {
     }
     const version = state.latestVersion;
     if (!version || !isNewerVersion(version, deps.currentVersion)) return;
-    patch({ error: null });
+    patch({ phase: 'checking', error: null });
     try {
       await deps.assertIdle();
     } catch (error) {
@@ -66,7 +68,16 @@ export const createAppUpdateManager = (deps: IUpdateDependencies) => {
     } catch (error) {
       patch({ phase: 'error', error: error instanceof Error ? error.message : String(error) });
     }
-  });
+  };
+  const install = () => {
+    if (installOperation) return installOperation;
+    const pendingCheck = checkOperation;
+    installOperation = (async () => {
+      if (pendingCheck) await pendingCheck;
+      await runInstall();
+    })().finally(() => { installOperation = null; });
+    return installOperation;
+  };
   return {
     getState: () => ({ ...state }), check, install,
     setProgress: (progress: number) => patch({ progress: Math.max(0, Math.min(100, progress)) }),
