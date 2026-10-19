@@ -8,7 +8,6 @@ import {
   useSensor,
   useSensors,
   type DragEndEvent,
-  type Modifier,
 } from '@dnd-kit/core';
 import { SortableContext, useSortable, verticalListSortingStrategy, arrayMove } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
@@ -34,6 +33,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import useSidebarItems, { type ISidebarItem } from '@/hooks/use-sidebar-items';
 import IconPicker from '@/components/features/settings/icon-picker';
+import { restrictToVerticalAxis } from '@/lib/dnd-modifiers';
 
 interface IFormState {
   mode: 'add' | 'edit';
@@ -42,8 +42,6 @@ interface IFormState {
   icon: string;
   url: string;
 }
-
-const restrictToVerticalAxis: Modifier = ({ transform }) => ({ ...transform, x: 0 });
 
 const isBuiltin = (id: string) => id.startsWith('builtin-');
 

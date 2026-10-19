@@ -4,6 +4,19 @@ import { collectWorkSessions, reconcileSessionWorkflow, type ISessionWorkflow } 
 
 const tag = { id: 'resident', name: 'Resident', color: 'purple' as const };
 describe('session tags', () => {
+  it('reorders complete catalogs without changing tag data, assignments or status', () => {
+    const second = { id: 'work', name: 'Work', color: 'blue' as const };
+    const workflow: ISessionWorkflow = { statuses: { 'codex:A': 'completed' }, collapsed: {}, tags: [tag, second], sessionTags: { 'codex:A': ['resident', 'work'] }, tagsRevision: 3 };
+    const result = applySessionTagUpdate(workflow, { action: 'reorder', revision: 3, tagIds: ['work', 'resident'] });
+    expect(result).toEqual({ ...workflow, tags: [second, tag], tagsRevision: 4 });
+    expect(workflow.tags).toEqual([tag, second]);
+    expect(() => applySessionTagUpdate(result, { action: 'reorder', revision: 3, tagIds: ['resident', 'work'] })).toThrow('conflict');
+  });
+  it.each([[], ['resident'], ['resident', 'resident'], ['resident', 'unknown'], ['resident', 'work', 'extra']].map((tagIds) => ({ tagIds })))('rejects incomplete or invalid reorder $tagIds', ({ tagIds }) => {
+    const workflow: ISessionWorkflow = { statuses: {}, collapsed: {}, tags: [tag, { ...tag, id: 'work', name: 'Work' }] };
+    expect(() => applySessionTagUpdate(workflow, { action: 'reorder', revision: 0, tagIds })).toThrow('invalid');
+    expect(workflow.tags?.map((tag) => tag.id)).toEqual(['resident', 'work']);
+  });
   it('supports Unicode names, trims whitespace and enforces 24 code points', () => {
     expect(tagNameSchema.parse('  常驻助手  ')).toBe('常驻助手');
     expect(tagNameSchema.safeParse('😀'.repeat(24)).success).toBe(true);
@@ -12,7 +25,7 @@ describe('session tags', () => {
   });
   it('rejects invalid actions, colors, keys, revisions and extra fields', () => {
     const base = { action: 'create', revision: 0, tag };
-    for (const update of [{ ...base, revision: -1 }, { ...base, extra: true }, { ...base, tag: { ...tag, color: 'red' } }, { ...base, tag: { ...tag, id: '__proto__' } },
+    for (const update of [{ ...base, revision: -1 }, { ...base, extra: true }, { ...base, tag: { ...tag, color: 'ultraviolet' } }, { ...base, tag: { ...tag, id: '__proto__' } },
       { action: 'assign', revision: 0, key: '__proto__', tagIds: [], newTags: [] }]) expect(sessionTagUpdateSchema.safeParse(update).success).toBe(false);
   });
   it('rejects duplicate names case insensitively without modifying input', () => {

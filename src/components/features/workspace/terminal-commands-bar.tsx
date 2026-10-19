@@ -2,7 +2,7 @@ import { useId, useState, type ReactNode } from 'react';
 import { useTranslations } from 'next-intl';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, type DragEndEvent, type Modifier } from '@dnd-kit/core';
+import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, type DragEndEvent } from '@dnd-kit/core';
 import { SortableContext, useSortable, verticalListSortingStrategy, sortableKeyboardCoordinates, arrayMove } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { GripVertical, Pencil, Plus, Settings2, Trash2 } from 'lucide-react';
@@ -13,6 +13,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import useTerminalCommands from '@/hooks/use-terminal-commands';
+import { restrictToVerticalAxis } from '@/lib/dnd-modifiers';
 import { MAX_TERMINAL_COMMANDS, terminalCommandInput, terminalCommandSchema, type ITerminalCommand } from '@/lib/terminal-custom-commands';
 
 interface ITerminalCommandsBarProps {
@@ -20,8 +21,6 @@ interface ITerminalCommandsBarProps {
   connected: boolean;
   children?: ReactNode;
 }
-
-const restrictToVerticalAxis: Modifier = ({ transform }) => ({ ...transform, x: 0 });
 
 interface ISortableCommandProps {
   command: ITerminalCommand;
