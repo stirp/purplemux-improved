@@ -54,6 +54,48 @@ afterEach(async () => {
   vi.unstubAllGlobals();
 });
 describe('session tags UI', () => {
+  it('exposes all 500 quick filters and supports filtering by the last tag', async () => {
+    const tags = Array.from({ length: 500 }, (_, index) => ({ id: `tag-${index}`, name: `标签${index}`, color: 'purple' as const }));
+    await act(async () => useWorkspaceStore.setState({ sessionWorkflow: { ...workflow(), tags, sessionTags: { 'codex:weekly': ['tag-499'] } } }));
+    const filters = container.querySelector('[role="group"][aria-label="标签"]')!;
+    expect(filters.querySelectorAll('button')).toHaveLength(501);
+    await click(button('标签499', filters));
+    expect(container.textContent).toContain('周报助手');
+    expect(container.textContent).not.toContain('巡检助手');
+    await click(button('移除标签499筛选', container));
+    expect(container.querySelectorAll('select')).toHaveLength(2);
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+  it('expands all 100 session tags in place without opening an editor or navigating', async () => {
+    const tags = Array.from({ length: 100 }, (_, index) => ({ id: `tag-${index}`, name: `标签${index}`, color: 'purple' as const }));
+    await act(async () => useWorkspaceStore.setState({ sessionWorkflow: { ...workflow(), tags, sessionTags: { 'codex:weekly': tags.map((tag) => tag.id) } } }));
+    const cardTags = [...container.querySelectorAll('[data-session-tags]')].find((el) => el.textContent?.includes('+98'))!;
+    await click(button('查看全部 100 个标签', cardTags));
+    expect(cardTags.textContent).toContain('标签99');
+    expect(cardTags.querySelectorAll('button[aria-label^="筛选标签："]')).toHaveLength(100);
+    expect(document.querySelector('[role="dialog"]')).toBeNull();
+    expect(button('收起', cardTags).getAttribute('aria-expanded')).toBe('true');
+    await click(button('收起', cardTags));
+    expect(cardTags.textContent).not.toContain('标签99');
+    await click(button('查看全部 100 个标签', cardTags));
+    await click(button('筛选标签：标签99', cardTags));
+    expect(container.querySelectorAll('select')).toHaveLength(1);
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(navigateToSession).not.toHaveBeenCalled();
+  });
+  it('opens management directly and preserves its search when returning from editing', async () => {
+    await click(button('管理标签', container));
+    expect(document.querySelector('[role="dialog"]')?.textContent).toContain('所有会话共用');
+    await fill(document.querySelector<HTMLInputElement>('input[aria-label="搜索标签…"]')!, '周报');
+    await click(button('编辑周报标签'));
+    expect(document.querySelector<HTMLInputElement>('input[name="name"]')?.value).toBe('周报');
+    await click(button('取消'));
+    expect(document.querySelector<HTMLInputElement>('input[aria-label="搜索标签…"]')?.value).toBe('周报');
+    await click(button('新建标签'));
+    expect(document.querySelector<HTMLInputElement>('input[name="name"]')?.value).toBe('');
+    await click(button('取消'));
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
   it('combines tags and text without modifying statuses or navigating', async () => {
     await click(button('常驻助手', container));
     expect(container.querySelectorAll('select')).toHaveLength(2);
