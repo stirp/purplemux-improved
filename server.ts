@@ -26,6 +26,7 @@ import { listInterfaceIps, resolveBindPlan } from './src/lib/network-access';
 import { getCurrentSpec, initAccessFilter, isRequestAllowed, setBoundHost } from './src/lib/access-filter';
 import { initShellPath } from './src/lib/preflight';
 import { cleanupExpiredUploads } from './src/lib/uploads-store';
+import { startIdleTabReclamation, stopIdleTabReclamation } from './src/lib/idle-tab-reclaimer';
 import { cleanupOrphanSessionStats } from './src/lib/session-stats';
 import { createLogger } from './src/lib/logger';
 import pkg from './package.json';
@@ -96,6 +97,7 @@ const handleWsUpgrade = (
 const NO_AUTH_WS_PATHS = new Set(['/api/install']);
 
 const shutdownWs = async () => {
+  stopIdleTabReclamation();
   gracefulTimelineShutdown();
   gracefulSyncShutdown();
   gracefulStatusShutdown();
@@ -398,6 +400,7 @@ export const start = async (opts?: IStartOptions): Promise<IStartResult> => {
   const { workspaces } = await getWorkspaces();
   await writeAllWorkspacePrompts(workspaces);
 
+  startIdleTabReclamation();
   cleanupExpiredUploads()
     .then((r) => {
       if (r.deleted > 0) log.info(`uploads cleanup: removed ${r.deleted} files (${r.freedBytes} bytes)`);

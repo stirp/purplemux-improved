@@ -1,4 +1,5 @@
 import fs from 'fs/promises';
+import { DEFAULT_IDLE_TAB_POLICY, idleTabPolicySchema, type TIdleTabPolicy } from '@/lib/idle-tab-policy';
 import { MAX_TERMINAL_COMMANDS, type ITerminalCommand } from '@/lib/terminal-custom-commands';
 import { normalizeTerminalKeys, terminalKeysSchema, type ITerminalKeySetting } from '@/lib/terminal-keys';
 import { applySessionTagUpdate, forgetSessionTags, type TSessionTagUpdate } from '@/lib/session-tags';
@@ -145,8 +146,8 @@ const readWorkspacesFile = async (strict = false): Promise<IWorkspacesData | nul
 
 const writeWorkspacesFile = async (data: IWorkspacesData): Promise<void> => {
   normalizeWorkspaceOrder(data);
-  const { workspaces, groups, activeWorkspaceId, sidebarCollapsed, sidebarWidth, sessionWorkflow, terminalCommands, terminalKeys } = data;
-  const contentKey = JSON.stringify({ workspaces, groups: groups ?? [], activeWorkspaceId, sidebarCollapsed, sidebarWidth, sessionWorkflow, terminalCommands, terminalKeys });
+  const { workspaces, groups, activeWorkspaceId, sidebarCollapsed, sidebarWidth, sessionWorkflow, terminalCommands, terminalKeys, idleTabPolicy } = data;
+  const contentKey = JSON.stringify({ workspaces, groups: groups ?? [], activeWorkspaceId, sidebarCollapsed, sidebarWidth, sessionWorkflow, terminalCommands, terminalKeys, idleTabPolicy });
 
   if (g.__purplemuxWorkspacesContentCache === contentKey) return;
 
@@ -283,7 +284,7 @@ export const initWorkspaceStore = async (): Promise<void> => {
   }
 };
 
-export const getWorkspaces = async (): Promise<{
+export const getWorkspaces = async (options?: { strict?: boolean }): Promise<{
   sessionWorkflow?: ISessionWorkflow;
   workspaces: IWorkspace[];
   groups: IWorkspaceGroup[];
@@ -291,7 +292,7 @@ export const getWorkspaces = async (): Promise<{
   sidebarCollapsed: boolean;
   sidebarWidth: number;
 }> => {
-  const data = await readWorkspacesFile();
+  const data = await readWorkspacesFile(options?.strict);
   if (!data) return { workspaces: [], groups: [], activeWorkspaceId: null, sidebarCollapsed: false, sidebarWidth: 220 };
 
   return {
@@ -314,6 +315,41 @@ export const getActiveWorkspaceId = async (): Promise<string | null> => {
 
 export const getTerminalCommands = async (): Promise<ITerminalCommand[]> =>
   (await readWorkspacesFile(true))?.terminalCommands ?? [];
+
+export const getIdleTabPolicy = async (): Promise<TIdleTabPolicy> => {
+  const value = (await readWorkspacesFile(true))?.idleTabPolicy;
+  return value === undefined ? { ...DEFAULT_IDLE_TAB_POLICY } : idleTabPolicySchema.parse(value);
+};
+
+export const saveIdleTabPolicy = async (policy: TIdleTabPolicy): Promise<TIdleTabPolicy> => withLock(async () => {
+  const parsed = idleTabPolicySchema.parse(policy);
+  const data = (await readWorkspacesFile(true)) ?? emptyState();
+  data.idleTabPolicy = parsed;
+  await fs.mkdir(BASE_DIR, { recursive: true });
+  await writeWorkspacesFile(data);
+  return parsed;
+});
+
+export const retainReclaimedSession = async (
+  tabId: string, tab: IWorkflowTab & { agentSessionId: string; workspaceDir: string; tabName: string },
+): Promise<void> => withLock(async () => {
+  const data = await readWorkspacesFile(true);
+  const workspace = data?.workspaces.find((item) => item.id === tab.workspaceId);
+  if (!data || !workspace) throw new Error('Workspace no longer exists');
+  const key = sessionWorkKey(tab.agentProviderId ?? '', tab.agentSessionId, '');
+  const current = data.sessionWorkflow ?? { statuses: {}, collapsed: {} };
+  if (current.deleted?.includes(key) || (await readHiddenSessions()).has(key)) {
+    throw new Error('Session is hidden or deleted; it cannot be retained for resume');
+  }
+  data.sessionWorkflow = reconcileSessionWorkflow(current, [], {
+    [tabId]: { ...tab, workspaceName: workspace.name },
+  });
+  if (tab.tabName && !data.sessionWorkflow.titles?.[key]) {
+    data.sessionWorkflow.titles ??= {};
+    data.sessionWorkflow.titles[key] = tab.tabName;
+  }
+  await writeWorkspacesFile(data);
+});
 
 export const getTerminalKeys = async (): Promise<ITerminalKeySetting[]> =>
   normalizeTerminalKeys((await readWorkspacesFile(true))?.terminalKeys);
@@ -363,6 +399,19 @@ export const getWorkspaceById = async (wsId: string): Promise<IWorkspace | undef
   const data = await readWorkspacesFile();
   return data?.workspaces.find((w) => w.id === wsId);
 };
+
+export const saveAgentProcessTransfer = async (
+  workspaceId: string,
+  transfer: import('@/types/agent-process').IAgentProcessTransfer,
+): Promise<void> => withLock(async () => {
+  const data = await readWorkspacesFile(true);
+  const workspace = data?.workspaces.find((item) => item.id === workspaceId);
+  if (!data || !workspace) throw new Error('Workspace no longer exists');
+  const entries = workspace.agentProcessTransfers ?? [];
+  workspace.agentProcessTransfers = [...entries.filter((item) =>
+    item.pid !== transfer.pid || item.startedAt !== transfer.startedAt), transfer];
+  await writeWorkspacesFile(data);
+});
 
 export const createWorkspace = async (directory: string, name?: string, layoutOptions?: ICreateLayoutOptions,
   taskOptions?: Pick<IWorkspace, 'parentWorkspaceId' | 'worktree'>): Promise<IWorkspace> =>
@@ -669,6 +718,12 @@ export const updateSessionWorkflow = async (update:
   return workflow;
 });
 
+const workflowTabDirectory = (tab: IWorkflowTab, workflow: ISessionWorkflow, workspace: IWorkspace): string | null => {
+  const provider = tab.agentProviderId === 'codex' || tab.panelType === 'codex-cli' ? 'codex' : 'claude';
+  const saved = workflow.sessions?.[sessionWorkKey(provider, tab.agentSessionId, '')]?.navigation;
+  return tab.workspaceDir ?? (saved?.workspaceId === workspace.id ? saved.workspaceDir : null) ?? workspace.directories[0] ?? null;
+};
+
 export const updateSessionTags = async (
   update: TSessionTagUpdate, getTabs: () => Record<string, IWorkflowTab> = () => ({}),
 ): Promise<ISessionWorkflow> => withLock(async () => {
@@ -679,7 +734,7 @@ export const updateSessionTags = async (
   const workspaces = new Map(data.workspaces.map((workspace) => [workspace.id, workspace]));
   const tabs = Object.fromEntries(Object.entries(getTabs()).flatMap(([id, tab]) => {
     const workspace = workspaces.get(tab.workspaceId);
-    return workspace ? [[id, { ...tab, workspaceName: workspace.name, workspaceDir: workspace.directories[0] ?? null }]] : [];
+    return workspace ? [[id, { ...tab, workspaceName: workspace.name, workspaceDir: workflowTabDirectory(tab, current, workspace) }]] : [];
   }));
   const workflow = reconcileSessionWorkflow(current, [], tabs);
   if (update.action === 'assign' && !workflow.sessions?.[update.key]) {
@@ -717,7 +772,8 @@ export const synchronizeSessionWorkflow = async (
   }
   const currentTabs = Object.fromEntries(Object.entries(tabs).flatMap(([tabId, tab]) => {
     const workspace = workspaces.get(tab.workspaceId);
-    return workspace ? [[tabId, { ...tab, workspaceName: workspace.name, workspaceDir: workspace.directories[0] ?? null }]] : [];
+    return workspace ? [[tabId, { ...tab, workspaceName: workspace.name,
+      workspaceDir: workflowTabDirectory(tab, current, workspace) }]] : [];
   }));
   const next = reconcileSessionWorkflow(current, entries, currentTabs);
   if (previous === JSON.stringify(next)) return;

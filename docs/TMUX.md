@@ -242,6 +242,10 @@ All WebSocket connections are authenticated via NextAuth JWT in `server.ts` befo
 
 ## Related Files
 
+Local agent process management additionally uses `process-utils.ts` to enumerate the current user's processes and read argv/open-file information. `local-agent-processes.ts` joins the process ancestry with existing pane and layout data; a matching working directory alone does not establish ownership. External terminals are imported by stopping the selected agent and resuming its verified transcript in a prepared Purplemux terminal, not by moving their PTYs. Preparation and uncertain command dispatch are persisted on the workspace. Failed or ambiguous imports remain available from Settings → Local processes; no process-group kill or SIGKILL fallback is used for this operation.
+
+Idle managed Agent tabs can be reclaimed from the same settings panel. Automatic reclamation is opt-in (60 minutes by default) and runs once per minute in the server. `idle-tab-reclaimer.ts` serializes scans and closes through a shared global lock, rejects multi-pane sessions and unknown process trees, and retains the resume index before calling the existing managed-tab close path. `killSession` accepts an optional validation callback immediately before signaling; guarded layout removal checks that the terminal and its original processes have exited. Closing the last tab keeps an empty workspace. Terminal WebSocket input and tmux send/paste helpers record recent input in a shared activity map, cleaned up when the status entry is removed. No external terminal is reclaimed by this policy.
+
 | File | Description |
 | --- | --- |
 | `src/config/tmux.conf` | tmux config (purple socket only) |

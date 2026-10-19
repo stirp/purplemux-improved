@@ -822,7 +822,7 @@ export const navigateToTabOrCreate = async (
   }
 
   const paneId = layout.activePaneId ?? getFirstPaneId(layout.root);
-  const cwd = ws.directories[0];
+  const cwd = workspaceDir ?? ws.directories[0];
   const body: Record<string, string | undefined> = { panelType, cwd };
   if (agentSessionId) body.resumeSessionId = agentSessionId;
 

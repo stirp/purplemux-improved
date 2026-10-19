@@ -17,10 +17,14 @@ vi.mock('@/lib/layout-store', () => ({
   collectAllTabs: (root: { tabs: unknown[] }) => root.tabs, removeLayoutFile: mocks.removeLayout,
 }));
 vi.mock('@/lib/workspace-sessions', () => ({ collectWorkspaceSessions: mocks.collect, deleteWorkspaceSessions: mocks.cleanup }));
-import { deleteWorkspace, removeSessionWorkflow, updateWorkspaceDirectories } from '@/lib/workspace-store';
+import { deleteWorkspace, getWorkspaces, removeSessionWorkflow, saveAgentProcessTransfer, updateWorkspaceDirectories } from '@/lib/workspace-store';
 const file = '/workspace-delete-test/.purplemux/workspaces.json';
 const tabs = [{ id: 'tab', sessionName: 'pt-ws-one-tab', agentState: { providerId: 'codex', sessionId: 'thread' } }];
 const workspaces = () => JSON.parse(mocks.files.get(file)!).workspaces;
+const transfer = {
+  pid: 123, startedAt: '2026-10-19T10:00:00.000Z', providerId: 'codex' as const,
+  cwd: '/repo', sessionId: 'session', jsonlPath: '/transcript', tabId: 'tab', tmuxSession: 'target', phase: 'prepared' as const,
+};
 beforeEach(() => {
   vi.resetAllMocks();
   mocks.events = [];
@@ -35,6 +39,21 @@ beforeEach(() => {
   mocks.removeLayout.mockImplementation(async () => { mocks.events.push('layout'); });
 });
 describe('workspace deletion with original sessions', () => {
+  it('persists transfer stages without losing directory changes or creating duplicate records', async () => {
+    await saveAgentProcessTransfer('ws-one', transfer);
+    await updateWorkspaceDirectories('ws-one', ['/repo', '/another']);
+    await saveAgentProcessTransfer('ws-one', { ...transfer, phase: 'stopped' });
+    expect(workspaces()[0].directories).toEqual(['/repo', '/another']);
+    expect(workspaces()[0].agentProcessTransfers).toEqual([{ ...transfer, phase: 'stopped' }]);
+    expect((await getWorkspaces({ strict: true })).workspaces[0].agentProcessTransfers).toEqual([{ ...transfer, phase: 'stopped' }]);
+  });
+  it('does not overwrite corrupt data or recreate a workspace when saving a transfer', async () => {
+    await expect(saveAgentProcessTransfer('missing', transfer)).rejects.toThrow('no longer exists');
+    mocks.files.set(file, '{broken');
+    await expect(saveAgentProcessTransfer('ws-one', transfer)).rejects.toThrow();
+    await expect(getWorkspaces({ strict: true })).rejects.toThrow();
+    expect(mocks.files.get(file)).toBe('{broken');
+  });
   it('collects IDs before closing tabs and deletes originals before removing workspace metadata', async () => {
     expect(await deleteWorkspace('ws-one')).toBe(true);
     expect(mocks.events).toEqual(['collect', 'kill', 'cleanup', 'layout']);

@@ -64,7 +64,9 @@ export const collectWorkSessions = (
     else sessions.set(key, {
       key, workspaceId: entry.workspaceId, tabId: entry.tabId,
       status: 'review', entry, navigation: {
-        workspaceId: entry.workspaceId, workspaceName: entry.workspaceName, workspaceDir: entry.workspaceDir,
+        workspaceId: entry.workspaceId, workspaceName: entry.workspaceName,
+        workspaceDir: existing?.navigation?.workspaceId === entry.workspaceId
+          ? existing.navigation.workspaceDir ?? entry.workspaceDir : entry.workspaceDir,
         tabId: entry.tabId, providerId: entry.providerId, agentSessionId: entry.agentSessionId,
       }, olderEntries: [],
     });

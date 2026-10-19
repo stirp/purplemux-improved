@@ -1,6 +1,29 @@
 {
   "title": "設定",
+  "processes": {
+    "description": "Manage Codex and Claude Code running as the server's current user on this computer. Refreshes every 10 seconds.",
+    "search": "Search agent, PID, directory or workspace",
+    "refresh": "Refresh",
+    "failed": "Process operation failed",
+    "loading": "Loading processes…",
+    "empty": "No matching processes",
+    "unfinished": "Unfinished import",
+    "retry": "Retry import",
+    "open": "Open workspace",
+    "managed": "Managed",
+    "external": "External terminal",
+    "unknownDirectory": "Directory unavailable",
+    "unavailable": "The original session cannot be identified reliably. Import is unavailable.",
+    "adopt": "Stop and import",
+    "stop": "Stop process",
+    "stopped": "Process stopped",
+    "started": "Resume command sent. Check the workspace for startup or permission prompts.",
+    "working": "Working…",
+    "adoptConfirm": "Stop this process in its original terminal, then resume the same conversation in a workspace using Purplemux's agent settings. Running tools, in-memory state and terminal scrollback may be interrupted or lost. A process that does not exit will not be force-killed.",
+    "stopConfirm": "Send a termination request to this process. The original terminal's task will be interrupted. Conversation files are kept. A process that does not exit will not be force-killed."
+  },
   "tabs": {
+    "processes": "本機程序",
     "general": "一般",
     "appearance": "外觀",
     "terminal": "終端機",
@@ -338,5 +361,22 @@
       "input": "訊息輸入框",
       "terminal": "終端機（含 Agent 終端機）"
     }
+  },
+  "idleTabs": {
+    "title": "Reclaim idle agent tabs",
+    "description": "Close idle Claude/Codex tabs to release processes and memory. History is kept; resume the same session from Sessions. Busy or uncertain tabs are skipped. Automatic reclamation is off by default.",
+    "automatic": "Automatically reclaim idle tabs",
+    "timeout": "Idle timeout (minutes)",
+    "save": "Save policy",
+    "saved": "Reclamation policy saved",
+    "range": "Enter an integer from 15 to 10080 minutes.",
+    "failed": "Unable to manage idle tabs",
+    "refresh": "Refresh idle tabs",
+    "reclaim": "Reclaim listed tabs (up to 100)",
+    "empty": "No tabs can be safely reclaimed at this timeout.",
+    "idleFor": "Idle for {minutes} minutes",
+    "result": "Reclaimed {reclaimed}; skipped {skipped}.",
+    "confirmTitle": "Reclaim {count} idle tabs?",
+    "confirmDescription": "This closes the listed tabs and stops their processes. Session history and workspaces remain available for resume. Tabs with new activity will be skipped."
   }
 }

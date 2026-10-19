@@ -75,6 +75,7 @@ export interface ILayoutData {
 }
 
 export interface IWorkspace {
+  agentProcessTransfers?: import('@/types/agent-process').IAgentProcessTransfer[];
   id: string;
   name: string;
   directories: string[];
@@ -91,6 +92,7 @@ export interface IWorkspaceGroup {
 }
 
 export interface IWorkspacesData {
+  idleTabPolicy?: import('@/lib/idle-tab-policy').TIdleTabPolicy;
   terminalCommands?: import('@/lib/terminal-custom-commands').ITerminalCommand[];
   terminalKeys?: import('@/lib/terminal-keys').ITerminalKeySetting[];
   sessionWorkflow?: import('@/lib/session-workflow').ISessionWorkflow;

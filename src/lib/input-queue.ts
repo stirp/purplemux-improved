@@ -49,6 +49,11 @@ export class InputQueue {
     };
   }
 
+  hasPendingInput(tabId: string): boolean {
+    const entry = this.entries.get(tabId);
+    return Boolean(entry && (entry.messages.length || entry.sending || entry.waiting || entry.error));
+  }
+
   enqueue(target: IInputTarget, message: IQueuedInput) {
     let entry = this.entries.get(target.tabId);
     if (!entry) {

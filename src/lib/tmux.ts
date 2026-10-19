@@ -7,6 +7,7 @@ import { PRISTINE_ENV } from '@/lib/pristine-env';
 import { buildShellLaunchCommand } from '@/lib/shell-env';
 import { createLogger } from '@/lib/logger';
 import { isLinux } from '@/lib/platform';
+import { recordTerminalInput } from '@/lib/terminal-input-activity';
 import { getProcessArgs } from '@/lib/process-utils';
 
 const log = createLogger('terminal');
@@ -78,11 +79,12 @@ export const createSession = async (
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-export const killSession = async (name: string): Promise<void> => {
+export const killSession = async (name: string, beforeSignal?: () => Promise<void>): Promise<void> => {
   if (!(await hasSession(name))) return;
 
   log.debug(`killSession start: ${name}`);
   const panePid = await getSessionPanePid(name);
+  await beforeSignal?.();
   if (panePid) {
     try {
       log.debug(`SIGTERM → process group ${panePid}: ${name}`);
@@ -346,6 +348,7 @@ export const sendKeys = async (
   sessionName: string,
   command: string,
 ): Promise<void> => {
+  recordTerminalInput(sessionName);
   await exitCopyMode(sessionName);
   await execFile(
     'tmux',
@@ -362,6 +365,7 @@ export const sendKeysSeparated = async (
   sessionName: string,
   text: string,
 ): Promise<void> => {
+  recordTerminalInput(sessionName);
   await exitCopyMode(sessionName);
   await execFile(
     'tmux',
@@ -380,6 +384,7 @@ export const sendRawKeys = async (
   sessionName: string,
   keys: string,
 ): Promise<void> => {
+  recordTerminalInput(sessionName);
   await exitCopyMode(sessionName);
   await execFile(
     'tmux',
@@ -389,6 +394,7 @@ export const sendRawKeys = async (
 };
 
 export const pasteText = async (sessionName: string, content: string): Promise<void> => {
+  recordTerminalInput(sessionName);
   await exitCopyMode(sessionName);
   const buffer = `purplemux-input-${nanoid()}`;
   try {

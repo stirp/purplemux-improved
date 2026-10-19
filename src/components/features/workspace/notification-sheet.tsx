@@ -416,7 +416,7 @@ export const NotificationPanel = ({ workspaceLayouts, onNavigated, className }: 
               {!collapsed && <div className="flex flex-col gap-2">
                 {items.map(({ session, title, workspaceName, rootWorkspaceName }) => {
                   const entry = session.entry;
-                  const target = entry ?? session.navigation;
+                  const target = session.navigation ?? entry;
                   const isActiveSession = target?.agentSessionId
                     ? target.agentSessionId === activeSessionId && target.providerId === activeProviderId
                     : !!session.live && session.tabId === activeTabId;
@@ -472,7 +472,7 @@ export const NotificationPanel = ({ workspaceLayouts, onNavigated, className }: 
                       </div>
                       {session.olderEntries.length > 0 && expanded && <div className="mx-3 mb-2 border-l border-border pl-2">
                           {session.olderEntries.map((older) => <SessionHistoryItem key={older.id} entry={older} workspaceName={workspaceName} rootWorkspaceName={rootWorkspaceName ?? t('unknownRootProject')} title={title} compact showResult={searching}
-                            onClick={() => { onNavigated?.(); void navigateToSession(older, session.live ? session.tabId : null); }} />)}
+                            onClick={() => { onNavigated?.(); void navigateToSession(session.navigation ?? older, session.live ? session.tabId : null); }} />)}
                       </div>}
                     </div>
                   );

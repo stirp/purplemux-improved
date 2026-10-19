@@ -30,6 +30,7 @@ import { getSubscriptions, removeSubscription, isAnyDeviceVisible } from '@/lib/
 import { getVAPIDKeys } from '@/lib/vapid-keys';
 import { nanoid } from 'nanoid';
 import fs from 'fs/promises';
+import { forgetTerminalInput } from '@/lib/terminal-input-activity';
 import { watch, type FSWatcher } from 'fs';
 
 const log = createLogger('status');
@@ -484,6 +485,7 @@ class StatusManager {
 
     for (const tabId of tabsBeforePoll) {
       if (!knownTabIds.has(tabId) && this.tabs.has(tabId)) {
+        forgetTerminalInput(this.tabs.get(tabId)!.tmuxSession);
         this.stopJsonlWatch(tabId);
         this.tabs.delete(tabId);
         this.broadcastRemove(tabId);
@@ -914,6 +916,7 @@ class StatusManager {
 
   removeTab(tabId: string, saveHistory = true): void {
     const entry = this.tabs.get(tabId);
+    if (entry) forgetTerminalInput(entry.tmuxSession);
     if (saveHistory && entry && (entry.cliState === 'busy' || entry.cliState === 'needs-input') && entry.lastUserMessage) {
       this.saveSessionHistory(tabId, entry, entry.busySince, true).catch((err) => {
         log.warn('Failed to save cancelled session history: %s', err);
