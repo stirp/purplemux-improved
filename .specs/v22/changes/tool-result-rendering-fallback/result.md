@@ -55,3 +55,25 @@
 - 本轮重新运行 `pnpm exec tsc --noEmit`，通过；对识别函数与两个测试文件运行 ESLint，通过；`git diff --check` 通过。
 - 本轮重新打包组件夹具并使用 `agent-browser --session tool-result-review-baunie` 验证 390px 窄屏：出现“报告”链接、后续标题、列表和表格；链接指向 `https://example.com`，未点击外部链接。截图见[评审修复验证](./result/review-markdown-link.png)。
 - 本轮未重新执行完整生产构建，使用组件浏览器验证覆盖此次纯识别逻辑变更；前述生产构建是初次实现的验证证据，不作为本轮构建结果。
+
+## PR #67 Review 5572775009 修复
+
+2026-10-19，读取[指定 review](https://github.com/stirp/purplemux-improved/pull/67#pullrequestreview-5572775009)，确认本地与 PR head 均为 `3e597b5d40f195b7e8d50dd991329114445eae2d`，在本需求规格内补齐两项约定后修复。
+
+- [4314789725](https://github.com/stirp/purplemux-improved/pull/67#discussion_r4314789725)：MCP `content` 为空、全未知块或无效文本块时，仍保留包装中的 `isError: true`，展示错误提示及原文。识别函数携带 JSON 来源字符串，直接回退时不改变空白；嵌套内容、数组和 fulfilled 包装继续传递错误。后续正常结果清除错误提示。
+- [4314789737](https://github.com/stirp/purplemux-improved/pull/67#discussion_r4314789737)：为开头的简写引用链接扫描后续匹配定义，统一标签大小写和空白；支持转义标签、换行标签及下一行目标地址。未找到匹配定义或定义为空时保留原文，有效 JSON 仍优先。
+- 变更集中在 `tool-result-presentation.ts`，复用现有错误提示、原文和 Markdown 展示；无新依赖、接口或 UI 状态，保留识别/展示职责分离。
+
+本轮实际验证：
+
+| 检查 | 结果 |
+| --- | --- |
+| 修改源码前运行新增回归 | 12 项失败，复现两项 review 问题及其边界 |
+| `pnpm exec vitest run tests/unit/lib/tool-result-presentation.test.ts tests/unit/lib/tool-result-content.test.ts tests/unit/lib/session-parser-codex.test.ts tests/unit/lib/codex-jsonl-parser.test.ts` | 89 项通过 |
+| `pnpm exec tsc --noEmit` | 完整类型检查通过 |
+| `pnpm exec eslint src/lib/tool-result-presentation.ts tests/unit/lib/tool-result-presentation.test.ts tests/unit/lib/tool-result-content.test.ts` | 通过，无警告 |
+| `git diff --check` | 通过 |
+
+重新打包真实组件夹具，以 `agent-browser --session tool-result-pr67-baunie` 验证 390px 宽度：简写 `report` 链接的 href 正确，空内容/未知内容错误均显示“工具返回错误”和原文，正常未知内容无错误提示；页面宽度未溢出。见[本轮截图](./result/pr67-review-mobile.png)。未点击外部链接、未操作真实会话。沿用前述夹具字体回退限制。
+
+本轮未重新运行完整生产构建，使用类型检查、集成测试及浏览器组件验证覆盖此次识别逻辑修正；未执行 Git 提交、推送或 GitHub 评论/线程状态操作。

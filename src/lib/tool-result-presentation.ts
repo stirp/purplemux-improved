@@ -29,6 +29,19 @@ const rawBlock = (value: unknown): TToolResultBlock => ({
   text: typeof value === 'string' ? value : JSON.stringify(value, null, 2),
 });
 
+const normalizeReferenceLabel = (label: string): string =>
+  label.trim().replace(/\s+/g, ' ').toLowerCase().toUpperCase();
+
+const hasReferenceDefinition = (text: string, label: string): boolean => {
+  const normalized = normalizeReferenceLabel(label);
+  // Definitions may wrap the label or put the destination on the next line.
+  const definitions = /^ {0,3}\[((?:\\.|[^\]\\])+)\]:[ \t]*(?:\r?\n[ \t]*)?\S/gm;
+  for (const match of text.matchAll(definitions)) {
+    if (normalizeReferenceLabel(match[1]) === normalized) return true;
+  }
+  return false;
+};
+
 const startsWithMarkdownLink = (text: string): boolean => {
   let depth = 0;
   for (let index = 0; index < text.length; index++) {
@@ -39,7 +52,10 @@ const startsWithMarkdownLink = (text: string): boolean => {
       depth++;
     } else if (char === ']') {
       depth--;
-      if (depth === 0) return ['(', '[', ':'].includes(text[index + 1]);
+      if (depth === 0) {
+        return ['(', '[', ':'].includes(text[index + 1])
+          || hasReferenceDefinition(text.slice(index + 1), text.slice(1, index));
+      }
     }
   }
   return false;
@@ -61,13 +77,13 @@ const isJsonText = (text: string): boolean => {
 const parseText = (text: string, depth: number): IToolResultPresentation | null => {
   if (depth > MAX_DEPTH || text.length > MAX_PARSE_LENGTH || !/^[\s]*[\[{]/.test(text)) return null;
   try {
-    return recognizeValue(JSON.parse(text), depth);
+    return recognizeValue(JSON.parse(text), depth, text);
   } catch {
     return null;
   }
 };
 
-const recognizeValue = (value: unknown, depth: number): IToolResultPresentation | null => {
+const recognizeValue = (value: unknown, depth: number, originalText?: string): IToolResultPresentation | null => {
   if (depth > MAX_DEPTH) return null;
   if (typeof value === 'string') return parseText(value, depth + 1);
 
@@ -100,6 +116,7 @@ const recognizeValue = (value: unknown, depth: number): IToolResultPresentation 
   if (Array.isArray(value.content)) {
     const content = recognizeValue(value.content, depth + 1);
     if (content) return { ...content, isError: value.isError === true || content.isError };
+    if (value.isError === true) return { blocks: [rawBlock(originalText ?? value)], isError: true };
   }
 
   const hasOutput = typeof value.output === 'string' || typeof value.stdout === 'string' || typeof value.stderr === 'string';

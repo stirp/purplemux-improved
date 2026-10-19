@@ -41,6 +41,24 @@ describe('tool result presentation', () => {
     expect(present({ content: [{ type: 'text', text: 'Failed' }], isError: true })?.isError).toBe(true);
   });
 
+  it.each([
+    { content: [] },
+    { content: [{ type: 'resource', resource: { uri: 'file:///tmp/error', text: 'failed' } }] },
+    { content: [{ type: 'text', text: 123 }] },
+  ])('preserves MCP errors even when content cannot be recognized: %j', ({ content }) => {
+    const output = `  ${JSON.stringify({ content, isError: true })}\n`;
+    expect(getToolResultPresentation(output)).toEqual({ blocks: [{ kind: 'raw', text: output }], isError: true });
+    expect(present({ content, isError: false })).toBeNull();
+  });
+
+  it('propagates unrecognized MCP errors through nested wrappers', () => {
+    const error = { content: [], isError: true };
+    const nested = { content: [{ type: 'text', text: JSON.stringify(error) }] };
+    expect(present(nested)).toMatchObject({ isError: true, blocks: [{ kind: 'raw', text: JSON.stringify(error) }] });
+    expect(present({ status: 'fulfilled', value: error })?.isError).toBe(true);
+    expect(present([error])?.isError).toBe(true);
+  });
+
   it('does not reinterpret unknown JSON embedded in a text block as Markdown', () => {
     const json = ' { "list": [1, 2] }\n';
     expect(present({ content: [{ type: 'text', text: json }] })?.blocks).toEqual([{ kind: 'raw', text: json }]);
@@ -54,6 +72,11 @@ describe('tool result presentation', () => {
     '[报告 [详情]](https://example.com)',
     '[报告\\]详情](https://example.com)',
     '[报告\n详情](https://example.com)',
+    '[report]\n\n[report]: https://example.com',
+    '[Report]\n\n[REPORT]: https://example.com',
+    '[quarterly\n report]\n\n[Quarterly   Report]: https://example.com',
+    '[report\\]]\n\n[report\\]]: https://example.com',
+    '[report]\n\n[report]:\n  https://example.com',
   ])('renders a leading Markdown link as Markdown: %s', (text) => {
     expect(present({ content: [{ type: 'text', text }] })?.blocks).toEqual([{ kind: 'markdown', text }]);
   });
@@ -62,6 +85,7 @@ describe('tool result presentation', () => {
     '[1, 2]', ' ["[报告](https://example.com)"]\n',
     '[{"message":"[报告](https://example.com)"}]',
     '[1,', '[{"unfinished":', '{"unfinished":', '[broken]', '["[报告](https://example.com)"',
+    '[report]\n\n[other]: https://example.com', '[report]\n\n[report]:',
   ])('keeps unknown or malformed JSON inside text blocks raw: %s', (text) => {
     expect(present({ content: [{ type: 'text', text }] })?.blocks).toEqual([{ kind: 'raw', text }]);
   });

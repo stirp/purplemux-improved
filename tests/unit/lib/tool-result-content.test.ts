@@ -38,6 +38,29 @@ const renderResult = async (result: Partial<ITimelineToolResult>, entry = call) 
 };
 
 describe('tool result rendering', () => {
+  it('renders a leading shortcut reference link with its later definition', async () => {
+    const text = '[report]\n\n# Details\n\n- complete\n\n[REPORT]: https://example.com';
+    const output = JSON.stringify({ content: [{ type: 'text', text }] });
+    await renderResult({ output });
+    expect(container.querySelector('a')?.textContent).toBe('report');
+    expect(container.querySelector('a')?.getAttribute('href')).toBe('https://example.com');
+    expect(container.querySelector('h1')?.textContent).toBe('Details');
+    expect(container.querySelector('li')?.textContent).toBe('complete');
+    expect(container.querySelector('details pre')?.textContent).toBe(output);
+  });
+
+  it.each(['[]', '[{"type":"resource","resource":{"uri":"file:///tmp/error"}}]'])('shows an error for unrecognized MCP content %s and preserves its original', async (content) => {
+    const output = ` { "content": ${content}, "isError": true }\n`;
+    await renderResult({ output, isError: false });
+    expect(container.textContent).toContain('工具返回错误');
+    expect(container.querySelector('.text-negative')).not.toBeNull();
+    expect(container.querySelector('pre')?.textContent).toBe(output);
+    expect(container.querySelector('details pre')?.textContent).toBe(output);
+    await renderResult({ output: '{"content":[],"isError":false}' });
+    expect(container.textContent).not.toContain('工具返回错误');
+    expect(container.querySelector('.text-negative')).toBeNull();
+  });
+
   it('renders a leading Markdown link and the following heading, list and table', async () => {
     const text = '[报告](https://example.com)\n\n# 详情\n\n- 完成\n\n| 项目 | 状态 |\n| --- | --- |\n| 检查 | 通过 |';
     const output = JSON.stringify({ content: [{ type: 'text', text }] });
