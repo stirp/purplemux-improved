@@ -18,5 +18,11 @@
 - 修正后 PageShell 与升级 API/guard/download/manager 相关测试：5 个文件、31 项通过。
 - 修正后完整 `pnpm tsc --noEmit` 与改动测试文件 ESLint：通过。
 - 最终 `pnpm test`：退出码 0；201 个 Vitest 文件通过、2 个跳过，1889 项通过、14 项跳过；CLI 153 项全部通过。日志含 jsdom 不支持完整导航的提示，不影响本次测试退出码及断言结果。
-- 远端发布待完成。
+- 首次发布提交为 `e668349609dfc67312b152ddd857d077d43f6d65`，附注 Tag 对象为 `787017ffbe81c0e80031899bd7859af4730a10b4`；main 与 Tag 原子推送成功。
+- [首次 Actions 39310438445](https://github.com/stirp/purplemux-improved/actions/runs/39310438445) 的 check 失败：测试断言通过，但 scheduled-task-service.test.ts 启动真实 pino 日志 worker，写入 mock homedir `/scheduled-test` 被 Runner 拒绝，产生 EACCES 及 3 次 worker exited 未处理异常。npm 与 GitHub Release 均跳过。
+- 核验 GitHub Release v0.5.7 返回 404，官方 registry 无 0.5.7、latest 为 0.5.6；此次没有发布 npm 或 Release 产物。
+- 先更新本次规格，补齐定时任务测试的 logger mock，隔离真实日志 worker，保持持久化失败/重试断言及产品代码不变。允许以精确旧 Tag 对象 lease 更新本次未发布标签，保留失败运行记录。
+- 定时任务 service/runner 相关测试 30 项通过，完整 TypeScript 及改动测试文件 ESLint 通过。
+- 日志隔离修正后的最终 `pnpm test` 再次退出 0：201 个文件通过、2 个跳过，1889 项通过、14 项跳过，CLI 153 项通过；无未处理日志线程异常。
+- 修正后的远端发布待完成。
 - 本次不执行浏览器、完整安装或 macOS 实机验收。

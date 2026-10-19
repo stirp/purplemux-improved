@@ -17,6 +17,7 @@ vi.mock('fs/promises', () => ({ default: {
   unlink: async (file: string) => mocks.files.delete(file),
 } }));
 vi.mock('@/lib/sync-server', () => ({ broadcastSync: vi.fn() }));
+vi.mock('@/lib/logger', () => ({ createLogger: () => ({ debug: vi.fn(), info: vi.fn(), warn: vi.fn(), error: vi.fn() }) }));
 vi.mock('@/lib/tmux', () => ({}));
 vi.mock('@/lib/layout-store', () => ({}));
 vi.mock('@/lib/providers/registry', () => ({ listProviders: () => [] }));

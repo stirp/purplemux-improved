@@ -7,6 +7,7 @@ updated: 2026-10-20
 depends_on:
   - ../release-v0-5-6/spec.md
   - ../auto-upgrade-detection/spec.md
+  - ../scheduled-tasks/spec.md
 ---
 
 # 通过 GitHub Tag 发布 v0.5.7
@@ -20,8 +21,9 @@ depends_on:
 - 版本目标由 0.5.6 替代为 0.5.7；使用 `npm version 0.5.7 --no-git-tag-version` 更新版本，检查通过后提交并创建 v0.5.7 附注标签，原子推送 main 与标签。
 - 沿用 Node 24 下 `check → publish-npm → github-release`，保留冻结安装、npm OIDC/provenance、发布说明回退及暂停 Electron 自动发布约定。
 - 包名、两个 CLI 入口、随包 Skill、Koffi 依赖布局沿用基线；不新增产品行为、升级依赖或修改工作流。
-- 不覆盖既有远端标签、不强制推送；必要的发布阻断修正先补充规格再实施。
+- 已成功发布的标签不可覆盖。仅当本次 Tag 的检查失败、npm 与 Release 步骤均跳过，且再次确认 registry 和 GitHub Release 均无 0.5.7 时，允许以精确旧对象 lease 更新该未发布标签至修复提交，保留首次失败证据；main 仍使用正常快进推送。
 - 发布检查发现 PageShell 滚动锁生命周期测试未隔离新增的 AppUpdateSettings 子组件，导致缺少国际化上下文而失败；沿用该测试对子组件的 mock 方式补齐替身，保持桌面/移动端挂载及卸载断言，不修改产品实现。
+- 首次远端检查发现定时任务测试虽然 mock 了文件系统和用户目录，却启动真实日志线程写入 /scheduled-test。补齐 logger mock，保留所有持久化失败及重试断言，测试不得启动真实日志 worker 或要求根目录写权限；不修改产品日志行为。
 - npm 接收发布请求与版本公开可用分别记录；不以 HTTP 202 作为发布包可安装的证据。
 
 ## 验收标准
