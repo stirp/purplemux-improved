@@ -1,4 +1,10 @@
 {
+  "toolResultRaw": "Resultado original",
+  "toolResultError": "A ferramenta retornou um erro",
+  "toolResultExitCode": "Código de saída {code}",
+  "toolResultDuration": "Duração de {seconds} s",
+  "toolResultSession": "Sessão em execução {id}",
+  "toolResultEmpty": "Sem saída",
   "copyCode": "Copiar código",
   "codeCopied": "Copiado",
   "codeCopyFailed": "Não foi possível copiar o código. Selecione e copie manualmente.",
