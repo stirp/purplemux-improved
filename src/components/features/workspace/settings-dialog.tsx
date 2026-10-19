@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 import { useTheme } from 'next-themes';
 import packageJson from '../../../../package.json';
 import isElectron from '@/hooks/use-is-electron';
+import AppUpdateSettings from '@/components/features/settings/app-update-settings';
 import { Bell, Bot, ChevronDown, ChevronRight, Dices, FolderCode, Globe, ImageIcon, Keyboard, Layout, Lock, Monitor, MonitorSmartphone, Moon, Network, Palette, RotateCcw, Settings, Sun, Terminal, Trash2, Wrench, X, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ButtonGroup } from '@/components/ui/button-group';
@@ -1190,6 +1191,7 @@ const SystemTab = () => {
 
   return (
     <div className="space-y-6">
+      <AppUpdateSettings />
       <div className="space-y-3">
         <div className="flex items-start gap-2">
           <Network className="mt-0.5 h-4 w-4 text-muted-foreground" />

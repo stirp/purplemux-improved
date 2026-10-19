@@ -11,6 +11,8 @@ System that detects the in-progress state of the Claude CLI on the server, broad
 ### Worktree safety checks
 
 Worktree synchronization passes the strict tmux pane snapshot to `StatusManager.poll(snapshot)` and `areSessionsIdle(sessions, snapshot)`. This avoids a second non-strict query masking tmux errors during refresh. Missing panes remain unsafe.
+
+Application updates reuse this strict snapshot and idle policy before downloading and again before restarting. Extra panes, untracked sessions, permission/compaction waits, and failed queries block the operation; a blocked download is retained for an explicit retry, with no delayed restart scheduled. Restart detaches PTYs without killing tmux sessions. See [the update specification](../.specs/v22/changes/auto-upgrade-detection/spec.md).
 Terminal panels and inactive agent panels require both an idle terminal status and a foreground command in `SAFE_SHELLS`. A provider-backed panel's synthetic idle terminal status alone does not make a build or editor safe. The supplied snapshot takes precedence over cached process metadata; ordinary polling without a snapshot keeps its existing query behavior.
 
 ### Agent Process State (`agentProcess: boolean | null`)
