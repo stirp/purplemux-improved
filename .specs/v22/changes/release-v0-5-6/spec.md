@@ -19,7 +19,7 @@ depends_on:
 
 - 将发布目标由 0.5.5 替代为 0.5.6，使用 `npm version 0.5.6 --no-git-tag-version`，检查后创建发布提交及 `v0.5.6` 附注标签，原子推送 main 与标签。
 - 沿用 `check → publish-npm → github-release`、Node 24、冻结安装、npm OIDC/provenance、发布说明回退和暂停 Electron 自动发布约定。
-- 保留 `purplemux-improved` 与 `pmuxi` 两个入口及随包 Skill；发布包须包含网页文件访问已有规格要求的 Koffi 运行依赖与 macOS 预编译文件。
+- 保留 `purplemux-improved` 与 `pmuxi` 两个入口及随包 Skill；保留网页文件访问要求的 Koffi 运行依赖。沿用现有 Web 安装布局：主包声明 Koffi 依赖并包含 standalone 外部模块转接文件，npm 安装 Koffi 依赖包及其 macOS 预编译文件；不要求主 tarball 重复捆绑全部 node_modules。
 - 不新增产品功能或升级依赖，不覆盖远端标签、不强制推送；发布阻断问题先补充约定再修正。
 - 记录本地检查、远端构建和发布、registry 可用性及包内容验证；收到 npm HTTP 202 不能代替公开可用性确认。
 
@@ -29,7 +29,7 @@ depends_on:
 2. 完整 ESLint、TypeScript、单元及 CLI 测试通过；远端 Node 24 的冻结安装、检查及生产构建通过。
 3. 远端 Tag 对应发布提交，Actions 成功，GitHub Release 公开且非预发布。
 4. npm registry 的 0.5.6、latest、gitHead 一致；发布 tarball 可下载、SHA-512 正确，含 LICENSE、CLI、Skill、服务器及 standalone 产物。
-5. 解包后 pmuxi 帮助及 skill 离线读取通过；standalone 包含 Koffi 及 macOS arm64/x64 原生文件。仅检查归档内容不表示通过 macOS 实机运行验收。
+5. 解包后 pmuxi 帮助及 skill 离线读取通过；主包声明 Koffi 2.15.2 且 standalone 转接文件可解析该依赖，官方 Koffi 依赖包包含 macOS arm64/x64 原生文件。仅检查归档内容及模块解析不表示通过 macOS 实机运行验收。
 6. 规格、任务和结果记录完整；不将未执行的浏览器、完整安装及 macOS 实机验收记为通过。
 
 见[任务](./task.md)和[实施与验证记录](./result.md)。

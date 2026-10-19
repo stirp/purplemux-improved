@@ -52,3 +52,11 @@ git diff --check
 - 未停止任何真实用户 Agent 进程，未实测真实回收→Sessions→原生 resume 全链路；未执行 macOS 实机测试。前一需求的 Linux 只读进程扫描不是本需求真实回收证据。
 - 保守保护会使带持久后台子进程或无法明确确认状态的会话不进入候选。回收恢复保存的原生会话，不承诺保存进程内存、未落盘状态或终端滚屏。
 - 源码已实现、自动化与隔离浏览器检查通过；没有提交、部署或重启当前运行的 Purplemux。
+
+## 合并冲突处理（2026-10-19）
+
+- 对照本需求、`local-agent-process-management/spec.md` 和 `auto-upgrade-detection/spec.md`，解决 11 个 `messages/*/settings.json` 的同位置新增冲突。保留本分支 `processes`、`idleTabs` 和合入分支 `appUpdate`，没有覆盖任何一方业务约定。
+- 逐项比较 Git 三方版本，双方全部原有词条和值均保留；11 份 JSON 解析、重复键检测和语言键集合一致性检查通过。设置入口、服务启动及 Sessions 导航的自动合并结果经检查保留双方功能。
+- 本次运行相关回归：`pnpm exec vitest run tests/unit/lib/idle-tab*.test.ts tests/unit/lib/agent-process*.test.ts tests/unit/lib/app-update*.test.ts tests/unit/lib/session-workflow-ui.test.ts tests/unit/lib/session-tags-ui.test.ts`，11 个文件、101 项全部通过。
+- 设置对话框、通知面板、三个设置组件及 server.ts 的 ESLint 通过；`git diff --cached --check` 通过。仅合并词条，未修改界面结构或运行逻辑，本次未重复生产构建或浏览器验证。
+- 冲突文件已加入暂存区，`git ls-files -u` 为空；不创建合并提交或推送。

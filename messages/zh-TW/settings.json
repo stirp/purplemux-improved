@@ -378,5 +378,29 @@
     "result": "Reclaimed {reclaimed}; skipped {skipped}.",
     "confirmTitle": "Reclaim {count} idle tabs?",
     "confirmDescription": "This closes the listed tabs and stops their processes. Session history and workspaces remain available for resume. Tabs with new activity will be skipped."
+  },
+  "appUpdate": {
+    "title": "软件更新",
+    "current": "当前版本 {version}",
+    "available": "发现新版本 {version}",
+    "desktopDescription": "启动后及每六小时自动检测。升级本机桌面应用，所有会话空闲时重启。",
+    "serverDescription": "启动后及每六小时自动检测。升级当前连接的服务端，所有会话空闲时重启。",
+    "check": "检查更新",
+    "install": "升级并重启",
+    "idle": "已是最新版本",
+    "checking": "正在检查…",
+    "downloading": "正在下载…",
+    "ready": "已准备好安装",
+    "blocked": "等待会话空闲",
+    "restarting": "正在重启…",
+    "error": "更新失败",
+    "busyHint": "有任务正在运行或无法确认状态。请在全部会话空闲后重试，不会自动延后重启。",
+    "reconnecting": "正在等待服务重启并重新连接；若新版启动失败，服务端将恢复旧版本。",
+    "desktopUnsupported": "一键更新仅适用于正式桌面安装版，且需要已发布的安装包。",
+    "serverUnsupported": "一键更新需要通过 purplemux-improved 启动生产服务；源码与开发实例仅支持检测。",
+    "notChecked": "尚未检查",
+    "reconnectFailed": "重启后仍未连接成功，请刷新页面或检查服务日志。",
+    "reload": "刷新页面",
+    "desktopReconnecting": "正在安装并重启桌面应用，请等待应用重新打开。"
   }
 }

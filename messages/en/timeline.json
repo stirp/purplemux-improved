@@ -1,4 +1,10 @@
 {
+  "toolResultRaw": "Raw result",
+  "toolResultError": "Tool returned an error",
+  "toolResultExitCode": "Exit code {code}",
+  "toolResultDuration": "Duration {seconds}s",
+  "toolResultSession": "Running session {id}",
+  "toolResultEmpty": "No output",
   "copyCode": "Copy code",
   "codeCopied": "Copied",
   "codeCopyFailed": "Could not copy code. Please select and copy it manually.",

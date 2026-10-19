@@ -1,4 +1,10 @@
 {
+  "toolResultRaw": "Ham sonuç",
+  "toolResultError": "Araç bir hata döndürdü",
+  "toolResultExitCode": "Çıkış kodu {code}",
+  "toolResultDuration": "Süre {seconds} sn",
+  "toolResultSession": "Çalışan oturum {id}",
+  "toolResultEmpty": "Çıktı yok",
   "copyCode": "Kodu kopyala",
   "codeCopied": "Kopyalandı",
   "codeCopyFailed": "Kod kopyalanamadı. Lütfen seçip elle kopyalayın.",

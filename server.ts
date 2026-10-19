@@ -30,6 +30,7 @@ import { startIdleTabReclamation, stopIdleTabReclamation } from './src/lib/idle-
 import { cleanupOrphanSessionStats } from './src/lib/session-stats';
 import { createLogger } from './src/lib/logger';
 import pkg from './package.json';
+import { initAppUpdates } from './src/lib/app-update-server';
 
 const log = createLogger('server');
 const dev = process.env.NODE_ENV !== 'production';
@@ -397,6 +398,7 @@ export const start = async (opts?: IStartOptions): Promise<IStartResult> => {
     });
   }
   getCliToken();
+  initAppUpdates();
   const { workspaces } = await getWorkspaces();
   await writeAllWorkspacePrompts(workspaces);
 
@@ -431,6 +433,7 @@ export const start = async (opts?: IStartOptions): Promise<IStartResult> => {
   console.log(`  \x1b[2m➜\x1b[0m  Auth:   ${authStatus}`);
   console.log('');
 
+  process.send?.({ type: 'purplemux:ready', version: pkg.version, port: result.port });
   return result;
 };
 

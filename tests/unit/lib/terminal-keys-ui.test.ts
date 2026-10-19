@@ -36,6 +36,32 @@ const toggle = async (name: string) => {
   await act(async () => (label.querySelector('[role="checkbox"]') as HTMLElement).click());
 };
 const toolbarNames = () => Array.from(container.querySelectorAll('button')).map((node) => node.getAttribute('aria-label'));
+const draftIds = () => Array.from(document.querySelectorAll('[data-key-id]')).map((node) => node.getAttribute('data-key-id'));
+const press = async (code: string) => {
+  await act(async () => document.activeElement!.dispatchEvent(new KeyboardEvent('keydown', {
+    code, key: code === 'Space' ? ' ' : code, bubbles: true, cancelable: true,
+  })));
+};
+const startDrag = async (name: string) => {
+  await act(async () => button(`keyBarReorder ${name}`).focus());
+  await press('Space');
+  await act(async () => { await new Promise((resolve) => setTimeout(resolve, 0)); });
+};
+const moveTabDown = async () => {
+  await startDrag('Tab');
+  await press('ArrowDown');
+  await press('Space');
+};
+const touch = async (target: EventTarget, type: string, y = 40) => {
+  const event = new TouchEvent(type, { bubbles: true, cancelable: true });
+  const point = { identifier: 1, clientX: 200, clientY: y, target };
+  Object.defineProperties(event, {
+    touches: { value: type === 'touchend' || type === 'touchcancel' ? [] : [point] },
+    changedTouches: { value: [point] },
+  });
+  await act(async () => target.dispatchEvent(event));
+  return event;
+};
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -47,6 +73,12 @@ beforeEach(() => {
   vi.stubGlobal('IS_REACT_ACT_ENVIRONMENT', true);
   vi.stubGlobal('PointerEvent', MouseEvent);
   vi.stubGlobal('ResizeObserver', class { observe() {} unobserve() {} disconnect() {} });
+  vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(function (this: HTMLElement) {
+    const rows = Array.from(document.querySelectorAll('[data-key-id]'));
+    const index = rows.indexOf(this.closest('[data-key-id]') ?? this);
+    const top = Math.max(0, index) * 100;
+    return { x: 0, y: top, top, bottom: top + 80, left: 0, right: 400, width: 400, height: 80, toJSON: () => ({}) };
+  });
   vi.stubGlobal('fetch', vi.fn(async (_url: string, options?: RequestInit) => {
     if (_url === '/api/terminal-commands') return { ok: true, json: async () => [] };
     if (!options) return { ok: !failLoad, json: async () => keys };
@@ -63,11 +95,101 @@ beforeEach(() => {
 afterEach(async () => {
   await act(async () => root.unmount());
   container.remove();
+  await act(async () => { await new Promise((resolve) => setTimeout(resolve, 60)); });
   vi.unstubAllGlobals();
   vi.restoreAllMocks();
+  vi.useRealTimers();
 });
 
 describe('terminal key bar', () => {
+  it('cancels keyboard sorting without closing or changing the draft and blocks editing during a drag', async () => {
+    await render();
+    await click('keyBarManage');
+    await startDrag('Tab');
+    expect(button('keyBarReorder Tab').getAttribute('aria-pressed')).toBe('true');
+    expect(button('save').disabled).toBe(true);
+    expect(button('cancel').disabled).toBe(true);
+    await toggle('Tab');
+    expect(document.querySelector('[role="checkbox"]')?.getAttribute('aria-checked')).toBe('true');
+    await press('ArrowDown');
+    await press('Escape');
+    expect(document.querySelector('[role="dialog"]')).not.toBeNull();
+    expect(draftIds()).toEqual(keys.map(({ id }) => id));
+    expect(button('save').disabled).toBe(false);
+    await startDrag('Tab');
+    await press('Space');
+    expect(draftIds()).toEqual(keys.map(({ id }) => id));
+    expect(vi.mocked(fetch).mock.calls.every(([, options]) => !options?.method)).toBe(true);
+    await click('Close');
+    expect(document.querySelector('[role="dialog"]')).toBeNull();
+  });
+
+  it('requires a long press, moves hidden keys across multiple rows and saves only on request', async () => {
+    await render();
+    await click('keyBarManage');
+    await toggle('Tab');
+    const handle = button('keyBarReorder Tab');
+    await touch(handle, 'touchstart');
+    await act(async () => { await new Promise((resolve) => setTimeout(resolve, 100)); });
+    expect(handle.getAttribute('aria-pressed')).not.toBe('true');
+    await act(async () => { await new Promise((resolve) => setTimeout(resolve, 300)); });
+    expect(handle.getAttribute('aria-pressed')).toBe('true');
+    const move = await touch(handle, 'touchmove', 340);
+    expect(move.defaultPrevented).toBe(true);
+    await touch(handle, 'touchend', 340);
+    expect(draftIds().slice(0, 4)).toEqual(['esc', 'ctrl', 'shift', 'tab']);
+    expect(toolbarNames()[0]).toBe('Tab');
+    expect(vi.mocked(fetch).mock.calls.every(([, options]) => !options?.method)).toBe(true);
+    await act(async () => { await new Promise((resolve) => setTimeout(resolve, 60)); });
+    await click('save');
+    expect(keys[3]).toEqual({ id: 'tab', visible: false });
+    expect(send).not.toHaveBeenCalled();
+  });
+
+  it('allows early swipes and short taps, cancels touch drags and can drag again', async () => {
+    await render();
+    await click('keyBarManage');
+    const handle = button('keyBarReorder Tab');
+    await touch(handle, 'touchstart');
+    const swipe = await touch(handle, 'touchmove', 60);
+    expect(swipe.defaultPrevented).toBe(false);
+    await act(async () => { await new Promise((resolve) => setTimeout(resolve, 400)); });
+    expect(handle.getAttribute('aria-pressed')).not.toBe('true');
+    await touch(handle, 'touchend');
+    await touch(handle, 'touchstart');
+    await touch(handle, 'touchend');
+    await act(async () => { await new Promise((resolve) => setTimeout(resolve, 400)); });
+    expect(handle.getAttribute('aria-pressed')).not.toBe('true');
+    await touch(handle, 'touchstart');
+    await act(async () => { await new Promise((resolve) => setTimeout(resolve, 400)); });
+    await touch(handle, 'touchmove', 240);
+    await touch(handle, 'touchcancel');
+    expect(draftIds()).toEqual(keys.map(({ id }) => id));
+    expect(button('save').disabled).toBe(false);
+    await touch(handle, 'touchstart');
+    await act(async () => { await new Promise((resolve) => setTimeout(resolve, 400)); });
+    await touch(handle, 'touchmove', 140);
+    await touch(handle, 'touchend', 140);
+    expect(draftIds().slice(0, 2)).toEqual(['esc', 'tab']);
+  });
+
+  it('sorts with a mouse and keeps checkbox clicks separate from dragging', async () => {
+    await render();
+    await click('keyBarManage');
+    const handle = button('keyBarReorder Tab');
+    await act(async () => handle.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, button: 0, clientX: 200, clientY: 40 })));
+    await act(async () => handle.dispatchEvent(new MouseEvent('mousemove', { bubbles: true, clientX: 200, clientY: 46 })));
+    await act(async () => handle.dispatchEvent(new MouseEvent('mousemove', { bubbles: true, clientX: 200, clientY: 240 })));
+    await act(async () => handle.dispatchEvent(new MouseEvent('mouseup', { bubbles: true })));
+    expect(draftIds().slice(0, 3)).toEqual(['esc', 'ctrl', 'tab']);
+    // The drag sensor suppresses the release click for one tick.
+    await act(async () => { await new Promise((resolve) => setTimeout(resolve, 60)); });
+    await toggle('Tab');
+    expect(handle.getAttribute('aria-pressed')).not.toBe('true');
+    await click('save');
+    expect(keys[2]).toEqual({ id: 'tab', visible: false });
+  });
+
   it('uses the same configuration in the mobile toolbar and clears hidden modifiers in its input', async () => {
     keys.reverse();
     keys = keys.map((key) => ({ ...key, visible: key.id !== 'tab' }));
@@ -106,19 +228,20 @@ describe('terminal key bar', () => {
   it('cancels without saving or executing, then persists order and visibility only after successful save', async () => {
     await render();
     await click('keyBarManage');
-    await click('keyBarMoveDown Tab');
+    await moveTabDown();
     await toggle('Esc');
     await click('cancel');
     expect(toolbarNames().slice(0, 2)).toEqual(['Tab', 'Esc']);
     expect(vi.mocked(fetch).mock.calls.every(([, options]) => !options?.method)).toBe(true);
     await click('keyBarManage');
-    await click('keyBarMoveDown Tab');
+    await moveTabDown();
     await toggle('Tab');
     let finish!: () => void;
     saveGate = new Promise((resolve) => { finish = resolve; });
     await click('save');
     expect(toolbarNames().slice(0, 2)).toEqual(['Tab', 'Esc']);
     expect(button('cancel').disabled).toBe(true);
+    expect(button('keyBarReorder Tab').disabled).toBe(true);
     await act(async () => finish());
     expect(toolbarNames()[0]).toBe('Esc');
     expect(toolbarNames()).not.toContain('Tab');
@@ -129,7 +252,7 @@ describe('terminal key bar', () => {
   it('preserves a failed draft, allows retry, and clears hidden active modifiers', async () => {
     await render(true);
     await click('keyBarManage');
-    await click('keyBarMoveDown Tab');
+    await moveTabDown();
     await toggle('Ctrl');
     await toggle('Shift');
     failSave = true;

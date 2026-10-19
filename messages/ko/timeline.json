@@ -1,4 +1,10 @@
 {
+  "toolResultRaw": "원본 결과",
+  "toolResultError": "도구에서 오류를 반환했습니다",
+  "toolResultExitCode": "종료 코드 {code}",
+  "toolResultDuration": "소요 시간 {seconds}초",
+  "toolResultSession": "실행 중인 세션 {id}",
+  "toolResultEmpty": "출력 없음",
   "copyCode": "코드 복사",
   "codeCopied": "복사됨",
   "codeCopyFailed": "코드를 복사하지 못했습니다. 직접 선택하여 복사해 주세요.",

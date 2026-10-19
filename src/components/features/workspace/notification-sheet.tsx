@@ -375,7 +375,7 @@ export const NotificationPanel = ({ workspaceLayouts, onNavigated, className }: 
 
   return (
     <div className={cn('flex min-h-0 flex-1 flex-col overflow-hidden', className)}>
-      <div className="shrink-0 pb-3">
+      <div className="max-h-[60%] shrink-0 overflow-y-auto overscroll-contain pb-3">
         <div className="relative">
           <Search aria-hidden="true" className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input ref={searchInput} type="search" value={query} aria-label={t('searchPlaceholder')}
