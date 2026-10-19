@@ -12,6 +12,7 @@ vi.mock('@/hooks/use-is-mobile-device', () => ({ default: () => false }));
 vi.mock('@/hooks/use-visual-viewport', () => ({ default: () => undefined }));
 vi.mock('@/hooks/use-webview-store', () => ({ default: () => false }));
 vi.mock('@/components/layout/sidebar', () => ({ default: () => null }));
+vi.mock('@/components/features/settings/app-update-settings', () => ({ default: () => null }));
 vi.mock('@/components/features/mobile/mobile-layout', () => ({
   default: ({ children }: { children: React.ReactNode }) => children,
 }));
