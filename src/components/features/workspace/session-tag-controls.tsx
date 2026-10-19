@@ -12,6 +12,9 @@ import type { ISessionTag, TTagColor, TTagErrorCode } from '@/lib/session-tags';
 export const tagColors: Record<TTagColor, string> = {
   purple: 'bg-ui-purple/15 text-ui-purple', coral: 'bg-ui-coral/15 text-ui-coral',
   pink: 'bg-ui-pink/15 text-ui-pink', gray: 'bg-ui-gray/15 text-muted-foreground',
+  blue: 'bg-ui-blue/15 text-ui-blue', teal: 'bg-ui-teal/15 text-ui-teal',
+  amber: 'bg-ui-amber/15 text-ui-amber', green: 'bg-ui-green/15 text-ui-green',
+  red: 'bg-ui-red/15 text-ui-red',
 };
 export const tagButtonClass = 'h-auto min-h-11 md:min-h-8';
 
@@ -45,15 +48,24 @@ export const SessionTagChips = ({ tags, onFilter, onEdit, title }: {
   </div>;
 };
 
-export const TagModal = ({ title, description, saving = false, onClose, children }: {
-  title: string; description: string; saving?: boolean; onClose: () => void; children: ReactNode;
+export const TagModal = ({ title, description, saving = false, dragging = false, onClose, children }: {
+  title: string; description: string; saving?: boolean; dragging?: boolean; onClose: () => void; children: ReactNode;
 }) => {
   const t = useTranslations('notification.tags');
-  return <Dialog open onOpenChange={(open, details) => { if (saving) details.cancel(); else if (!open) onClose(); }}>
-    <DialogContent showCloseButton={false} className="flex max-h-[85dvh] flex-col gap-0 overflow-hidden p-0 max-md:top-auto max-md:bottom-0 max-md:w-full max-md:max-w-full max-md:translate-y-0 max-md:rounded-b-none md:max-w-md">
+  return <Dialog open onOpenChange={(open, details) => {
+    if (saving || dragging) {
+      details.cancel();
+      if (dragging && details.reason === 'escape-key') details.allowPropagation();
+    } else if (!open) onClose();
+  }}>
+    <DialogContent showCloseButton={false} className="flex max-h-[85dvh] flex-col gap-0 overflow-hidden p-0 max-md:top-auto max-md:bottom-0 max-md:w-full max-md:max-w-full max-md:translate-y-0 max-md:rounded-b-none md:max-w-md"
+      onKeyDown={(event) => {
+        // Base UI otherwise stops arrow keys before the document-level drag sensor receives them.
+        if (dragging && (event.key === 'ArrowUp' || event.key === 'ArrowDown')) event.preventBaseUIHandler();
+      }}>
       <div className="shrink-0 px-5 pt-4 pb-3">
         <div className="flex items-center gap-2"><DialogTitle className="min-w-0 flex-1 leading-normal [overflow-wrap:anywhere]">{title}</DialogTitle>
-          <Button type="button" variant="ghost" size="icon-sm" className="size-11 md:size-8" disabled={saving} aria-label={t('close')} onClick={onClose}><X /></Button></div>
+          <Button type="button" variant="ghost" size="icon-sm" className="size-11 md:size-8" disabled={saving || dragging} aria-label={t('close')} onClick={onClose}><X /></Button></div>
         <DialogDescription className="text-xs [overflow-wrap:anywhere]">{description}</DialogDescription>
       </div>
       {children}

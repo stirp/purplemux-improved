@@ -76,6 +76,35 @@ describe('persistent workflow preferences', () => {
   });
   const tag = { id: 'resident', name: 'Resident', color: 'purple' as const };
   const revision = async () => (await getWorkspaces()).sessionWorkflow?.tagsRevision ?? 0;
+  it('persists reordered catalogs, rejects stale writes and keeps the saved order on disk failure', async () => {
+    await updateSessionTags({ action: 'create', revision: 0, tag });
+    const other = { ...tag, id: 'other', name: 'Other' };
+    await updateSessionTags({ action: 'create', revision: 1, tag: other });
+    await updateSessionTags({ action: 'reorder', revision: 2, tagIds: ['other', 'resident'] });
+    (globalThis as { __purplemuxWorkspacesContentCache?: string }).__purplemuxWorkspacesContentCache = undefined;
+    expect((await getWorkspaces()).sessionWorkflow?.tags).toEqual([other, tag]);
+    expect(mocks.broadcast).toHaveBeenCalledWith({ type: 'workspace' });
+    await expect(updateSessionTags({ action: 'reorder', revision: 2, tagIds: ['resident', 'other'] })).rejects.toThrow('conflict');
+    const before = mocks.files.get(file);
+    mocks.fail = true;
+    await expect(updateSessionTags({ action: 'reorder', revision: 3, tagIds: ['resident', 'other'] })).rejects.toThrow('disk full');
+    expect(mocks.files.get(file)).toBe(before);
+  });
+  it('persists all tag colors and retains assignments and status when recoloring an old tag', async () => {
+    await synchronizeSessionWorkflow([makeEntry('s1')]);
+    await updateSessionWorkflow({ key: 'codex:s1', status: 'completed' });
+    await updateSessionTags({ action: 'assign', revision: 0, key: 'codex:s1', tagIds: [tag.id], newTags: [tag] });
+    for (const color of ['purple', 'coral', 'pink', 'gray', 'blue', 'teal', 'amber', 'green', 'red'] as const) {
+      await updateSessionTags({ action: 'update', revision: await revision(), tag: { ...tag, color } });
+      const disk = JSON.parse(mocks.files.get(file)!).sessionWorkflow;
+      expect(disk.tags).toEqual([{ ...tag, color }]);
+      (globalThis as { __purplemuxWorkspacesContentCache?: string }).__purplemuxWorkspacesContentCache = undefined;
+      const loaded = (await getWorkspaces()).sessionWorkflow!;
+      expect(loaded.tags).toEqual(disk.tags);
+      expect(loaded.sessionTags).toEqual({ 'codex:s1': [tag.id] });
+      expect(loaded.statuses['codex:s1']).toBe('completed');
+    }
+  });
   it('atomically creates tags and assignments, persists on reload and preserves status', async () => {
     await synchronizeSessionWorkflow([makeEntry('s1')]);
     await updateSessionWorkflow({ key: 'codex:s1', status: 'completed' });

@@ -8,7 +8,6 @@ import {
   useSensor,
   useSensors,
   type DragEndEvent,
-  type Modifier,
 } from '@dnd-kit/core';
 import { SortableContext, useSortable, verticalListSortingStrategy, arrayMove } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
@@ -28,6 +27,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import useQuickPrompts, { type IQuickPrompt } from '@/hooks/use-quick-prompts';
+import { restrictToVerticalAxis } from '@/lib/dnd-modifiers';
 
 interface IFormState {
   mode: 'add' | 'edit';
@@ -35,8 +35,6 @@ interface IFormState {
   name: string;
   prompt: string;
 }
-
-const restrictToVerticalAxis: Modifier = ({ transform }) => ({ ...transform, x: 0 });
 
 const isBuiltin = (id: string) => id.startsWith('builtin-');
 

@@ -34,5 +34,5 @@ export const useSessionTagMutation = () => {
       setSaving(false);
     }
   };
-  return { save, saving, error };
+  return { save, saving, error, resetError: () => setError(null) };
 };
