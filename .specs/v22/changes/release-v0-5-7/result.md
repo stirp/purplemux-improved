@@ -24,5 +24,9 @@
 - 先更新本次规格，补齐定时任务测试的 logger mock，隔离真实日志 worker，保持持久化失败/重试断言及产品代码不变。允许以精确旧 Tag 对象 lease 更新本次未发布标签，保留失败运行记录。
 - 定时任务 service/runner 相关测试 30 项通过，完整 TypeScript 及改动测试文件 ESLint 通过。
 - 日志隔离修正后的最终 `pnpm test` 再次退出 0：201 个文件通过、2 个跳过，1889 项通过、14 项跳过，CLI 153 项通过；无未处理日志线程异常。
-- 修正后的远端发布待完成。
+- 修正后的最终发布提交为 `7d7f072df28faf2912dfa7311c4a186e0e7d6013`，Tag 对象为 `473eb3c0245d5042a8b3456df242ff80eee6cffe`。再次确认无 registry 版本和 Release 后，通过 `git push --atomic --force-with-lease=refs/tags/v0.5.7:787017ffbe81c0e80031899bd7859af4730a10b4 origin HEAD:refs/heads/main refs/tags/v0.5.7:refs/tags/v0.5.7` 更新失败标签及快进 main；远端 Tag 解引用核验一致。
+- [第二次 Actions 39311735580](https://github.com/stirp/purplemux-improved/actions/runs/39311735580)：check、publish-npm、github-release 全部成功；Node v24.21.0 下冻结安装、ESLint、TypeScript、测试、Tag 版本校验和生产构建通过。
+- npm OIDC/provenance 发布于 2026-10-19 19:36:16 UTC 返回 HTTP 202，提示正在处理；首次 registry 查询无 0.5.7、latest 为 0.5.6，公开可用性待核验。
+- [GitHub Release v0.5.7](https://github.com/stirp/purplemux-improved/releases/tag/v0.5.7) 于 2026-10-19 19:36:33 UTC 公开，非草稿、非预发布，无 Electron 附件。
+- 本次下载官方 Koffi 2.15.2 元数据及 tarball，SHA-512 与 registry 一致，包含 darwin_arm64/koffi.node 和 darwin_x64/koffi.node。
 - 本次不执行浏览器、完整安装或 macOS 实机验收。
