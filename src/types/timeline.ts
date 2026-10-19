@@ -117,6 +117,8 @@ export interface ITimelineToolResult {
   isError: boolean;
   summary: string;
   output?: string;
+  outputFormat?: 'text' | 'json';
+  outputTruncated?: boolean;
 }
 
 export interface ITimelineAgentGroup {

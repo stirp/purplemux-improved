@@ -77,3 +77,60 @@
 重新打包真实组件夹具，以 `agent-browser --session tool-result-pr67-baunie` 验证 390px 宽度：简写 `report` 链接的 href 正确，空内容/未知内容错误均显示“工具返回错误”和原文，正常未知内容无错误提示；页面宽度未溢出。见[本轮截图](./result/pr67-review-mobile.png)。未点击外部链接、未操作真实会话。沿用前述夹具字体回退限制。
 
 本轮未重新运行完整生产构建，使用类型检查、集成测试及浏览器组件验证覆盖此次识别逻辑修正；未执行 Git 提交、推送或 GitHub 评论/线程状态操作。
+
+## Claude 完整工具结果支持
+
+2026-10-20，先补齐本需求 TR-07、TR-08 与 Claude 兼容约定，再实现。
+
+- `src/lib/session-parser.ts`：Claude `tool_result` 新增完整 `output`。字符串原样保留，其他 JSON 值完整序列化，缺失内容保持缺省；保留原有摘要、问题回答优先级及状态逻辑。
+- 直接复用共享结果识别与展示组件，无新增依赖、协议或重复渲染分支，遵循 KISS、DRY。普通日志/文件正文等宽显示，多文本块支持 Markdown，未知媒体保留 JSON，错误正文完整可见。
+- `tests/unit/lib/session-parser-claude.test.ts`：覆盖完整/超长字符串、多文本及未知块、空值、错误、摘要与问题/任务/计划兼容、初始/历史/增量读取及子 Agent。
+- `tests/unit/lib/tool-result-content.test.ts`：真实 Claude JSONL 解析后经 JSON 序列化，再交给 `ToolCallItem`，验证完整正文、安全 Markdown、未知块、错误和成功 Edit diff 行为。
+
+本轮实际验证：
+
+| 检查 | 结果 |
+| --- | --- |
+| 修改生产源码前运行解析与组件回归 | 12 项通过、16 项失败，复现缺失完整 output |
+| `pnpm exec vitest run tests/unit/lib/session-parser-claude.test.ts tests/unit/lib/tool-result-content.test.ts tests/unit/lib/tool-result-presentation.test.ts tests/unit/lib/timeline-turn-pagination.test.ts tests/unit/lib/timeline-tasks.test.ts tests/unit/lib/session-parser-codex.test.ts tests/unit/lib/codex-jsonl-parser.test.ts` | 7 个文件共 124 项通过 |
+| `pnpm exec tsc --noEmit` | 完整类型检查通过 |
+| `pnpm exec eslint src/lib/session-parser.ts tests/unit/lib/session-parser-claude.test.ts tests/unit/lib/tool-result-content.test.ts` | 通过，无警告 |
+| `git diff --check` | 通过 |
+
+使用 `agent-browser --session claude-results-baunie` 验证本地隔离夹具：Node 调用真实 Claude 解析器生成结果并序列化，浏览器使用真实 `ToolResultContent`、NextIntl 和项目样式渲染。1280px 桌面与 390px 窄屏均无页面横向溢出（scrollWidth 分别为 1280px、375px）；完整文件末行、MCP 链接/标题/列表/表格/未知块、错误正文及错误颜色正确，原文可展开。未生成图片元素，无 JavaScript 运行错误。截图见[Claude 桌面](./result/claude-desktop.png)、[Claude 窄屏原文](./result/claude-mobile-raw.png)。
+
+TR-07、TR-08 的解析/传输序列化/组件与兼容回归通过。本轮未重新执行生产构建，采用完整类型检查与浏览器组件验证；未验证真实会话 WebSocket 重连、完整应用导航或物理手机。夹具字体及 favicon 请求 404，沿用系统字体回退限制。旧缓存中的摘要需重新解析原始 JSONL 才能补全正文，不能恢复原始日志未记录的内容。未执行 Git 提交、推送或发布。
+
+## Claude 评审修正：语义、传输与资源边界
+
+2026-10-20，根据用户的九项评审先调整本需求第 9～15 条及 TR-09～TR-11，再修改实现。以下结果替代上一轮“任意大小正文完整进入时间线”的实现结论；原 JSONL 不变，UI 改为有明确省略提示的有界预览。
+
+| 评审项 | 修正与证据 |
+| --- | --- |
+| 1：字符串被 JSON 识别器改写 | Claude 新增可选 outputFormat，字符串标记 text 并绕过识别；JSON 形状的命令、MCP 对象和数组经解析/序列化/真实组件后保持等宽原文，不制造错误。未标记的既有 Codex 结果沿用识别规则 |
+| 2：背压静默丢增量 | 新增按连接拥有的 timeline-delivery 有界顺序队列，50ms 重试；4 MiB/256 条/10 秒边界触发 1013 关闭，交由既有重连 init 恢复。初始、增量、补读与统计共用发送入口，订阅切换和关闭释放队列；补读失败也主动恢复。真实文件监听测试证明 offset 已推进后、无新文件事件也能补发 2 MiB 原结果的预览 |
+| 3：深层 JSON 栈溢出 | claude-tool-output 在 stringify 前限定 32 层、2,048 节点及字符预算。6,000 层合法 JSON 经初始/按轮/增量解析与后续传输序列化均通过，增量游标正常推进 |
+| 4：媒体与正文资源无界 | Claude output 最多 65,536 UTF-16 单元，不拆代理对；base64 data/blob 替换为省略标记，保留元数据和周边文本。设置 outputTruncated，11 种语言均提供说明；超界 JSON 前缀按 text 展示。原文 pre 只在展开时挂载，收起释放 |
+| 5：快照丢弃与整轮 stringify | WeakMap 复用不可变对象的保守大小估算，不序列化整轮。超限先移除工具正文，保留摘要和最终状态；仍超界保留最新可容纳后缀，无可用新预览则保留旧快照原 TTL。回归覆盖 3 MiB 结果、子 Agent、10,000 条长轮次及重复追加估算复用 |
+| 6：回扫重复生成结果 | readClaudeTurn 边界判定只检查用户消息及协议语义，不调用 parseContent 生成工具结果；spy 验证每页工具内容仅转换一次。退出命令、任务通知、协议文本及中断不误判为新轮次 |
+| 7：缺失属性契约 | content 缺失时返回空字段对象，服务端结果没有自有 output 属性；测试使用严格 not.toHaveProperty，同时覆盖 null、false、0 与空字符串 |
+| 8：测试夹具重复 | tests/helpers/timeline-fixtures.ts 共享 Claude 调用/结果/用户行、JSONL 编码、临时文件创建和清理，解析、组件、分页及服务端测试复用 |
+| 9：大结果跨块缺少回归 | UTF-8 正文超过 64 KiB、含 emoji，并覆盖多文本块、不完整末行及字节中途追加。验证内容逐字一致、历史边界无重叠、readOffset/newOffset 正确 |
+
+实现遵循职责分离：解析器只接入有界转换，组件依据类型展示；每连接发送器管理背压，缓存单独处理展示预算。共享工具渲染和测试夹具继续复用，无新增依赖。
+
+本轮最终自动化检查：
+
+| 命令 | 结果 |
+| --- | --- |
+| `pnpm exec vitest run tests/unit/lib/session-parser-claude.test.ts tests/unit/lib/tool-result-content.test.ts tests/unit/lib/tool-result-presentation.test.ts tests/unit/lib/timeline-turn-pagination.test.ts tests/unit/lib/timeline-tasks.test.ts tests/unit/lib/session-parser-codex.test.ts tests/unit/lib/codex-jsonl-parser.test.ts tests/unit/lib/timeline-delivery.test.ts tests/unit/lib/timeline-display-cache.test.ts tests/unit/lib/timeline-display-hook.test.ts tests/unit/lib/timeline-server-initial-delivery.test.ts tests/unit/lib/timeline-initial-delivery.test.ts` | 12 个文件，166 项通过 |
+| `pnpm exec tsc --noEmit` | 完整类型检查通过（最终构建后再次执行） |
+| `pnpm exec eslint src/lib/claude-tool-output.ts src/lib/session-parser.ts src/lib/timeline-delivery.ts src/lib/timeline-server.ts src/lib/timeline-display-cache.ts src/components/features/timeline/tool-result-content.tsx src/types/timeline.ts tests/helpers/timeline-fixtures.ts tests/unit/lib/session-parser-claude.test.ts tests/unit/lib/tool-result-content.test.ts tests/unit/lib/timeline-turn-pagination.test.ts tests/unit/lib/timeline-delivery.test.ts tests/unit/lib/timeline-display-cache.test.ts tests/unit/lib/timeline-server-initial-delivery.test.ts` | 通过，无警告 |
+| `pnpm build` | Next.js 类型检查、Turbopack 编译、24 个静态页面、post-build 与 tsup 全部通过 |
+| 本地化 JSON 与新增键检查、`git diff --check` | 通过 |
+
+首次 ESLint 将名为 useJsonlFixture 的测试工厂识别成 React Hook；已改为 createJsonlFixture 并重新通过检查。
+
+浏览器使用真实解析器生成 JSON，再交给真实共享组件及项目样式，命名会话 claude-review-baunie。1280px/390px 视口的 document.scrollWidth 分别为 1265px/375px，无横向溢出。65,536 单元预览容器外高 320px；2 MiB base64 所在混合结果的可见未知 JSON 仅 86 字符，展开的整个结果预览 217 字符。折叠时 raw pre 数量为 0，鼠标和 Enter 可展开/收起，收起后 pre 不存在；无图片元素、无 JavaScript 运行错误。JSON 文件中的 exit_code:1 仍显示为普通文本，真实 is_error 的错误正文保留错误颜色。
+
+截图：[桌面视口](./result/claude-review-desktop.png)、[窄屏原文与长文本](./result/claude-review-mobile.png)、[窄屏媒体省略与展开](./result/claude-review-mobile-raw.png)。最初整页截图遇到 CDP captureScreenshot 超时，随后命令也超时；关闭该验证会话后重开，改为视口截图及 DOM 断言成功。未认定该超时的具体原因，也未据此声称真实手机性能达标。字体/favicon 仍为夹具 404，使用系统字体回退。背压通过可控 socket 与真实文件监听回归验证，未测真实弱网；未执行真实会话端到端重连或物理手机验收。未提交、推送或发布。

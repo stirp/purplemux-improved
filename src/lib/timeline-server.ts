@@ -30,13 +30,13 @@ import path from 'path';
 import { isAllowedJsonlPath } from './path-validation';
 import { createLogger } from '@/lib/logger';
 import { deliverTimelineInit } from '@/lib/timeline-initial-delivery';
+import { createTimelineDelivery } from '@/lib/timeline-delivery';
 
 const log = createLogger('timeline');
 
 const HEARTBEAT_INTERVAL = 30_000;
 const HEARTBEAT_TIMEOUT = 90_000;
 const DEBOUNCE_MS = 50;
-const BACKPRESSURE_LIMIT = 1024 * 1024;
 const MAX_WATCHERS = 32;
 const MAX_CONNECTIONS = 32;
 const MAX_WATCHER_RETRIES = 3;
@@ -60,6 +60,7 @@ interface ITimelineConnection {
   currentJsonlPath: string | null;
   cleaned: boolean;
   initVersion: number;
+  delivery: ReturnType<typeof createTimelineDelivery>;
 }
 
 interface IFileWatcher {
@@ -100,13 +101,14 @@ const fileWatchers = gTimeline.__pmuxTimelineFileWatchers;
 const sessionWatchers = gTimeline.__pmuxTimelineSessionWatchers;
 const pendingJsonlWatchers = gTimeline.__pmuxTimelinePendingJsonlWatchers;
 
-const canSend = (ws: WebSocket): boolean =>
-  ws.readyState === WebSocket.OPEN && ws.bufferedAmount < BACKPRESSURE_LIMIT;
+const sendSerialized = (ws: WebSocket, data: string) => {
+  const conn = connections.get(ws);
+  if (conn) conn.delivery.send(data);
+  else if (ws.readyState === WebSocket.OPEN) ws.send(data);
+};
 
 const sendJson = (ws: WebSocket, msg: TTimelineServerMessage) => {
-  if (canSend(ws)) {
-    ws.send(JSON.stringify(msg));
-  }
+  sendSerialized(ws, JSON.stringify(msg));
 };
 
 const readTimelineSessionStats = async (
@@ -175,9 +177,7 @@ const broadcastToWatcher = (watcherKey: string, msg: TTimelineServerMessage) => 
   if (!fw) return;
   const str = JSON.stringify(msg);
   for (const ws of fw.connections) {
-    if (canSend(ws)) {
-      ws.send(str);
-    }
+    sendSerialized(ws, str);
   }
 };
 
@@ -235,7 +235,7 @@ const processFileChange = async (fw: IFileWatcher) => {
       const str = JSON.stringify(msg);
       const partialReads: Promise<void>[] = [];
       for (const ws of fw.connections) {
-        if (!canSend(ws)) continue;
+        if (ws.readyState !== WebSocket.OPEN) continue;
         const initOffset = fw.initOffsets.get(ws);
         if (initOffset !== undefined) {
           if (newOffset <= initOffset) {
@@ -243,20 +243,25 @@ const processFileChange = async (fw: IFileWatcher) => {
           }
           fw.initOffsets.delete(ws);
           if (prevOffset < initOffset) {
+            const initVersion = connections.get(ws)?.initVersion;
             partialReads.push(
               readBoundedEntries(fw.jsonlPath, initOffset, newOffset)
                 .then((entries) => {
-                  if (entries.length > 0 && canSend(ws)) {
+                  if (entries.length > 0 && fw.connections.has(ws) && connections.get(ws)?.initVersion === initVersion) {
                     const partialMsg: TTimelineServerMessage = { type: 'timeline:append', entries };
-                    ws.send(JSON.stringify(partialMsg));
+                    sendJson(ws, partialMsg);
                   }
                 })
-                .catch(() => {}),
+                .catch(() => {
+                  if (fw.connections.has(ws) && connections.get(ws)?.initVersion === initVersion) {
+                    ws.close(1013, 'Timeline catch-up failed; reconnect to resync');
+                  }
+                }),
             );
             continue;
           }
         }
-        ws.send(str);
+        sendSerialized(ws, str);
       }
       if (partialReads.length > 0) {
         await Promise.all(partialReads);
@@ -283,7 +288,7 @@ const processFileChange = async (fw: IFileWatcher) => {
         const msg: TTimelineServerMessage = { type: 'timeline:stats-update', sessionStats };
         const str = JSON.stringify(msg);
         for (const ws of fw.connections) {
-          if (canSend(ws)) ws.send(str);
+          sendSerialized(ws, str);
         }
       }
     }
@@ -487,6 +492,7 @@ const subscribeToFile = async (
 };
 
 const unsubscribeFromFile = (ws: WebSocket, jsonlPath: string) => {
+  connections.get(ws)?.delivery.clear();
   const fw = fileWatchers.get(jsonlPath);
   if (!fw) return;
   fw.connections.delete(ws);
@@ -609,6 +615,7 @@ const watchForJsonlFile = (
 const cleanup = (conn: ITimelineConnection) => {
   if (conn.cleaned) return;
   conn.cleaned = true;
+  conn.delivery.dispose();
 
   clearInterval(conn.heartbeatTimer);
   connections.delete(conn.ws);
@@ -751,6 +758,7 @@ export const handleTimelineConnection = async (ws: WebSocket, request: IncomingM
     currentJsonlPath: null,
     cleaned: false,
     initVersion: 0,
+    delivery: createTimelineDelivery(ws),
   };
 
   connections.set(ws, conn);

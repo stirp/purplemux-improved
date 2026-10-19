@@ -1,4 +1,5 @@
 {
+  "toolResultTruncated": "Certains contenus ont été omis ou tronqués. Le résultat complet reste dans le journal de session.",
   "toolResultRaw": "Résultat brut",
   "toolResultError": "L’outil a renvoyé une erreur",
   "toolResultExitCode": "Code de sortie {code}",

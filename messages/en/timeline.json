@@ -1,4 +1,5 @@
 {
+  "toolResultTruncated": "Some content was omitted or truncated. The full result remains in the session log.",
   "toolResultRaw": "Raw result",
   "toolResultError": "Tool returned an error",
   "toolResultExitCode": "Exit code {code}",

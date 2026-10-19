@@ -1,4 +1,5 @@
 {
+  "toolResultTruncated": "Einige Inhalte wurden ausgelassen oder gekürzt. Das vollständige Ergebnis bleibt im Sitzungsprotokoll erhalten.",
   "toolResultRaw": "Rohes Ergebnis",
   "toolResultError": "Das Werkzeug hat einen Fehler zurückgegeben",
   "toolResultExitCode": "Exit-Code {code}",

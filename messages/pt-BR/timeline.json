@@ -1,4 +1,5 @@
 {
+  "toolResultTruncated": "Parte do conteúdo foi omitida ou truncada. O resultado completo permanece no registro da sessão.",
   "toolResultRaw": "Resultado original",
   "toolResultError": "A ferramenta retornou um erro",
   "toolResultExitCode": "Código de saída {code}",

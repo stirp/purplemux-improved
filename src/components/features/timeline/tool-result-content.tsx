@@ -1,4 +1,4 @@
-import { memo, useMemo } from 'react';
+import { memo, useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import ReactMarkdown, { type Components } from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -17,7 +17,8 @@ const PRE_CLASS = 'whitespace-pre-wrap break-words font-mono text-xs [overflow-w
 const ToolResultContent = ({ result }: { result: ITimelineToolResult }) => {
   const t = useTranslations('timeline');
   const output = result.output || result.summary;
-  const presentation = useMemo(() => getToolResultPresentation(output), [output]);
+  const [rawOpen, setRawOpen] = useState(false);
+  const presentation = useMemo(() => result.outputFormat === 'text' ? null : getToolResultPresentation(output), [output, result.outputFormat]);
   if (!output) return null;
 
   const isError = result.isError || presentation?.isError;
@@ -28,15 +29,19 @@ const ToolResultContent = ({ result }: { result: ITimelineToolResult }) => {
 
   if (!presentation) {
     return (
-      <pre className={cn(
-        containerClass, PRE_CLASS,
-        result.output && 'max-h-80 overflow-auto rounded border border-border/40 bg-muted/40 p-2',
-      )}>{output}</pre>
+      <>
+        {result.outputTruncated && <div className="mt-1 text-xs text-muted-foreground">{t('toolResultTruncated')}</div>}
+        <pre className={cn(
+          containerClass, PRE_CLASS,
+          result.output && 'max-h-80 overflow-auto rounded border border-border/40 bg-muted/40 p-2',
+        )}>{output}</pre>
+      </>
     );
   }
 
   return (
     <div className={containerClass}>
+      {result.outputTruncated && <div className="mb-1">{t('toolResultTruncated')}</div>}
       {isError && <div className="mb-1 font-medium">{t('toolResultError')}</div>}
       <div className="max-h-80 space-y-2 overflow-auto rounded border border-border/40 bg-muted/40 p-2">
         {presentation.blocks.map((block, index) => {
@@ -73,12 +78,12 @@ const ToolResultContent = ({ result }: { result: ITimelineToolResult }) => {
           );
         })}
       </div>
-      <details className="group mt-1">
-        <summary className="flex min-h-11 w-fit cursor-pointer items-center gap-1 text-xs text-muted-foreground hover:text-foreground focus-visible:outline-2">
+      <details className="group mt-1" open={rawOpen}>
+        <summary onClick={(event) => { event.preventDefault(); setRawOpen(!rawOpen); }} className="flex min-h-11 w-fit cursor-pointer items-center gap-1 text-xs text-muted-foreground hover:text-foreground focus-visible:outline-2">
           <ChevronRight size={12} aria-hidden className="shrink-0 group-open:rotate-90" />
           {t('toolResultRaw')}
         </summary>
-        <pre className={cn(PRE_CLASS, 'max-h-80 overflow-auto rounded border border-border/40 bg-muted/40 p-2')}>{output}</pre>
+        {rawOpen && <pre className={cn(PRE_CLASS, 'max-h-80 overflow-auto rounded border border-border/40 bg-muted/40 p-2')}>{output}</pre>}
       </details>
     </div>
   );

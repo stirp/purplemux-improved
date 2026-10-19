@@ -1,4 +1,5 @@
 {
+  "toolResultTruncated": "İçeriğin bir kısmı atlandı veya kısaltıldı. Tam sonuç oturum günlüğünde saklanır.",
   "toolResultRaw": "Ham sonuç",
   "toolResultError": "Araç bir hata döndürdü",
   "toolResultExitCode": "Çıkış kodu {code}",
