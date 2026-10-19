@@ -402,5 +402,17 @@
     "reconnectFailed": "The app has not reconnected. Reload the page or check the server logs.",
     "reload": "Reload page",
     "desktopReconnecting": "Installing and restarting the desktop app. Wait for the app to reopen."
+  },
+  "linuxStartup": {
+    "title": "로그인 시 데스크톱 앱 열기",
+    "description": "Linux 데스크톱에 로그인하면 앱 창을 엽니다.",
+    "packagedOnly": "설치된 Linux 데스크톱 앱에서 사용할 수 있습니다.",
+    "stablePathRequired": "자동 시작을 켜기 전에 앱을 고정된 위치로 옮기세요.",
+    "enabled": "데스크톱 자동 시작을 켰습니다",
+    "disabled": "데스크톱 자동 시작을 껐습니다",
+    "saveFailed": "시작 설정을 저장하지 못했습니다. 다시 시도하세요.",
+    "loadFailed": "시작 설정을 읽지 못했습니다. 로컬 서버에 연결하고 다시 시도하세요.",
+    "retry": "다시 시도",
+    "serverHint": "로그인 전 백그라운드 시작은 설치된 CLI에서 purplemux-improved autostart enable --boot를 실행하세요."
   }
 }

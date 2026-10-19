@@ -1,0 +1,97 @@
+{
+  "beforeRestart": [
+    {
+      "name": "每日项目检查",
+      "kind": "shell",
+      "enabled": true,
+      "nextRunAt": "2026-10-20T01:00:00.000Z",
+      "runs": [
+        {
+          "id": "uqjh8FJ2TY7uNrnro3v3Y",
+          "trigger": "manual",
+          "startedAt": "2026-10-19T13:53:22.870Z",
+          "status": "succeeded",
+          "output": "scheduled-task-ok/tmp/purplemux-scheduled-verify\n",
+          "truncated": false,
+          "exitCode": 0,
+          "finishedAt": "2026-10-19T13:53:23.628Z"
+        }
+      ]
+    },
+    {
+      "name": "每周代码检查",
+      "kind": "codex",
+      "enabled": false,
+      "nextRunAt": null,
+      "runs": []
+    },
+    {
+      "name": "单次自动执行验收",
+      "kind": "shell",
+      "enabled": false,
+      "nextRunAt": null,
+      "runs": [
+        {
+          "id": "pqAWvflsfdCh43kcr-Jd6",
+          "trigger": "scheduled",
+          "startedAt": "2026-10-19T13:57:16.072Z",
+          "status": "succeeded",
+          "output": "automatic-ok",
+          "truncated": false,
+          "exitCode": 0,
+          "finishedAt": "2026-10-19T13:57:16.238Z"
+        }
+      ]
+    }
+  ],
+  "desktopViewport": 1280,
+  "mobileViewport": 390,
+  "horizontalOverflow": false,
+  "unauthenticatedApiStatus": 401,
+  "afterRestart": [
+    {
+      "name": "每日项目检查",
+      "kind": "shell",
+      "enabled": true,
+      "nextRunAt": "2026-10-20T01:00:00.000Z",
+      "runs": [
+        {
+          "id": "uqjh8FJ2TY7uNrnro3v3Y",
+          "trigger": "manual",
+          "startedAt": "2026-10-19T13:53:22.870Z",
+          "status": "succeeded",
+          "output": "scheduled-task-ok/tmp/purplemux-scheduled-verify\n",
+          "truncated": false,
+          "exitCode": 0,
+          "finishedAt": "2026-10-19T13:53:23.628Z"
+        }
+      ]
+    },
+    {
+      "name": "每周代码检查",
+      "kind": "codex",
+      "enabled": false,
+      "nextRunAt": null,
+      "runs": []
+    },
+    {
+      "name": "单次自动执行验收",
+      "kind": "shell",
+      "enabled": false,
+      "nextRunAt": null,
+      "runs": [
+        {
+          "id": "pqAWvflsfdCh43kcr-Jd6",
+          "trigger": "scheduled",
+          "startedAt": "2026-10-19T13:57:16.072Z",
+          "status": "succeeded",
+          "output": "automatic-ok",
+          "truncated": false,
+          "exitCode": 0,
+          "finishedAt": "2026-10-19T13:57:16.238Z"
+        }
+      ]
+    }
+  ],
+  "restartPreservedTasksAndRuns": true
+}

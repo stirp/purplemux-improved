@@ -29,6 +29,8 @@ File permissions are `0600` for anything containing a secret (config, tokens, la
 ├── vapid-keys.json          # Web Push VAPID keypair (generated)
 ├── push-subscriptions.json  # Web Push endpoint subscriptions
 ├── cli-token                # CLI auth token (generated)
+├── browser-bridge/          # Linux desktop IPC directory (0700, runtime only)
+│   └── control.sock         # browser control socket (0600)
 ├── port                     # current server port (hook scripts read it)
 ├── pmux.lock                # single-instance lock {pid, port, startedAt}
 ├── logs/                    # pino-roll log files
@@ -160,6 +162,12 @@ Single-instance guard. Contains `{pid, port, startedAt}`. On startup:
 Released on `process.on('exit')`.
 
 ---
+
+## `browser-bridge/control.sock`
+
+The Linux desktop opens this private Unix socket while connected to its local server. An independent background server forwards browser CLI operations to the Electron process through it; same-process calls keep using the in-memory bridge. API token, workspace and browser-tab validation still run before forwarding. No TCP control port is opened.
+
+The socket closes when the desktop quits or switches to a remote server. Subsequent requests reconnect after desktop restart; a refused connection left by a crashed desktop is reclaimed on startup. This is runtime IPC state, not a setting to synchronize or back up.
 
 ## Per-workspace Directory (`workspaces/{wsId}/`)
 

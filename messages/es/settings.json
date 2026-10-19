@@ -402,5 +402,17 @@
     "reconnectFailed": "The app has not reconnected. Reload the page or check the server logs.",
     "reload": "Reload page",
     "desktopReconnecting": "Installing and restarting the desktop app. Wait for the app to reopen."
+  },
+  "linuxStartup": {
+    "title": "Abrir la aplicación al iniciar sesión",
+    "description": "Abre la ventana al iniciar sesión en el escritorio Linux.",
+    "packagedOnly": "Disponible en la aplicación de escritorio Linux instalada.",
+    "stablePathRequired": "Mueva la aplicación a una ubicación permanente antes de activar el inicio automático.",
+    "enabled": "Inicio automático del escritorio activado",
+    "disabled": "Inicio automático del escritorio desactivado",
+    "saveFailed": "No se pudieron guardar los ajustes. Inténtelo de nuevo.",
+    "loadFailed": "No se pudieron leer los ajustes. Conéctese al servidor local e inténtelo de nuevo.",
+    "retry": "Reintentar",
+    "serverHint": "Para iniciar en segundo plano antes de iniciar sesión, ejecute purplemux-improved autostart enable --boot con el CLI instalado."
   }
 }

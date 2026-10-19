@@ -402,5 +402,17 @@
     "reconnectFailed": "重启后仍未连接成功，请刷新页面或检查服务日志。",
     "reload": "刷新页面",
     "desktopReconnecting": "正在安装并重启桌面应用，请等待应用重新打开。"
+  },
+  "linuxStartup": {
+    "title": "登录后打开桌面应用",
+    "description": "登录 Linux 图形桌面后自动打开应用窗口。",
+    "packagedOnly": "安装 Linux 桌面应用后可用。",
+    "stablePathRequired": "请将应用移到固定位置后再启用自启动。",
+    "enabled": "已启用桌面自启动",
+    "disabled": "已关闭桌面自启动",
+    "saveFailed": "保存启动设置失败，请重试。",
+    "loadFailed": "读取启动设置失败，请连接本机服务器后重试。",
+    "retry": "重试",
+    "serverHint": "无需登录的后台自启动，请通过已安装的命令行程序运行 purplemux-improved autostart enable --boot。"
   }
 }

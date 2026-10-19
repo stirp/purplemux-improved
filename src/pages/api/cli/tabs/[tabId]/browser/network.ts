@@ -19,7 +19,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     const urlFilter = typeof req.query.url === 'string' ? req.query.url : undefined;
     const status = typeof req.query.status === 'string' ? parseInt(req.query.status, 10) : undefined;
 
-    let entries = bridge.getNetwork(tabId, Number.isFinite(since) ? since : 0);
+    let entries = await bridge.getNetwork(tabId, Number.isFinite(since) ? since : 0);
     if (method) entries = entries.filter((e) => e.method === method);
     if (urlFilter) entries = entries.filter((e) => e.url.includes(urlFilter));
     if (Number.isFinite(status)) entries = entries.filter((e) => e.status === status);

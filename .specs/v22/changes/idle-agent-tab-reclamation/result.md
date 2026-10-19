@@ -68,3 +68,18 @@ git diff --check
 - `killSession` 在保护回调完成后重新确认 pane 身份，防止等待期间终端被替换。普通显式关闭语义不变；仅闲置回收在回调中执行上述退出确认。
 - 本次相关回归：12 个文件、82 项通过。新增测试调用真实 `killSession` 和真实退出协调逻辑，模拟进程信号与 tmux 命令，断言拒绝 SIGTERM/包装器存活时实际 tmux 会话未销毁，成功路径先观察 Agent 退出再销毁。
 - 完整 `pnpm tsc --noEmit`、7 个修改/新增 TS 文件 ESLint、`git diff --check` 通过。`pnpm build` 通过（Next.js 编译、静态页面生成、post-build、服务端 tsup 均完成）。本次未执行浏览器和真实进程停止；UI/API 形状未改变。
+
+## 定时任务与 Linux 自启动合并（2026-10-20）
+
+- 对照本需求及 `scheduled-tasks/spec.md`、`configurable-auto-start-on-boot/spec.md`，解决 15 个冲突文件：11 份设置词条、设置组件、工作区存储、共享类型及删除工作区测试。合并保留双方能力及已有 PR #71 修复，没有替代既有行为约定。
+- 同时保留 `idleTabPolicy` 与 `scheduledTasks` 的可选类型和写入缓存键；保留迁入记录保存、定时任务读写与孤立任务清理。设置组件同时保留本机进程入口和 Linux 自启动开关，测试保留双方原有案例。
+- 新增共享存储回归：交替仅修改回收策略、仅修改任务名称/启用状态，验证两者实际落盘且进程迁入记录保留。11 份词条经三方逐值比对、重复键和键集合检查；PR #71 的 4 个运行时代码文件与 HEAD 字节一致。
+- 本次执行以下回归命令，14 个文件、172 项全部通过：
+
+```bash
+pnpm exec vitest run tests/unit/lib/workspace-delete.test.ts tests/unit/lib/session-workflow-storage.test.ts tests/unit/lib/idle-agent-shutdown.test.ts tests/unit/lib/idle-tab*.test.ts tests/unit/lib/agent-process*.test.ts tests/unit/lib/scheduled-task*.test.ts tests/unit/api/scheduled-tasks.test.ts tests/unit/lib/linux-startup-settings.test.ts
+pnpm tsc --noEmit
+pnpm exec eslint src/components/features/workspace/settings-dialog.tsx src/lib/workspace-store.ts src/types/terminal.ts tests/unit/lib/workspace-delete.test.ts
+```
+
+- 完整类型检查和冲突涉及的 4 个 TS/TSX 文件 ESLint 通过；`pnpm build` 完成 Next.js 编译、页面生成、post-build 与服务端 tsup。`git diff --cached --check` 通过，`git ls-files -u` 为空。15 个冲突文件及本记录已暂存，没有创建合并提交或推送。本次未执行实机进程操作、启动项注册或浏览器验证。

@@ -5,6 +5,7 @@ import { getWorkspaceById } from '@/lib/workspace-store';
 import { verifyCliToken } from '@/lib/cli-token';
 import { getBrowserBridge, type IBrowserBridgeClient } from '@/lib/browser-bridge-client';
 import type { ITab } from '@/types/terminal';
+import { BrowserBridgeUnavailableError } from '@/lib/browser-bridge-rpc';
 
 export interface ITabLocation {
   workspaceId: string;
@@ -72,5 +73,10 @@ export const withBrowserTab = async (
     res.status(503).json({ error: 'Browser bridge unavailable (Electron-only feature)' });
     return;
   }
-  await handler({ tabId, bridge });
+  try {
+    await handler({ tabId, bridge });
+  } catch (error) {
+    if (!(error instanceof BrowserBridgeUnavailableError)) throw error;
+    res.status(503).json({ error: 'Browser bridge unavailable (desktop disconnected or timed out)' });
+  }
 };

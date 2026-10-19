@@ -402,5 +402,17 @@
     "reconnectFailed": "The app has not reconnected. Reload the page or check the server logs.",
     "reload": "Reload page",
     "desktopReconnecting": "Installing and restarting the desktop app. Wait for the app to reopen."
+  },
+  "linuxStartup": {
+    "title": "ログイン時にデスクトップアプリを開く",
+    "description": "Linux デスクトップへのログイン後にアプリのウィンドウを開きます。",
+    "packagedOnly": "インストール済みの Linux デスクトップアプリで利用できます。",
+    "stablePathRequired": "自動起動を有効にする前にアプリを固定の場所に移動してください。",
+    "enabled": "デスクトップ自動起動を有効にしました",
+    "disabled": "デスクトップ自動起動を無効にしました",
+    "saveFailed": "起動設定を保存できませんでした。再試行してください。",
+    "loadFailed": "起動設定を読み取れません。ローカルサーバーに接続して再試行してください。",
+    "retry": "再試行",
+    "serverHint": "ログイン前のバックグラウンド起動には、インストール済み CLI で purplemux-improved autostart enable --boot を実行してください。"
   }
 }

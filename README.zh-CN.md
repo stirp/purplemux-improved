@@ -111,7 +111,7 @@ npx purplemux-improved@latest
 | 平台 | 状态 | 备注 |
 |---|---|---|
 | macOS (Apple Silicon / Intel) | ✅ | 包含 Electron 应用 |
-| Linux | ✅ | 不含 Electron |
+| Linux | ✅ | 支持后台自启动；Electron AppImage 可本地构建，发布文件以 Releases 为准 |
 | Windows | ❌ | 不支持 |
 
 ## 安装详情
@@ -152,6 +152,8 @@ purplemux-improved
 ```
 
 ### CLI 示例
+
+Linux 支持[后台服务开机启动与桌面登录启动](docs/07-user/user-guide/linux-autostart.md)。后台服务使用 `purplemux-improved autostart enable --boot` 启用，`autostart status` 查看状态，`autostart disable` 停用；这些命令不重启当前服务器。
 
 ```bash
 pmuxi tab create -w WS -t codex-cli -n "fix auth"

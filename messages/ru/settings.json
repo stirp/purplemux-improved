@@ -402,5 +402,17 @@
     "reconnectFailed": "The app has not reconnected. Reload the page or check the server logs.",
     "reload": "Reload page",
     "desktopReconnecting": "Installing and restarting the desktop app. Wait for the app to reopen."
+  },
+  "linuxStartup": {
+    "title": "Открывать приложение при входе",
+    "description": "Открывает окно после входа в рабочий стол Linux.",
+    "packagedOnly": "Доступно в установленном приложении Linux.",
+    "stablePathRequired": "Перед включением перенесите приложение в постоянное расположение.",
+    "enabled": "Автозапуск приложения включён",
+    "disabled": "Автозапуск приложения отключён",
+    "saveFailed": "Не удалось сохранить настройки. Повторите попытку.",
+    "loadFailed": "Не удалось прочитать настройки. Подключитесь к локальному серверу и повторите попытку.",
+    "retry": "Повторить",
+    "serverHint": "Для фонового запуска до входа выполните purplemux-improved autostart enable --boot через установленный CLI."
   }
 }

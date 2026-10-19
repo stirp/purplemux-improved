@@ -402,5 +402,17 @@
     "reconnectFailed": "The app has not reconnected. Reload the page or check the server logs.",
     "reload": "Reload page",
     "desktopReconnecting": "Installing and restarting the desktop app. Wait for the app to reopen."
+  },
+  "linuxStartup": {
+    "title": "Open desktop app at login",
+    "description": "Opens the desktop window after you sign in to your Linux desktop.",
+    "packagedOnly": "Available in an installed Linux desktop app.",
+    "stablePathRequired": "Move the app to a permanent location before enabling startup.",
+    "enabled": "Desktop startup enabled",
+    "disabled": "Desktop startup disabled",
+    "saveFailed": "Could not save startup settings. Try again.",
+    "loadFailed": "Could not read startup settings. Connect to the local server and try again.",
+    "retry": "Retry",
+    "serverHint": "For background startup before login, run purplemux-improved autostart enable --boot from your installed CLI."
   }
 }

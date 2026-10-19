@@ -1,5 +1,6 @@
 import fs from 'fs/promises';
 import { DEFAULT_IDLE_TAB_POLICY, idleTabPolicySchema, type TIdleTabPolicy } from '@/lib/idle-tab-policy';
+import { isTaskRunning } from '@/lib/scheduled-tasks';
 import { MAX_TERMINAL_COMMANDS, type ITerminalCommand } from '@/lib/terminal-custom-commands';
 import { normalizeTerminalKeys, terminalKeysSchema, type ITerminalKeySetting } from '@/lib/terminal-keys';
 import { applySessionTagUpdate, forgetSessionTags, type TSessionTagUpdate } from '@/lib/session-tags';
@@ -144,10 +145,24 @@ const readWorkspacesFile = async (strict = false): Promise<IWorkspacesData | nul
   }
 };
 
+const cleanOrphanScheduledTasks = (data: IWorkspacesData): void => {
+  if (!data.scheduledTasks) return;
+  const workspaceIds = new Set(data.workspaces.map((workspace) => workspace.id));
+  data.scheduledTasks = data.scheduledTasks.filter((task) => {
+    if (workspaceIds.has(task.workspaceId)) return true;
+    if (!isTaskRunning(task)) return false;
+    // Retain the claim until execution finishes and its result is saved.
+    task.enabled = false;
+    task.nextRunAt = null;
+    return true;
+  });
+};
+
 const writeWorkspacesFile = async (data: IWorkspacesData): Promise<void> => {
+  cleanOrphanScheduledTasks(data);
   normalizeWorkspaceOrder(data);
-  const { workspaces, groups, activeWorkspaceId, sidebarCollapsed, sidebarWidth, sessionWorkflow, terminalCommands, terminalKeys, idleTabPolicy } = data;
-  const contentKey = JSON.stringify({ workspaces, groups: groups ?? [], activeWorkspaceId, sidebarCollapsed, sidebarWidth, sessionWorkflow, terminalCommands, terminalKeys, idleTabPolicy });
+  const { workspaces, groups, activeWorkspaceId, sidebarCollapsed, sidebarWidth, sessionWorkflow, terminalCommands, terminalKeys, idleTabPolicy, scheduledTasks } = data;
+  const contentKey = JSON.stringify({ workspaces, groups: groups ?? [], activeWorkspaceId, sidebarCollapsed, sidebarWidth, sessionWorkflow, terminalCommands, terminalKeys, idleTabPolicy, scheduledTasks });
 
   if (g.__purplemuxWorkspacesContentCache === contentKey) return;
 
@@ -411,6 +426,27 @@ export const saveAgentProcessTransfer = async (
   workspace.agentProcessTransfers = [...entries.filter((item) =>
     item.pid !== transfer.pid || item.startedAt !== transfer.startedAt), transfer];
   await writeWorkspacesFile(data);
+});
+
+export const readScheduledTasks = async () => (await readWorkspacesFile(true))?.scheduledTasks ?? [];
+
+export const readWorkspaceScheduledTasks = async (workspaceId: string) => {
+  const data = await readWorkspacesFile(true);
+  if (!data?.workspaces.some((workspace) => workspace.id === workspaceId)) return null;
+  return (data.scheduledTasks ?? []).filter((task) => task.workspaceId === workspaceId);
+};
+
+export const mutateScheduledTasks = async <T>(update: (
+  tasks: NonNullable<IWorkspacesData['scheduledTasks']>, workspaces: IWorkspace[],
+) => T | Promise<T>): Promise<T> => withLock(async () => {
+  const data = await readWorkspacesFile(true);
+  if (!data) throw new Error('Workspace storage unavailable');
+  cleanOrphanScheduledTasks(data);
+  const tasks = data.scheduledTasks ?? [];
+  const result = await update(tasks, data.workspaces);
+  data.scheduledTasks = tasks;
+  await writeWorkspacesFile(data);
+  return result;
 });
 
 export const createWorkspace = async (directory: string, name?: string, layoutOptions?: ICreateLayoutOptions,
