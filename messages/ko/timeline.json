@@ -1,4 +1,5 @@
 {
+  "toolResultTruncated": "일부 내용이 생략되거나 잘렸습니다. 전체 결과는 세션 로그에 보관됩니다.",
   "toolResultRaw": "원본 결과",
   "toolResultError": "도구에서 오류를 반환했습니다",
   "toolResultExitCode": "종료 코드 {code}",

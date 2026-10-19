@@ -1,33 +1,56 @@
 import fs from 'fs/promises';
-import os from 'os';
-import path from 'path';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { readJsonlTurn } from '@/lib/jsonl-turn-reader';
 import { readClaudeTurn, parseIncremental } from '@/lib/session-parser';
 import { CodexParser, readCodexTurn } from '@/lib/session-parser-codex';
 import type { ITimelineEntry } from '@/types/timeline';
 
-const directories: string[] = [];
-const fixture = async (records: unknown[]) => {
-  const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'purplemux-turn-'));
-  directories.push(dir);
-  const file = path.join(dir, 'session.jsonl');
-  await fs.writeFile(file, records.map((record) => JSON.stringify(record)).join('\n') + '\n');
-  return file;
-};
+import { claudeUser, claudeToolCall, claudeToolResult, createJsonlFixture } from '../../helpers/timeline-fixtures';
+const fixture = createJsonlFixture();
 const codexUser = (message: string) => ({ type: 'event_msg', payload: { type: 'user_message', message } });
 const codexAnswer = (message: string) => ({ type: 'event_msg', payload: { type: 'agent_message', message } });
-const claudeUser = (content: unknown) => ({ type: 'user', message: { role: 'user', content } });
 const claudeAnswer = (text: string) => ({ type: 'assistant', message: { role: 'assistant', content: [{ type: 'text', text }] } });
 const messages = (entries: ITimelineEntry[]) => entries.flatMap((entry) =>
   entry.type === 'user-message' ? [entry.text] : entry.type === 'assistant-message' ? [entry.markdown] : []);
 
 afterEach(async () => {
   vi.restoreAllMocks();
-  await Promise.all(directories.splice(0).map((dir) => fs.rm(dir, { recursive: true, force: true })));
 });
 
 describe('timeline turn pagination', () => {
+  it('preserves Claude tool output across multiple 64 KiB blocks and later increments', async () => {
+    const output = '中文😀'.repeat(10_000) + '\nlast line';
+    expect(Buffer.byteLength(output)).toBeGreaterThan(64 * 1024);
+    const file = await fixture([claudeUser('old'), claudeToolCall(), claudeToolResult(output), claudeUser('new'), claudeToolCall()]);
+    const newest = await readClaudeTurn(file);
+    const older = await readClaudeTurn(file, newest.startByteOffset);
+    expect(older.entries.find((entry) => entry.type === 'tool-result')).toMatchObject({ output, outputFormat: 'text' });
+    expect(older.startByteOffset).toBe(0);
+    const blocks = [{ type: 'text', text: output }, { type: 'text', text: 'second block' }];
+    const record = Buffer.from(JSON.stringify(claudeToolResult(blocks)) + '\n');
+    const split = record.indexOf(Buffer.from('😀')) + 1;
+    await fs.appendFile(file, record.subarray(0, split));
+    const incomplete = await readClaudeTurn(file);
+    expect(incomplete.readOffset).toBe(newest.readOffset);
+    await fs.appendFile(file, record.subarray(split));
+    const update = await parseIncremental(file, incomplete.readOffset!);
+    expect(update.newEntries[0]).toMatchObject({ output: JSON.stringify(blocks) });
+    const page = await readClaudeTurn(file);
+    expect(page.entries.find((entry) => entry.type === 'tool-result')).toMatchObject({ output: JSON.stringify(blocks) });
+    expect(page.startByteOffset).toBe(newest.startByteOffset);
+    expect(update.newOffset).toBe(page.readOffset);
+  });
+
+  it.each([
+    '<command-name>/exit</command-name>',
+    '<task-notification><task-id>1</task-id><status>done</status><summary>done</summary></task-notification>',
+    '<system-reminder>hidden</system-reminder>',
+    [{ type: 'text', text: '[Request interrupted by user]' }],
+  ])('retains the real question boundary across non-message user content %#', async (content) => {
+    const file = await fixture([claudeUser('question'), claudeUser(content), claudeAnswer('done')]);
+    expect(messages((await readClaudeTurn(file)).entries)).toEqual(['question', 'done']);
+  });
+
   it.each([
     { provider: 'Codex', user: codexUser, answer: codexAnswer, read: readCodexTurn },
     { provider: 'Claude', user: claudeUser, answer: claudeAnswer, read: readClaudeTurn },

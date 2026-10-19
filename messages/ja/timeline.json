@@ -1,4 +1,5 @@
 {
+  "toolResultTruncated": "一部の内容は省略または切り詰められています。完全な結果はセッションログに保存されています。",
   "toolResultRaw": "元の結果",
   "toolResultError": "ツールがエラーを返しました",
   "toolResultExitCode": "終了コード {code}",

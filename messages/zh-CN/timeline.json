@@ -1,4 +1,5 @@
 {
+  "toolResultTruncated": "部分内容已省略或截断，完整结果保留在会话日志中。",
   "toolResultRaw": "原始结果",
   "toolResultError": "工具返回错误",
   "toolResultExitCode": "退出码 {code}",

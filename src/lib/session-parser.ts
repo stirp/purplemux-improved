@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { nanoid } from 'nanoid';
 import { diffLines } from 'diff';
 import { parseTaskSnapshot } from '@/lib/timeline-tasks';
+import { getClaudeToolOutput } from '@/lib/claude-tool-output';
 import type {
   ITimelineEntry,
   ITimelineUserMessage,
@@ -528,6 +529,7 @@ const parseSingleEntry = (raw: unknown, base: z.infer<typeof BaseEntrySchema>): 
           toolUseId: c.tool_use_id,
           isError: c.is_error ?? false,
           summary: summaryText,
+          ...getClaudeToolOutput(c.content),
         } satisfies ITimelineToolResult);
       }
     }
@@ -922,7 +924,22 @@ export const readClaudeTurn = async (filePath: string, beforeByte?: number): Pro
     try {
       const raw = JSON.parse(line);
       if (raw.type !== 'user' || raw.isMeta || raw.isSidechain) return false;
-      return parseContent(line).entries.some((entry) => entry.type === 'user-message');
+      const parsed = UserEntrySchema.safeParse(raw);
+      if (!parsed.success) return false;
+      const content = parsed.data.message.content;
+      if (typeof content === 'string') {
+        if (parseTaskNotification(content, 0)) return false;
+        const command = extractCommandName(content);
+        return command ? command !== '/exit' : Boolean(stripProtocolTags(content));
+      }
+      if (content.length === 1 && content[0].type === 'text' &&
+        typeof content[0].text === 'string' && content[0].text.startsWith(INTERRUPT_PREFIX)) return false;
+      return content.some((item) => {
+        if (item.type === 'text' && typeof item.text === 'string') return Boolean(stripProtocolTags(item.text));
+        if (item.type !== 'image' || !('source' in item)) return false;
+        const source = item.source as { type?: string; data?: string } | undefined;
+        return source?.type === 'base64' && Boolean(source.data);
+      });
     } catch { return false; }
   }, beforeByte);
   const result = parseContent(page.content);
