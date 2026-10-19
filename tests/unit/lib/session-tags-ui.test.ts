@@ -54,7 +54,8 @@ afterEach(async () => {
   vi.unstubAllGlobals();
 });
 describe('session tags UI', () => {
-  it('exposes all 500 quick filters and supports filtering by the last tag', async () => {
+  // Rendering and updating 500 real buttons exceeded 5s under parallel load; keep headroom for this stress case only.
+  it('exposes all 500 quick filters and supports filtering by the last tag', { timeout: 15_000 }, async () => {
     const tags = Array.from({ length: 500 }, (_, index) => ({ id: `tag-${index}`, name: `标签${index}`, color: 'purple' as const }));
     await act(async () => useWorkspaceStore.setState({ sessionWorkflow: { ...workflow(), tags, sessionTags: { 'codex:weekly': ['tag-499'] } } }));
     const filters = container.querySelector('[role="group"][aria-label="标签"]')!;
