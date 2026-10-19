@@ -91,6 +91,7 @@ export interface IWorkspaceGroup {
 }
 
 export interface IWorkspacesData {
+  scheduledTasks?: import('@/lib/scheduled-tasks').IScheduledTask[];
   terminalCommands?: import('@/lib/terminal-custom-commands').ITerminalCommand[];
   terminalKeys?: import('@/lib/terminal-keys').ITerminalKeySetting[];
   sessionWorkflow?: import('@/lib/session-workflow').ISessionWorkflow;

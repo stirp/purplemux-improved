@@ -35,6 +35,7 @@ import DeleteWorkspaceDialog from '@/components/features/workspace/delete-worksp
 import EditWorkspaceDialog from '@/components/features/workspace/edit-workspace-dialog';
 import CreateWorktreeDialog from '@/components/features/workspace/create-worktree-dialog';
 import WorktreeTreeDialog from '@/components/features/workspace/worktree-tree-dialog';
+import ScheduledTasksDialog from '@/components/features/workspace/scheduled-tasks-dialog';
 import { ContextMenuContent, ContextMenuSub, ContextMenuSubTrigger } from '@/components/ui/context-menu';
 import { Sheet } from '@/components/ui/sheet';
 import { Input } from '@/components/ui/input';
@@ -87,14 +88,14 @@ beforeEach(() => {
 });
 
 describe('workspace menu order', () => {
-  it('presents the same four actions before a separated delete action on both surfaces', () => {
-    const expected = ['workspace.worktree.create', 'workspace.worktreeTree.manageTitle', 'sidebar.moveToGroup', 'terminal.rename', '', 'common.delete'];
+  it('presents scheduled tasks and the same workspace actions before separated deletion', () => {
+    const expected = ['workspace.scheduledTasks.title', 'workspace.worktree.create', 'workspace.worktreeTree.manageTitle', 'sidebar.moveToGroup', 'terminal.rename', '', 'common.delete'];
     const desktop = directChildren(find(renderDesktop(), ContextMenuContent));
     expect(desktop.map((item) => text(item.type === ContextMenuSub ? find(item, ContextMenuSubTrigger) : item))).toEqual(expected);
     hooks.values = [];
     const mobile = directChildren(elements(renderMobile()).find((element) => 'data-mobile-workspace-menu' in element.props)!);
     expect(mobile.map(text)).toEqual(expected);
-    expect(mobile[4].type).toBe('hr');
+    expect(mobile[5].type).toBe('hr');
   });
 
   it('keeps moving a child workspace visible but disabled on both surfaces', () => {
@@ -106,6 +107,7 @@ describe('workspace menu order', () => {
   });
 
   it.each([
+    ['workspace.scheduledTasks.title', ScheduledTasksDialog, undefined],
     ['workspace.worktree.create', CreateWorktreeDialog, undefined],
     ['workspace.worktreeTree.manageTitle', WorktreeTreeDialog, undefined],
     ['sidebar.moveToGroup', EditWorkspaceDialog, 'group'],
