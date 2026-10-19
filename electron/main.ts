@@ -1,7 +1,9 @@
 import { capturePristineEnv } from './pristine-env';
 import { applyResolvedShellEnv } from './shell-env';
-import { app, BrowserWindow, shell, Menu, ipcMain, session, screen, Notification, nativeTheme, dialog, type IpcMainInvokeEvent } from 'electron';
-import { autoUpdater, type UpdateInfo, type ProgressInfo } from 'electron-updater';
+import { app, BrowserWindow, shell, Menu, ipcMain, session, screen, Notification, nativeTheme, dialog, autoUpdater as nativeUpdater, type IpcMainInvokeEvent } from 'electron';
+import { autoUpdater } from 'electron-updater';
+import { createDesktopUpdater } from './app-updater';
+import { createNativeUpdatePreparation } from './native-update-preparation';
 import * as path from 'path';
 import * as fs from 'fs';
 import * as os from 'os';
@@ -558,10 +560,10 @@ const resolveCurrentUrl = (): string | null => {
 const UPDATE_CHECK_INTERVAL_MS = 6 * 60 * 60 * 1000;
 const FIRST_CHECK_DELAY_MS = 3000;
 
-let updaterInitialized = false;
 let updateCheckTimer: ReturnType<typeof setInterval> | null = null;
-let pendingUpdateVersion: string | null = null;
-let isUpdateDialogOpen = false;
+let desktopUpdater: ReturnType<typeof createDesktopUpdater> | null = null;
+let installingUpdate = false;
+let updateCleanupComplete = false;
 
 const formatMsg = (template: string, values: Record<string, string>): string =>
   template.replace(/\{(\w+)\}/g, (_, key) => values[key] ?? '');
@@ -570,117 +572,78 @@ const canRunUpdater = (): boolean => !isDev && !devUrl && app.isPackaged;
 
 const showUpdateDialog = (options: Electron.MessageBoxOptions) => {
   const primary = getPrimaryWindow();
-  return primary
-    ? dialog.showMessageBox(primary, options)
-    : dialog.showMessageBox(options);
+  return primary ? dialog.showMessageBox(primary, options) : dialog.showMessageBox(options);
 };
 
-const runExclusiveDialog = async (fn: () => Promise<void>) => {
-  if (isUpdateDialogOpen) return;
-  isUpdateDialogOpen = true;
-  try {
-    await fn();
-  } catch (err) {
-    console.error('[updater] dialog error:', err);
-  } finally {
-    isUpdateDialogOpen = false;
-  }
+const assertDesktopIdle = async () => {
+  if (serverConfig.mode === 'remote') return;
+  const guard = (globalThis as unknown as { __ptUpdateGuard?: () => Promise<void> }).__ptUpdateGuard;
+  if (guard) return guard();
+  if (!localPort) throw new Error('Cannot verify local server task state');
+  const token = fs.readFileSync(path.join(CONFIG_DIR, 'cli-token'), 'utf8').trim();
+  const response = await fetch('http://127.0.0.1:' + localPort + '/api/app-update', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'x-purplemux-update': '1', 'x-pmux-token': token },
+    body: JSON.stringify({ action: 'guard' }),
+    signal: AbortSignal.timeout(15_000),
+  });
+  if (!response.ok) throw new Error('Tasks are running or their state is unknown. Retry when all sessions are idle.');
 };
 
 const setupAutoUpdater = () => {
-  if (updaterInitialized || !canRunUpdater()) return;
-  updaterInitialized = true;
-
-  autoUpdater.autoDownload = false;
-  autoUpdater.autoInstallOnAppQuit = true;
-
-  autoUpdater.on('update-available', (info: UpdateInfo) => {
-    if (pendingUpdateVersion === info.version) return;
-    pendingUpdateVersion = info.version;
-    runExclusiveDialog(async () => {
-      const m = mt();
-      const result = await showUpdateDialog({
-        type: 'info',
-        buttons: [m.download, m.later],
-        defaultId: 0,
-        cancelId: 1,
-        message: formatMsg(m.updateAvailableMessage, { version: info.version }),
-        detail: m.updateAvailableDetail,
-      });
-      if (result.response === 0) {
-        getPrimaryWindow()?.setProgressBar(0.05);
-        autoUpdater.downloadUpdate().catch((err) => {
-          console.error('[updater] downloadUpdate failed:', err);
-        });
+  if (desktopUpdater) return;
+  desktopUpdater = createDesktopUpdater(autoUpdater, {
+    version: app.getVersion(), supported: canRunUpdater(), assertIdle: assertDesktopIdle,
+    prepareNative: process.platform === 'darwin' ? createNativeUpdatePreparation(nativeUpdater) : undefined,
+    restart: async () => {
+      installingUpdate = true;
+      isQuitting = true;
+      try {
+        autoUpdater.quitAndInstall(false, true);
+      } catch (error) {
+        installingUpdate = false;
+        isQuitting = false;
+        throw error;
       }
-    });
+    },
   });
-
-  autoUpdater.on('download-progress', (progress: ProgressInfo) => {
-    getPrimaryWindow()?.setProgressBar(progress.percent / 100);
-  });
-
-  autoUpdater.on('update-downloaded', (info: UpdateInfo) => {
-    getPrimaryWindow()?.setProgressBar(-1);
-    runExclusiveDialog(async () => {
-      const m = mt();
-      const result = await showUpdateDialog({
-        type: 'info',
-        buttons: [m.restartNow, m.later],
-        defaultId: 0,
-        cancelId: 1,
-        message: formatMsg(m.updateReadyMessage, { version: info.version }),
-        detail: m.updateReadyDetail,
-      });
-      if (result.response === 0) {
-        isQuitting = true;
-        autoUpdater.quitAndInstall();
-      }
-    });
-  });
-
-  autoUpdater.on('error', (err: Error) => {
-    console.error('[updater]', err);
-    pendingUpdateVersion = null;
-    getPrimaryWindow()?.setProgressBar(-1);
+  autoUpdater.on('error', () => {
+    if (installingUpdate && !updateCleanupComplete) {
+      installingUpdate = false;
+      isQuitting = false;
+    }
   });
 };
 
 const checkForUpdatesAuto = () => {
-  if (!canRunUpdater()) return;
-  autoUpdater.checkForUpdates().catch((err) => {
-    console.error('[updater] auto check failed:', err);
-  });
+  if (canRunUpdater()) void desktopUpdater?.check();
 };
 
 const checkForUpdatesManual = async () => {
-  if (!canRunUpdater()) return;
-  // manual check는 유저가 명시적으로 눌렀으므로 dedup을 건너뛰어 항상 다이얼로그를 띄움
-  pendingUpdateVersion = null;
-  let updateFound = false;
-  const markFound = () => { updateFound = true; };
-  autoUpdater.once('update-available', markFound);
-  try {
-    await autoUpdater.checkForUpdates();
-    if (updateFound) return;
-    const m = mt();
-    await showUpdateDialog({
-      type: 'info',
-      buttons: ['OK'],
-      message: m.upToDateMessage,
-      detail: formatMsg(m.upToDateDetail, { version: app.getVersion() }),
+  setupAutoUpdater();
+  if (!desktopUpdater) return;
+  await desktopUpdater.check();
+  const state = desktopUpdater.getState();
+  const m = mt();
+  if (state.phase === 'downloading' || state.phase === 'restarting') return;
+  if (state.latestVersion && ['available', 'blocked', 'ready'].includes(state.phase)) {
+    const result = await showUpdateDialog({
+      type: 'info', buttons: [currentLocale.startsWith('zh') ? '升级并重启' : 'Upgrade and restart', m.later],
+      defaultId: 0, cancelId: 1,
+      message: formatMsg(m.updateAvailableMessage, { version: state.latestVersion }),
+      detail: m.updateReadyDetail,
     });
-  } catch (err) {
-    console.error('[updater] manual check failed:', err);
-    const m = mt();
+    if (result.response === 0) {
+      await desktopUpdater.install();
+      const error = desktopUpdater.getState().error;
+      if (error) await showUpdateDialog({ type: 'error', message: m.updateErrorMessage, detail: error });
+    }
+  } else {
     await showUpdateDialog({
-      type: 'error',
-      buttons: ['OK'],
-      message: m.updateErrorMessage,
-      detail: (err as Error).message,
+      type: state.error ? 'error' : 'info',
+      message: state.error ? m.updateErrorMessage : m.upToDateMessage,
+      detail: state.error || formatMsg(m.upToDateDetail, { version: app.getVersion() }),
     });
-  } finally {
-    autoUpdater.off('update-available', markFound);
   }
 };
 
@@ -690,11 +653,30 @@ const startUpdateCheckTimer = () => {
 };
 
 const stopUpdateCheckTimer = () => {
-  if (updateCheckTimer) {
-    clearInterval(updateCheckTimer);
-    updateCheckTimer = null;
-  }
+  if (updateCheckTimer) clearInterval(updateCheckTimer);
+  updateCheckTimer = null;
 };
+
+const assertUpdateRenderer = (event: IpcMainInvokeEvent) => {
+  const win = BrowserWindow.fromWebContents(event.sender);
+  if (!win || !windows.has(win) || event.senderFrame !== event.sender.mainFrame) throw new Error('Untrusted update caller');
+  const expected = serverConfig.mode === 'remote' ? serverConfig.remoteUrl : devUrl || 'http://localhost:' + localPort;
+  if (!expected || new URL(event.sender.getURL()).origin !== new URL(expected).origin) throw new Error('Untrusted update origin');
+};
+
+ipcMain.handle('app-update:status', (event) => {
+  assertUpdateRenderer(event);
+  setupAutoUpdater();
+  return desktopUpdater!.getState();
+});
+ipcMain.handle('app-update:action', async (event, action: string) => {
+  assertUpdateRenderer(event);
+  setupAutoUpdater();
+  if (action === 'check') await desktopUpdater!.check();
+  else if (action === 'install') void desktopUpdater!.install();
+  else throw new Error('Invalid update action');
+  return desktopUpdater!.getState();
+});
 
 // --- Local Server ---
 
@@ -1278,6 +1260,7 @@ app.on('activate', () => {
 });
 
 app.on('window-all-closed', async () => {
+  if (installingUpdate) return;
   if (process.platform === 'darwin') return;
 
   // 안전장치: 전체 종료가 3초 이내에 완료되지 않으면 강제 종료
@@ -1310,6 +1293,24 @@ app.on('before-quit', () => {
 });
 
 app.on('will-quit', async (event) => {
+  if (installingUpdate) {
+    if (updateCleanupComplete) return;
+    event.preventDefault();
+    try {
+      stopUpdateCheckTimer();
+      await closeLocalBrowserBridge();
+      if (serverShutdown) {
+        await serverShutdown();
+        serverShutdown = null;
+      }
+      session.defaultSession.flushStorageData();
+      await session.defaultSession.cookies.flushStore();
+    } finally {
+      updateCleanupComplete = true;
+      app.quit();
+    }
+    return;
+  }
   event.preventDefault();
   const forceExit = setTimeout(() => app.exit(1), 3000);
 

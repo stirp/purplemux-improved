@@ -1,4 +1,10 @@
 {
+  "toolResultRaw": "Исходный результат",
+  "toolResultError": "Инструмент вернул ошибку",
+  "toolResultExitCode": "Код выхода {code}",
+  "toolResultDuration": "Длительность {seconds} с",
+  "toolResultSession": "Активный сеанс {id}",
+  "toolResultEmpty": "Нет вывода",
   "copyCode": "Копировать код",
   "codeCopied": "Скопировано",
   "codeCopyFailed": "Не удалось скопировать код. Выделите и скопируйте его вручную.",

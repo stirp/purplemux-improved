@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+/* eslint-disable @typescript-eslint/no-require-imports */
 
 // CLI 진입점에서는 부모 shell의 env를 이미 상속받은 상태라
 // Electron의 login shell resolve 로직이 재동작할 필요가 없다.
@@ -34,8 +35,7 @@ if (cmd === 'autostart') {
   require('./cli.js');
 } else if (!cmd || cmd === 'start') {
   process.env.NODE_ENV = process.env.NODE_ENV || 'production';
-  process.env.__PMUX_APP_DIR = path.resolve(__dirname, '..');
-  require('../dist/server.js');
+  require('./server-supervisor.cjs').startSupervisor(path.resolve(__dirname, '..'));
 } else {
   process.stderr.write(`unknown command: ${cmd}\nRun 'purplemux-improved help' for usage.\n`);
   process.exit(1);

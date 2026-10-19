@@ -67,3 +67,19 @@ pnpm exec eslint --no-ignore --report-unused-disable-directives-severity off --r
 另外覆盖目录/socket 权限、拒绝替换活跃 socket/普通文件、方法白名单、超时、连接中断后 503、正常退出后的重连以及 SIGKILL 后遗留 socket 的回收。同进程 global 优先路径仍通过。GNOME 测试使用临时 desktop 文件覆盖空白与 CRLF、Hidden、GNOME 标记、注释、其他段、无主段及重新启用。
 
 本轮未操作真实 GNOME 启动管理器、真实 Electron 浏览器标签或系统启动项；未重复上一轮的视觉检查。跨进程通信回归不等同于真实 CDP/桌面环境端到端验收。
+
+## 合并冲突验证（2026-10-19，本轮独立执行）
+
+| 检查 | 本次结果 |
+| --- | --- |
+| 冲突两侧 JSON 值逐项比对 | 11 个 `settings.json` 均保留双方所有原值；自启动和更新两组词条共存，各语言键集合与英文一致 |
+| 全部语言 JSON 解析 | 231 个文件通过 |
+| `pnpm vitest run tests/unit/lib/browser-bridge-rpc.test.ts tests/unit/lib/linux-autostart.test.ts tests/unit/lib/linux-startup-settings.test.ts tests/unit/lib/desktop-updater.test.ts tests/unit/lib/app-update-api.test.ts tests/unit/lib/app-update-download.test.ts tests/unit/lib/app-update-guard.test.ts tests/unit/lib/app-update-manager.test.ts` | 69 项通过 |
+| `pnpm test:cli` | 152 项通过，含服务启动监督器和自启动回归 |
+| `pnpm tsc --noEmit` | 完整应用类型检查通过 |
+| `pnpm tsc --noEmit -p electron/tsconfig.json` | 完整 Electron 类型检查通过 |
+| `pnpm exec eslint --no-ignore --report-unused-disable-directives-severity off --rule "@typescript-eslint/no-require-imports: off" electron/main.ts electron/preload.ts bin/purplemux.js src/components/features/workspace/settings-dialog.tsx` | 通过 |
+| `pnpm build:electron:main` | 主进程、preload 和 server-launcher 构建通过 |
+| 冲突标记扫描、`git ls-files -u`、`git diff --check`、`git diff --cached --check` | 无遗留标记、无未解决条目，差异格式通过 |
+
+升级退出分支的清理接线经过源码检查，实际 socket 关闭/重连由既有 RPC 测试覆盖；本轮未执行真实 Electron 升级退出、开机重启、浏览器视觉验证或 AppImage 重打包。冲突已暂存，未提交合并。

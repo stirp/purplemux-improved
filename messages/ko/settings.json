@@ -350,5 +350,29 @@
     "loadFailed": "시작 설정을 읽지 못했습니다. 로컬 서버에 연결하고 다시 시도하세요.",
     "retry": "다시 시도",
     "serverHint": "로그인 전 백그라운드 시작은 설치된 CLI에서 purplemux-improved autostart enable --boot를 실행하세요."
+  },
+  "appUpdate": {
+    "title": "Software updates",
+    "current": "Current version {version}",
+    "available": "Version {version} available",
+    "desktopDescription": "Checks automatically every six hours. Upgrade this desktop app and restart when sessions are idle.",
+    "serverDescription": "Checks automatically every six hours. Upgrade the connected server and restart when sessions are idle.",
+    "check": "Check for updates",
+    "install": "Upgrade and restart",
+    "idle": "Up to date",
+    "checking": "Checking…",
+    "downloading": "Downloading…",
+    "ready": "Ready to install",
+    "blocked": "Waiting for idle sessions",
+    "restarting": "Restarting…",
+    "error": "Update failed",
+    "busyHint": "Some tasks are running or their state cannot be confirmed. Retry when all sessions are idle. No restart is scheduled.",
+    "reconnecting": "Reconnecting after restart. If startup fails, the server will restore the previous version.",
+    "desktopUnsupported": "One-click updates require a packaged desktop app and a published installer.",
+    "serverUnsupported": "One-click updates require a production server started with purplemux-improved. Source and development instances can only check for updates.",
+    "notChecked": "Not checked yet",
+    "reconnectFailed": "The app has not reconnected. Reload the page or check the server logs.",
+    "reload": "Reload page",
+    "desktopReconnecting": "Installing and restarting the desktop app. Wait for the app to reopen."
   }
 }

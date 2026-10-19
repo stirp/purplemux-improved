@@ -27,3 +27,9 @@
 - `electron/tsconfig.json` 允许通过项目别名复用 RPC 模块，避免 Electron/API 各维护一套协议；`initBrowserBridge` 返回原有实例，浏览器注册及 CDP 实现保持复用。
 - P2 GNOME 状态误报：仅解析 `[Desktop Entry]` 段中的两类禁用标记；评论、其他段及无主段文件不误判启用。重新启用仍复用原子写入并清除旧禁用标记。
 - 新增独立进程桥接夹具与 API 回归；补充 desktop 文件标记回归。数据目录文档和用户手册同步说明通道生命周期与 GNOME 禁用行为。
+
+## 合并冲突修正
+
+- 11 种语言的 `settings.json` 同时保留 `linuxStartup` 和 `appUpdate`，逐个与 Git 冲突两侧原始 JSON 比对，保证双方词条值无损。
+- 自动合并后的 Electron 升级退出分支补调既有 `closeLocalBrowserBridge()`，与正常退出的通道生命周期保持一致；复用清理函数，不引入新的退出机制。
+- 保留双方的 CLI 启动、自启动 IPC、更新 IPC 和设置组件入口；冲突标记解决后暂存，不提交合并。

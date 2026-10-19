@@ -125,15 +125,20 @@ export const SessionTagManager = ({ workflow, counts, onClose }: {
   if (action?.mode === 'delete' && action.tag) return <DeleteTag tag={action.tag} revision={action.revision} count={counts[action.tag.id] ?? 0} workflow={workflow} onClose={() => setAction(null)} onDeleted={() => setAction(null)} />;
   const filtered = tags.filter((tag) => tag.name.toLowerCase().includes(query.trim().toLowerCase()));
   return <TagModal title={t('manage')} description={t('shared')} onClose={onClose}>
-    <div className="shrink-0 px-5 pb-3"><Input aria-label={t('search')} placeholder={t('search')} value={query} className="min-h-11 text-base md:min-h-8 md:text-sm" onChange={(event) => setQuery(event.target.value)} /></div>
+    <div className="flex shrink-0 flex-wrap items-center gap-2 px-5 pb-3">
+      <Input aria-label={t('search')} placeholder={t('search')} value={query} className="min-h-11 min-w-0 flex-1 basis-36 text-base md:min-h-8 md:text-sm" onChange={(event) => setQuery(event.target.value)} />
+      <Button variant="outline" className={tagButtonClass} disabled={tags.length >= MAX_TAGS} onClick={() => setAction({ mode: 'edit', revision: workflow.tagsRevision ?? 0 })}><Plus className="size-4" />{t('create')}</Button>
+    </div>
     <div className="min-h-0 flex-1 overflow-y-auto px-5 pb-3">
       {!filtered.length && <p className="py-4 text-sm text-muted-foreground">{t(tags.length ? 'noTagsFound' : 'empty')}</p>}
       {filtered.map((tag) => <div key={tag.id} className="flex items-center gap-2 border-b py-2 last:border-0">
-        <div className="min-w-0 flex-1"><span className={cn('rounded px-2 py-1 text-xs [overflow-wrap:anywhere]', tagColors[tag.color])}>{tag.name}</span><p className="mt-1 text-xs text-muted-foreground">{t('usage', { count: counts[tag.id] ?? 0 })}</p></div>
-        <Button variant="ghost" size="icon-sm" className="size-11 md:size-8" aria-label={t('rename', { name: tag.name })} onClick={() => setAction({ mode: 'edit', tag, revision: workflow.tagsRevision ?? 0 })}><Pencil className="size-4" /></Button>
-        <Button variant="ghost" size="icon-sm" className="size-11 text-muted-foreground md:size-8" aria-label={t('deleteNamed', { name: tag.name })} onClick={() => setAction({ mode: 'delete', tag, revision: workflow.tagsRevision ?? 0 })}><Trash2 className="size-4" /></Button>
+        <Button variant="ghost" className={cn(tagButtonClass, 'min-w-0 flex-1 justify-start whitespace-normal px-2 text-left')} aria-label={t('rename', { name: tag.name })} onClick={() => setAction({ mode: 'edit', tag, revision: workflow.tagsRevision ?? 0 })}>
+          <span className="min-w-0 flex-1"><span className={cn('inline-block rounded px-2 py-1 text-xs [overflow-wrap:anywhere]', tagColors[tag.color])}>{tag.name}</span><span className="mt-1 block text-xs text-muted-foreground">{t('usage', { count: counts[tag.id] ?? 0 })}</span></span>
+          <Pencil className="size-4 shrink-0 text-muted-foreground" />
+        </Button>
+        <Button variant="ghost" size="icon-sm" className="size-11 shrink-0 text-muted-foreground md:size-8" aria-label={t('deleteNamed', { name: tag.name })} onClick={() => setAction({ mode: 'delete', tag, revision: workflow.tagsRevision ?? 0 })}><Trash2 className="size-4" /></Button>
       </div>)}
     </div>
-    <div className="flex shrink-0 gap-2 border-t px-5 py-4"><Button variant="outline" className={cn(tagButtonClass, 'flex-1')} disabled={tags.length >= MAX_TAGS} onClick={() => setAction({ mode: 'edit', revision: workflow.tagsRevision ?? 0 })}><Plus className="size-4" />{t('create')}</Button><Button variant="outline" className={tagButtonClass} onClick={onClose}>{t('done')}</Button></div>
+    <div className="flex shrink-0 justify-end border-t px-5 py-4"><Button variant="outline" className={tagButtonClass} onClick={onClose}>{t('done')}</Button></div>
   </TagModal>;
 };
