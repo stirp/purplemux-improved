@@ -179,8 +179,8 @@ const getWc = (entry: IBridgeEntry): WebContents => {
   return wc;
 };
 
-export const initBrowserBridge = (): void => {
-  if (g.__ptBrowserBridge) return;
+export const initBrowserBridge = (): IBrowserBridge => {
+  if (g.__ptBrowserBridge) return g.__ptBrowserBridge;
 
   const registry = new Map<string, IBridgeEntry>();
 
@@ -343,4 +343,5 @@ export const initBrowserBridge = (): void => {
       return { ok: false, error: err instanceof Error ? err.message : String(err) };
     }
   });
+  return bridge;
 };

@@ -339,6 +339,18 @@
       "terminal": "Terminal (including agent terminals)"
     }
   },
+  "linuxStartup": {
+    "title": "Oturum açıldığında masaüstü uygulamasını aç",
+    "description": "Linux masaüstünde oturum açtıktan sonra pencereyi açar.",
+    "packagedOnly": "Yüklü Linux masaüstü uygulamasında kullanılabilir.",
+    "stablePathRequired": "Otomatik başlatmayı etkinleştirmeden önce uygulamayı kalıcı bir konuma taşıyın.",
+    "enabled": "Masaüstü otomatik başlatma etkin",
+    "disabled": "Masaüstü otomatik başlatma devre dışı",
+    "saveFailed": "Başlatma ayarları kaydedilemedi. Yeniden deneyin.",
+    "loadFailed": "Başlatma ayarları okunamadı. Yerel sunucuya bağlanıp yeniden deneyin.",
+    "retry": "Yeniden dene",
+    "serverHint": "Oturum açmadan arka planda başlatmak için yüklü CLI ile purplemux-improved autostart enable --boot çalıştırın."
+  },
   "appUpdate": {
     "title": "Software updates",
     "current": "Current version {version}",

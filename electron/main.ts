@@ -11,9 +11,30 @@ import * as http from 'http';
 import { execFileSync } from 'child_process';
 import { pickTaglines } from './splash-taglines';
 import { initBrowserBridge } from './browser-bridge';
+import { createDesktopAutostart, isLocalStartupFrame, waitForLinuxBackgroundServer } from './linux-autostart';
+import { startBrowserBridgeRpc, stopBrowserBridgeRpc } from '@/lib/browser-bridge-rpc';
+
+let browserBridgeRpc: http.Server | null = null;
+const exposeLocalBrowserBridge = async () => {
+  if (process.platform === 'linux' && !browserBridgeRpc) browserBridgeRpc = await startBrowserBridgeRpc(initBrowserBridge());
+};
+const closeLocalBrowserBridge = async () => {
+  if (!browserBridgeRpc) return;
+  const server = browserBridgeRpc;
+  browserBridgeRpc = null;
+  await stopBrowserBridgeRpc(server);
+};
 
 const isDev = process.env.NODE_ENV === 'development';
 const devUrl = process.env.ELECTRON_DEV_URL;
+const desktopAutostart = createDesktopAutostart({
+  platform: process.platform,
+  packaged: app.isPackaged,
+  homeDir: os.homedir(),
+  configHome: process.env.XDG_CONFIG_HOME,
+  executable: process.execPath,
+  appImage: process.env.APPIMAGE,
+});
 
 const assertLocalRenderer = (event: IpcMainInvokeEvent) => {
   const url = event.sender.getURL();
@@ -714,6 +735,10 @@ const waitForExistingLocalServerToStop = async (timeoutMs?: number): Promise<boo
 const AGENT_RESTART_TIMEOUT_MS = 30_000;
 
 const getManagedServerPort = async (): Promise<number | null> => {
+  if (process.platform === 'linux') {
+    return waitForLinuxBackgroundServer(getExistingLocalServerPort, () =>
+      execFileSync('systemctl', ['--user', 'show', 'purplemux-improved.service', '--property=ActiveState', '--value'], { encoding: 'utf8', timeout: 3000, stdio: ['ignore', 'pipe', 'pipe'] }));
+  }
   if (!isServerLaunchAgentSupported().supported) return null;
   if (!getServerLaunchAgentStatus().loaded) return null;
   const port = await getExistingLocalServerPort();
@@ -838,7 +863,9 @@ const handleSwitchToLocal = async () => {
   writeServerConfig(serverConfig);
 
   try {
-    const port = await startLocalServer();
+    const port = await getManagedServerPort() ?? await startLocalServer();
+    localPort = port;
+    await exposeLocalBrowserBridge();
     const url = `http://localhost:${port}`;
     for (const w of windows) w.loadURL(url);
   } catch (err) {
@@ -857,6 +884,7 @@ const handleSwitchToRemote = async () => {
     return;
   }
 
+  await closeLocalBrowserBridge();
   await stopLocalServer();
   serverConfig = { mode: 'remote', remoteUrl: url };
   writeServerConfig(serverConfig);
@@ -1106,6 +1134,7 @@ const bootstrap = async () => {
     const existingPort = await getManagedServerPort();
     const port = existingPort ?? await startLocalServer();
     if (existingPort) localPort = existingPort;
+    await exposeLocalBrowserBridge();
     win.loadURL(`http://localhost:${port}`);
     clearSplashHistory(win);
   }
@@ -1171,6 +1200,30 @@ ipcMain.handle('server-launch-agent:get-status', (event) => {
   return getServerLaunchAgentStatus();
 });
 
+const canManageDesktopAutostart = (event: IpcMainInvokeEvent) => {
+  const win = BrowserWindow.fromWebContents(event.sender);
+  return !!win && windows.has(win)
+    && isLocalStartupFrame(event.senderFrame?.url, event.senderFrame === event.sender.mainFrame, localPort, serverConfig.mode);
+};
+
+const assertDesktopStartupRenderer = (event: IpcMainInvokeEvent) => {
+  if (!canManageDesktopAutostart(event)) {
+    throw new Error('Desktop startup can only be changed from the local app window.');
+  }
+};
+
+ipcMain.handle('desktop-autostart:can-manage', canManageDesktopAutostart);
+
+ipcMain.handle('desktop-autostart:get-status', (event) => {
+  assertDesktopStartupRenderer(event);
+  return desktopAutostart.getStatus();
+});
+
+ipcMain.handle('desktop-autostart:set-enabled', (event, enabled: boolean) => {
+  assertDesktopStartupRenderer(event);
+  return desktopAutostart.setEnabled(enabled);
+});
+
 ipcMain.handle('server-launch-agent:set-enabled', (event, enabled: boolean) => {
   assertLocalRenderer(event);
   if (typeof enabled !== 'boolean') {
@@ -1196,7 +1249,12 @@ ipcMain.handle('get-system-resources', () => {
   };
 });
 
-app.on('ready', bootstrap);
+app.on('ready', () => {
+  void bootstrap().catch((error) => {
+    dialog.showErrorBox('Unable to start purplemux-improved', error instanceof Error ? error.message : String(error));
+    app.quit();
+  });
+});
 
 app.on('activate', () => {
   const primary = getPrimaryWindow();
@@ -1216,6 +1274,7 @@ app.on('window-all-closed', async () => {
   const forceExit = setTimeout(() => app.exit(1), 3000);
 
   stopUpdateCheckTimer();
+  await closeLocalBrowserBridge();
 
   // 1) PTY onExit 콜백이 완료될 때까지 대기 → native ThreadSafeFunction drain
   if (serverShutdown) {
@@ -1246,6 +1305,7 @@ app.on('will-quit', async (event) => {
     event.preventDefault();
     try {
       stopUpdateCheckTimer();
+      await closeLocalBrowserBridge();
       if (serverShutdown) {
         await serverShutdown();
         serverShutdown = null;
@@ -1262,6 +1322,7 @@ app.on('will-quit', async (event) => {
   const forceExit = setTimeout(() => app.exit(1), 3000);
 
   stopUpdateCheckTimer();
+  await closeLocalBrowserBridge();
 
   if (serverShutdown) {
     await serverShutdown();
@@ -1274,7 +1335,7 @@ app.on('will-quit', async (event) => {
   app.exit(0);
 });
 
-app.requestSingleInstanceLock();
+if (!app.requestSingleInstanceLock()) app.exit(0);
 app.on('second-instance', () => {
   const primary = getPrimaryWindow();
   if (primary) {

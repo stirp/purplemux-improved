@@ -51,6 +51,7 @@
     "build:electron": "next build && node scripts/post-build.js --electron && tsup && pnpm build:electron:main",
     "dev:electron": "ELECTRON_DEV_URL=http://localhost:8022 electron .",
     "pack:electron": "pnpm build:electron && electron-builder --mac",
+    "pack:electron:linux": "pnpm build:electron && electron-builder --linux AppImage",
     "pack:electron:dev": "pnpm build:electron && CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --mac -c.mac.identity=null -c.mac.notarize=false",
     "start": "NODE_ENV=production tsx server.ts",
     "lint": "eslint",

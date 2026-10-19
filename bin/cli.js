@@ -299,6 +299,7 @@ Usage: pmuxi <command> [args...]
 
 CLI only: never starts a server. With no command, shows this help.
 Start the server separately with 'purplemux-improved start'.
+Linux startup configuration: 'purplemux-improved autostart --help'.
 
 Commands:
   workspaces                               List workspaces
