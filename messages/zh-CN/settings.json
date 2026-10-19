@@ -1,6 +1,29 @@
 {
   "title": "设置",
+  "processes": {
+    "description": "管理此电脑上、服务端当前系统用户运行的 Codex 和 Claude Code，每 10 秒刷新。",
+    "search": "搜索代理、PID、目录或工作区",
+    "refresh": "刷新",
+    "failed": "进程操作失败",
+    "loading": "正在加载进程…",
+    "empty": "没有匹配的进程",
+    "unfinished": "未完成的接入",
+    "retry": "重试接入",
+    "open": "打开工作区",
+    "managed": "已纳入管理",
+    "external": "外部终端",
+    "unknownDirectory": "无法读取运行目录",
+    "unavailable": "无法可靠识别原会话，暂不支持接入。",
+    "adopt": "停止并接入",
+    "stop": "停止进程",
+    "stopped": "进程已停止",
+    "started": "已发送恢复命令，请在工作区查看启动状态或权限提示。",
+    "working": "正在处理…",
+    "adoptConfirm": "将停止原终端中的此进程，然后使用 Purplemux 的代理配置，在工作区恢复同一对话。正在执行的工具、内存状态及终端滚屏可能中断或丢失。未正常退出的进程不会被强制杀死。",
+    "stopConfirm": "将向此进程发送退出请求，原终端的任务会中断，对话文件保留。未正常退出的进程不会被强制杀死。"
+  },
   "tabs": {
+    "processes": "本机进程",
     "general": "通用",
     "appearance": "外观",
     "terminal": "终端",
@@ -339,17 +362,22 @@
       "terminal": "终端（含 Agent 终端）"
     }
   },
-  "linuxStartup": {
-    "title": "登录后打开桌面应用",
-    "description": "登录 Linux 图形桌面后自动打开应用窗口。",
-    "packagedOnly": "安装 Linux 桌面应用后可用。",
-    "stablePathRequired": "请将应用移到固定位置后再启用自启动。",
-    "enabled": "已启用桌面自启动",
-    "disabled": "已关闭桌面自启动",
-    "saveFailed": "保存启动设置失败，请重试。",
-    "loadFailed": "读取启动设置失败，请连接本机服务器后重试。",
-    "retry": "重试",
-    "serverHint": "无需登录的后台自启动，请通过已安装的命令行程序运行 purplemux-improved autostart enable --boot。"
+  "idleTabs": {
+    "title": "闲置会话页签回收",
+    "description": "关闭闲置的 Claude/Codex 页签，释放进程和内存。会话历史保留，可从 Sessions 恢复原会话。忙碌或无法确认状态的页签会跳过，自动回收默认关闭。",
+    "automatic": "自动回收闲置页签",
+    "timeout": "闲置时长（分钟）",
+    "save": "保存策略",
+    "saved": "回收策略已保存",
+    "range": "请输入 15～10080 之间的整数分钟。",
+    "failed": "闲置页签操作失败",
+    "refresh": "刷新闲置页签",
+    "reclaim": "回收列表中的页签（最多 100 个）",
+    "empty": "当前阈值下没有可安全回收的页签。",
+    "idleFor": "已闲置 {minutes} 分钟",
+    "result": "已回收 {reclaimed} 个；跳过 {skipped} 个。",
+    "confirmTitle": "回收 {count} 个闲置页签？",
+    "confirmDescription": "将关闭列表中的页签并停止其进程。会话历史和工作区保留，之后可恢复原会话。出现新活动的页签会跳过。"
   },
   "appUpdate": {
     "title": "软件更新",
@@ -374,5 +402,17 @@
     "reconnectFailed": "重启后仍未连接成功，请刷新页面或检查服务日志。",
     "reload": "刷新页面",
     "desktopReconnecting": "正在安装并重启桌面应用，请等待应用重新打开。"
+  },
+  "linuxStartup": {
+    "title": "登录后打开桌面应用",
+    "description": "登录 Linux 图形桌面后自动打开应用窗口。",
+    "packagedOnly": "安装 Linux 桌面应用后可用。",
+    "stablePathRequired": "请将应用移到固定位置后再启用自启动。",
+    "enabled": "已启用桌面自启动",
+    "disabled": "已关闭桌面自启动",
+    "saveFailed": "保存启动设置失败，请重试。",
+    "loadFailed": "读取启动设置失败，请连接本机服务器后重试。",
+    "retry": "重试",
+    "serverHint": "无需登录的后台自启动，请通过已安装的命令行程序运行 purplemux-improved autostart enable --boot。"
   }
 }

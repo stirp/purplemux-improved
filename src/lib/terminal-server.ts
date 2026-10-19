@@ -13,6 +13,7 @@ import { PRISTINE_ENV } from '@/lib/pristine-env';
 import { encodeStdout, MSG_STDOUT_ACK } from '@/lib/terminal-protocol';
 import { reconcileTabCwd } from '@/lib/layout-store';
 import { createLogger } from '@/lib/logger';
+import { recordTerminalInput } from '@/lib/terminal-input-activity';
 
 const log = createLogger('terminal');
 
@@ -304,10 +305,12 @@ export const handleConnection = async (ws: WebSocket, request: IncomingMessage, 
         break;
       }
       case MSG_STDIN: {
+        recordTerminalInput(sessionName);
         ptyProcess.write(textDecoder.decode(msg.payload));
         break;
       }
       case MSG_WEB_STDIN: {
+        recordTerminalInput(sessionName);
         const data = textDecoder.decode(msg.payload);
         webStdinQueue = webStdinQueue
           .then(() => exitCopyMode(sessionName))

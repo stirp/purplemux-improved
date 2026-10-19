@@ -18,10 +18,14 @@ vi.mock('@/lib/layout-store', () => ({
   collectAllTabs: (root: { tabs: unknown[] }) => root.tabs, removeLayoutFile: mocks.removeLayout,
 }));
 vi.mock('@/lib/workspace-sessions', () => ({ collectWorkspaceSessions: mocks.collect, deleteWorkspaceSessions: mocks.cleanup }));
-import { deleteWorkspace, removeSessionWorkflow, updateWorkspaceDirectories } from '@/lib/workspace-store';
+import { deleteWorkspace, getWorkspaces, removeSessionWorkflow, saveAgentProcessTransfer, updateWorkspaceDirectories, saveIdleTabPolicy, getIdleTabPolicy, mutateScheduledTasks, readScheduledTasks } from '@/lib/workspace-store';
 const file = '/workspace-delete-test/.purplemux/workspaces.json';
 const tabs = [{ id: 'tab', sessionName: 'pt-ws-one-tab', agentState: { providerId: 'codex', sessionId: 'thread' } }];
 const workspaces = () => JSON.parse(mocks.files.get(file)!).workspaces;
+const transfer = {
+  pid: 123, startedAt: '2026-10-19T10:00:00.000Z', providerId: 'codex' as const,
+  cwd: '/repo', sessionId: 'session', jsonlPath: '/transcript', tabId: 'tab', tmuxSession: 'target', phase: 'prepared' as const,
+};
 const seedScheduledTasks = () => {
   const data = JSON.parse(mocks.files.get(file)!);
   const task: IScheduledTask = { id: 'idle', workspaceId: 'ws-one', name: 'Task', kind: 'shell', content: 'pwd', cwd: '/repo', timeoutMinutes: 30,
@@ -46,6 +50,32 @@ beforeEach(() => {
   mocks.removeLayout.mockImplementation(async () => { mocks.events.push('layout'); });
 });
 describe('workspace deletion with original sessions', () => {
+  it('persists idle policy and scheduled-task-only changes without overwriting process transfers', async () => {
+    seedScheduledTasks();
+    await saveAgentProcessTransfer('ws-one', transfer);
+    await saveIdleTabPolicy({ enabled: true, idleMinutes: 60 });
+    await mutateScheduledTasks((tasks) => { tasks[0].name = 'Updated task'; });
+    await saveIdleTabPolicy({ enabled: false, idleMinutes: 30 });
+    await mutateScheduledTasks((tasks) => { tasks[0].enabled = false; });
+    expect(await getIdleTabPolicy()).toEqual({ enabled: false, idleMinutes: 30 });
+    expect((await readScheduledTasks())[0]).toMatchObject({ name: 'Updated task', enabled: false });
+    expect(workspaces()[0].agentProcessTransfers).toEqual([transfer]);
+  });
+  it('persists transfer stages without losing directory changes or creating duplicate records', async () => {
+    await saveAgentProcessTransfer('ws-one', transfer);
+    await updateWorkspaceDirectories('ws-one', ['/repo', '/another']);
+    await saveAgentProcessTransfer('ws-one', { ...transfer, phase: 'stopped' });
+    expect(workspaces()[0].directories).toEqual(['/repo', '/another']);
+    expect(workspaces()[0].agentProcessTransfers).toEqual([{ ...transfer, phase: 'stopped' }]);
+    expect((await getWorkspaces({ strict: true })).workspaces[0].agentProcessTransfers).toEqual([{ ...transfer, phase: 'stopped' }]);
+  });
+  it('does not overwrite corrupt data or recreate a workspace when saving a transfer', async () => {
+    await expect(saveAgentProcessTransfer('missing', transfer)).rejects.toThrow('no longer exists');
+    mocks.files.set(file, '{broken');
+    await expect(saveAgentProcessTransfer('ws-one', transfer)).rejects.toThrow();
+    await expect(getWorkspaces({ strict: true })).rejects.toThrow();
+    expect(mocks.files.get(file)).toBe('{broken');
+  });
   it.each([true, false])('cleans idle tasks but retains running claims when deleteSessions=%s', async (deleteSessions) => {
     const tasks = seedScheduledTasks();
     await deleteWorkspace('ws-one', deleteSessions);

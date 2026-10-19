@@ -163,6 +163,8 @@ describe('Sessions project navigation', () => {
       .mockResolvedValueOnce(response(layout([tab(providerId)])));
     await navigateToSession(entry(providerId));
     await vi.waitFor(() => expect(useLayoutStore.getState().layout?.root).toEqual(layout([tab(providerId)]).root));
+    const create = vi.mocked(fetch).mock.calls.find(([, options]) => options?.method === 'POST');
+    expect(JSON.parse(create?.[1]?.body as string)).toMatchObject({ cwd: '/project', resumeSessionId: 'agent-target' });
     expectSelected();
     expect(vi.mocked(fetch).mock.calls.filter(([url, options]) => String(url) === '/api/layout?workspace=ws-target' && options?.method !== 'PATCH')).toHaveLength(2);
   });

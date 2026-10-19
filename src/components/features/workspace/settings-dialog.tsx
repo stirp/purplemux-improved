@@ -58,9 +58,10 @@ import BranchNameSettings from '@/components/features/settings/branch-name-setti
 import GitGenerationPromptSettings from '@/components/features/settings/git-generation-prompt-settings';
 import { AgentEnvironmentSettings } from '@/components/features/settings/codex-environment-settings';
 import BrowserStorageSettings from '@/components/features/settings/browser-storage-settings';
+import AgentProcessSettings from '@/components/features/settings/agent-process-settings';
 import { LinuxStartupSettings } from '@/components/features/settings/linux-startup-settings';
 
-type TSettingsTab = 'general' | 'appearance' | 'terminal' | 'notification' | 'editor' | 'claude' | 'auth' | 'tailscale' | 'quick-prompts' | 'sidebar-items' | 'system';
+type TSettingsTab = 'general' | 'appearance' | 'terminal' | 'notification' | 'editor' | 'claude' | 'processes' | 'auth' | 'tailscale' | 'quick-prompts' | 'sidebar-items' | 'system';
 
 interface ISettingsItem {
   id: TSettingsTab;
@@ -94,6 +95,7 @@ const settingsItems: ISettingsItem[] = [
   { id: 'appearance', labelKey: 'appearance', icon: <Palette className="h-4 w-4" /> },
   { id: 'terminal', labelKey: 'terminal', icon: <Terminal className="h-4 w-4" /> },
   { id: 'claude', labelKey: 'agent', icon: <Bot className="h-4 w-4" /> },
+  { id: 'processes', labelKey: 'processes', icon: <Monitor className="h-4 w-4" /> },
   { id: 'notification', labelKey: 'notification', icon: <Bell className="h-4 w-4" /> },
   { id: 'editor', labelKey: 'editor', icon: <FolderCode className="h-4 w-4" /> },
   { id: 'auth', labelKey: 'auth', icon: <Lock className="h-4 w-4" /> },
@@ -1400,6 +1402,7 @@ const SettingsDialog = ({ open, onOpenChange }: ISettingsDialogProps) => {
             {activeTab === 'notification' && <NotificationTab />}
             {activeTab === 'editor' && <EditorTab />}
             {activeTab === 'claude' && <AgentTab />}
+            {activeTab === 'processes' && <AgentProcessSettings />}
             {activeTab === 'auth' && <AuthTab />}
             {activeTab === 'tailscale' && <TailscaleSettings />}
             {activeTab === 'quick-prompts' && <QuickPromptsSettings />}

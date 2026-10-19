@@ -19,7 +19,7 @@ vi.mock('@/lib/sync-server', () => ({ broadcastSync: mocks.broadcast }));
 vi.mock('@/lib/tmux', () => ({}));
 vi.mock('@/lib/layout-store', () => ({}));
 vi.mock('@/lib/providers/registry', () => ({ listProviders: () => [] }));
-import { getWorkspaces, updateSessionWorkflow, updateSessionTags, updateActive, synchronizeSessionWorkflow, removeSessionWorkflow } from '@/lib/workspace-store';
+import { getWorkspaces, updateSessionWorkflow, updateSessionTags, updateActive, synchronizeSessionWorkflow, removeSessionWorkflow, getIdleTabPolicy, saveIdleTabPolicy, retainReclaimedSession } from '@/lib/workspace-store';
 
 import { addSessionHistoryEntry, getSessionHistory, removeSessionHistory } from '@/lib/session-history';
 import { collectWorkSessions, aggregateWorkStatus } from '@/lib/session-workflow';
@@ -41,6 +41,39 @@ beforeEach(() => {
     sidebarCollapsed: false, sidebarWidth: 240 }));
 });
 describe('persistent workflow preferences', () => {
+  it('defaults idle reclamation to off and persists policy-only changes', async () => {
+    expect(await getIdleTabPolicy()).toEqual({ enabled: false, idleMinutes: 60 });
+    await saveIdleTabPolicy({ enabled: true, idleMinutes: 30 });
+    expect(await getIdleTabPolicy()).toEqual({ enabled: true, idleMinutes: 30 });
+    await saveIdleTabPolicy({ enabled: false, idleMinutes: 45 });
+    expect(await getIdleTabPolicy()).toEqual({ enabled: false, idleMinutes: 45 });
+    mocks.fail = true;
+    await expect(saveIdleTabPolicy({ enabled: true, idleMinutes: 60 })).rejects.toThrow('disk full');
+    expect(await getIdleTabPolicy()).toEqual({ enabled: false, idleMinutes: 45 });
+  });
+  it('retains titles, tags, status and the original resume directory through later synchronization', async () => {
+    const history = makeEntry('s1');
+    await synchronizeSessionWorkflow([history]);
+    await updateSessionWorkflow({ key: 'codex:s1', status: 'completed' });
+    await updateSessionWorkflow({ key: 'codex:s1', title: 'My title' });
+    await updateSessionTags({ action: 'assign', revision: 0, key: 'codex:s1', tagIds: ['keep'], newTags: [{ id: 'keep', name: 'Keep', color: 'purple' }] });
+    await retainReclaimedSession('t', { workspaceId: 'ws', agentProviderId: 'codex', agentSessionId: 's1', workspaceDir: '/original', tabName: 'Tab', panelType: 'codex-cli' });
+    await synchronizeSessionWorkflow([history], { t: { workspaceId: 'ws', agentSessionId: 's1', panelType: 'codex-cli' } });
+    await synchronizeSessionWorkflow([history], {});
+    const saved = (await getWorkspaces()).sessionWorkflow!;
+    expect(saved.statuses['codex:s1']).toBe('completed');
+    expect(saved.titles?.['codex:s1']).toBe('My title');
+    expect(saved.sessionTags?.['codex:s1']).toEqual(['keep']);
+    expect(collectWorkSessions([history], {}, saved)[0].navigation?.workspaceDir).toBe('/original');
+    expect(saved.sessions?.['codex:s1'].entry?.id).toBe('s1');
+  });
+  it('creates a resume entry without completed turns and refuses hidden sessions', async () => {
+    const tab = { workspaceId: 'ws', agentProviderId: 'codex', agentSessionId: 's1', workspaceDir: '/original', tabName: 'Tab' };
+    await retainReclaimedSession('t', tab);
+    expect(collectWorkSessions([], {}, (await getWorkspaces()).sessionWorkflow!)[0].navigation).toMatchObject({ agentSessionId: 's1', workspaceDir: '/original' });
+    mocks.files.set('/workflow-test/.purplemux/hidden-sessions.json', JSON.stringify(['codex:s1']));
+    await expect(retainReclaimedSession('t', tab)).rejects.toThrow('hidden or deleted');
+  });
   const tag = { id: 'resident', name: 'Resident', color: 'purple' as const };
   const revision = async () => (await getWorkspaces()).sessionWorkflow?.tagsRevision ?? 0;
   it('atomically creates tags and assignments, persists on reload and preserves status', async () => {

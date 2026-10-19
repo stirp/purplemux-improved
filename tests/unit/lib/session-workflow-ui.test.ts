@@ -81,6 +81,16 @@ afterEach(async () => {
   vi.unstubAllGlobals();
 });
 describe('Sessions workflow controls', () => {
+  it('resumes a reclaimed session using its retained directory instead of the old turn directory', async () => {
+    const entries = useSessionHistoryStore.getState().entries;
+    const saved = reconcileSessionWorkflow({ statuses: {}, collapsed: {} }, entries, { t: {
+      workspaceId: 'ws', workspaceName: 'Workspace', workspaceDir: '/original', panelType: 'codex-cli', agentSessionId: 's1',
+    } });
+    await act(async () => useWorkspaceStore.setState({ sessionWorkflow: saved }));
+    const row = container.querySelector('[data-session-id="s1"] [data-session-navigation]') as HTMLElement;
+    await act(async () => row.click());
+    expect(navigateToSession).toHaveBeenCalledWith(expect.objectContaining({ agentSessionId: 's1', workspaceDir: '/original' }), null);
+  });
   it('shows and searches the root name, current project and actual manual Tab title', async () => {
     const latest = useSessionHistoryStore.getState().entries[0];
     layoutMock.workspaces = { ws: [{ type: 'pane', id: 'pane', activeTabId: 't', tabs: [{ id: 't', name: 'Manual Tab title', sessionName: 'session', order: 0 }] }] };

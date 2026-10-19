@@ -1,6 +1,29 @@
 {
   "title": "設定",
+  "processes": {
+    "description": "Manage Codex and Claude Code running as the server's current user on this computer. Refreshes every 10 seconds.",
+    "search": "Search agent, PID, directory or workspace",
+    "refresh": "Refresh",
+    "failed": "Process operation failed",
+    "loading": "Loading processes…",
+    "empty": "No matching processes",
+    "unfinished": "Unfinished import",
+    "retry": "Retry import",
+    "open": "Open workspace",
+    "managed": "Managed",
+    "external": "External terminal",
+    "unknownDirectory": "Directory unavailable",
+    "unavailable": "The original session cannot be identified reliably. Import is unavailable.",
+    "adopt": "Stop and import",
+    "stop": "Stop process",
+    "stopped": "Process stopped",
+    "started": "Resume command sent. Check the workspace for startup or permission prompts.",
+    "working": "Working…",
+    "adoptConfirm": "Stop this process in its original terminal, then resume the same conversation in a workspace using Purplemux's agent settings. Running tools, in-memory state and terminal scrollback may be interrupted or lost. A process that does not exit will not be force-killed.",
+    "stopConfirm": "Send a termination request to this process. The original terminal's task will be interrupted. Conversation files are kept. A process that does not exit will not be force-killed."
+  },
   "tabs": {
+    "processes": "本機程序",
     "general": "一般",
     "appearance": "外觀",
     "terminal": "終端機",
@@ -339,17 +362,22 @@
       "terminal": "終端機（含 Agent 終端機）"
     }
   },
-  "linuxStartup": {
-    "title": "登入後開啟桌面應用程式",
-    "description": "登入 Linux 圖形桌面後自動開啟應用程式視窗。",
-    "packagedOnly": "安裝 Linux 桌面應用程式後可用。",
-    "stablePathRequired": "請將應用程式移到固定位置後再啟用自動啟動。",
-    "enabled": "已啟用桌面自動啟動",
-    "disabled": "已關閉桌面自動啟動",
-    "saveFailed": "儲存啟動設定失敗，請重試。",
-    "loadFailed": "讀取啟動設定失敗，請連接本機伺服器後重試。",
-    "retry": "重試",
-    "serverHint": "若要在登入前啟動背景服務，請透過已安裝的命令列程式執行 purplemux-improved autostart enable --boot。"
+  "idleTabs": {
+    "title": "Reclaim idle agent tabs",
+    "description": "Close idle Claude/Codex tabs to release processes and memory. History is kept; resume the same session from Sessions. Busy or uncertain tabs are skipped. Automatic reclamation is off by default.",
+    "automatic": "Automatically reclaim idle tabs",
+    "timeout": "Idle timeout (minutes)",
+    "save": "Save policy",
+    "saved": "Reclamation policy saved",
+    "range": "Enter an integer from 15 to 10080 minutes.",
+    "failed": "Unable to manage idle tabs",
+    "refresh": "Refresh idle tabs",
+    "reclaim": "Reclaim listed tabs (up to 100)",
+    "empty": "No tabs can be safely reclaimed at this timeout.",
+    "idleFor": "Idle for {minutes} minutes",
+    "result": "Reclaimed {reclaimed}; skipped {skipped}.",
+    "confirmTitle": "Reclaim {count} idle tabs?",
+    "confirmDescription": "This closes the listed tabs and stops their processes. Session history and workspaces remain available for resume. Tabs with new activity will be skipped."
   },
   "appUpdate": {
     "title": "软件更新",
@@ -374,5 +402,17 @@
     "reconnectFailed": "重启后仍未连接成功，请刷新页面或检查服务日志。",
     "reload": "刷新页面",
     "desktopReconnecting": "正在安装并重启桌面应用，请等待应用重新打开。"
+  },
+  "linuxStartup": {
+    "title": "登入後開啟桌面應用程式",
+    "description": "登入 Linux 圖形桌面後自動開啟應用程式視窗。",
+    "packagedOnly": "安裝 Linux 桌面應用程式後可用。",
+    "stablePathRequired": "請將應用程式移到固定位置後再啟用自動啟動。",
+    "enabled": "已啟用桌面自動啟動",
+    "disabled": "已關閉桌面自動啟動",
+    "saveFailed": "儲存啟動設定失敗，請重試。",
+    "loadFailed": "讀取啟動設定失敗，請連接本機伺服器後重試。",
+    "retry": "重試",
+    "serverHint": "若要在登入前啟動背景服務，請透過已安裝的命令列程式執行 purplemux-improved autostart enable --boot。"
   }
 }

@@ -71,3 +71,52 @@ export const getProcessStartTimeMs = async (
     return null;
   }
 };
+
+export interface ISystemProcess {
+  pid: number;
+  ppid: number;
+  uid: number;
+  startedAt: string;
+  args: string;
+}
+
+export const parseSystemProcesses = (stdout: string): ISystemProcess[] =>
+  stdout.split('\n').flatMap((line) => {
+    const match = line.match(/^\s*(\d+)\s+(\d+)\s+(\d+)\s+(\S+\s+\S+\s+\d+\s+[\d:]+\s+\d+)\s+(\S+)\s+(.*)$/);
+    if (!match || match[5].startsWith('Z')) return [];
+    const time = Date.parse(match[4]);
+    if (!Number.isFinite(time)) return [];
+    return [{ pid: Number(match[1]), ppid: Number(match[2]), uid: Number(match[3]), startedAt: new Date(time).toISOString(), args: match[6] }];
+  });
+
+export const listUserProcesses = async (): Promise<ISystemProcess[]> => {
+  if (!process.getuid || !['linux', 'darwin'].includes(process.platform)) {
+    throw new Error('Process management requires Linux or macOS');
+  }
+  const { stdout } = await execFile('ps', ['-axo', 'pid=,ppid=,uid=,lstart=,stat=,args='], {
+    timeout: 5000, maxBuffer: 8 * 1024 * 1024, env: { ...process.env, LC_ALL: 'C' },
+  });
+  return parseSystemProcesses(stdout).filter((item) => item.uid === process.getuid!());
+};
+
+export const getProcessArgv = async (item: ISystemProcess): Promise<string[]> => {
+  if (isLinux) {
+    try {
+      return (await fs.readFile(`/proc/${item.pid}/cmdline`, 'utf8')).split('\0').filter(Boolean);
+    } catch { return []; }
+  }
+  return item.args.split(/\s+/);
+};
+
+export const getProcessOpenFiles = async (pid: number): Promise<string[]> => {
+  try {
+    if (isLinux) {
+      const directory = `/proc/${pid}/fd`;
+      const entries = await fs.readdir(directory);
+      return (await Promise.all(entries.map((entry) => fs.readlink(`${directory}/${entry}`).catch(() => ''))))
+        .filter((file) => file.startsWith('/'));
+    }
+    const { stdout } = await execFile('lsof', ['-a', '-p', String(pid), '-Fn'], { timeout: 2000, maxBuffer: 2 * 1024 * 1024 });
+    return stdout.split('\n').filter((line) => line.startsWith('n/')).map((line) => line.slice(1));
+  } catch { return []; }
+};

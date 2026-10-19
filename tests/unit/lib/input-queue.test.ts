@@ -12,6 +12,18 @@ const setup = (state: TCliState = 'busy') => {
 };
 
 describe('session input queue', () => {
+  it('protects sent input until its completion is observed even when the visible queue is empty', async () => {
+    const { queue, status } = setup('idle');
+    expect(queue.hasPendingInput(target.tabId)).toBe(false);
+    queue.enqueue(target, message('1'));
+    expect(queue.hasPendingInput(target.tabId)).toBe(true);
+    await queue.tick();
+    expect(queue.snapshot(target.tabId).messages).toEqual([]);
+    expect(queue.hasPendingInput(target.tabId)).toBe(true);
+    status.eventSeq += 2;
+    await queue.tick();
+    expect(queue.hasPendingInput(target.tabId)).toBe(false);
+  });
   it('sends a question answer immediately without consuming queued messages', async () => {
     const { queue, deliver } = setup();
     queue.enqueue(target, message('queued'));
