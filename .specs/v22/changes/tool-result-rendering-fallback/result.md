@@ -134,3 +134,23 @@ TR-07、TR-08 的解析/传输序列化/组件与兼容回归通过。本轮未�
 浏览器使用真实解析器生成 JSON，再交给真实共享组件及项目样式，命名会话 claude-review-baunie。1280px/390px 视口的 document.scrollWidth 分别为 1265px/375px，无横向溢出。65,536 单元预览容器外高 320px；2 MiB base64 所在混合结果的可见未知 JSON 仅 86 字符，展开的整个结果预览 217 字符。折叠时 raw pre 数量为 0，鼠标和 Enter 可展开/收起，收起后 pre 不存在；无图片元素、无 JavaScript 运行错误。JSON 文件中的 exit_code:1 仍显示为普通文本，真实 is_error 的错误正文保留错误颜色。
 
 截图：[桌面视口](./result/claude-review-desktop.png)、[窄屏原文与长文本](./result/claude-review-mobile.png)、[窄屏媒体省略与展开](./result/claude-review-mobile-raw.png)。最初整页截图遇到 CDP captureScreenshot 超时，随后命令也超时；关闭该验证会话后重开，改为视口截图及 DOM 断言成功。未认定该超时的具体原因，也未据此声称真实手机性能达标。字体/favicon 仍为夹具 404，使用系统字体回退。背压通过可控 socket 与真实文件监听回归验证，未测真实弱网；未执行真实会话端到端重连或物理手机验收。未提交、推送或发布。
+
+## PR #73：恢复确认被队列清理删除
+
+2026-10-20，读取 [review 5576259188 的 P2 意见](https://github.com/stirp/purplemux-improved/pull/73#discussion_r4317631347)，确认本地与 PR head 均为 `92075fc72e7d9f84db7cd96a4bb066187a492581`。按本需求补齐第 16 条与 TR-12 后修复。
+
+- `src/lib/timeline-server.ts`：恢复已定位到 JSONL 时，将旧订阅取消及队列清理移至发送 `timeline:resume-started` 之前。新确认随后与新会话 init 顺序发送，避免背压时确认被误删、面板恢复控件持续加载。仅调整既有操作顺序，复用发送队列与初始化逻辑，无新增接口、状态或依赖（KISS、DRY）。
+- `tests/unit/lib/timeline-server-initial-delivery.test.ts`：通过真实连接消息处理及 JSONL 初始化路径，参数化验证有/无背压。背压用例让旧 init 留在队列，恢复完成后解除背压，严格断言只收到一次 resume-started、随后一次新 init，且新正文属于目标会话。
+- 修改生产源码前运行新增测试：5 项通过、1 项失败，失败明确显示只收到 timeline:init、缺少 timeline:resume-started，复现评审问题。
+
+本轮实际验证：
+
+| 命令 | 结果 |
+| --- | --- |
+| `pnpm exec vitest run tests/unit/lib/timeline-server-initial-delivery.test.ts tests/unit/lib/timeline-delivery.test.ts tests/unit/lib/timeline-initial-delivery.test.ts tests/unit/lib/timeline-display-hook.test.ts` | 4 个文件，26 项通过 |
+| `pnpm exec tsc --noEmit` | 完整类型检查通过 |
+| `pnpm exec eslint src/lib/timeline-server.ts tests/unit/lib/timeline-server-initial-delivery.test.ts` | 通过，无警告 |
+| `pnpm exec tsup` | 服务端生产构建通过 |
+| `git diff --check` | 通过 |
+
+本轮仅修正服务端发送顺序，未重新执行 Next.js 前端构建或浏览器验证；背压由可控 socket 模拟，未验证真实弱网与实机恢复交互。没有 Git 提交、推送或修改 GitHub 评论/线程状态。

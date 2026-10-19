@@ -680,6 +680,10 @@ const handleResumeMessage = async (
 
     const jsonlPath = await resolveJsonlPath(tmuxSession, sessionId, conn.provider);
 
+    if (jsonlPath && conn.currentJsonlPath) {
+      unsubscribeFromFile(ws, conn.currentJsonlPath);
+    }
+
     sendJson(ws, {
       type: 'timeline:resume-started',
       sessionId,
@@ -687,9 +691,6 @@ const handleResumeMessage = async (
     });
 
     if (jsonlPath) {
-      if (conn.currentJsonlPath) {
-        unsubscribeFromFile(ws, conn.currentJsonlPath);
-      }
       conn.currentJsonlPath = jsonlPath;
       await subscribeAndUpdateSummary(ws, jsonlPath, sessionId, conn.sessionName, conn.provider);
     } else {

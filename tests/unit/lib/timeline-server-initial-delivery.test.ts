@@ -6,17 +6,18 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { claudeUser, claudeToolCall, claudeToolResult, createJsonlFixture, jsonl } from '../../helpers/timeline-fixtures';
 import type { ISessionStats, TTimelineServerMessage } from '@/types/timeline';
 
-const mocks = vi.hoisted(() => ({ detect: vi.fn(), stats: vi.fn(), providerId: 'codex' }));
+const mocks = vi.hoisted(() => ({ detect: vi.fn(), stats: vi.fn(), resumeSession: vi.fn(), providerId: 'codex' }));
 vi.mock('@/lib/logger', () => ({ createLogger: () => ({ debug: vi.fn(), warn: vi.fn(), error: vi.fn() }) }));
-vi.mock('@/lib/tmux', () => ({ getSessionPanePid: async () => 1, getPaneTitle: async () => '', checkTerminalProcess: vi.fn(), sendKeys: vi.fn(), getSessionCwd: vi.fn() }));
+vi.mock('@/lib/tmux', () => ({ getSessionPanePid: async () => 1, getPaneTitle: async () => '', checkTerminalProcess: async () => ({ isSafe: true }), sendKeys: vi.fn(), getSessionCwd: vi.fn() }));
 vi.mock('@/lib/layout-store', () => ({
   updateTabAgentSessionId: async () => {}, updateTabAgentSummary: async () => {}, updateTabAgentState: async () => {}, updateTabLastUserMessage: async () => {}, parseSessionName: vi.fn(),
 }));
 vi.mock('@/lib/status-manager', () => ({ getStatusManager: () => ({ notifyLastUserMessage: vi.fn() }) }));
 vi.mock('@/lib/providers/codex', () => ({ CODEX_PROVIDER_ID: 'codex' }));
-vi.mock('@/lib/providers/codex/session-detection', () => ({ findCodexSessionById: vi.fn() }));
+vi.mock('@/lib/providers/codex/session-detection', () => ({ findCodexSessionById: mocks.resumeSession }));
 vi.mock('@/lib/providers', () => ({ getProviderByPanelType: () => ({
   id: mocks.providerId, detectActiveSession: mocks.detect, sessionIdFromJsonlPath: () => 'a', parsePaneTitle: () => null, watchSessions: () => ({ stop: vi.fn() }),
+  isValidSessionId: () => true, buildResumeCommand: async (sessionId: string) => `codex resume ${sessionId}`,
 }) }));
 vi.mock('@/lib/path-validation', () => ({ isCodexJsonlPath: () => mocks.providerId === 'codex', isAllowedJsonlPath: () => true }));
 vi.mock('@/lib/stats/jsonl-parser-codex', () => ({ readCodexTimelineSessionStats: mocks.stats }));
@@ -52,6 +53,27 @@ afterEach(async () => {
 });
 
 describe('timeline server initial history', () => {
+  it.each([false, true])('preserves resume acknowledgement before new init when replacing a subscription (backpressure: %s)', async (backpressure) => {
+    client.bufferedAmount = backpressure ? 1024 * 1024 : 0;
+    await handleTimelineConnection(client as unknown as WebSocket, { url: '/api/timeline?session=pane&panelType=codex-cli' } as IncomingMessage);
+    await vi.waitFor(() => expect(mocks.stats).toHaveBeenCalledTimes(1));
+    client.messages.length = 0;
+    const resumedFile = await fixture([
+      { type: 'event_msg', payload: { type: 'user_message', message: 'resumed question' } },
+      { type: 'event_msg', payload: { type: 'agent_message', message: 'resumed answer' } },
+    ]);
+    mocks.resumeSession.mockResolvedValue({ jsonlPath: resumedFile });
+    client.emit('message', JSON.stringify({ type: 'timeline:resume', sessionId: 'resumed', tmuxSession: 'pane' }));
+    await vi.waitFor(() => expect(mocks.stats).toHaveBeenCalledTimes(2));
+    if (backpressure) expect(client.messages).toHaveLength(0);
+    client.bufferedAmount = 0;
+    await vi.waitFor(() => expect(client.messages.map((message) => message.type)).toEqual(['timeline:resume-started', 'timeline:init']));
+    expect(client.messages[0]).toMatchObject({ sessionId: 'resumed', jsonlPath: resumedFile });
+    expect(client.messages[1]).toMatchObject({ sessionId: 'resumed', jsonlPath: resumedFile, entries: [
+      { text: 'resumed question' }, { markdown: 'resumed answer' },
+    ] });
+  });
+
   it('delivers Claude results after the watcher advanced under backpressure without another file event', async () => {
     mocks.providerId = 'claude';
     await fs.writeFile(file, jsonl([claudeUser('question')]));
