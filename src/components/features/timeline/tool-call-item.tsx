@@ -17,6 +17,7 @@ import {
 import { cn } from '@/lib/utils';
 import useIsMobile from '@/hooks/use-is-mobile';
 import useConfigStore from '@/hooks/use-config-store';
+import ToolResultContent from '@/components/features/timeline/tool-result-content';
 import type { ITimelineToolCall, ITimelineToolResult, TToolName } from '@/types/timeline';
 
 interface IToolCallItemProps {
@@ -117,15 +118,7 @@ const ToolCallItem = ({ entry, result }: IToolCallItemProps) => {
             <span className="text-xs font-mono break-all block">{entry.summary}</span>
           )}
           {result && (result.output || result.summary) && !(hasDiff && !result.isError) && (
-            <pre
-              className={cn(
-                'mt-0.5 text-xs whitespace-pre-wrap break-words font-mono',
-                result.output && 'max-h-80 overflow-auto rounded border border-border/40 bg-muted/40 p-2',
-                result.isError ? 'text-negative/70' : 'text-muted-foreground/60',
-              )}
-            >
-              {result.output || result.summary}
-            </pre>
+            <ToolResultContent result={result} />
           )}
         </div>
       </div>

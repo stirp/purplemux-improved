@@ -1,4 +1,10 @@
 {
+  "toolResultRaw": "元の結果",
+  "toolResultError": "ツールがエラーを返しました",
+  "toolResultExitCode": "終了コード {code}",
+  "toolResultDuration": "所要時間 {seconds} 秒",
+  "toolResultSession": "実行中のセッション {id}",
+  "toolResultEmpty": "出力なし",
   "copyCode": "コードをコピー",
   "codeCopied": "コピーしました",
   "codeCopyFailed": "コードをコピーできませんでした。手動で選択してコピーしてください。",

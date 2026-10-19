@@ -1,4 +1,10 @@
 {
+  "toolResultRaw": "原始結果",
+  "toolResultError": "工具傳回錯誤",
+  "toolResultExitCode": "結束代碼 {code}",
+  "toolResultDuration": "耗時 {seconds} 秒",
+  "toolResultSession": "執行中工作階段 {id}",
+  "toolResultEmpty": "無輸出",
   "copyCode": "複製程式碼",
   "codeCopied": "已複製",
   "codeCopyFailed": "程式碼複製失敗，請手動選取並複製。",

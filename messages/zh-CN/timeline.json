@@ -1,4 +1,10 @@
 {
+  "toolResultRaw": "原始结果",
+  "toolResultError": "工具返回错误",
+  "toolResultExitCode": "退出码 {code}",
+  "toolResultDuration": "耗时 {seconds} 秒",
+  "toolResultSession": "运行会话 {id}",
+  "toolResultEmpty": "无输出",
   "copyCode": "复制代码",
   "codeCopied": "已复制",
   "codeCopyFailed": "代码复制失败，请手动选中并复制。",
