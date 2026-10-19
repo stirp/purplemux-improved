@@ -1,5 +1,5 @@
 import { useRef, useState, type ReactNode } from 'react';
-import { Folder, GitBranch, Pencil, MoreHorizontal, Trash2, X } from 'lucide-react';
+import { Clock, Folder, GitBranch, Pencil, MoreHorizontal, Trash2, X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetDescription, SheetClose } from '@/components/ui/sheet';
 import { cn } from '@/lib/utils';
@@ -10,6 +10,7 @@ import DeleteWorkspaceDialog from '@/components/features/workspace/delete-worksp
 import EditWorkspaceDialog from '@/components/features/workspace/edit-workspace-dialog';
 import CreateWorktreeDialog from '@/components/features/workspace/create-worktree-dialog';
 import WorktreeTreeDialog from '@/components/features/workspace/worktree-tree-dialog';
+import ScheduledTasksDialog from '@/components/features/workspace/scheduled-tasks-dialog';
 import type { IWorkspace, ITab } from '@/types/terminal';
 
 const MobileWorkspaceActions = ({ workspace, onCreated, children, isActive = false, tabs }: {
@@ -27,7 +28,7 @@ const MobileWorkspaceActions = ({ workspace, onCreated, children, isActive = fal
   const [menuOpen, setMenuOpen] = useState(false);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const touchOrigin = useRef(false);
-  const [action, setAction] = useState<'group' | 'rename' | 'tree' | 'create' | 'delete' | null>(null);
+  const [action, setAction] = useState<'group' | 'rename' | 'tree' | 'create' | 'delete' | 'scheduled' | null>(null);
 
   const openAction = (next: typeof action) => {
     setMenuOpen(false);
@@ -82,6 +83,9 @@ const MobileWorkspaceActions = ({ workspace, onCreated, children, isActive = fal
             <WorkspaceStatusIndicator workspaceId={workspace.id} tabs={tabs} />
           </SheetDescription>
           <div data-mobile-workspace-menu className="border-t pt-2">
+            <button className={itemClass} onClick={() => openAction('scheduled')}>
+              <Clock size={16} />{tw('scheduledTasks.title')}
+            </button>
             <button className={itemClass} onClick={() => openAction('create')}>
               <GitBranch size={16} />{tw('worktree.create')}
             </button>
@@ -111,6 +115,7 @@ const MobileWorkspaceActions = ({ workspace, onCreated, children, isActive = fal
       workspace={workspace} onClose={() => setAction(null)} onCreated={onCreated}
     />}
     {action === 'tree' && <WorktreeTreeDialog root={workspace} onClose={() => setAction(null)} onSelect={onCreated} />}
+    {action === 'scheduled' && <ScheduledTasksDialog workspace={workspace} onClose={() => setAction(null)} />}
     {action === 'delete' && <DeleteWorkspaceDialog
       key={workspace.id} workspace={workspace} onClose={() => setAction(null)}
     />}

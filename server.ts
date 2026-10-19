@@ -28,6 +28,7 @@ import { initShellPath } from './src/lib/preflight';
 import { cleanupExpiredUploads } from './src/lib/uploads-store';
 import { cleanupOrphanSessionStats } from './src/lib/session-stats';
 import { createLogger } from './src/lib/logger';
+import { getScheduledTaskScheduler } from './src/lib/scheduled-task-scheduler';
 import pkg from './package.json';
 
 const log = createLogger('server');
@@ -260,6 +261,7 @@ const startDev = async (port: number, appDir: string, bindHost: string): Promise
   });
 
   const shutdown = async () => {
+    await getScheduledTaskScheduler().stop();
     releaseLock();
     await removePortFile();
     server.close();
@@ -329,6 +331,7 @@ const startProd = async (port: number, appDir: string, bindHost: string): Promis
   });
 
   const shutdown = async () => {
+    await getScheduledTaskScheduler().stop();
     releaseLock();
     await removePortFile();
     server.close();
@@ -397,6 +400,7 @@ export const start = async (opts?: IStartOptions): Promise<IStartResult> => {
   getCliToken();
   const { workspaces } = await getWorkspaces();
   await writeAllWorkspacePrompts(workspaces);
+  await getScheduledTaskScheduler().start();
 
   cleanupExpiredUploads()
     .then((r) => {
