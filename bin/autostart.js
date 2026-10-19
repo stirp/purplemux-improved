@@ -45,7 +45,7 @@ Environment=${quoteUnit(`PATH=${pathEnv}`)}
 Environment=NODE_ENV=production PORT=${Number(port)}
 Restart=on-failure
 RestartSec=5
-KillMode=process
+KillMode=control-group
 
 [Install]
 WantedBy=default.target

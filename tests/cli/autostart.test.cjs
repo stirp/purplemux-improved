@@ -50,7 +50,7 @@ test('enable and disable are idempotent, preserve running services and never dis
   const unit = fs.readFileSync(manager.readStatus().path, 'utf8');
   assert.match(unit, /PORT=8123/);
   assert.match(unit, /PATH=\/usr\/bin:\/fixture\/tools/);
-  assert.match(unit, /KillMode=process/);
+  assert.match(unit, /^KillMode=control-group$/m);
   assert.equal(manager.enable(true).bootEnabled, true);
   for (let index = 0; index < 2; index++) {
     const status = manager.disable();
@@ -69,6 +69,20 @@ test('a missing unit is disabled and status does not create files', () => {
   assert.equal(fs.existsSync(manager.readStatus().path), false);
   manager.disable();
   assert.ok(calls.every((call) => !call.includes(' disable ')));
+});
+
+test('re-enabling replaces legacy process-only cleanup without restarting the server', () => {
+  const manager = createManager(options);
+  const filename = manager.readStatus().path;
+  fs.mkdirSync(path.dirname(filename), { recursive: true });
+  fs.writeFileSync(filename, buildUnit(options).replace('KillMode=control-group', 'KillMode=process'));
+  const status = manager.enable(false);
+  const unit = fs.readFileSync(filename, 'utf8');
+  assert.match(unit, /^KillMode=control-group$/m);
+  assert.doesNotMatch(unit, /^KillMode=(process|none)$/m);
+  assert.equal(status.active, true);
+  assert.ok(calls.includes('systemctl --user daemon-reload'));
+  assert.ok(calls.every((call) => !/--now| restart | stop | start /.test(call)));
 });
 
 test('unknown linger state never claims boot startup', () => {

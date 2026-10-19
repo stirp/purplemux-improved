@@ -101,12 +101,13 @@ describe('Linux desktop autostart', () => {
 });
 
 it('restricts IPC to the exact local origin and main frame', () => {
-  expect(isLocalStartupFrame('http://localhost:8022/settings', true, 8022)).toBe(true);
+  expect(isLocalStartupFrame('http://localhost:8022/settings', true, 8022, 'local')).toBe(true);
+  expect(isLocalStartupFrame('http://localhost:8022/settings', true, 8022, 'remote')).toBe(false);
   for (const url of ['http://localhost:9999', 'https://localhost:8022', 'https://remote.example', 'file:///app', 'bad', undefined]) {
-    expect(isLocalStartupFrame(url, true, 8022)).toBe(false);
+    expect(isLocalStartupFrame(url, true, 8022, 'local')).toBe(false);
   }
-  expect(isLocalStartupFrame('http://localhost:8022', false, 8022)).toBe(false);
-  expect(isLocalStartupFrame('http://localhost:8022', true, null)).toBe(false);
+  expect(isLocalStartupFrame('http://localhost:8022', false, 8022, 'local')).toBe(false);
+  expect(isLocalStartupFrame('http://localhost:8022', true, null, 'local')).toBe(false);
 });
 
 describe('desktop reuse of a Linux background server', () => {

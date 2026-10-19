@@ -3,7 +3,7 @@ page: configurable-auto-start-on-boot
 title: Linux 可配置开机自启动
 status: DETAILED
 created: 2026-10-19
-updated: 2026-10-19
+updated: 2026-10-20
 depends_on:
   - ../../../v20/features/fork-platform/spec.md
   - ../pmuxi-cli-only/spec.md
@@ -28,6 +28,8 @@ depends_on:
 - 审查修正：复用独立后台服务时，浏览器 URL、截图、脚本执行、控制台、网络日志及响应体接口通过当前用户私有 Unix socket 转发到 Electron；同进程桥接继续优先使用。沿用 API 的 token、工作区和标签类型校验，不开放 TCP 控制端口，不提供任意方法调用。退出桌面或切换远程服务器时关闭通道；断开与超时明确返回不可用，后续请求可连接重启后的桌面。
 - 审查修正：读取 desktop 文件仅以 `[Desktop Entry]` 段为准，`Hidden=true` 或 `X-GNOME-Autostart-enabled=false` 任一出现即为禁用；注释和其他段不影响状态。重新启用会清除禁用标记，刷新后状态与实际启动配置一致。
 - 合并兼容：与[自动更新](../auto-upgrade-detection/spec.md)同时保留各自设置词条和入口；桌面因安装更新退出时同样关闭本地浏览器桥接，继续执行已有服务和存储清理。
+- PR #70 修正：systemd unit 使用 `KillMode=control-group`，监督器异常退出后清理同一服务控制组中的子进程，再执行失败重启，避免遗留服务器占用端口。启用/停用启动项仍不启停当前服务；显式停止 systemd 服务或监督器崩溃时，同组 tmux/任务也可能被清理，不再承诺跨服务停止保留这些子进程。监督器内的一键升级仍沿用现有保留 tmux 的行为。已有安装通过重新执行 enable 更新 unit。
+- PR #70 修正：Linux 桌面开关仅在主进程确认本地服务模式、应用窗口及合法顶层来源后显示；远程模式（包括远程地址恰为 localhost）、嵌入页面、旧 preload 和能力查询失败时隐藏，不读取或修改启动项。聚焦时可重新查询；本机状态读取失败仍显示既有重试入口。
 - 系统启动项是机器本地集成状态，不作为可同步应用偏好写入 workspaces.json，不将设置同步到其他电脑。原有网络访问、认证和工作区持久化语义不变。
 - 本次开发和验证不修改宿主机启动设置，不执行登录重启或 Git 提交/发布。以临时目录和模拟系统命令验证写入、失败及边界，真实开机验收单独记录。
 
@@ -41,5 +43,6 @@ depends_on:
 6. 桌面复用已有后台服务、重复启动退出；相关测试、完整 TypeScript（含 Electron）、改动文件 ESLint、CLI 及 Electron 构建检查通过。浏览器和 Linux 实机开机的实际覆盖与限制如实记录。
 7. 使用独立进程回归浏览器 API 的跨进程 URL、截图、eval、控制台、网络与响应体；覆盖未连接、断开、超时、重连及授权拒绝。验证 Unix socket 权限和方法白名单，不能仅用同进程 globalThis 替身证明跨进程可用。
 8. GNOME 禁用标记、Hidden 标记、CRLF/空格、注释/其他段、重新启用均有临时文件回归测试。
+9. 生成和重新注册的 unit 覆盖监督器子进程清理；远程模式不显示开关、不调用启动项读写 IPC，恢复本地模式后可读取状态。能力查询等待/失败和本机读取失败有独立回归。
 
 见 [任务](./task.md) 与 [用户手册](../../../../docs/07-user/user-guide/linux-autostart.md)。

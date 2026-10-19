@@ -13,6 +13,7 @@ interface IStartupStatus {
 
 interface IStartupAPI {
   platform?: string;
+  canManageDesktopAutostart?: () => Promise<boolean>;
   getDesktopAutostartStatus?: () => Promise<IStartupStatus>;
   setDesktopAutostartEnabled?: (enabled: boolean) => Promise<IStartupStatus>;
 }
@@ -23,8 +24,9 @@ const getAPI = (): IStartupAPI | undefined => typeof window === 'undefined'
 export const LinuxStartupSettings = () => {
   const t = useTranslations('settings.linuxStartup');
   const api = getAPI();
-  const available = api?.platform === 'linux'
+  const hasAPI = api?.platform === 'linux' && !!api.canManageDesktopAutostart
     && !!api.getDesktopAutostartStatus && !!api.setDesktopAutostartEnabled;
+  const [available, setAvailable] = useState(false);
   const [status, setStatus] = useState<IStartupStatus | null>(null);
   const [busy, setBusy] = useState(false);
   const [failed, setFailed] = useState(false);
@@ -32,17 +34,27 @@ export const LinuxStartupSettings = () => {
   const refresh = useCallback(() => setReload((value) => value + 1), []);
 
   useEffect(() => {
-    if (!available || busy) return;
+    if (!hasAPI || busy) return;
     let cancelled = false;
-    getAPI()!.getDesktopAutostartStatus!().then((next) => {
-      if (!cancelled) { setStatus(next); setFailed(false); }
-    }).catch(() => { if (!cancelled) setFailed(true); });
+    getAPI()!.canManageDesktopAutostart!().then(async (allowed) => {
+      if (cancelled) return;
+      setAvailable(allowed);
+      if (!allowed) { setStatus(null); setFailed(false); return; }
+      try {
+        const next = await getAPI()!.getDesktopAutostartStatus!();
+        if (!cancelled) { setStatus(next); setFailed(false); }
+      } catch {
+        if (!cancelled) setFailed(true);
+      }
+    }).catch(() => {
+      if (!cancelled) { setAvailable(false); setStatus(null); setFailed(false); }
+    });
     window.addEventListener('focus', refresh);
     return () => { cancelled = true; window.removeEventListener('focus', refresh); };
-  }, [available, busy, refresh, reload]);
+  }, [hasAPI, busy, refresh, reload]);
 
   const change = async (enabled: boolean) => {
-    if (busy) return;
+    if (!available || busy) return;
     setBusy(true);
     try {
       setStatus(await getAPI()!.setDesktopAutostartEnabled!(enabled));
@@ -55,7 +67,7 @@ export const LinuxStartupSettings = () => {
     }
   };
 
-  if (!available) return null;
+  if (!hasAPI || !available) return null;
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between gap-3">

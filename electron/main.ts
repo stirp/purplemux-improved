@@ -1200,12 +1200,19 @@ ipcMain.handle('server-launch-agent:get-status', (event) => {
   return getServerLaunchAgentStatus();
 });
 
+const canManageDesktopAutostart = (event: IpcMainInvokeEvent) => {
+  const win = BrowserWindow.fromWebContents(event.sender);
+  return !!win && windows.has(win)
+    && isLocalStartupFrame(event.senderFrame?.url, event.senderFrame === event.sender.mainFrame, localPort, serverConfig.mode);
+};
+
 const assertDesktopStartupRenderer = (event: IpcMainInvokeEvent) => {
-  if (serverConfig.mode !== 'local' || !BrowserWindow.fromWebContents(event.sender)
-    || !isLocalStartupFrame(event.senderFrame?.url, event.senderFrame === event.sender.mainFrame, localPort)) {
+  if (!canManageDesktopAutostart(event)) {
     throw new Error('Desktop startup can only be changed from the local app window.');
   }
 };
+
+ipcMain.handle('desktop-autostart:can-manage', canManageDesktopAutostart);
 
 ipcMain.handle('desktop-autostart:get-status', (event) => {
   assertDesktopStartupRenderer(event);

@@ -83,3 +83,23 @@ pnpm exec eslint --no-ignore --report-unused-disable-directives-severity off --r
 | 冲突标记扫描、`git ls-files -u`、`git diff --check`、`git diff --cached --check` | 无遗留标记、无未解决条目，差异格式通过 |
 
 升级退出分支的清理接线经过源码检查，实际 socket 关闭/重连由既有 RPC 测试覆盖；本轮未执行真实 Electron 升级退出、开机重启、浏览器视觉验证或 AppImage 重打包。冲突已暂存，未提交合并。
+
+## PR #70 验证（2026-10-20，本轮独立执行）
+
+| 检查 | 本次结果 |
+| --- | --- |
+| `pnpm vitest run tests/unit/lib/linux-autostart.test.ts tests/unit/lib/linux-startup-settings.test.ts tests/unit/lib/browser-bridge-rpc.test.ts` | 37 项通过；新增远程隐藏、能力等待/失败后重试、模式切换后的过期响应，以及远程 localhost 拒绝回归 |
+| `pnpm test:cli` | 153 项通过，无跳过；覆盖旧 process unit 重注册为 control-group、不启停当前服务、真实 `systemd-analyze --user verify` 解析与监督器升级回退 |
+| `pnpm tsc --noEmit` | 完整应用类型检查通过 |
+| `pnpm tsc --noEmit -p electron/tsconfig.json` | 完整 Electron 类型检查通过 |
+| 改动文件 ESLint | 下列命令通过，无错误或警告 |
+| `pnpm build:electron` | 退出码 0；Next.js、standalone 后处理、服务端、Electron 主进程及 preload 构建全部通过 |
+| Markdown 相对链接与 `git diff --check` | 通过 |
+
+```bash
+pnpm exec eslint --no-ignore --report-unused-disable-directives-severity off --rule "@typescript-eslint/no-require-imports: off" "bin/autostart.js" "electron/linux-autostart.ts" "electron/main.ts" "electron/preload.ts" "src/components/features/settings/linux-startup-settings.tsx" "tests/cli/autostart.test.cjs" "tests/unit/lib/linux-autostart.test.ts" "tests/unit/lib/linux-startup-settings.test.ts"
+```
+
+验收 9：临时目录测试验证新 unit 和旧 unit 更新为控制组清理，系统解析器验证有效性；真实 React 组件在 jsdom 中验证远程模式不显示、不读取/修改启动项，聚焦切回本地可恢复，本机状态读取失败仍可重试。能力 IPC 与读写 IPC 共用主进程校验；来源校验测试覆盖远程模式使用 localhost 仍被拒绝。
+
+本轮未注册宿主机 unit、未终止真实监督器或验证实际 cgroup 清理、未启动真实 Electron 连接远端，也未做视觉验证或 AppImage 重打包。systemd 清理行为依据控制组配置与解析检查，组件验证使用模拟 IPC；不将其视作真实系统及桌面端到端验收。未提交、推送或发布。

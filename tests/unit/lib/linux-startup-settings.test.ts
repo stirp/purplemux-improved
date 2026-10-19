@@ -12,6 +12,7 @@ let container: HTMLDivElement;
 let root: Root;
 let getStatus: ReturnType<typeof vi.fn>;
 let setEnabled: ReturnType<typeof vi.fn>;
+let canManage: ReturnType<typeof vi.fn>;
 const setAPI = (api?: object) => Object.defineProperty(window, 'electronAPI', { configurable: true, value: api });
 const render = async () => { await act(async () => { root.render(createElement(LinuxStartupSettings)); }); };
 const toggle = () => container.querySelector<HTMLElement>('[role=switch]')!;
@@ -25,11 +26,12 @@ beforeEach(() => {
   document.body.appendChild(container);
   root = createRoot(container);
   getStatus = vi.fn().mockResolvedValue({ supported: true, enabled: false });
+  canManage = vi.fn().mockResolvedValue(true);
   setEnabled = vi.fn().mockImplementation(async (enabled: boolean) => {
     getStatus.mockResolvedValue({ supported: true, enabled });
     return { supported: true, enabled };
   });
-  setAPI({ platform: 'linux', getDesktopAutostartStatus: getStatus, setDesktopAutostartEnabled: setEnabled });
+  setAPI({ platform: 'linux', canManageDesktopAutostart: canManage, getDesktopAutostartStatus: getStatus, setDesktopAutostartEnabled: setEnabled });
 });
 afterEach(async () => {
   await act(async () => root.unmount());
@@ -39,12 +41,54 @@ afterEach(async () => {
 });
 
 it('hides in a browser, other platforms and older preloads', async () => {
-  for (const api of [undefined, { platform: 'darwin' }, { platform: 'linux' }]) {
+  for (const api of [undefined, { platform: 'darwin' }, { platform: 'linux' },
+    { platform: 'linux', getDesktopAutostartStatus: getStatus, setDesktopAutostartEnabled: setEnabled }]) {
     setAPI(api);
     await render();
     expect(container.textContent).toBe('');
   }
   expect(getStatus).not.toHaveBeenCalled();
+});
+
+it('hides in remote mode without requesting local startup state and refreshes mode on focus', async () => {
+  canManage.mockResolvedValue(false);
+  await render();
+  expect(container.textContent).toBe('');
+  expect(getStatus).not.toHaveBeenCalled();
+  expect(setEnabled).not.toHaveBeenCalled();
+  canManage.mockResolvedValue(true);
+  await act(async () => window.dispatchEvent(new Event('focus')));
+  expect(toggle()).not.toBeNull();
+  expect(getStatus).toHaveBeenCalledTimes(1);
+  canManage.mockResolvedValue(false);
+  await act(async () => window.dispatchEvent(new Event('focus')));
+  expect(container.textContent).toBe('');
+  expect(getStatus).toHaveBeenCalledTimes(1);
+  expect(mocks.error).not.toHaveBeenCalled();
+});
+
+it('stays hidden until capability is confirmed and retries failed queries on focus', async () => {
+  let rejectCapability: (error: Error) => void = () => {};
+  canManage.mockReturnValueOnce(new Promise((_resolve, reject) => { rejectCapability = reject; }));
+  await render();
+  expect(container.textContent).toBe('');
+  expect(getStatus).not.toHaveBeenCalled();
+  await act(async () => rejectCapability(new Error('IPC unavailable')));
+  expect(container.textContent).toBe('');
+  expect(getStatus).not.toHaveBeenCalled();
+  await act(async () => window.dispatchEvent(new Event('focus')));
+  expect(toggle()).not.toBeNull();
+  expect(getStatus).toHaveBeenCalledTimes(1);
+});
+
+it('ignores stale status responses after switching away from local mode', async () => {
+  let finishLoad: (value: object) => void = () => {};
+  getStatus.mockReturnValueOnce(new Promise((resolve) => { finishLoad = resolve; }));
+  await render();
+  canManage.mockResolvedValue(false);
+  await act(async () => window.dispatchEvent(new Event('focus')));
+  await act(async () => finishLoad({ supported: true, enabled: true }));
+  expect(container.textContent).toBe('');
 });
 
 it('loads the OS state and toggles both ways', async () => {

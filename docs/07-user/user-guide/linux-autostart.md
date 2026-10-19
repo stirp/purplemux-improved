@@ -35,6 +35,8 @@ linger 是用户级设置；开启后即使后续 unit 写入或注册失败，�
 
 注册或停用不会立即启动、停止或重启正在运行的服务器；新配置在下次登录或开机生效。需要立即改由 systemd 托管时，先自行结束现有手动启动的服务器，再运行 `systemctl --user start purplemux-improved.service`，避免启动两个服务器。
 
+服务使用 `KillMode=control-group`：监督器异常退出后，systemd 会先清理该服务控制组中的子进程再重启，避免旧服务器残留。显式停止服务或监督器崩溃时，同组 tmux 和任务也可能终止；应用内的一键升级仍保留 tmux。已注册旧版启动项的用户需重新执行 `purplemux-improved autostart enable` 更新清理配置；这不会立即重启服务，也不会关闭已启用的 linger。
+
 unit 位于 `${XDG_CONFIG_HOME:-~/.config}/systemd/user/purplemux-improved.service`，使用固定 Node/服务入口路径、当前 PATH 和 PORT（默认 8022），工作目录为用户主目录。不会复制当前 shell 的令牌、代理或其他环境变量。额外环境可使用 `systemctl --user edit purplemux-improved.service` 配置；网络访问及认证继续遵循应用自身设置。
 
 移动应用、升级到不同 Node 路径或改变端口后，重新执行 enable 更新启动配置。例如：
@@ -50,7 +52,7 @@ disable 保留 unit 文件，也保留当前用户的 linger，避免影响其�
 
 ## 桌面客户端
 
-Linux 桌面应用的 **设置 → 系统 → 登录后打开桌面应用** 控制图形桌面登录启动。开启后生成当前用户的 XDG autostart 文件；关闭后移除该启动项。普通网页中不显示此开关。
+Linux 桌面应用的 **设置 → 系统 → 登录后打开桌面应用** 控制图形桌面登录启动。开启后生成当前用户的 XDG autostart 文件；关闭后移除该启动项。此开关仅在连接本地服务的应用窗口中显示，普通网页和桌面远程连接模式均隐藏。
 
 请把 AppImage 移到固定位置后开启，启动项会指向 AppImage 原文件，而非运行时临时挂载目录。移动后重新开启开关可更新路径。开发模式及临时目录中的应用不能注册启动项；读取失败可以重试，保存失败会提示。
 

@@ -84,8 +84,8 @@ export const createDesktopAutostart = (options: IDesktopAutostartOptions) => {
   return { getStatus, setEnabled };
 };
 
-export const isLocalStartupFrame = (frameUrl: string | undefined, isMainFrame: boolean, localPort: number | null): boolean => {
-  if (!isMainFrame || !localPort || !frameUrl) return false;
+export const isLocalStartupFrame = (frameUrl: string | undefined, isMainFrame: boolean, localPort: number | null, serverMode: 'local' | 'remote'): boolean => {
+  if (serverMode !== 'local' || !isMainFrame || !localPort || !frameUrl) return false;
   try {
     const url = new URL(frameUrl);
     return url.origin === `http://localhost:${localPort}`;

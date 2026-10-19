@@ -33,3 +33,9 @@
 - 11 种语言的 `settings.json` 同时保留 `linuxStartup` 和 `appUpdate`，逐个与 Git 冲突两侧原始 JSON 比对，保证双方词条值无损。
 - 自动合并后的 Electron 升级退出分支补调既有 `closeLocalBrowserBridge()`，与正常退出的通道生命周期保持一致；复用清理函数，不引入新的退出机制。
 - 保留双方的 CLI 启动、自启动 IPC、更新 IPC 和设置组件入口；冲突标记解决后暂存，不提交合并。
+
+## PR #70 审查修正（2026-10-20）
+
+- [监督器子进程清理](https://github.com/stirp/purplemux-improved/pull/70#discussion_r4315848671)：unit 改为 `KillMode=control-group`，让 systemd 在监督器异常退出后清理残留子进程，再重启服务。旧 unit 经重新 enable 更新，回归确认不调用 start/stop/restart。本条替代早期实施记录中通过 process 模式保留所有 tmux 子进程的做法；同组 tmux/任务可能随 systemd 停止而终止，应用内升级不停止 unit。
+- [远程模式隐藏本机开关](https://github.com/stirp/purplemux-improved/pull/70#discussion_r4315848686)：新增只返回布尔值的 `desktop-autostart:can-manage` IPC，复用本机读写入口的窗口、顶层 frame、端口和服务模式校验。界面先查询能力，通过后才读取启动项；远程、旧 preload、能力未确认或查询失败时隐藏，聚焦可重新查询。
+- KISS/DRY：复用 systemd 控制组清理和统一 IPC 授权判断，不增加子进程扫描或独立权限规则。补充旧 unit 更新、远程/本地切换、能力等待/失败和过期响应测试；用户手册同步说明清理范围和开关可见性。
