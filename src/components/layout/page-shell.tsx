@@ -8,6 +8,7 @@ import Sidebar from '@/components/layout/sidebar';
 import useSync from '@/hooks/use-sync';
 import useGlobalShortcuts from '@/hooks/use-global-shortcuts';
 import useWebviewStore from '@/hooks/use-webview-store';
+import AppUpdateSettings from '@/components/features/settings/app-update-settings';
 
 const WebviewLayer = dynamic(() => import('@/components/layout/webview-layer'), { ssr: false });
 
@@ -44,6 +45,7 @@ const PageShell = ({ children }: IPageShellProps) => {
     return (
       <div className="flex h-dvh w-full flex-col overflow-hidden bg-background" style={viewportStyle}>
         <MobileLayout>
+          <AppUpdateSettings compact />
           {children}
         </MobileLayout>
       </div>
@@ -54,6 +56,7 @@ const PageShell = ({ children }: IPageShellProps) => {
     <div className="flex h-dvh w-full overflow-hidden bg-background max-md:hidden" style={viewportStyle}>
       <Sidebar />
       <div className="relative flex min-w-0 flex-1 flex-col">
+        <AppUpdateSettings compact />
         <PageContent>{children}</PageContent>
         <WebviewLayer />
       </div>

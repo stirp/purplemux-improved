@@ -14,7 +14,11 @@ const serverMarker = 'SERVER_ENTRY_LOADED';
 before(() => {
   fs.cpSync(path.join(root, 'bin'), path.join(fixture, 'bin'), { recursive: true });
   fs.mkdirSync(path.join(fixture, 'dist'));
-  fs.writeFileSync(path.join(fixture, 'dist/server.js'), `process.stdout.write('${serverMarker}');`);
+  fs.writeFileSync(path.join(fixture, 'package.json'), JSON.stringify({ name: 'purplemux-improved', version: '0.5.6' }));
+  fs.writeFileSync(path.join(fixture, 'dist/server.js'), `
+    process.stdout.write('${serverMarker}');
+    process.send({ type: 'purplemux:ready', version: '0.5.6', port: 8022 }, () => process.disconnect());
+  `);
 });
 after(() => fs.rmSync(fixture, { recursive: true, force: true }));
 
