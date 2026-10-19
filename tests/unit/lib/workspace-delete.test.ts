@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import type { IScheduledTask } from '@/lib/scheduled-tasks';
 const mocks = vi.hoisted(() => ({
   files: new Map<string, string>(), kill: vi.fn(), panes: vi.fn(), layout: vi.fn(),
   collect: vi.fn(), cleanup: vi.fn(), removeLayout: vi.fn(), events: [] as string[],
@@ -21,6 +22,16 @@ import { deleteWorkspace, removeSessionWorkflow, updateWorkspaceDirectories } fr
 const file = '/workspace-delete-test/.purplemux/workspaces.json';
 const tabs = [{ id: 'tab', sessionName: 'pt-ws-one-tab', agentState: { providerId: 'codex', sessionId: 'thread' } }];
 const workspaces = () => JSON.parse(mocks.files.get(file)!).workspaces;
+const seedScheduledTasks = () => {
+  const data = JSON.parse(mocks.files.get(file)!);
+  const task: IScheduledTask = { id: 'idle', workspaceId: 'ws-one', name: 'Task', kind: 'shell', content: 'pwd', cwd: '/repo', timeoutMinutes: 30,
+    enabled: true, schedule: { frequency: 'daily', time: '09:00', timeZone: 'UTC' }, nextRunAt: '2026-10-20T09:00:00Z', runs: [] };
+  data.workspaces.push({ id: 'ws-two', name: 'Two', directories: ['/other'] });
+  data.scheduledTasks = [task, { ...task, id: 'running', runs: [{ id: 'run', trigger: 'manual', status: 'running', output: '', startedAt: '2026-10-19T09:00:00Z' }] },
+    { ...task, id: 'other', workspaceId: 'ws-two' }];
+  mocks.files.set(file, JSON.stringify(data));
+  return data.scheduledTasks as IScheduledTask[];
+};
 beforeEach(() => {
   vi.resetAllMocks();
   mocks.events = [];
@@ -35,6 +46,20 @@ beforeEach(() => {
   mocks.removeLayout.mockImplementation(async () => { mocks.events.push('layout'); });
 });
 describe('workspace deletion with original sessions', () => {
+  it.each([true, false])('cleans idle tasks but retains running claims when deleteSessions=%s', async (deleteSessions) => {
+    const tasks = seedScheduledTasks();
+    await deleteWorkspace('ws-one', deleteSessions);
+    expect(JSON.parse(mocks.files.get(file)!).scheduledTasks).toEqual([
+      { ...tasks[1], enabled: false, nextRunAt: null }, tasks[2],
+    ]);
+  });
+  it('preserves scheduled tasks if workspace deletion fails', async () => {
+    const tasks = seedScheduledTasks();
+    mocks.cleanup.mockRejectedValue(new Error('cleanup failed'));
+    await expect(deleteWorkspace('ws-one')).rejects.toThrow('cleanup failed');
+    expect(JSON.parse(mocks.files.get(file)!).scheduledTasks).toEqual(tasks);
+    expect(workspaces()).toHaveLength(2);
+  });
   it('collects IDs before closing tabs and deletes originals before removing workspace metadata', async () => {
     expect(await deleteWorkspace('ws-one')).toBe(true);
     expect(mocks.events).toEqual(['collect', 'kill', 'cleanup', 'layout']);

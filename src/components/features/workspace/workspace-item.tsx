@@ -1,6 +1,6 @@
 import ContextMenuSettingsButton from "@/components/ui/context-menu-settings-button";
 import { useCallback, useEffect, useId, useMemo, useState, memo } from 'react';
-import { Pencil, Trash2, FolderPlus, FolderMinus, Folder, GitBranch, ChevronDown, ChevronRight } from 'lucide-react';
+import { Clock, Pencil, Trash2, FolderPlus, FolderMinus, Folder, GitBranch, ChevronDown, ChevronRight } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -21,6 +21,7 @@ import useInlineEdit from '@/hooks/use-inline-edit';
 import WorkspaceStatusIndicator from '@/components/features/workspace/workspace-status-indicator';
 import CreateWorktreeDialog from '@/components/features/workspace/create-worktree-dialog';
 import WorktreeTreeDialog from '@/components/features/workspace/worktree-tree-dialog';
+import ScheduledTasksDialog from '@/components/features/workspace/scheduled-tasks-dialog';
 import WorkspaceTreeGuides, { WORKSPACE_TREE_INDENT } from '@/components/features/workspace/workspace-tree-guides';
 import WorktreeManagementButton from '@/components/features/workspace/worktree-management-button';
 import { getWorkspaceTreePosition } from '@/lib/workspace-order';
@@ -59,6 +60,8 @@ const WorkspaceItem = ({
   const tw = useTranslations('workspace.worktree');
   const [creatingWorktree, setCreatingWorktree] = useState(false);
   const [showTree, setShowTree] = useState(false);
+  const [showScheduledTasks, setShowScheduledTasks] = useState(false);
+  const scheduled = useTranslations('workspace.scheduledTasks');
   const workspaces = useWorkspaceStore((s) => s.workspaces);
   const [menuOpen, setMenuOpen] = useState(false);
   const statusId = useId();
@@ -196,6 +199,9 @@ const WorkspaceItem = ({
         </div>
       </ContextMenuTrigger>
       <ContextMenuContent>
+        <ContextMenuItem onClick={() => setShowScheduledTasks(true)}>
+          <Clock className="mr-2 h-3.5 w-3.5" />{scheduled('title')}
+        </ContextMenuItem>
         <ContextMenuItem onClick={() => setCreatingWorktree(true)}>
           <GitBranch className="mr-2 h-3.5 w-3.5" />{tw('create')}
         </ContextMenuItem>
@@ -251,6 +257,7 @@ const WorkspaceItem = ({
     {creatingWorktree && <CreateWorktreeDialog workspace={workspace}
       onClose={() => setCreatingWorktree(false)} onCreated={onSelect} />}
     {showTree && <WorktreeTreeDialog root={workspace} onClose={() => setShowTree(false)} onSelect={onSelect} />}
+    {showScheduledTasks && <ScheduledTasksDialog workspace={workspace} onClose={() => setShowScheduledTasks(false)} />}
     </>
   );
 };
