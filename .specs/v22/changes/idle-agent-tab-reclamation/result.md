@@ -58,5 +58,13 @@ git diff --check
 - 对照本需求、`local-agent-process-management/spec.md` 和 `auto-upgrade-detection/spec.md`，解决 11 个 `messages/*/settings.json` 的同位置新增冲突。保留本分支 `processes`、`idleTabs` 和合入分支 `appUpdate`，没有覆盖任何一方业务约定。
 - 逐项比较 Git 三方版本，双方全部原有词条和值均保留；11 份 JSON 解析、重复键检测和语言键集合一致性检查通过。设置入口、服务启动及 Sessions 导航的自动合并结果经检查保留双方功能。
 - 本次运行相关回归：`pnpm exec vitest run tests/unit/lib/idle-tab*.test.ts tests/unit/lib/agent-process*.test.ts tests/unit/lib/app-update*.test.ts tests/unit/lib/session-workflow-ui.test.ts tests/unit/lib/session-tags-ui.test.ts`，11 个文件、101 项全部通过。
-- 设置对话框、通知面板、三个设置组件及 server.ts 的 ESLint 通过；`git diff --cached --check` 通过。仅合并词条，未修改界面结构或运行逻辑，本次未重复生产构建或浏览器验证。
+- 完整 `pnpm tsc --noEmit` 通过；设置对话框、通知面板、三个设置组件及 server.ts 的 ESLint 通过；`git diff --cached --check` 通过。仅合并词条，未修改界面结构或运行逻辑，本次未重复生产构建或浏览器验证。
 - 冲突文件已加入暂存区，`git ls-files -u` 为空；不创建合并提交或推送。
+
+## PR #71 评审修复（2026-10-20）
+
+- 对应[评审问题](https://github.com/stirp/purplemux-improved/pull/71#discussion_r4315906335)：旧流程销毁 tmux 后才检查存活进程，失败时保留布局无法保留可重连终端。本节修正此前实施记录的关闭顺序。
+- 新增 `idle-agent-shutdown.ts`，仅向已核验的末端 Agent 发送 SIGTERM，最多等待约 10 秒确认 Agent 与已知 Node 包装器退出。等待期间不终止 shell、不执行 tmux kill-session、不升级 SIGKILL；超时、查询失败、身份复用或新增进程均中止后续销毁。发送前后均检查进程树，等待后再次保护新输入。
+- `killSession` 在保护回调完成后重新确认 pane 身份，防止等待期间终端被替换。普通显式关闭语义不变；仅闲置回收在回调中执行上述退出确认。
+- 本次相关回归：12 个文件、82 项通过。新增测试调用真实 `killSession` 和真实退出协调逻辑，模拟进程信号与 tmux 命令，断言拒绝 SIGTERM/包装器存活时实际 tmux 会话未销毁，成功路径先观察 Agent 退出再销毁。
+- 完整 `pnpm tsc --noEmit`、7 个修改/新增 TS 文件 ESLint、`git diff --check` 通过。`pnpm build` 通过（Next.js 编译、静态页面生成、post-build、服务端 tsup 均完成）。本次未执行浏览器和真实进程停止；UI/API 形状未改变。

@@ -9,6 +9,7 @@ import { addTabToPane, collectPanes, readLayoutFile, resolveLayoutFile, patchTab
 import { checkTerminalProcess, getSessionCwd, getSessionPanePid, hasSession, sendKeys } from '@/lib/tmux';
 import { getProvider } from '@/lib/providers';
 import { getStatusManager } from '@/lib/status-manager';
+import { getLastTerminalInput } from '@/lib/terminal-input-activity';
 import type { IAgentProcessIdentity, IAgentProcessTransfer, TLocalAgent } from '@/types/agent-process';
 
 const g = globalThis as unknown as { __ptAgentProcessLock?: Promise<unknown> };
@@ -91,13 +92,24 @@ const runAction = async (action: 'stop' | 'adopt', identity: IAgentProcessIdenti
   const command = await provider.buildResumeCommand(target.sessionId, { workspaceId: targetWorkspace.id });
   const panePid = await getSessionPanePid(target.tmuxSession);
   if (!panePid) throw fail('Prepared terminal is unavailable');
+  const lastInput = getLastTerminalInput(target.tmuxSession);
+  const validateTarget = async () => {
+    const latest = await readLayoutFile(resolveLayoutFile(targetWorkspace.id));
+    const tab = latest && collectPanes(latest.root).find((item) => item.id === pane.id)?.tabs.find((item) => item.id === target.tabId);
+    if (!tab || tab.sessionName !== target.tmuxSession || (tab.panelType && tab.panelType !== 'terminal')
+      || !(await hasSession(target.tmuxSession)) || await getSessionPanePid(target.tmuxSession) !== panePid
+      || !(await checkTerminalProcess(target.tmuxSession)).isSafe
+      || await getSessionCwd(target.tmuxSession) !== cwd
+      || getLastTerminalInput(target.tmuxSession) !== lastInput) {
+      throw fail('Prepared terminal changed or is busy; no resume command was sent');
+    }
+  };
   const alreadyRunning = await provider.isAgentRunning(panePid);
   if (!alreadyRunning) {
     if (target.phase === 'dispatching') {
       throw fail('Resume delivery is uncertain; open the prepared terminal to check startup before retrying');
     }
-    const check = await checkTerminalProcess(target.tmuxSession);
-    if (!check.isSafe || await getSessionCwd(target.tmuxSession) !== cwd) throw fail('Prepared terminal is busy or its directory changed');
+    await validateTarget();
     // A previously prepared transfer may have changed sessions before retrying.
     if (source && (source.session?.sessionId !== target.sessionId || source.cwd !== cwd)) {
       throw fail('Source session changed; the original process was not stopped');
@@ -105,8 +117,16 @@ const runAction = async (action: 'stop' | 'adopt', identity: IAgentProcessIdenti
     await stopAndWait(identity, providerId, target);
     target.phase = 'stopped';
     await saveAgentProcessTransfer(targetWorkspace.id, target);
+    await validateTarget();
     target.phase = 'dispatching';
     await saveAgentProcessTransfer(targetWorkspace.id, target);
+    try {
+      await validateTarget();
+    } catch (error) {
+      target.phase = 'stopped';
+      await saveAgentProcessTransfer(targetWorkspace.id, target);
+      throw error;
+    }
     // A lost tmux response must not cause a second resume command on retry.
     await sendKeys(target.tmuxSession, command);
     await delay(500);

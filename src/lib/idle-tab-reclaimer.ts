@@ -9,6 +9,7 @@ import { getProviderByPanelType } from '@/lib/providers';
 import { getStatusManager } from '@/lib/status-manager';
 import { getInputQueue } from '@/lib/input-queue-server';
 import { getLastTerminalInput } from '@/lib/terminal-input-activity';
+import { stopIdleAgentChain } from '@/lib/idle-agent-shutdown';
 import { createLogger } from '@/lib/logger';
 import type { IIdleTabCandidate, IIdleTabPreview, IIdleTabResult, TIdleTabPolicy, TIdleTabTarget } from '@/lib/idle-tab-policy';
 import type { ITab } from '@/types/terminal';
@@ -138,6 +139,10 @@ const reclaim = async (targets: TIdleTabTarget[], policy: TIdleTabPolicy): Promi
             || JSON.stringify(match.processes) !== JSON.stringify(candidate.processes)
             || getLastTerminalInput(tab.sessionName) > target.lastActivityAt
             || getInputQueue().hasPendingInput(tab.id)) throw new Error('Tab changed before close');
+          await stopIdleAgentChain(candidate.processes, candidate.providerId);
+          if (getLastTerminalInput(tab.sessionName) > target.lastActivityAt || getInputQueue().hasPendingInput(tab.id)) {
+            throw new Error('New input during shutdown; terminal retained');
+          }
         },
         afterClose: async () => {
           const [remainingPanes, remainingProcesses] = await Promise.all([getAllPanesInfo({ strict: true }), listUserProcesses()]);

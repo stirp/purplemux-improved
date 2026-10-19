@@ -1,5 +1,21 @@
 # 验证记录
 
+## PR #71 目标终端重检（2026-10-20）
+
+- 对应[评审问题](https://github.com/stirp/purplemux-improved/pull/71#discussion_r4315906343)：等待原进程退出期间目标可能被其他浏览器使用，旧的 shell/目录检查不足以保护投递。
+- 复用目标校验函数，在停止前、stopped 保存后、dispatching 保存后分别核验目标布局映射、pane PID、前台 shell、工作目录和最近输入。停止后校验失败不投递，保留 stopped；dispatching 已保存但明确未发送时回写 stopped。真正发送失败仍保留 dispatching，避免重复投递。
+- 新增参数化回归：目标变忙、目录变化、pane 替换、布局移除、新输入均不发送且不绑定；恢复目标后重试只发送一次，不重复建 Tab/停止源进程。另覆盖 dispatching 写入期间目标变化后的回退。
+- 本次执行以下测试命令，12 个文件、82 项全部通过，包含闲置回收的另一项评审修复：
+
+```bash
+pnpm exec vitest run tests/unit/lib/idle-agent-shutdown.test.ts tests/unit/lib/idle-tab*.test.ts tests/unit/lib/agent-process*.test.ts tests/unit/lib/local-agent*.test.ts tests/unit/lib/process-utils-list.test.ts tests/unit/lib/tmux-paste.test.ts tests/unit/lib/layout-empty-workspace.test.ts tests/unit/lib/workspace-delete.test.ts
+pnpm tsc --noEmit
+pnpm exec eslint src/lib/idle-agent-shutdown.ts src/lib/idle-tab-reclaimer.ts src/lib/agent-process-manager.ts src/lib/tmux.ts tests/unit/lib/idle-agent-shutdown.test.ts tests/unit/lib/idle-tab-reclaimer.test.ts tests/unit/lib/agent-process-manager.test.ts
+git diff --check
+```
+
+- 完整类型检查、ESLint、差异检查通过，`pnpm build` 通过（Next.js 编译、静态页面生成、post-build、服务端 tsup 均完成）。信号与 tmux 在测试中模拟，未操作真实用户进程，未执行 macOS 实机和浏览器验证。没有 UI/API 形状变更；跨进程最终检查与投递不宣称原子冻结外部输入。
+
 ## 自动化检查
 
 2026-10-19 在当前工作树执行：

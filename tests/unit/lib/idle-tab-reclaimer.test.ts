@@ -5,7 +5,7 @@ import type { ITab } from '@/types/terminal';
 const m = vi.hoisted(() => ({
   policy: vi.fn(), save: vi.fn(), retain: vi.fn(), workspaces: vi.fn(), layout: vi.fn(), panes: vi.fn(),
   processes: vi.fn(), argv: vi.fn(), snapshot: vi.fn(), states: vi.fn(), pending: vi.fn(), remove: vi.fn(),
-  unregister: vi.fn(), stat: vi.fn(), activity: vi.fn(), events: [] as string[], alive: true,
+  unregister: vi.fn(), stat: vi.fn(), activity: vi.fn(), graceful: vi.fn(), events: [] as string[], alive: true,
 }));
 vi.mock('fs/promises', () => ({ default: { stat: m.stat } }));
 vi.mock('@/lib/workspace-store', () => ({ getWorkspaces: m.workspaces, getIdleTabPolicy: m.policy, saveIdleTabPolicy: m.save, retainReclaimedSession: m.retain }));
@@ -16,6 +16,7 @@ vi.mock('@/lib/local-agent-session', () => ({ classifyAgentArgv: (args: string[]
 vi.mock('@/lib/status-manager', () => ({ getStatusManager: () => ({ getAllForClient: m.states, removeTab: m.unregister }) }));
 vi.mock('@/lib/input-queue-server', () => ({ getInputQueue: () => ({ hasPendingInput: m.pending }) }));
 vi.mock('@/lib/terminal-input-activity', () => ({ getLastTerminalInput: m.activity }));
+vi.mock('@/lib/idle-agent-shutdown', () => ({ stopIdleAgentChain: m.graceful }));
 vi.mock('@/lib/providers', () => ({ getProviderByPanelType: (type: string) => type === 'codex-cli' ? ({
   id: 'codex', readSessionId: (tab: ITab) => tab.agentState?.sessionId,
   readJsonlPath: () => '/session.jsonl', isValidSessionId: () => true,
@@ -127,6 +128,24 @@ describe('idle agent tab reclamation', () => {
     expect(result.skipped[0].reason).toContain('not stopped');
     expect(m.events).not.toContain('remove');
     expect(m.unregister).not.toHaveBeenCalled();
+  });
+  it('does not destroy the terminal when graceful Agent shutdown fails', async () => {
+    const selected = await targets();
+    m.graceful.mockRejectedValue(new Error('Agent processes have not stopped; terminal and tab retained'));
+    const result = await reclaimIdleTabs(selected, policy);
+    expect(result.reclaimed).toEqual([]);
+    expect(m.alive).toBe(true);
+    expect(m.events).toEqual(['retain']);
+    expect(m.unregister).not.toHaveBeenCalled();
+  });
+  it('preserves the shell if new input arrives while waiting for Agent exit', async () => {
+    const selected = await targets();
+    m.graceful.mockImplementation(async () => { m.activity.mockReturnValue(now); });
+    const result = await reclaimIdleTabs(selected, policy);
+    expect(result.reclaimed).toEqual([]);
+    expect(result.skipped[0].reason).toContain('New input');
+    expect(m.alive).toBe(true);
+    expect(m.events).not.toContain('stop');
   });
   it('serializes duplicate requests so only one stops the terminal', async () => {
     const selected = await targets();

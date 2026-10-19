@@ -85,6 +85,10 @@ export const killSession = async (name: string, beforeSignal?: () => Promise<voi
   log.debug(`killSession start: ${name}`);
   const panePid = await getSessionPanePid(name);
   await beforeSignal?.();
+  if (beforeSignal) {
+    if (!(await hasSession(name))) return;
+    if (await getSessionPanePid(name) !== panePid) throw new Error('Terminal pane changed before close');
+  }
   if (panePid) {
     try {
       log.debug(`SIGTERM → process group ${panePid}: ${name}`);

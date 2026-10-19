@@ -6,9 +6,10 @@ const mocks = vi.hoisted(() => ({
   create: vi.fn(), save: vi.fn(), add: vi.fn(), layout: vi.fn(), patch: vi.fn(), bind: vi.fn(),
   safe: vi.fn(), targetCwd: vi.fn(), panePid: vi.fn(), exists: vi.fn(), send: vi.fn(),
   preflight: vi.fn(), build: vi.fn(), running: vi.fn(), detect: vi.fn(), stat: vi.fn(), access: vi.fn(),
-  register: vi.fn(), mark: vi.fn(), events: [] as string[], alive: true,
+  register: vi.fn(), mark: vi.fn(), activity: vi.fn(), events: [] as string[], alive: true,
 }));
 vi.mock('timers/promises', () => ({ setTimeout: async () => {} }));
+vi.mock('@/lib/terminal-input-activity', () => ({ getLastTerminalInput: mocks.activity }));
 vi.mock('fs/promises', () => ({ default: { stat: mocks.stat, access: mocks.access, constants: { R_OK: 4 } } }));
 vi.mock('@/lib/local-agent-processes', () => ({ scanLocalAgentProcesses: mocks.scan, ancestorPids: () => [] }));
 vi.mock('@/lib/process-utils', () => ({ listUserProcesses: mocks.processes, getProcessArgv: mocks.argv, getProcessCwd: mocks.cwd }));
@@ -28,6 +29,7 @@ let kill: ReturnType<typeof vi.spyOn>;
 beforeEach(() => {
   vi.resetAllMocks();
   mocks.events = []; mocks.alive = true;
+  mocks.activity.mockReturnValue(0);
   mocks.workspaces = [{ id: 'ws', name: 'Repo', directories: ['/repo'] }];
   mocks.scan.mockImplementation(async () => ({ processes: mocks.alive ? [source] : [], transfers: [] }));
   mocks.processes.mockImplementation(async () => mocks.alive ? [row] : []);
@@ -49,6 +51,39 @@ beforeEach(() => {
 afterEach(() => { kill.mockRestore(); });
 
 describe('stop and resume external agents', () => {
+  it.each(['busy', 'cwd', 'pane', 'removed', 'input'])('rechecks target %s after source shutdown and leaves a retryable stopped transfer', async (change) => {
+    kill.mockImplementation(() => {
+      mocks.alive = false;
+      if (change === 'busy') mocks.safe.mockResolvedValue({ isSafe: false });
+      if (change === 'cwd') mocks.targetCwd.mockResolvedValue('/other');
+      if (change === 'pane') mocks.panePid.mockResolvedValue(99);
+      if (change === 'removed') mocks.layout.mockResolvedValue({ root: [] });
+      if (change === 'input') mocks.activity.mockReturnValue(123);
+      return true;
+    });
+    await expect(manageAgentProcess('adopt', identity)).rejects.toThrow('Prepared terminal changed');
+    expect(mocks.send).not.toHaveBeenCalled();
+    expect(mocks.bind).not.toHaveBeenCalled();
+    expect(mocks.workspaces[0].agentProcessTransfers?.[0].phase).toBe('stopped');
+    expect(mocks.events).not.toContain('save:dispatching');
+    mocks.safe.mockResolvedValue({ isSafe: true }); mocks.targetCwd.mockResolvedValue('/repo');
+    mocks.panePid.mockResolvedValue(8);
+    mocks.layout.mockResolvedValue({ root: [{ id: 'pane', tabs: [{ id: 'tab', sessionName: 'target' }] }] });
+    await manageAgentProcess('adopt', identity);
+    expect(mocks.send).toHaveBeenCalledTimes(1);
+    expect(mocks.add).toHaveBeenCalledTimes(1);
+    expect(kill).toHaveBeenCalledTimes(1);
+  });
+  it('returns to stopped if the target changes while dispatching is persisted, without sending', async () => {
+    const save = mocks.save.getMockImplementation()!;
+    mocks.save.mockImplementation(async (id, transfer) => {
+      await save(id, transfer);
+      if (transfer.phase === 'dispatching') mocks.safe.mockResolvedValue({ isSafe: false });
+    });
+    await expect(manageAgentProcess('adopt', identity)).rejects.toThrow('Prepared terminal changed');
+    expect(mocks.send).not.toHaveBeenCalled();
+    expect(mocks.workspaces[0].agentProcessTransfers?.[0].phase).toBe('stopped');
+  });
   it('persists preparation before stopping and resumes the exact session only after exit', async () => {
     expect(await manageAgentProcess('adopt', identity)).toEqual({ workspaceId: 'ws', tabId: 'tab' });
     expect(mocks.events).toEqual(['save:prepared', 'kill', 'save:stopped', 'save:dispatching', 'send', 'save:started']);
