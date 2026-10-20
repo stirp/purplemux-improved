@@ -214,6 +214,7 @@ describe('session input queue', () => {
     queue.remove(target.tabId, '1');
     expect(deliver).toHaveBeenCalledTimes(1);
     expect(queue.snapshot(target.tabId).messages).toHaveLength(1);
+    expect(queue.snapshot(target.tabId).canceledIds).toEqual([]);
     finish();
     await first;
     expect(queue.snapshot(target.tabId).messages).toHaveLength(0);

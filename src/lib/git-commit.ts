@@ -59,9 +59,14 @@ const assertNoOperation = async (directory: string) => {
 const withIndexCopy = async <T>(index: string, action: (copy: string) => Promise<T>) => {
   const copy = path.join(path.dirname(index), `purplemux-commit-${randomUUID()}.index`);
   try {
-    await fs.copyFile(index, copy).catch((error: NodeJS.ErrnoException) => {
-      if (error.code !== 'ENOENT') throw error;
-    });
+    try {
+      const stat = await fs.stat(index);
+      await fs.copyFile(index, copy);
+      // Git uses the index mtime to detect racily clean files; a newer copy can hide changes.
+      await fs.utimes(copy, stat.atime, stat.mtime);
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error;
+    }
     return await action(copy);
   } finally {
     await fs.rm(copy, { force: true });

@@ -92,6 +92,24 @@ afterEach(async () => {
 });
 
 describe('Web input native menus', () => {
+  it.each([false, true])('retains the bubble when DELETE returns success but delivery has already started (mobile=%s)', async (mobile) => {
+    mocks.mobile = mobile;
+    const add = vi.fn(() => 'input-racing');
+    const remove = vi.fn();
+    const message = { id: 'racing', text: 'still delivering', attachments: [] };
+    mocks.queue.messages = [message];
+    mocks.queue.remove.mockResolvedValueOnce(undefined);
+    await render({ onAddPendingMessage: add, onRemovePendingMessage: remove });
+    // The UI still has the previous idle snapshot when the server refuses cancellation.
+    await act(async () => (container.querySelector('[aria-label="cancelQueuedMessage"]') as HTMLButtonElement).click());
+    expect(mocks.queue.remove).toHaveBeenCalledWith(message.id);
+    expect(remove).not.toHaveBeenCalled();
+    mocks.queue.sending = true;
+    await render({ onAddPendingMessage: add, onRemovePendingMessage: remove });
+    expect(add).toHaveBeenLastCalledWith(message.text, expect.objectContaining({ deliveryState: 'sending' }));
+    expect(remove).not.toHaveBeenCalled();
+  });
+
   it.each([false, true])('syncs attempts after pending messages and after rapid dequeue (mobile=%s)', async (mobile) => {
     mocks.mobile = mobile;
     const calls: string[] = [];
@@ -152,6 +170,10 @@ describe('Web input native menus', () => {
     await render({ onAddPendingMessage: add, onRemovePendingMessage: remove });
     expect(add).toHaveBeenLastCalledWith('new message', expect.objectContaining({ deliveryState: 'queued', queueMessage: message }));
     await act(async () => (container.querySelector('[aria-label="cancelQueuedMessage"]') as HTMLButtonElement).click());
+    expect(remove).not.toHaveBeenCalled();
+    mocks.queue.messages = [];
+    mocks.queue.canceledIds = [message.id];
+    await render({ onAddPendingMessage: add, onRemovePendingMessage: remove });
     expect(remove).toHaveBeenCalledWith(`input-${message.id}`);
   });
   it.each([false, true])('hands Codex $ to the terminal without submitting, then supports manual return (mobile=%s)', async (mobile) => {

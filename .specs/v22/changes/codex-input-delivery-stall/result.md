@@ -225,3 +225,31 @@ pnpm exec vitest run tests/unit/lib/codex-input-receipt.test.ts tests/unit/lib/i
 - `git diff --check`、改动 JSON 解析及需求文档链接检查：通过。
 - `pnpm build`：通过 Next.js 类型检查与编译、24 页生成、post-build 及 tsup；仍有已有的多 lockfile 导致 workspace root 推断警告。
 - 未执行真实浏览器、手机或运行中 Codex TUI 验收；保持既有现场复现限制。未提交、发布或重启应用。
+
+## PR #79 审查及 CI 修复
+
+本轮核对 [PR #79](https://github.com/stirp/purplemux-improved/pull/79)，本地 HEAD 与远端审查提交均为 `444e229448cda76fe6182190b8b2aa84320848b9`，开始时工作区干净。
+
+### 发现与实施
+
+- [取消竞态审查意见](https://github.com/stirp/purplemux-improved/pull/79#discussion_r4328495928)：客户端最后一次轮询后，服务端可能开始发送；此时 `InputQueue.remove` 不取消正在投递的首项，但 DELETE 仍返回 200。删除 WebInputBar 中请求成功后无条件移除占位的回调，统一由已有 `canceledIds` 快照处理真实取消（KISS/DRY），不再把 HTTP 成功当作业务取消成功。
+- 先添加桌面/移动模式竞态测试，修改前两项均失败：200 返回后错误调用 `onRemovePendingMessage`。修复后测试验证气泡保留并继续显示 sending；成功取消测试需收到 `canceledIds` 才删除占位，服务端并发投递测试断言被拒绝的取消不产生取消记录。
+- [CI 失败运行](https://github.com/stirp/purplemux-improved/actions/runs/39471324184)：`session-tags-ui.test.ts` 拖拽句柄焦点断言失败，以及 `codex-session-records-deletion.test.ts` 未捕获的 `EACCES: mkdir '/cascade-test'`。前者的真实 Base UI 初始焦点由 rAF 延迟设置，与测试立即聚焦句柄竞争；测试在拖拽前等待该帧，保留真实 Dialog、KeyboardSensor、焦点及保存冲突断言。后者模拟 os.homedir 与 fs/promises，但真实 pino transport 线程仍写宿主路径；增加 logger mock，不放宽删除事务断言、不创建根目录或变更权限。
+- 标签管理和会话删除仅修正测试时序及隔离；产品逻辑不变。本需求验收 16–17 记录本轮约定，关联既有标签浏览、会话删除规格。
+
+### 本轮验证
+
+- 定向命令 `pnpm exec vitest run tests/unit/lib/native-command-input.test.ts tests/unit/lib/input-queue.test.ts tests/unit/lib/session-tags-ui.test.ts tests/unit/lib/codex-session-records-deletion.test.ts`：72 项通过。
+- `pnpm lint`：全仓通过；`pnpm exec tsc --noEmit`：完整类型检查通过。
+- 首轮将上述静态检查与 `pnpm test` 并行执行，本地 4 核机器负载约 14，Vitest 1921 项通过、16 项失败、14 项跳过。失败包含 UI/压力用例超时、后续连锁失败及 Git 提交测试的 `noChanges`；这次运行不能作为通过证据。
+- 静态检查结束后独立执行 `pnpm test`：Vitest 1936 项通过、1 项失败、14 项跳过（203 个文件通过、1 个失败、2 个跳过）。原 CI 焦点失败及 `/cascade-test` 权限错误均未再出现。剩余失败为 `git-commit.test.ts` 的 `supports the initial commit and worktrees with their own index`，在提交复核阶段报 `noChanges`，因此脚本未继续 CLI 测试。
+- 定向排查 `pnpm exec vitest run tests/unit/lib/git-commit.test.ts`：22 项通过。相关 Git 产品代码及测试与 HEAD 一致，本轮未修改；全量运行与单独运行结果不同，根因尚未确定，不能宣称全量检查通过，也未通过修改断言、超时或自动重试掩盖此问题。
+- 补跑 `pnpm test:cli`：153 项通过，无失败、跳过或取消。
+- 本地 Node v22.14.0、Git 2.55.0；CI 配置及 package.json 要求 Node 24。本轮验证存在运行时版本差异，不能代替远端 Node 24 验证。
+- `git diff --check`：通过。
+- 本轮产品变更仅移除取消成功后的无条件占位删除，已用真实 WebInputBar 的桌面/移动 DOM 测试覆盖；未另行执行构建、浏览器或真实 TUI 验收，不沿用前轮构建结果作为本轮证据。
+- 本轮未向 GitHub 发送评论或标记讨论已解决；未提交、推送、发布或重启应用，远端 PR/CI 状态仍是原提交的结果。
+
+### 后续全量测试修复
+
+用户进一步要求修复全量测试问题后，已在[Git 索引时间边界增量规格](../git-index-copy-timestamp/spec.md)中稳定复现并修复私有索引漏检。最新 `pnpm test` 完整通过：Vitest 1939 项通过、14 项跳过，CLI 153 项通过；完整 TypeScript、全仓 ESLint 通过。详见[本轮验证证据](../git-index-copy-timestamp/result.md)，上述初次失败记录保留为排查历史。

@@ -634,7 +634,6 @@ const WebInputBar = ({
                         disabled={queue.sending && index === 0}
                         aria-label={t('cancelQueuedMessage')}
                         onClick={() => { void queue.remove(message.id)
-                          .then(() => onRemovePendingMessage?.(`input-${message.id}`))
                           .catch((error) => toast.error(error instanceof Error && error.message ? error.message : t('queueRequestFailed'))); }}
                       >
                         <X size={12} />

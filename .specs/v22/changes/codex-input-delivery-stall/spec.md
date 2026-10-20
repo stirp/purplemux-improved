@@ -5,6 +5,8 @@ status: DETAILED
 created: 2026-10-20
 updated: 2026-10-21
 depends_on:
+  - ../session-tag-browsing/spec.md
+  - ../codex-session-deletion/spec.md
   - ../../../v20/features/queued-input/spec.md
   - ../../../v20/features/agent-runtime/spec.md
   - ../../../v20/features/agent-progress/spec.md
@@ -57,5 +59,7 @@ depends_on:
 13. Codex 图片身份验证成功后，正文匹配兼容原生前缀 `[Image #1]`（多图按顺序编号），包含纯图片输入；不改写展示正文，不删除用户正文中的字面标记，不放宽图片身份或普通文本匹配。
 14. 替代客户端以 createdAt 确认队列消息的条件：只能使用服务端投递尝试时间。尚未尝试投递的消息不能被任何原生记录确认，包括刷新、无缓存新客户端及 init/append/快照乱序；没有尝试元数据的旧快照保持待确认，不回退到入队时间。
 15. 服务端快照保留已开始尝试的消息 ID 与时间，成功出队后也继续提供；正文不额外留存。该元数据与队列采用同一进程生命周期，Tab 消失后清理。桌面和移动端同步投递边界；记录早于尝试时间时不能确认，记录或尝试元数据后到时应原位合并。
+16. PR #79 取消竞态：DELETE 请求成功不代表消息已取消，待确认气泡只随服务端 `canceledIds` 移除。如果上次轮询后服务端已经开始投递并拒绝取消，即使 API 返回 200，也保留气泡直到真实回执确认。
+17. PR #79 CI 修复：标签排序测试在弹窗初始焦点完成后操作真实 KeyboardSensor，保留焦点、拖拽与冲突断言；会话删除存储测试隔离真实日志 transport，模拟文件路径不能写入宿主文件系统。仅修正测试时序和隔离，不改变关联标签浏览、删除规格中的产品行为，不以降低断言、全局串行或自动重试规避失败。执行标准 `pnpm lint`、完整类型检查及 `pnpm test`（含 CLI）。
 
 见[任务](./task.md)和[排查及验证记录](./result.md)。
