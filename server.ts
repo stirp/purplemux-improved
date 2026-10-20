@@ -32,6 +32,7 @@ import { createLogger } from './src/lib/logger';
 import { getScheduledTaskScheduler } from './src/lib/scheduled-task-scheduler';
 import pkg from './package.json';
 import { initAppUpdates } from './src/lib/app-update-server';
+import { createDevRequestHandler } from './src/lib/dev-request-handler';
 
 const log = createLogger('server');
 const dev = process.env.NODE_ENV !== 'production';
@@ -222,13 +223,13 @@ const startDev = async (port: number, appDir: string, bindHost: string): Promise
   await app.prepare();
 
   const upgrade = app.getUpgradeHandler();
-  const server = createServer((req, res) => {
+  const server = createServer(createDevRequestHandler((req, res) => {
     if (!isRequestAllowed(req.socket.remoteAddress)) {
       rejectRequest(res);
       return;
     }
-    handle(req, res);
-  });
+    return handle(req, res);
+  }, (err) => log.error({ err }, 'Development HTTP request failed')));
 
   const wsServers = createWsServers();
 

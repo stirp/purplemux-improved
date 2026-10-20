@@ -10,7 +10,7 @@ import { isRootCodexHook } from '@/lib/providers/codex/hook-session';
 
 const log = createLogger('hooks');
 
-const handleClaudeHook = (req: NextApiRequest, res: NextApiResponse) => {
+const handleClaudeHook = (req: NextApiRequest, res: NextApiResponse): void => {
   const { event, session, notificationType } = req.body ?? {};
   if (typeof event === 'string' && event !== 'poll' && typeof session === 'string' && session) {
     const type = typeof notificationType === 'string' && notificationType ? notificationType : undefined;
@@ -27,19 +27,21 @@ const handleClaudeHook = (req: NextApiRequest, res: NextApiResponse) => {
       log.error({ err }, 'Poll trigger failed');
     });
   }
-  return res.status(204).end();
+  res.status(204).end();
 };
 
-const handleCodexHook = async (req: NextApiRequest, res: NextApiResponse) => {
+const handleCodexHook = async (req: NextApiRequest, res: NextApiResponse): Promise<void> => {
   const tmuxSession = req.query.tmuxSession;
   if (typeof tmuxSession !== 'string' || !tmuxSession) {
     log.warn({ event: req.body?.hook_event_name }, 'codex hook missing tmuxSession');
-    return res.status(400).json({ error: 'missing tmuxSession' });
+    res.status(400).json({ error: 'missing tmuxSession' });
+    return;
   }
   const payload = req.body ?? {};
   if (!await isRootCodexHook(payload)) {
     log.debug({ tmuxSession, event: payload.hook_event_name }, 'ignoring unverified or subagent codex hook');
-    return res.status(204).end();
+    res.status(204).end();
+    return;
   }
   log.debug(
     { tmuxSession, event: payload.hook_event_name, source: payload.source },
@@ -52,7 +54,8 @@ const handleCodexHook = async (req: NextApiRequest, res: NextApiResponse) => {
     : null;
   if (!applied) {
     log.debug({ tmuxSession, event: payload.hook_event_name, reason: 'unknown-session' }, 'codex hook skipped');
-    return res.status(204).end();
+    res.status(204).end();
+    return;
   }
   if (translation.sessionInfo) {
     codexHookEvents.emit('session-info', tmuxSession, translation.sessionInfo);
@@ -64,19 +67,22 @@ const handleCodexHook = async (req: NextApiRequest, res: NextApiResponse) => {
   if (translation.event && shouldEmitCodexHookEvent(payload, applied.cliState)) {
     statusManager.handleProviderEvent('codex', tmuxSession, translation.event);
   }
-  return res.status(204).end();
+  res.status(204).end();
 };
 
-const handler = async (req: NextApiRequest, res: NextApiResponse) => {
+const handler = async (req: NextApiRequest, res: NextApiResponse): Promise<void> => {
   if (req.method !== 'POST') {
     res.setHeader('Allow', 'POST');
-    return res.status(405).json({ error: 'method not allowed' });
+    res.status(405).json({ error: 'method not allowed' });
+    return;
   }
   if (!verifyCliToken(req)) {
-    return res.status(403).json({ error: 'forbidden' });
+    res.status(403).json({ error: 'forbidden' });
+    return;
   }
   if (!isRequestAllowed(req.socket.remoteAddress)) {
-    return res.status(403).json({ error: 'forbidden' });
+    res.status(403).json({ error: 'forbidden' });
+    return;
   }
 
   const provider = typeof req.query.provider === 'string' ? req.query.provider : 'claude';

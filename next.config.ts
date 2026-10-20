@@ -11,6 +11,9 @@ const commitHash = (() => {
 })();
 
 const nextConfig: NextConfig = {
+  turbopack: {
+    root: __dirname,
+  },
   // Allow LAN access to dev assets and HMR without trusting arbitrary origins.
   allowedDevOrigins: [...new Set([
     ...(process.env.PURPLEMUX_ALLOWED_DEV_ORIGINS ?? '').split(/[,\s]+/).filter(Boolean),
