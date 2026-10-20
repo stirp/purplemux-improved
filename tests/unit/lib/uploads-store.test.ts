@@ -1,10 +1,30 @@
 import path from 'path';
-import { describe, expect, it } from 'vitest';
+import fs from 'fs/promises';
+import { createHash } from 'crypto';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   resolveUploadImagePath,
   uploadPathToImageUrl,
   UPLOADS_DIR,
+  getUploadImageHash,
 } from '@/lib/uploads-store';
+
+afterEach(() => vi.restoreAllMocks());
+
+describe('upload image identity', () => {
+  it('hashes uploaded bytes and rejects a symlink escaping the uploads root', async () => {
+    const file = path.join(UPLOADS_DIR, 'ws', 'tab', 'image.png');
+    const data = Buffer.from('image bytes');
+    const realpath = vi.spyOn(fs, 'realpath').mockResolvedValue(file);
+    vi.spyOn(fs, 'stat').mockResolvedValue({ size: data.length } as Awaited<ReturnType<typeof fs.stat>>);
+    const read = vi.spyOn(fs, 'readFile').mockResolvedValue(data);
+    expect(await getUploadImageHash(file)).toBe(createHash('sha256').update(data).digest('hex'));
+    realpath.mockResolvedValue('/outside/image.png');
+    await expect(getUploadImageHash(file)).rejects.toThrow('Invalid upload path');
+    expect(read).toHaveBeenCalledTimes(1);
+    expect(await getUploadImageHash('/outside/image.png')).toBeUndefined();
+  });
+});
 
 describe('uploadPathToImageUrl', () => {
   it('converts an uploaded image path to an API URL', () => {

@@ -1,3 +1,6 @@
+import type { IPendingUserMessageOptions } from '@/types/timeline';
+import type { IInputAttempt } from '@/lib/input-queue';
+import { inputAttachmentImageUrl } from '@/lib/input-message-match';
 import { useCallback, useEffect, useRef, useState, type ClipboardEvent, type DragEvent, type KeyboardEvent } from 'react';
 import { useTranslations } from 'next-intl';
 import { nanoid } from 'nanoid';
@@ -50,8 +53,9 @@ interface IWebInputBarProps {
   nativeCommandsActive?: boolean;
   onSend?: () => void;
   onOptimisticSend?: (text: string) => void;
-  onAddPendingMessage?: (text: string, options?: { autoHide?: boolean; attachmentPlaceholder?: boolean }) => string;
+  onAddPendingMessage?: (text: string, options?: IPendingUserMessageOptions) => string;
   onRemovePendingMessage?: (id: string) => void;
+  onSyncInputAttempts?: (attempts: IInputAttempt[]) => void;
   attachFilesRef?: React.MutableRefObject<((files: File[]) => Promise<boolean> | void) | undefined>;
 }
 
@@ -73,6 +77,9 @@ const WebInputBar = ({
   nativeCommandsActive = false,
   onSend,
   onOptimisticSend,
+  onAddPendingMessage,
+  onRemovePendingMessage,
+  onSyncInputAttempts,
   attachFilesRef,
 }: IWebInputBarProps) => {
   const t = useTranslations('terminal');
@@ -103,6 +110,20 @@ const WebInputBar = ({
   );
 
   const queue = useInputQueue(wsId, tabId);
+  useEffect(() => {
+    for (const id of queue.canceledIds ?? []) onRemovePendingMessage?.(`input-${id}`);
+    if (queue.error === 'sessionChanged') return;
+    for (const [index, message] of queue.messages.entries()) {
+      onAddPendingMessage?.(message.text || message.attachments.map(({ filename }) => filename).join(', '), {
+        autoHide: false,
+        queueMessage: message,
+        images: message.attachments.map(({ path }) => inputAttachmentImageUrl(path)).filter((url): url is string => !!url),
+        deliveryState: index === 0 && queue.error ? (queue.error === 'deliveryUnconfirmed' ? 'unconfirmed' : 'failed')
+          : index === 0 && queue.sending ? 'sending' : 'queued',
+      });
+    }
+    onSyncInputAttempts?.(queue.attempts ?? []);
+  }, [queue.messages, queue.sending, queue.error, queue.canceledIds, queue.attempts, onAddPendingMessage, onRemovePendingMessage, onSyncInputAttempts]);
   const dispatchingRef = useRef(false);
   const [interruptDialogOpen, setInterruptDialogOpen] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
@@ -180,12 +201,17 @@ const WebInputBar = ({
     setIsDispatching(true);
     const sentAttachments = [...attachments];
     const text = value;
+    const message = {
+      id: nanoid(), text, createdAt: Date.now(),
+      attachments: sentAttachments.map(({ path, filename }) => ({ path, filename })),
+    };
+    const pendingId = onAddPendingMessage?.(text || sentAttachments.map(({ filename }) => filename).join(', '), {
+      autoHide: false, queueMessage: message, deliveryState: 'sending',
+      images: sentAttachments.map(({ path }) => inputAttachmentImageUrl(path)).filter((url): url is string => !!url),
+    });
+    onSend?.();
     try {
-      await queue.enqueue({
-        id: nanoid(),
-        text,
-        attachments: sentAttachments.map(({ path, filename }) => ({ path, filename })),
-      });
+      await queue.enqueue(message);
       if (textareaRef.current?.value === text) {
         setValue('');
         if (tabId) clearInputDraft(tabId);
@@ -196,6 +222,7 @@ const WebInputBar = ({
       if (agentSessionId) registerPushTarget(agentSessionId);
       onSend?.();
     } catch (error) {
+      if (pendingId) onRemovePendingMessage?.(pendingId);
       toast.error(error instanceof Error && error.message ? error.message : t('queueRequestFailed'));
     } finally {
       dispatchingRef.current = false;
@@ -606,7 +633,9 @@ const WebInputBar = ({
                         className="p-1 hover:text-foreground disabled:opacity-30"
                         disabled={queue.sending && index === 0}
                         aria-label={t('cancelQueuedMessage')}
-                        onClick={() => { void queue.remove(message.id).catch((error) => toast.error(error instanceof Error && error.message ? error.message : t('queueRequestFailed'))); }}
+                        onClick={() => { void queue.remove(message.id)
+                          .then(() => onRemovePendingMessage?.(`input-${message.id}`))
+                          .catch((error) => toast.error(error instanceof Error && error.message ? error.message : t('queueRequestFailed'))); }}
                       >
                         <X size={12} />
                       </button>
@@ -615,7 +644,9 @@ const WebInputBar = ({
                 </ul>
                 {queue.error && (
                   <p className="mt-1 text-xs text-ui-red" role="alert">
-                    {t(queue.error === 'sessionChanged' ? 'queueSessionChanged' : 'queueSendFailed')}
+                    {t(queue.error === 'sessionChanged' ? 'queueSessionChanged'
+                      : queue.error === 'deliveryUnconfirmed' ? 'queueDeliveryUnconfirmed'
+                        : queue.error === 'terminalNotReady' ? 'queueTerminalNotReady' : 'queueSendFailed')}
                   </p>
                 )}
               </div>

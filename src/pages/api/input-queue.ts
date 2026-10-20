@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { findTab } from '@/lib/cli-utils';
 import { getInputQueue } from '@/lib/input-queue-server';
 import { getStatusManager } from '@/lib/status-manager';
+import { getUploadImageHash } from '@/lib/uploads-store';
 
 const messageSchema = z.object({
   id: z.string().min(1).max(100),
@@ -45,8 +46,18 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       if (!status || status.cliState === 'inactive' || status.cliState === 'unknown') {
         return res.status(409).json({ error: 'Agent is not ready' });
       }
+      let attachments = parsed.data.attachments;
+      if (provider === 'claude') {
+        try {
+          attachments = await Promise.all(attachments.map(async (attachment) => ({
+            ...attachment, imageHash: await getUploadImageHash(attachment.path),
+          })));
+        } catch {
+          return res.status(409).json({ error: 'Could not read uploaded image' });
+        }
+      }
       try {
-        queue.enqueue({ tabId, workspaceId, sessionName: found.tab.sessionName, provider, agentSessionId: status.agentSessionId }, parsed.data);
+        queue.enqueue({ tabId, workspaceId, sessionName: found.tab.sessionName, provider, agentSessionId: status.agentSessionId }, { ...parsed.data, attachments, createdAt: Date.now() });
       } catch {
         return res.status(409).json({ error: 'Queue is full' });
       }

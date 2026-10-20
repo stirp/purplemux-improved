@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { InputQueue, type IInputTarget, type IQueuedInput } from '@/lib/input-queue';
+import { InputDeliveryError, InputQueue, type IInputTarget, type IQueuedInput } from '@/lib/input-queue';
 import type { TCliState } from '@/types/timeline';
 
 const target: IInputTarget = { tabId: 'tab1', workspaceId: 'ws1', sessionName: 'session1', provider: 'codex', agentSessionId: 'agent1' };
@@ -12,6 +12,70 @@ const setup = (state: TCliState = 'busy') => {
 };
 
 describe('session input queue', () => {
+  it('keeps the original attempt boundary on explicit retry and cleans metadata when the tab disappears', async () => {
+    let exists = true;
+    const status = { cliState: 'idle' as const, workspaceId: 'ws1', agentSessionId: 'agent1', agentProviderId: 'codex' };
+    const deliver = vi.fn(async () => ({ completed: true }));
+    deliver.mockRejectedValueOnce(new InputDeliveryError('deliveryUnconfirmed'));
+    const queue = new InputQueue(() => exists ? status : undefined, deliver);
+    queue.enqueue(target, message('retry'));
+    await queue.tick();
+    const attempts = queue.snapshot(target.tabId).attempts;
+    await queue.flush(target.tabId, true);
+    expect(queue.snapshot(target.tabId).attempts).toEqual(attempts);
+    expect(deliver.mock.calls[0]).toEqual(deliver.mock.calls[1]);
+    exists = false;
+    await queue.tick();
+    expect(queue.snapshot(target.tabId).attempts).toEqual([]);
+  });
+
+  it('publishes attempt boundaries only after delivery begins and retains them after dequeue', async () => {
+    const { queue, status } = setup('busy');
+    queue.enqueue(target, message('first'));
+    queue.enqueue(target, message('second'));
+    expect(queue.snapshot(target.tabId).attempts).toEqual([]);
+    status.cliState = 'idle';
+    await queue.tick();
+    expect(queue.snapshot(target.tabId).attempts).toEqual([{ id: 'first', at: expect.any(Number) }]);
+    expect(queue.snapshot(target.tabId).messages).toEqual([message('second')]);
+    queue.remove(target.tabId, 'second');
+    status.eventSeq++;
+    await queue.tick();
+    expect(queue.snapshot(target.tabId).attempts).toEqual([{ id: 'first', at: expect.any(Number) }]);
+  });
+
+  it('retains explicit cancellation in snapshots without treating successful delivery as cancellation', async () => {
+    const { queue, status } = setup('busy');
+    queue.enqueue(target, message('cancel'));
+    queue.remove(target.tabId, 'cancel');
+    await queue.tick();
+    expect(queue.snapshot(target.tabId)).toMatchObject({ messages: [], canceledIds: ['cancel'] });
+    expect(queue.hasPendingInput(target.tabId)).toBe(false);
+    queue.enqueue(target, message('cancel'));
+    expect(queue.snapshot(target.tabId).messages).toEqual([]);
+    queue.enqueue(target, message('delivered'));
+    status.cliState = 'idle';
+    await queue.tick();
+    status.eventSeq++;
+    await queue.tick();
+    expect(queue.snapshot(target.tabId)).toMatchObject({ messages: [], canceledIds: ['cancel'] });
+  });
+
+  it('does not use a canceled attempt receipt to acknowledge the next identical message', async () => {
+    const status = { cliState: 'idle' as const, workspaceId: 'ws1', agentSessionId: 'agent1', agentProviderId: 'codex' };
+    const deliver = vi.fn(async () => { throw new InputDeliveryError('deliveryUnconfirmed'); });
+    const receipt = vi.fn(async () => ({ received: true, completed: true }));
+    const queue = new InputQueue(() => status, deliver, receipt);
+    queue.enqueue(target, { ...message('1'), text: 'same' });
+    queue.enqueue(target, { ...message('2'), text: 'same' });
+    await queue.tick();
+    queue.remove(target.tabId, '1');
+    await queue.tick();
+    expect(receipt).not.toHaveBeenCalled();
+    expect(deliver).toHaveBeenCalledTimes(1);
+    expect(queue.snapshot(target.tabId).messages).toEqual([{ ...message('2'), text: 'same' }]);
+  });
+
   it('protects sent input until its completion is observed even when the visible queue is empty', async () => {
     const { queue, status } = setup('idle');
     expect(queue.hasPendingInput(target.tabId)).toBe(false);
@@ -72,14 +136,14 @@ describe('session input queue', () => {
     expect(deliver).not.toHaveBeenCalled();
     status.cliState = 'ready-for-review';
     await queue.tick();
-    expect(deliver).toHaveBeenCalledExactlyOnceWith(target, message('1'), false);
+    expect(deliver).toHaveBeenCalledExactlyOnceWith(target, message('1'), false, expect.any(Number));
     await queue.tick();
     expect(deliver).toHaveBeenCalledTimes(1);
     status.cliState = 'busy';
     await queue.tick();
     status.cliState = 'idle';
     await queue.tick();
-    expect(deliver).toHaveBeenLastCalledWith(target, message('2'), false);
+    expect(deliver).toHaveBeenLastCalledWith(target, message('2'), false, expect.any(Number));
   });
 
   it('can submit the next queued message immediately while busy without draining the rest', async () => {
@@ -87,7 +151,7 @@ describe('session input queue', () => {
     queue.enqueue(target, message('1'));
     queue.enqueue(target, message('2'));
     await queue.flush(target.tabId, true);
-    expect(deliver).toHaveBeenCalledExactlyOnceWith(target, message('1'), true);
+    expect(deliver).toHaveBeenCalledExactlyOnceWith(target, message('1'), true, expect.any(Number));
     expect(queue.snapshot(target.tabId).messages).toEqual([message('2')]);
   });
 

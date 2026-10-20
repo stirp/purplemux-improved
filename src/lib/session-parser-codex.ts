@@ -1215,6 +1215,18 @@ export class CodexParser {
     }
   }
 
+  async parseSince(since: number): Promise<ITimelineEntry[]> {
+    this.reset();
+    const page = await readJsonlTurn(this.jsonlPath, (line) => {
+      const raw = tryParseJson(line) as TRolloutItem | undefined;
+      const timestamp = raw?.timestamp ? tsToMillis(raw.timestamp) : NaN;
+      return Number.isFinite(timestamp) && timestamp < since;
+    });
+    const result = parseContentWithOffsets(page.content, page.startByteOffset, this.state);
+    this.lastOffset = page.readOffset;
+    return result.entries;
+  }
+
   async parseTurn(beforeByte?: number): Promise<IChunkReadResult> {
     this.reset();
     const page = await readJsonlTurn(this.jsonlPath, (line) => {

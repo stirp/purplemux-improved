@@ -1,3 +1,5 @@
+import type { IQueuedInput } from '@/lib/input-queue';
+
 export type TSessionDetectionStatus = 'unknown' | 'starting' | 'running' | 'not-running' | 'not-initialized' | 'not-installed';
 
 export type TCliState = 'idle' | 'busy' | 'inactive' | 'ready-for-review' | 'needs-input' | 'cancelled' | 'unknown';
@@ -45,15 +47,27 @@ export type TTimelineEntryType =
   | 'patch-apply'
   | 'context-compacted';
 
+export interface IPendingUserMessageOptions {
+  autoHide?: boolean;
+  attachmentPlaceholder?: boolean;
+  queueMessage?: IQueuedInput;
+  deliveryState?: 'queued' | 'sending' | 'unconfirmed' | 'failed';
+  images?: string[];
+}
+
 export interface ITimelineUserMessage {
   id: string;
   type: 'user-message';
   timestamp: number;
   text: string;
   images?: string[];
+  imageHashes?: string[];
   pending?: boolean;
   attachmentPlaceholder?: boolean;
   fadingOut?: boolean;
+  queueMessage?: IQueuedInput;
+  attemptedAt?: number;
+  deliveryState?: IPendingUserMessageOptions['deliveryState'];
 }
 
 export interface ITimelineAssistantMessage {

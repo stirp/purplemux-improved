@@ -1,4 +1,5 @@
 import fs from 'fs/promises';
+import { createHash } from 'crypto';
 import { readJsonlTurn } from './jsonl-turn-reader';
 import { z } from 'zod';
 import { nanoid } from 'nanoid';
@@ -486,6 +487,7 @@ const parseSingleEntry = (raw: unknown, base: z.infer<typeof BaseEntrySchema>): 
 
     const userTextParts: string[] = [];
     const userImages: string[] = [];
+    const imageHashes: string[] = [];
     for (const item of content) {
       if (item.type === 'text' && 'text' in item) {
         const cleaned = stripProtocolTags((item as { text: string }).text);
@@ -494,6 +496,7 @@ const parseSingleEntry = (raw: unknown, base: z.infer<typeof BaseEntrySchema>): 
         const src = (item as { source?: { type?: string; media_type?: string; data?: string } }).source;
         if (src?.type === 'base64' && src.data) {
           userImages.push(`data:${src.media_type ?? 'image/png'};base64,${src.data}`);
+          imageHashes.push(createHash('sha256').update(Buffer.from(src.data, 'base64')).digest('hex'));
         }
       }
     }
@@ -503,7 +506,7 @@ const parseSingleEntry = (raw: unknown, base: z.infer<typeof BaseEntrySchema>): 
         type: 'user-message',
         timestamp,
         text: userTextParts.join('\n'),
-        ...(userImages.length > 0 ? { images: userImages } : {}),
+        ...(userImages.length > 0 ? { images: userImages, imageHashes } : {}),
       } satisfies ITimelineUserMessage);
     }
 

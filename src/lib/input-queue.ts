@@ -3,7 +3,19 @@ import type { TCliState } from '@/types/timeline';
 export interface IQueuedInput {
   id: string;
   text: string;
-  attachments: { path: string; filename: string }[];
+  attachments: { path: string; filename: string; imageHash?: string }[];
+  createdAt?: number;
+}
+
+export interface IInputAttempt {
+  id: string;
+  at: number;
+}
+
+export class InputDeliveryError extends Error {
+  constructor(public readonly code: 'deliveryUnconfirmed' | 'terminalNotReady' | 'sessionChanged') {
+    super(code);
+  }
 }
 
 export interface IInputTarget {
@@ -28,16 +40,21 @@ interface IQueueEntry {
   sending: boolean;
   error: string | null;
   waiting?: { seq: number; sawBusy: boolean };
+  attempt?: { id: string; at: number };
+  nextReceiptCheckAt?: number;
 }
 
 const isIdle = (state: TCliState) => state === 'idle' || state === 'ready-for-review';
 
 export class InputQueue {
   private entries = new Map<string, IQueueEntry>();
+  private canceled = new Map<string, Set<string>>();
+  private attempts = new Map<string, Map<string, number>>();
 
   constructor(
     private readonly status: (tabId: string) => IQueueStatus | undefined,
-    private readonly deliver: (target: IInputTarget, message: IQueuedInput, immediately: boolean) => Promise<void>,
+    private readonly deliver: (target: IInputTarget, message: IQueuedInput, immediately: boolean, attemptedAt?: number) => Promise<void | { completed: boolean }>,
+    private readonly checkReceipt?: (target: IInputTarget, message: IQueuedInput, since: number) => Promise<{ received: boolean; completed: boolean }>,
   ) {}
 
   snapshot(tabId: string) {
@@ -46,6 +63,8 @@ export class InputQueue {
       messages: entry?.messages ?? [],
       sending: entry?.sending ?? false,
       error: entry?.error ?? null,
+      canceledIds: [...(this.canceled.get(tabId) ?? [])],
+      attempts: [...(this.attempts.get(tabId) ?? [])].map(([id, at]) => ({ id, at })),
     };
   }
 
@@ -55,6 +74,7 @@ export class InputQueue {
   }
 
   enqueue(target: IInputTarget, message: IQueuedInput) {
+    if (this.canceled.get(target.tabId)?.has(message.id)) return;
     let entry = this.entries.get(target.tabId);
     if (!entry) {
       entry = { target, messages: [], sending: false, error: null };
@@ -68,7 +88,16 @@ export class InputQueue {
   remove(tabId: string, id: string) {
     const entry = this.entries.get(tabId);
     if (!entry || (entry.sending && entry.messages[0]?.id === id)) return;
+    if (!entry.messages.some((item) => item.id === id)) return;
+    const canceled = this.canceled.get(tabId) ?? new Set<string>();
+    canceled.add(id);
+    this.canceled.set(tabId, canceled);
     entry.messages = entry.messages.filter((item) => item.id !== id);
+    if (entry.attempt?.id === id) {
+      entry.attempt = undefined;
+      // Canceling a partial send does not clear the terminal's editable draft.
+      if (entry.error) entry.error = 'sendFailed';
+    }
     if (!entry.messages.length && !entry.sending) this.entries.delete(tabId);
   }
 
@@ -122,6 +151,24 @@ export class InputQueue {
       if (!entry.waiting) this.entries.delete(tabId);
       return;
     }
+    if (!immediately && entry.error === 'deliveryUnconfirmed' && entry.attempt && this.checkReceipt
+      && Date.now() >= (entry.nextReceiptCheckAt ?? 0)) {
+      entry.sending = true;
+      entry.nextReceiptCheckAt = Date.now() + 5000;
+      try {
+        const result = await this.checkReceipt(entry.target, entry.messages[0], entry.attempt.at);
+        if (result.received) {
+          entry.messages.shift();
+          entry.error = null;
+          entry.waiting = result.completed ? undefined : { seq: status.eventSeq ?? 0, sawBusy: status.cliState === 'busy' };
+        }
+      } catch (error) {
+        if (error instanceof InputDeliveryError) entry.error = error.code;
+      } finally {
+        entry.sending = false;
+      }
+      return;
+    }
     if (status.cliState === 'inactive' || status.cliState === 'unknown') return;
     if (!immediately && (entry.error || entry.waiting || !isIdle(status.cliState))) return;
 
@@ -129,18 +176,30 @@ export class InputQueue {
     entry.error = null;
     const message = entry.messages[0];
     try {
-      await this.deliver(entry.target, message, immediately && status.cliState === 'busy');
+      if (entry.attempt?.id !== message.id) entry.attempt = { id: message.id, at: Date.now() };
+      const attempts = this.attempts.get(tabId) ?? new Map<string, number>();
+      attempts.set(message.id, entry.attempt.at);
+      this.attempts.set(tabId, attempts);
+      const result = await this.deliver(entry.target, message, immediately && status.cliState === 'busy',
+        entry.target.provider === 'codex' ? entry.attempt.at : undefined);
       entry.messages = entry.messages.filter((item) => item.id !== message.id);
-      entry.waiting = { seq: status.eventSeq ?? 0, sawBusy: status.cliState === 'busy' };
-    } catch {
+      entry.waiting = result?.completed ? undefined : { seq: status.eventSeq ?? 0, sawBusy: status.cliState === 'busy' };
+    } catch (error) {
       // A partial terminal write cannot safely be retried automatically.
-      entry.error = 'sendFailed';
+      entry.error = error instanceof InputDeliveryError ? error.code : 'sendFailed';
+      entry.nextReceiptCheckAt = Date.now() + 5000;
     } finally {
       entry.sending = false;
     }
   }
 
   async tick() {
+    for (const tabId of this.attempts.keys()) {
+      if (!this.status(tabId)) this.attempts.delete(tabId);
+    }
+    for (const tabId of this.canceled.keys()) {
+      if (!this.status(tabId)) this.canceled.delete(tabId);
+    }
     await Promise.all([...this.entries.keys()].map((tabId) => this.flush(tabId)));
   }
 }

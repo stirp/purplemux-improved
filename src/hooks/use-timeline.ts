@@ -1,8 +1,12 @@
+import type { IPendingUserMessageOptions } from '@/types/timeline';
+import type { IInputAttempt } from '@/lib/input-queue';
 import { collectTimelineTasks } from '@/lib/timeline-tasks';
 import { resolveAsyncQuestionAnswers } from '@/lib/async-question-answers';
+import { matchesInputMessage } from '@/lib/input-message-match';
 import { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import type {
   ITimelineEntry,
+  ITimelineUserMessage,
   IInitMeta,
   ISessionStats,
   ITaskItem,
@@ -43,6 +47,25 @@ const normalizeUserMessageText = (s: string) => s.replace(/\s+/g, ' ').trim();
 const isPendingUserMessage = (entry: ITimelineEntry): entry is ITimelineEntry & { type: 'user-message'; pending: true } =>
   entry.type === 'user-message' && entry.pending === true;
 
+const sameUserReceipt = (a: ITimelineUserMessage, b: ITimelineUserMessage): boolean =>
+  a.timestamp === b.timestamp && a.text === b.text
+  && (a.images?.length ?? 0) === (b.images?.length ?? 0)
+  && (a.images ?? []).every((image, index) => image === b.images?.[index]);
+
+const reconcileQueueReceipts = (entries: ITimelineEntry[]): ITimelineEntry[] => {
+  let updated = entries;
+  for (const pending of entries) {
+    if (!isPendingUserMessage(pending) || !pending.queueMessage || pending.attemptedAt === undefined) continue;
+    const message = pending.queueMessage;
+    const confirmed = updated.findIndex((entry) => entry.type === 'user-message'
+      && !entry.id.startsWith('input-') && matchesInputMessage(entry, message, pending.attemptedAt));
+    if (confirmed !== -1) {
+      updated = updated.flatMap((entry, index) => index === confirmed ? [{ ...entry, id: pending.id }] : entry.id === pending.id ? [] : [entry]);
+    }
+  }
+  return updated;
+};
+
 interface IUseTimelineReturn {
   entries: ITimelineEntry[];
   tasks: ITaskItem[];
@@ -60,8 +83,9 @@ interface IUseTimelineReturn {
   hasMore: boolean;
   retrySession: () => void;
   sendResume: (sessionId: string, tmuxSession: string) => void;
-  addPendingUserMessage: (text: string, options?: { autoHide?: boolean; attachmentPlaceholder?: boolean }) => string;
+  addPendingUserMessage: (text: string, options?: IPendingUserMessageOptions) => string;
   removePendingUserMessage: (id: string) => void;
+  syncInputAttempts: (attempts: IInputAttempt[]) => void;
 }
 
 const useTimeline = ({
@@ -154,12 +178,21 @@ const useTimeline = ({
     setAgentInstalled(true);
     setEntries((prev) => {
       const pendings = prev.filter(isPendingUserMessage);
-      if (pendings.length === 0) return newEntries;
+      // Parser IDs are regenerated on init; retain ownership by native record contents.
+      const consumed = prev.filter((entry): entry is ITimelineUserMessage =>
+        entry.type === 'user-message' && !entry.pending && entry.id.startsWith('input-'));
 
       const merged = newEntries.map((entry) => {
         if (entry.type !== 'user-message') return entry;
+        const consumedIndex = consumed.findIndex((previous) => sameUserReceipt(previous, entry));
+        if (consumedIndex !== -1) {
+          const [previous] = consumed.splice(consumedIndex, 1);
+          return { ...entry, id: previous.id };
+        }
         const target = entry.text.trim();
-        const matchIdx = pendings.findIndex((p) => p.text.trim() === target);
+        const matchIdx = pendings.findIndex((p) => p.queueMessage
+          ? matchesInputMessage(entry, p.queueMessage, p.attemptedAt)
+          : p.text.trim() === target);
         if (matchIdx === -1) return entry;
         const matched = pendings[matchIdx];
         pendings.splice(matchIdx, 1);
@@ -188,9 +221,13 @@ const useTimeline = ({
       const updated = [...prev];
       for (const entry of newEntries) {
         if (entry.type === 'user-message') {
+          if (updated.some((existing) => existing.type === 'user-message' && !existing.pending
+            && existing.id.startsWith('input-') && sameUserReceipt(existing, entry))) continue;
           const target = normalizeUserMessageText(entry.text);
           const pendingIdx = updated.findIndex(
-            (e) => e.type === 'user-message' && e.pending && (e.attachmentPlaceholder || normalizeUserMessageText(e.text) === target),
+            (e) => e.type === 'user-message' && e.pending && (e.queueMessage
+              ? matchesInputMessage(entry, e.queueMessage, e.attemptedAt)
+              : (e.attachmentPlaceholder || normalizeUserMessageText(e.text) === target)),
           );
           if (pendingIdx !== -1) {
             const pending = updated[pendingIdx] as ITimelineEntry & { type: 'user-message' };
@@ -222,10 +259,10 @@ const useTimeline = ({
     });
   }, []);
 
-  const addPendingUserMessage = useCallback((text: string, options?: { autoHide?: boolean; attachmentPlaceholder?: boolean }): string => {
+  const addPendingUserMessage = useCallback((text: string, options?: IPendingUserMessageOptions): string => {
     const trimmed = text.trim();
-    const id = `pending-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-    if (!trimmed) return id;
+    const id = options?.queueMessage ? `input-${options.queueMessage.id}` : `pending-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    if (!trimmed && !options?.images?.length) return id;
     const pendingEntry: ITimelineEntry = {
       id,
       type: 'user-message',
@@ -233,8 +270,23 @@ const useTimeline = ({
       text: trimmed,
       pending: true,
       attachmentPlaceholder: options?.attachmentPlaceholder,
+      images: options?.images,
+      queueMessage: options?.queueMessage,
+      deliveryState: options?.deliveryState,
     };
-    setEntries((prev) => [...prev, pendingEntry]);
+    setEntries((prev) => {
+      const index = prev.findIndex((entry) => entry.id === id);
+      if (index !== -1 && !isPendingUserMessage(prev[index])) return prev;
+      if (index === -1) return [...prev, pendingEntry];
+      const existing = prev[index];
+      if (!isPendingUserMessage(existing)) return prev;
+      if (existing.deliveryState === pendingEntry.deliveryState
+        && existing.queueMessage?.createdAt === pendingEntry.queueMessage?.createdAt
+        && existing.queueMessage?.attachments.every((attachment, i) =>
+          attachment.imageHash === pendingEntry.queueMessage?.attachments[i]?.imageHash)) return prev;
+      return reconcileQueueReceipts(prev.map((entry, i) => i === index
+        ? { ...pendingEntry, timestamp: existing.timestamp, attemptedAt: existing.attemptedAt } : entry));
+    });
 
     if (options?.attachmentPlaceholder) {
       setTimeout(() => {
@@ -267,6 +319,21 @@ const useTimeline = ({
       }, PENDING_AUTOHIDE_DELAY_MS);
     }
     return id;
+  }, []);
+
+  const syncInputAttempts = useCallback((attempts: IInputAttempt[]) => {
+    const byId = new Map(attempts.map(({ id, at }) => [id, at]));
+    setEntries((prev) => {
+      let changed = false;
+      const updated = prev.map((entry) => {
+        if (!isPendingUserMessage(entry) || !entry.queueMessage) return entry;
+        const at = byId.get(entry.queueMessage.id);
+        if (at === undefined || at === entry.attemptedAt) return entry;
+        changed = true;
+        return { ...entry, attemptedAt: at };
+      });
+      return changed ? reconcileQueueReceipts(updated) : prev;
+    });
   }, []);
 
   const removePendingUserMessage = useCallback((id: string) => {
@@ -452,6 +519,7 @@ const useTimeline = ({
     sendResume,
     addPendingUserMessage,
     removePendingUserMessage,
+    syncInputAttempts,
   };
 };
 

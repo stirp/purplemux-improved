@@ -1,7 +1,7 @@
 import fs from 'fs/promises';
 import path from 'path';
 import os from 'os';
-import { randomBytes } from 'crypto';
+import { createHash, randomBytes } from 'crypto';
 
 const BASE_DIR = path.join(os.homedir(), '.purplemux');
 const UPLOADS_DIR = path.join(BASE_DIR, 'uploads');
@@ -75,6 +75,14 @@ const uploadPathToImageUrl = (filePath: string): string | null => {
   const segments = uploadPathToSegments(filePath);
   if (!segments) return null;
   return `/api/uploads/${segments.map(encodeURIComponent).join('/')}`;
+};
+
+export const getUploadImageHash = async (filePath: string): Promise<string | undefined> => {
+  if (!uploadPathToImageUrl(filePath)) return undefined;
+  const realPath = await fs.realpath(filePath);
+  if (!isPathInsideUploads(realPath)) throw new Error('Invalid upload path');
+  if ((await fs.stat(realPath)).size > GENERIC_MAX_BYTES) throw new Error('Image is too large');
+  return createHash('sha256').update(await fs.readFile(realPath)).digest('hex');
 };
 
 const resolveUploadImagePath = (segments: string[]): string | null => {

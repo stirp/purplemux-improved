@@ -26,6 +26,7 @@ interface IUserMessageItemProps {
 
 const UserMessageItem = ({ entry }: IUserMessageItemProps) => {
   const t = useTranslations('timeline');
+  const terminal = useTranslations('terminal');
   const [delayed, setDelayed] = useState(false);
   const [lastPending, setLastPending] = useState(entry.pending);
   const [expanded, setExpanded] = useState(false);
@@ -54,7 +55,7 @@ const UserMessageItem = ({ entry }: IUserMessageItemProps) => {
   }, [entry.text, expanded]);
 
   const fadingOut = entry.fadingOut === true;
-  const faded = entry.pending && delayed;
+  const faded = entry.pending && delayed && !entry.queueMessage;
   const hasImages = entry.images && entry.images.length > 0;
   const hasText = entry.text.length > 0;
   const clamp = !expanded;
@@ -104,6 +105,13 @@ const UserMessageItem = ({ entry }: IUserMessageItemProps) => {
           >
             {t(expanded ? 'collapseMessage' : 'expandMessage')}
           </button>
+        )}
+        {entry.pending && entry.deliveryState && (
+          <p className="mt-1 text-xs text-muted-foreground" role="status">
+            {terminal(entry.deliveryState === 'sending' ? 'inputSending'
+              : entry.deliveryState === 'unconfirmed' ? 'inputUnconfirmed'
+                : entry.deliveryState === 'failed' ? 'inputFailed' : 'inputQueued')}
+          </p>
         )}
       </div>
     </div>

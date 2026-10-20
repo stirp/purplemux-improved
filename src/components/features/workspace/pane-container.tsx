@@ -1,3 +1,5 @@
+import type { IInputAttempt } from '@/lib/input-queue';
+import type { IPendingUserMessageOptions } from '@/types/timeline';
 import { resolveTerminalTypography } from '@/lib/terminal-appearance';
 import { useState, useRef, useCallback, useEffect, useMemo, memo } from 'react';
 import { useTranslations } from 'next-intl';
@@ -277,7 +279,8 @@ const PaneContainer = memo(({ paneId, paneNumber }: IPaneContainerProps) => {
   const wasDragRef = useRef(false);
 
   const scrollToBottomRef = useRef<(() => void) | undefined>(undefined);
-  const addPendingMessageRef = useRef<((text: string, options?: { autoHide?: boolean; attachmentPlaceholder?: boolean }) => string) | undefined>(undefined);
+  const addPendingMessageRef = useRef<((text: string, options?: IPendingUserMessageOptions) => string) | undefined>(undefined);
+  const syncInputAttemptsRef = useRef<((attempts: IInputAttempt[]) => void) | undefined>(undefined);
   const removePendingMessageRef = useRef<((id: string) => void) | undefined>(undefined);
   const attachFilesRef = useRef<((files: File[]) => Promise<boolean> | void) | undefined>(undefined);
   const pendingRestartRef = useRef<string | null>(null);
@@ -390,10 +393,14 @@ const PaneContainer = memo(({ paneId, paneNumber }: IPaneContainerProps) => {
   }, []);
 
   const handleAddPendingMessage = useCallback(
-    (text: string, options?: { autoHide?: boolean; attachmentPlaceholder?: boolean }) =>
+    (text: string, options?: IPendingUserMessageOptions) =>
       addPendingMessageRef.current?.(text, options) ?? '',
     [],
   );
+
+  const handleSyncInputAttempts = useCallback((attempts: IInputAttempt[]) => {
+    syncInputAttemptsRef.current?.(attempts);
+  }, []);
 
   const handleRemovePendingMessage = useCallback((id: string) => {
     removePendingMessageRef.current?.(id);
@@ -1310,6 +1317,7 @@ const PaneContainer = memo(({ paneId, paneNumber }: IPaneContainerProps) => {
                   scrollToBottomRef={scrollToBottomRef}
                   addPendingMessageRef={addPendingMessageRef}
                   removePendingMessageRef={removePendingMessageRef}
+                  syncInputAttemptsRef={syncInputAttemptsRef}
                   trustPrompt={trustPrompt}
                   onTrustResponse={onTrustResponse}
                 />
@@ -1330,6 +1338,7 @@ const PaneContainer = memo(({ paneId, paneNumber }: IPaneContainerProps) => {
                   scrollToBottomRef={scrollToBottomRef}
                   addPendingMessageRef={addPendingMessageRef}
                   removePendingMessageRef={removePendingMessageRef}
+                  syncInputAttemptsRef={syncInputAttemptsRef}
                 />
               )}
               {isAgentPanel && !showInitialLoading && agentInputVisible && (
@@ -1354,6 +1363,7 @@ const PaneContainer = memo(({ paneId, paneNumber }: IPaneContainerProps) => {
                   onOptimisticSend={handleOptimisticSend}
                   onAddPendingMessage={handleAddPendingMessage}
                   onRemovePendingMessage={handleRemovePendingMessage}
+                  onSyncInputAttempts={handleSyncInputAttempts}
                   attachFilesRef={attachFilesRef}
                 />
               )}
