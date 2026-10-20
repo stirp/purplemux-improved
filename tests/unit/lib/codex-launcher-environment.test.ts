@@ -23,6 +23,9 @@ const runLauncher = async (response: object, argv: string[] = [], help: string |
     process: { argv: ['node', 'launcher', ...argv], env: inherited, exit },
     console: { error: vi.fn() },
     fetch,
+    AbortController,
+    setTimeout,
+    clearTimeout,
   });
   await vi.waitFor(() => expect(spawn.mock.calls.length + exit.mock.calls.length).toBeGreaterThan(0));
   return { spawn, exit, fetch, inherited, execFileSync };

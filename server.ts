@@ -374,7 +374,6 @@ export const start = async (opts?: IStartOptions): Promise<IStartResult> => {
   await scanSessions();
   await applyConfig();
   await initWorkspaceStore();
-  await autoResumeOnStartup();
   await getStatusManager().init();
 
   const envHost = process.env.HOST?.trim();
@@ -404,6 +403,8 @@ export const start = async (opts?: IStartOptions): Promise<IStartResult> => {
   initAppUpdates();
   const { workspaces } = await getWorkspaces();
   await writeAllWorkspacePrompts(workspaces);
+  // Codex launchers fetch arguments from this server and read the published port/token.
+  await autoResumeOnStartup();
   await getScheduledTaskScheduler().start();
 
   startIdleTabReclamation();

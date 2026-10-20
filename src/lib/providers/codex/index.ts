@@ -130,12 +130,11 @@ const parseArgs = (argv) => {
   return result;
 };
 
-const fetchArgs = async (payload) => {
-  if (typeof fetch !== 'function') {
-    throw new Error('Node.js 20+ is required to launch Codex from purplemux');
-  }
+class RetryableLaunchError extends Error {}
+
+const fetchArgsOnce = async (payload, signal) => {
   const port = readTrim(path.join(baseDir, 'port'));
-  if (!port) throw new Error('purplemux port file is missing');
+  if (!port) throw new RetryableLaunchError('purplemux port file is missing');
   const token = readTrim(path.join(baseDir, 'cli-token'));
   const headers = { 'content-type': 'application/json' };
   if (token) headers['x-pmux-token'] = token;
@@ -143,12 +142,21 @@ const fetchArgs = async (payload) => {
     method: 'POST',
     headers,
     body: JSON.stringify(payload),
-  });
+    signal,
+  }).catch((err) => { throw new RetryableLaunchError(err.message || String(err)); });
   if (!res.ok) {
+    if ([502, 503, 504].includes(res.status)) {
+      await res.body?.cancel().catch(() => {});
+      throw new RetryableLaunchError(\`failed to get Codex launch args: HTTP \${res.status}\`);
+    }
     const message = await res.text().catch(() => '');
     throw new Error(\`failed to get Codex launch args: HTTP \${res.status} \${message}\`.trim());
   }
-  const data = await res.json();
+  const data = await res.json().catch((err) => {
+    if (err.name === 'SyntaxError') throw new Error('invalid Codex launch args response');
+    throw new RetryableLaunchError(err.message || String(err));
+  });
+  if (!data || typeof data !== 'object') throw new Error('invalid Codex launch args response');
   if (!Array.isArray(data.args) || data.args.some((arg) => typeof arg !== 'string')) {
     throw new Error('invalid Codex launch args response');
   }
@@ -159,6 +167,26 @@ const fetchArgs = async (payload) => {
     throw new Error('invalid Codex environment response');
   }
   return { args: data.args, env };
+};
+
+const fetchArgs = async (payload) => {
+  if (typeof fetch !== 'function') {
+    throw new Error('Node.js 20+ is required to launch Codex from purplemux');
+  }
+  const deadline = Date.now() + 15000;
+  while (true) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), Math.min(5000, deadline - Date.now()));
+    try {
+      return await fetchArgsOnce(payload, controller.signal);
+    } catch (err) {
+      if (!(err instanceof RetryableLaunchError) || Date.now() >= deadline) throw err;
+      await new Promise((resolve) => setTimeout(resolve, Math.min(500, deadline - Date.now())));
+      if (Date.now() >= deadline) throw err;
+    } finally {
+      clearTimeout(timer);
+    }
+  }
 };
 
 const main = async () => {
