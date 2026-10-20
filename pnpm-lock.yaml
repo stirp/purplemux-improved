@@ -241,9 +241,6 @@ importers:
       diff:
         specifier: ^9.0.0
         version: 9.0.0
-      electron-updater:
-        specifier: ^6.8.3
-        version: 6.8.3
       jose:
         specifier: ^6.2.2
         version: 6.2.2
@@ -380,6 +377,9 @@ importers:
       electron-builder:
         specifier: ^26.8.1
         version: 26.8.1(electron-builder-squirrel-windows@26.8.1)
+      electron-updater:
+        specifier: ^6.8.3
+        version: 6.8.3
       eslint:
         specifier: ^9
         version: 9.39.4(jiti@2.6.1)

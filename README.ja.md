@@ -20,7 +20,7 @@ npx purplemux-improved@latest
 
 ブラウザで [http://localhost:8022](http://localhost:8022) を開いてください。以上。
 
-> Node.js 20+ と tmux が必要です。macOS または Linux。
+> Node.js 24+ と tmux が必要です。macOS または Linux。
 
 ネイティブアプリがお好みなら、[最新リリース](https://github.com/stirp/purplemux-improved/releases/latest) から macOS Electron ビルドを入手できます(Apple Silicon & Intel 向け `.dmg`)。
 
@@ -92,7 +92,7 @@ npx purplemux-improved@latest
 ### 必須要件
 
 - macOS 13+ または Linux
-- [Node.js](https://nodejs.org/) 20+
+- [Node.js](https://nodejs.org/) 24+
 - [tmux](https://github.com/tmux/tmux)
 
 Claude タブに必要です。Claude Code をインストールし、Claude タブを開始する前にログインしてください:

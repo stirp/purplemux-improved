@@ -20,7 +20,7 @@ npx purplemux-improved@latest
 
 Ouvrez [http://localhost:8022](http://localhost:8022) dans votre navigateur. C'est tout.
 
-> Nécessite Node.js 20+ et tmux. macOS ou Linux.
+> Nécessite Node.js 24+ et tmux. macOS ou Linux.
 
 Vous préférez une app native ? Récupérez la build Electron macOS depuis la [dernière release](https://github.com/stirp/purplemux-improved/releases/latest) (`.dmg` pour Apple Silicon et Intel).
 
@@ -92,7 +92,7 @@ Et aussi
 ### Prérequis
 
 - macOS 13+ ou Linux
-- [Node.js](https://nodejs.org/) 20+
+- [Node.js](https://nodejs.org/) 24+
 - [tmux](https://github.com/tmux/tmux)
 
 Requis pour les onglets Claude. Installez Claude Code et connectez-vous avant de démarrer un onglet Claude :

@@ -20,7 +20,7 @@ npx purplemux-improved@latest
 
 Tarayıcınızda [http://localhost:8022](http://localhost:8022) adresini açın. Hepsi bu.
 
-> Node.js 20+ ve tmux gerekir. macOS veya Linux.
+> Node.js 24+ ve tmux gerekir. macOS veya Linux.
 
 Yerel bir uygulama mı tercih edersiniz? macOS Electron sürümünü [en son sürümden](https://github.com/stirp/purplemux-improved/releases/latest) indirebilirsiniz (Apple Silicon ve Intel için `.dmg`).
 
@@ -92,7 +92,7 @@ Ayrıca
 ### Gereksinimler
 
 - macOS 13+ veya Linux
-- [Node.js](https://nodejs.org/) 20+
+- [Node.js](https://nodejs.org/) 24+
 - [tmux](https://github.com/tmux/tmux)
 
 Claude sekmeleri için gereklidir. Claude Code'u kurun ve Claude sekmesi başlatmadan önce giriş yapın:

@@ -20,7 +20,7 @@ npx purplemux-improved@latest
 
 브라우저에서 [http://localhost:8022](http://localhost:8022)으로 접속합니다. 끝.
 
-> Node.js 20+, tmux 필요. macOS 또는 Linux.
+> Node.js 24+, tmux 필요. macOS 또는 Linux.
 
 네이티브 앱을 선호한다면, [최신 릴리스](https://github.com/stirp/purplemux-improved/releases/latest)에서 macOS Electron 빌드를 받을 수 있습니다 (Apple Silicon & Intel용 `.dmg`).
 
@@ -92,7 +92,7 @@ npx purplemux-improved@latest
 ### 필수 요구사항
 
 - macOS 13+ 또는 Linux
-- [Node.js](https://nodejs.org/) 20+
+- [Node.js](https://nodejs.org/) 24+
 - [tmux](https://github.com/tmux/tmux)
 
 Claude 탭에 필요합니다. Claude Code를 설치하고 Claude 탭을 시작하기 전에 로그인하세요:

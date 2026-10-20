@@ -47,7 +47,9 @@ npx purplemux-improved@latest
 
 在浏览器中打开 [http://localhost:8022](http://localhost:8022)。完成。
 
-> 需要 Node.js 20+ 和 tmux。macOS 或 Linux。
+> 需要 Node.js 24+ 和 tmux。macOS 或 Linux。
+
+如果安装时出现 `EBADENGINE`，先用 `node -v` 检查版本，通过 Node 版本管理器或[官方安装程序](https://nodejs.org/)切换到 Node.js 24，再在该环境中重新安装 `purplemux-improved`。
 
 想用原生应用?可从[最新发布](https://github.com/stirp/purplemux-improved/releases/latest)下载 macOS Electron 版(适用于 Apple Silicon 与 Intel 的 `.dmg`)。
 
@@ -119,7 +121,7 @@ npx purplemux-improved@latest
 ### 前置要求
 
 - macOS 13+ 或 Linux
-- [Node.js](https://nodejs.org/) 20+
+- [Node.js](https://nodejs.org/) 24+
 - [tmux](https://github.com/tmux/tmux)
 
 Claude 标签需要。安装 Claude Code,并在启动 Claude 标签前登录:

@@ -52,7 +52,9 @@ npx purplemux-improved@latest
 
 Open [http://localhost:8022](http://localhost:8022) in your browser. Done.
 
-> Requires Node.js 20+ and tmux. macOS or Linux.
+> Requires Node.js 24+ and tmux. macOS or Linux.
+
+If installation reports `EBADENGINE`, check `node -v`, switch to Node.js 24 using your Node version manager or the [official installer](https://nodejs.org/), then reinstall `purplemux-improved` in that environment.
 
 Prefer a native app? Grab the macOS Electron build from the [latest release](https://github.com/stirp/purplemux-improved/releases/latest) (`.dmg` for Apple Silicon & Intel).
 
@@ -126,7 +128,7 @@ Plus
 ### Requirements
 
 - macOS 13+ or Linux
-- [Node.js](https://nodejs.org/) 20+
+- [Node.js](https://nodejs.org/) 24+
 - [tmux](https://github.com/tmux/tmux)
 
 Required for Claude tabs. Install Claude Code and sign in before starting a Claude tab:

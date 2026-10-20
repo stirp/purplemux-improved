@@ -20,7 +20,7 @@ npx purplemux-improved@latest
 
 在瀏覽器中開啟 [http://localhost:8022](http://localhost:8022)。完成。
 
-> 需要 Node.js 20+ 與 tmux。macOS 或 Linux。
+> 需要 Node.js 24+ 與 tmux。macOS 或 Linux。
 
 想用原生應用程式?可從[最新發行版](https://github.com/stirp/purplemux-improved/releases/latest)下載 macOS Electron 版(適用於 Apple Silicon 與 Intel 的 `.dmg`)。
 
@@ -92,7 +92,7 @@ npx purplemux-improved@latest
 ### 前置需求
 
 - macOS 13+ 或 Linux
-- [Node.js](https://nodejs.org/) 20+
+- [Node.js](https://nodejs.org/) 24+
 - [tmux](https://github.com/tmux/tmux)
 
 Claude 分頁需要。安裝 Claude Code,並在啟動 Claude 分頁前登入:

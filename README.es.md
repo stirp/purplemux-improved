@@ -20,7 +20,7 @@ npx purplemux-improved@latest
 
 Abre [http://localhost:8022](http://localhost:8022) en tu navegador. Listo.
 
-> Requiere Node.js 20+ y tmux. macOS o Linux.
+> Requiere Node.js 24+ y tmux. macOS o Linux.
 
 ¿Prefieres una app nativa? Descarga la versión Electron para macOS desde la [última release](https://github.com/stirp/purplemux-improved/releases/latest) (`.dmg` para Apple Silicon e Intel).
 
@@ -92,7 +92,7 @@ Además
 ### Requisitos
 
 - macOS 13+ o Linux
-- [Node.js](https://nodejs.org/) 20+
+- [Node.js](https://nodejs.org/) 24+
 - [tmux](https://github.com/tmux/tmux)
 
 Requerido para pestañas de Claude. Instala Claude Code e inicia sesión antes de abrir una pestaña de Claude:
