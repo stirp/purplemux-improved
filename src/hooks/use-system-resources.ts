@@ -1,54 +1,66 @@
 import { useState, useEffect } from 'react';
-import isElectron from '@/hooks/use-is-electron';
+import type { ISystemResources } from '@/types/system-resources';
 
-interface ISystemResources {
-  cpu: number;
-  memory: { used: number };
-  tmuxSessions: number;
+interface IResourceState {
+  resources: ISystemResources | null;
+  error: boolean;
 }
 
-const getElectronAPI = () =>
-  isElectron
-    ? (window as unknown as { electronAPI: { getSystemResources: () => Promise<{ cpu: number; memory: { used: number } }> } }).electronAPI
-    : null;
-
-const useSystemResources = (intervalMs = 3000) => {
-  const [resources, setResources] = useState<ISystemResources | null>(null);
+const useSystemResources = (enabled: boolean) => {
+  const [state, setState] = useState<IResourceState>({ resources: null, error: false });
 
   useEffect(() => {
-    const api = getElectronAPI();
-    if (!api) return;
-
-    let mounted = true;
+    if (!enabled) return;
+    let disposed = false;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    let controller: AbortController | undefined;
+    let requestTimeout: ReturnType<typeof setTimeout> | undefined;
 
     const poll = async () => {
+      const request = new AbortController();
+      controller = request;
+      const timeout = setTimeout(() => request.abort(), 5000);
+      requestTimeout = timeout;
       try {
-        const [metrics, tmux] = await Promise.all([
-          api.getSystemResources(),
-          fetch('/api/system/tmux-sessions').then((r) => r.json()) as Promise<{ count: number }>,
-        ]);
-        if (mounted) {
-          setResources({
-            cpu: metrics.cpu,
-            memory: metrics.memory,
-            tmuxSessions: tmux.count,
-          });
+        const response = await fetch('/api/system/resources', { signal: request.signal, cache: 'no-store' });
+        if (!response.ok) throw new Error('Resource request failed');
+        const resources: ISystemResources = await response.json();
+        if (!disposed && controller === request && !request.signal.aborted) {
+          setState({ resources, error: false });
         }
       } catch {
-        // ignore
+        if (!disposed && controller === request) setState({ resources: null, error: true });
+      } finally {
+        clearTimeout(timeout);
+        if (!disposed && controller === request) {
+          controller = undefined;
+          timer = setTimeout(poll, 3000);
+        }
       }
     };
 
-    poll();
-    const timer = setInterval(poll, intervalMs);
-
-    return () => {
-      mounted = false;
-      clearInterval(timer);
+    const stop = () => {
+      clearTimeout(timer);
+      clearTimeout(requestTimeout);
+      const pending = controller;
+      controller = undefined;
+      pending?.abort();
     };
-  }, [intervalMs]);
+    const onVisibilityChange = () => {
+      stop();
+      setState({ resources: null, error: false });
+      if (!document.hidden) void poll();
+    };
+    document.addEventListener('visibilitychange', onVisibilityChange);
+    if (!document.hidden) void poll();
+    return () => {
+      disposed = true;
+      stop();
+      document.removeEventListener('visibilitychange', onVisibilityChange);
+    };
+  }, [enabled]);
 
-  return resources;
+  return state;
 };
 
 export default useSystemResources;

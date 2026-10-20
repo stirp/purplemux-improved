@@ -1,0 +1,10 @@
+{
+  "error": "服务器资源运行 Agent 的整台机器 · 每 3 秒刷新暂不可用，正在自动重试。",
+  "warmup": "服务器资源运行 Agent 的整台机器 · 每 3 秒刷新CPU采样中—内存偏高88%内存已用 14.0 GiB / 总量 16.0 GiB已用 = 总量 − 可用内存，已扣除可回收缓存。更新于 20:21:14",
+  "recovery": "服务器资源运行 Agent 的整台机器 · 每 3 秒刷新CPU高93%内存偏高88%内存已用 14.0 GiB / 总量 16.0 GiB已用 = 总量 − 可用内存，已扣除可回收缓存。更新于 20:21:15",
+  "closeFocus": "服务器资源: CPU 93%, 内存 88%",
+  "backdropClose": true,
+  "disabledNoRequests": true,
+  "realServer": "CPU15%内存49%",
+  "requestCount": 64
+}

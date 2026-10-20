@@ -204,7 +204,7 @@
       }
     },
     "showResources": "顯示系統資源",
-    "showResourcesDescription": "在標題列顯示 CPU、記憶體和 tmux 工作階段使用狀況。",
+    "showResourcesDescription": "執行 Agent 的整台機器 · 每 3 秒重新整理.",
     "startServerAtLogin": "登入時啟動伺服器",
     "startServerAtLoginDescription": "在背景啟動 purplemux-improved 伺服器，不開啟桌面應用程式或 Dock 圖示。",
     "startServerAtLoginUnsupported": "將封裝後的 macOS 應用程式安裝到 Mac 後即可使用。",
