@@ -14,9 +14,29 @@ export interface IGitDiffFile {
 
 const DIFF_HEADER = /^diff --git /;
 
+const decodePath = (path: string): string => {
+  if (!path.startsWith('"') || !path.endsWith('"')) return path;
+  const escapes: Record<string, string> = {
+    a: '\x07', b: '\b', f: '\f', n: '\n', r: '\r', t: '\t', v: '\v', '"': '"', '\\': '\\',
+  };
+  // Git quotes non-ASCII paths as octal UTF-8 bytes, not Unicode code points.
+  return path.slice(1, -1).replace(/\\([0-7]{3}(?:\\[0-7]{3})*|[abfnrtv"\\])/g, (_, escaped: string) => {
+    if (escaped in escapes) return escapes[escaped];
+    return new TextDecoder('utf-8', { ignoreBOM: true }).decode(Uint8Array.from(escaped.split('\\').map((byte) => parseInt(byte, 8))));
+  });
+};
+
 const stripPrefix = (p: string) => {
   if (p === '/dev/null') return '/dev/null';
-  return p.replace(/^[ab]\//, '');
+  return decodePath(p).replace(/^[ab]\//, '');
+};
+
+const parseHeaderPaths = (line: string): [string, string] => {
+  // Unquoted spaces may include " b/" inside a filename; match equal paths first.
+  const samePath = line.match(/^diff --git a\/(.*) b\/\1$/);
+  if (samePath) return [samePath[1], samePath[1]];
+  const paths = line.match(/^diff --git ("(?:[^"\\]|\\.)*"|a\/.*?) ("(?:[^"\\]|\\.)*"|b\/.*)$/);
+  return paths ? [stripPrefix(paths[1]), stripPrefix(paths[2])] : ['', ''];
 };
 
 export const parseMultiFileDiff = (input: string): IGitDiffFile[] => {
@@ -43,9 +63,10 @@ export const parseMultiFileDiff = (input: string): IGitDiffFile[] => {
   for (const line of lines) {
     if (DIFF_HEADER.test(line)) {
       flushFile();
+      const [oldName, newName] = parseHeaderPaths(line);
       current = {
-        oldName: '',
-        newName: '',
+        oldName,
+        newName,
         oldHeaderLine: '',
         newHeaderLine: '',
         hunks: [],
@@ -67,17 +88,23 @@ export const parseMultiFileDiff = (input: string): IGitDiffFile[] => {
         hunkBuffer = [line];
       } else if (line.startsWith('--- ')) {
         current.oldHeaderLine = line;
-        current.oldName = stripPrefix(line.slice(4).trim());
+        current.oldName = stripPrefix(line.slice(4).replace(/\t.*$/, ''));
       } else if (line.startsWith('+++ ')) {
         current.newHeaderLine = line;
-        current.newName = stripPrefix(line.slice(4).trim());
+        current.newName = stripPrefix(line.slice(4).replace(/\t.*$/, ''));
       } else if (line.startsWith('new file')) {
         current.isNew = true;
+        current.oldName = '/dev/null';
       } else if (line.startsWith('deleted file')) {
         current.isDeleted = true;
-      } else if (line.startsWith('rename from') || line.startsWith('rename to')) {
+        current.newName = '/dev/null';
+      } else if (line.startsWith('rename from ')) {
         current.isRenamed = true;
-      } else if (line.startsWith('Binary files')) {
+        current.oldName = decodePath(line.slice(12));
+      } else if (line.startsWith('rename to ')) {
+        current.isRenamed = true;
+        current.newName = decodePath(line.slice(10));
+      } else if (line.startsWith('Binary files') || line === 'GIT binary patch') {
         current.isBinary = true;
       }
       continue;
