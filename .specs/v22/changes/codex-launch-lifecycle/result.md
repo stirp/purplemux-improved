@@ -1,5 +1,38 @@
 # 实施与验证
 
+## 2026-10-21：创建会话时取参中止的后续修正
+
+### 诊断和实施
+
+- 用户提供 `ws-Ax8Lpl` 连续两次启动命令均输出 `This operation was aborted`。只读核对 `~/.purplemux/codex-launcher.js`，确认现场仍使用 15 秒总期限、5 秒单次期限；取参失败发生在 `spawn('codex', ...)` 之前。
+- 原逻辑对每次响应都在 5 秒主动 abort，即便服务会在有限时间内正常响应，也可能连续被取消。此前开发 HTTP 修复记录已明确留下冷编译超过启动期限的限制；本次没有取得故障当时的编译耗时，不将冷编译断言为此次现场慢响应的唯一原因。
+- 共用启动器改为 60 秒总期限，请求及响应体读取使用剩余时间；快速连接失败和 502/503/504 仍按原 500 毫秒间隔重试，不重置总期限。请求超时明确报告 `/api/codex/launch-args`、60 秒期限及服务/编译日志排查方向。错误输出不包含令牌、环境变量或提示词。
+- 沿用参数校验、环境覆盖、权限、resume、子进程退出语义及服务启动顺序；同步 `docs/STATUS.md`。KISS/DRY：只调整共用启动器已有期限和错误处理，不新增配置、备用启动通道或重复参数构建逻辑。
+
+### 本次验证
+
+| 检查 | 命令或方法 | 结果 |
+| --- | --- | --- |
+| 启动器、环境及 API | `./node_modules/.bin/vitest run tests/unit/lib/codex-launcher-lifecycle.test.ts tests/unit/lib/codex-launcher-environment.test.ts tests/unit/lib/codex-environment-api.test.ts tests/unit/lib/server-agent-startup.test.ts` | 3 个文件、48 项通过；启动顺序测试首次因沙箱禁止监听临时端口失败，见下一行重跑 |
+| 服务启动顺序 | `rtk proxy pnpm exec vitest run tests/unit/lib/server-agent-startup.test.ts`，沙箱外重跑 | 1 项通过；合计 4 个文件、49 项通过 |
+| 真实 HTTP 慢响应对比 | `node /tmp/purplemux-codex-launch-wait-verify.cjs`，隔离本机临时端口、真实 fetch、VM 执行真实生成脚本、模拟子进程 | 服务固定延迟 20 秒返回：HEAD 旧脚本发出 3 次请求，15006 ms 后报 `This operation was aborted`，退出 1，未启动子进程；修复脚本只请求 1 次，20045 ms 后调用一次子进程启动，无错误 |
+| 完整 TypeScript | `./node_modules/.bin/tsc --noEmit` | 通过 |
+| 改动文件 ESLint | `./node_modules/.bin/eslint src/lib/providers/codex/index.ts tests/unit/lib/codex-launcher-lifecycle.test.ts` | 通过 |
+| 生产构建 | `rtk proxy pnpm build` | 通过：Next.js 类型检查、Turbopack 编译、24 个静态页面、standalone 后处理及 tsup 服务打包完成 |
+| 文档与差异格式 | 本需求 3 个 Markdown 链接检查、`git diff --check` | 通过 |
+
+新增自动化覆盖新建/恢复两种参数、响应头/体分别等待 20 秒后成功、永久停滞 60 秒后清晰报错、先连接失败再停滞时共享原截止时间，以及成功/失败后的计时器清理。原有认证失败、无效响应、环境覆盖和正常退出不重启等回归通过。
+
+当前工作树初始无依赖；沙箱内 pnpm 无法创建包管理器临时目录，获准在沙箱外以 `pnpm install --offline --frozen-lockfile --ignore-scripts` 安装现有锁文件依赖，无包清单或锁文件变更。真实 HTTP 验证和服务启动测试也因监听端口权限在沙箱外执行。
+
+### 本次限制
+
+- 未部署、未改写运行中的 `~/.purplemux/codex-launcher.js`，未重启服务；运行服务加载此版本并重新创建/恢复会话时，现有 `ensureCodexLauncherScript` 会更新启动器。
+- 未进行真实 Codex 登录/对话、浏览器或移动端验收；真实 HTTP 验证模拟了慢响应和子进程，不等同于完整应用冷编译或真实会话验收。
+- 60 秒仍是明确上限，超出期限的服务卡死/编译需要按新的错误提示继续排查。本次不解决所有服务器慢响应原因。
+
+以下保留 2026-10-20 原始实施证据，其中 15 秒/5 秒属于修正前策略，不代表当前规格。
+
 ## 调查证据
 
 2026-10-20，只读检查现存 tmux pane 内容发现，`tab-p26YSS`、`tab-DEnWwj`、`tab-dkVV5G`、`tab-szywTZ` 的 Codex 恢复命令后显示 `fetch failed` 或 `purplemux port file is missing`，随后回到 fish（退出码 1）。这些记录证明启动器失败，不证明 Codex 原生进程崩溃；用户此次异常尚无确切时间/标签可供关联。
