@@ -8,6 +8,7 @@ import OpenAIIcon from '@/components/icons/openai-icon';
 import useTabStore, { selectSessionView } from '@/hooks/use-tab-store';
 import useTimeline from '@/hooks/use-timeline';
 import { useCodexSessions } from '@/hooks/use-codex-sessions';
+import useCodexBootCheck from '@/hooks/use-codex-boot-check';
 import useSessionMeta from '@/hooks/use-session-meta';
 import useGitBranch from '@/hooks/use-git-branch';
 import useGitStatus from '@/hooks/use-git-status';
@@ -27,8 +28,6 @@ import AgentStatusLine from '@/components/features/workspace/agent-status-line';
 import type { ICodexSessionEntry } from '@/lib/codex-session-list';
 import type { ICodexUpdatePromptInfo, TCodexUpdateAnswer } from '@/lib/codex-update-prompt-detector';
 import type { ITrustPromptInfo, TTrustAnswer } from '@/lib/trust-prompt-detector';
-
-const CODEX_BOOT_CHECK_INTERVAL_MS = 800;
 
 interface IMobileCodexPanelProps {
   tabId?: string;
@@ -181,40 +180,7 @@ const MobileCodexPanel = ({
     return () => controller.abort();
   }, [tabId, cliState]);
 
-  useEffect(() => {
-    if (!tabId || !sessionName || view !== 'check') return;
-    if (cliState !== 'inactive' && cliState !== 'unknown' && cliState !== 'cancelled') {
-      useTabStore.getState().setSessionView(tabId, 'timeline');
-      return;
-    }
-    if (agentProcess === true || agentProcessFromTimeline === true) {
-      useTabStore.getState().setAgentProcess(tabId, true, Date.now());
-      return;
-    }
-
-    let stopped = false;
-    const checkReady = async () => {
-      try {
-        const res = await fetch(`/api/check-agent?session=${sessionName}`);
-        if (!res.ok) return;
-        const data = await res.json() as { running?: boolean; providerPanelType?: unknown; checkedAt?: number };
-        if (stopped || data.running !== true || data.providerPanelType !== 'codex-cli') return;
-        useTabStore.getState().setAgentProcess(
-          tabId,
-          true,
-          typeof data.checkedAt === 'number' ? data.checkedAt : Date.now(),
-        );
-      } catch {
-        // Keep the boot progress visible; the next tick may succeed.
-      }
-    };
-    void checkReady();
-    const id = window.setInterval(checkReady, CODEX_BOOT_CHECK_INTERVAL_MS);
-    return () => {
-      stopped = true;
-      window.clearInterval(id);
-    };
-  }, [agentProcess, agentProcessFromTimeline, cliState, sessionName, tabId, view]);
+  const bootFailed = useCodexBootCheck(tabId, sessionName);
 
   const { meta } = useSessionMeta(entries, sessionSummary, initMeta, sessionStats, tabAgentSummary, tabLastUserMessage);
   const { branch, isLoading: isBranchLoading } = useGitBranch(sessionName ?? '');
@@ -270,7 +236,7 @@ const MobileCodexPanel = ({
   if (view === 'check') {
     return (
       <div className="animate-delayed-fade-in flex min-h-0 flex-1 flex-col items-center justify-center bg-muted px-4">
-        <CodexBootProgress onRestart={onRestart} />
+        <CodexBootProgress hasFailed={bootFailed} onRestart={onRestart} />
       </div>
     );
   }

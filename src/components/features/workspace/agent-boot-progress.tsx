@@ -19,6 +19,7 @@ interface IAgentBootProgressProps {
   className?: string;
   almostReadyMs?: number;
   errorThresholdMs?: number;
+  hasFailed?: boolean;
   onRestart?: () => void;
   onShowTerminal?: () => void;
 }
@@ -35,6 +36,7 @@ const AgentBootProgress = ({
   className,
   almostReadyMs = DEFAULT_ALMOST_READY_MS,
   errorThresholdMs,
+  hasFailed,
   onRestart,
   onShowTerminal,
 }: IAgentBootProgressProps) => {
@@ -48,7 +50,7 @@ const AgentBootProgress = ({
     return () => window.clearInterval(id);
   }, []);
 
-  const isError = typeof errorThresholdMs === 'number' && elapsedMs >= errorThresholdMs;
+  const isError = hasFailed ?? (typeof errorThresholdMs === 'number' && elapsedMs >= errorThresholdMs);
   const isAlmostReady = elapsedMs >= almostReadyMs;
 
   if (isError && failed && failedHint) {
