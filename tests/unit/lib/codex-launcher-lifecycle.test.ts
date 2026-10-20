@@ -11,7 +11,11 @@ const response = (status = 200) => ({
   text: async () => 'rejected',
 });
 
-const launch = (fetch: ReturnType<typeof vi.fn>, readFile: (file: string) => string = () => '8022') => {
+const launch = (
+  fetch: ReturnType<typeof vi.fn>,
+  readFile: (file: string) => string = () => '8022',
+  argv = ['--resume-session-id', 'session-id'],
+) => {
   const child = new EventEmitter();
   const spawn = vi.fn(() => child);
   const exit = vi.fn();
@@ -25,7 +29,7 @@ const launch = (fetch: ReturnType<typeof vi.fn>, readFile: (file: string) => str
       if (name === 'node:path') return { join: (...parts: string[]) => parts.join('/') };
       throw new Error(`Unexpected module: ${name}`);
     },
-    process: { argv: ['node', 'launcher', '--resume-session-id', 'session-id'], env: { KEEP: 'inherited' }, pid: 12, exit, kill },
+    process: { argv: ['node', 'launcher', ...argv], env: { KEEP: 'inherited' }, pid: 12, exit, kill },
     console: { error }, fetch, AbortController, Date, setTimeout, clearTimeout,
   }) as Promise<void>;
   return { done, spawn, exit, kill, error, child };
@@ -94,7 +98,7 @@ describe('Codex launcher startup lifecycle', () => {
   it.each(['network', 'port'])('stops persistent %s failures at the total deadline', async (failure) => {
     const fetch = vi.fn().mockRejectedValue(new Error('fetch failed'));
     const result = launch(fetch, vi.fn(() => failure === 'port' ? '' : '8022'));
-    await vi.advanceTimersByTimeAsync(14999);
+    await vi.advanceTimersByTimeAsync(59999);
     expect(result.exit).not.toHaveBeenCalled();
     await vi.advanceTimersByTimeAsync(1);
     await result.done;
@@ -103,21 +107,71 @@ describe('Codex launcher startup lifecycle', () => {
     expect(vi.getTimerCount()).toBe(0);
   });
 
-  it.each(['headers', 'body'])('bounds a stalled response %s by request and total deadlines', async (stage) => {
+  describe.each(['new', 'resume'])('%s session', (mode) => {
+    it.each(['headers', 'body'])('allows slow response %s to finish without aborting or duplicating the launch', async (stage) => {
+      const fetch = vi.fn(async (_url: string, { signal, body }: { signal: AbortSignal; body: string }) => {
+        const payload = JSON.parse(body);
+        const data = { args: payload.resumeSessionId ? ['resume', payload.resumeSessionId] : [], env: {} };
+        const delayed = <T>(value: T) => new Promise<T>((resolve, reject) => {
+          const timer = setTimeout(() => resolve(value), 20000);
+          signal.addEventListener('abort', () => {
+            clearTimeout(timer);
+            reject(signal.reason);
+          }, { once: true });
+        });
+        return stage === 'headers'
+          ? delayed({ ...response(), json: async () => data })
+          : { ...response(), json: () => delayed(data) };
+      });
+      const argv = ['--workspace-id', 'ws-test', ...(mode === 'resume' ? ['--resume-session-id', 'session-id'] : [])];
+      const result = launch(fetch, undefined, argv);
+      await vi.advanceTimersByTimeAsync(19999);
+      expect(fetch).toHaveBeenCalledTimes(1);
+      expect(result.spawn).not.toHaveBeenCalled();
+      expect(result.exit).not.toHaveBeenCalled();
+      expect(fetch.mock.calls[0][1].signal.aborted).toBe(false);
+      await vi.advanceTimersByTimeAsync(1);
+      await result.done;
+      expect(result.spawn).toHaveBeenCalledExactlyOnceWith('codex',
+        ['--no-daemon', ...(mode === 'resume' ? ['resume', 'session-id'] : [])],
+        { stdio: 'inherit', env: { KEEP: 'inherited' } });
+      expect(JSON.parse(fetch.mock.calls[0][1].body).workspaceId).toBe('ws-test');
+      expect(result.error).not.toHaveBeenCalled();
+      expect(vi.getTimerCount()).toBe(0);
+    });
+  });
+
+  it.each(['headers', 'body'])('bounds a stalled response %s by the shared total deadline', async (stage) => {
     const fetch = vi.fn((_url: string, { signal }: { signal: AbortSignal }) => {
       const stalled = () => new Promise((_, reject) => signal.addEventListener('abort', () => reject(signal.reason)));
       return stage === 'headers' ? stalled() : Promise.resolve({ ...response(), json: stalled });
     });
     const result = launch(fetch);
-    await vi.advanceTimersByTimeAsync(4999);
+    await vi.advanceTimersByTimeAsync(59999);
     expect(fetch).toHaveBeenCalledTimes(1);
-    await vi.advanceTimersByTimeAsync(501);
-    expect(fetch).toHaveBeenCalledTimes(2);
-    await vi.advanceTimersByTimeAsync(9500);
+    expect(result.exit).not.toHaveBeenCalled();
+    await vi.advanceTimersByTimeAsync(1);
     await result.done;
-    expect(fetch).toHaveBeenCalledTimes(3);
+    expect(fetch).toHaveBeenCalledTimes(1);
     expect(result.spawn).not.toHaveBeenCalled();
     expect(result.exit).toHaveBeenCalledWith(1);
+    expect(result.error).toHaveBeenCalledWith(expect.stringContaining('Timed out after 60s waiting for purplemux /api/codex/launch-args'));
+    expect(vi.getTimerCount()).toBe(0);
+  });
+
+  it('does not reset the deadline after a transient failure', async () => {
+    const fetch = vi.fn().mockRejectedValueOnce(new Error('fetch failed'))
+      .mockImplementation((_url: string, { signal }: { signal: AbortSignal }) =>
+        new Promise((_, reject) => signal.addEventListener('abort', () => reject(signal.reason), { once: true })));
+    const result = launch(fetch);
+    await vi.advanceTimersByTimeAsync(59999);
+    expect(fetch).toHaveBeenCalledTimes(2);
+    expect(result.exit).not.toHaveBeenCalled();
+    await vi.advanceTimersByTimeAsync(1);
+    await result.done;
+    expect(result.exit).toHaveBeenCalledExactlyOnceWith(1);
+    expect(result.spawn).not.toHaveBeenCalled();
+    expect(result.error).toHaveBeenCalledWith(expect.stringContaining('/api/codex/launch-args'));
     expect(vi.getTimerCount()).toBe(0);
   });
 

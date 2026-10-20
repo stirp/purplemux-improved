@@ -173,13 +173,18 @@ const fetchArgs = async (payload) => {
   if (typeof fetch !== 'function') {
     throw new Error('Node.js 20+ is required to launch Codex from purplemux');
   }
-  const deadline = Date.now() + 15000;
+  const timeoutMs = 60000;
+  const deadline = Date.now() + timeoutMs;
   while (true) {
     const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), Math.min(5000, deadline - Date.now()));
+    // Development API compilation shares this budget with retries and response-body reads.
+    const timer = setTimeout(() => controller.abort(new Error(
+      \`Timed out after \${timeoutMs / 1000}s waiting for purplemux /api/codex/launch-args; check the purplemux server and development compilation logs.\`,
+    )), Math.max(0, deadline - Date.now()));
     try {
       return await fetchArgsOnce(payload, controller.signal);
     } catch (err) {
+      if (controller.signal.aborted) throw controller.signal.reason;
       if (!(err instanceof RetryableLaunchError) || Date.now() >= deadline) throw err;
       await new Promise((resolve) => setTimeout(resolve, Math.min(500, deadline - Date.now())));
       if (Date.now() >= deadline) throw err;
