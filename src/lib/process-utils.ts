@@ -1,7 +1,9 @@
 import fs from 'fs/promises';
 import { execFile as execFileCb } from 'child_process';
 import { promisify } from 'util';
+import { getBuiltinModule } from 'node:process';
 import { isLinux } from '@/lib/platform';
+import { getDarwinProcessArgv } from '@/lib/darwin-process-argv';
 
 const execFile = promisify(execFileCb);
 
@@ -99,13 +101,18 @@ export const listUserProcesses = async (): Promise<ISystemProcess[]> => {
   return parseSystemProcesses(stdout).filter((item) => item.uid === process.getuid!());
 };
 
-export const getProcessArgv = async (item: ISystemProcess): Promise<string[]> => {
-  if (isLinux) {
-    try {
-      return (await fs.readFile(`/proc/${item.pid}/cmdline`, 'utf8')).split('\0').filter(Boolean);
-    } catch { return []; }
-  }
-  return item.args.split(/\s+/);
+export const getProcessArgv = async (item: Pick<ISystemProcess, 'pid' | 'args'>): Promise<string[]> => {
+  if (!Number.isInteger(item.pid) || item.pid <= 0 || item.pid > 0x7fffffff) return [];
+  try {
+    // Resolve at runtime so Next.js does not fold the build host's platform into the bundle.
+    const platform = getBuiltinModule('node:os').platform();
+    if (platform === 'linux') {
+      const raw = await fs.readFile(`/proc/${item.pid}/cmdline`, 'utf8');
+      return raw.endsWith('\0') ? raw.slice(0, -1).split('\0') : [];
+    }
+    if (platform === 'darwin') return await getDarwinProcessArgv(item.pid);
+  } catch { /* Exited or inaccessible processes have no reliable argv. */ }
+  return [];
 };
 
 export const getProcessOpenFiles = async (pid: number): Promise<string[]> => {

@@ -2,6 +2,7 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import { z } from 'zod';
 import { scanLocalAgentProcesses } from '@/lib/local-agent-processes';
 import { manageAgentProcess } from '@/lib/agent-process-manager';
+import { isProcessActionRequestAllowed } from '@/lib/process-action-request';
 
 const actionSchema = z.object({
   action: z.enum(['stop', 'adopt']),
@@ -15,8 +16,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   try {
     if (req.method === 'GET') return res.status(200).json(await scanLocalAgentProcesses());
     if (req.method === 'POST') {
-      if (req.headers['sec-fetch-site'] === 'cross-site'
-        || (req.headers.origin && new URL(req.headers.origin).host !== req.headers.host)) {
+      if (!isProcessActionRequestAllowed(req.headers)) {
         return res.status(403).json({ error: 'Cross-site request denied' });
       }
       const parsed = actionSchema.safeParse(req.body);

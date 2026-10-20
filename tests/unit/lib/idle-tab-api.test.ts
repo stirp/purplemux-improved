@@ -15,6 +15,35 @@ const call = async (method: string, input: unknown = body, headers = {}) => {
 };
 beforeEach(() => vi.resetAllMocks());
 describe('idle tabs API', () => {
+  it.each(['POST', 'PATCH'])('accepts proxied same-origin %s requests', async (method) => {
+    for (const headers of [
+      { host: '127.0.0.1:8022', origin: 'https://pmux.example.test', 'sec-fetch-site': 'same-origin' },
+      { host: '127.0.0.1:8022', origin: 'http://pmux.example.test', 'x-purplemux-process-action': '1' },
+    ]) {
+      expect((await call(method, method === 'POST' ? body : policy, headers)).status).toHaveBeenCalledWith(200);
+      if (method === 'POST') expect(m.reclaim).toHaveBeenLastCalledWith([target], policy);
+      else expect(m.save).toHaveBeenLastCalledWith(policy);
+    }
+  });
+  it.each(['POST', 'PATCH'])('rejects unsafe %s requests before mutation', async (method) => {
+    for (const headers of [
+      { 'sec-fetch-site': 'cross-site', 'x-purplemux-process-action': '1' },
+      { 'sec-fetch-site': 'same-site', 'x-purplemux-process-action': '1' },
+      { origin: 'null' },
+      { origin: 'not a URL' },
+    ]) {
+      expect((await call(method, method === 'POST' ? body : policy, headers)).status).toHaveBeenCalledWith(403);
+    }
+    expect(m.reclaim).not.toHaveBeenCalled();
+    expect(m.save).not.toHaveBeenCalled();
+  });
+  it('does not enable CORS preflight for custom headers', async () => {
+    const res = await call('OPTIONS', undefined, { origin: 'https://evil.test', 'access-control-request-headers': 'x-purplemux-process-action' });
+    expect(res.status).toHaveBeenCalledWith(405);
+    expect(res.setHeader.mock.calls.some(([name]) => String(name).toLowerCase().startsWith('access-control-'))).toBe(false);
+    expect(m.reclaim).not.toHaveBeenCalled();
+    expect(m.save).not.toHaveBeenCalled();
+  });
   it('provides a no-cache preview and only accepts supported methods', async () => {
     m.preview.mockResolvedValue({ policy, candidates: [] });
     const res = await call('GET');

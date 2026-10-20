@@ -7,6 +7,7 @@ import { promisify } from 'util';
 import type { ISessionInfo } from '@/types/timeline';
 import type { ISessionWatcher } from '@/lib/providers/types';
 import { getShellPath } from '@/lib/preflight';
+import { matchesAgentProcess } from '@/lib/agent-process-identity';
 import {
   getChildPids,
   getProcessArgs,
@@ -58,7 +59,7 @@ const getClaudeSessionFromArgs = async (
 ): Promise<{ pid: number; sessionId: string; cwd: string | null } | null> => {
   for (const pid of childPids) {
     const args = await getProcessArgs(pid);
-    if (!args) continue;
+    if (!args || !await matchesAgentProcess(pid, args, 'claude')) continue;
     const match = args.match(/claude\s+--resume\s+([0-9a-f-]{36})/);
     if (match) {
       const cwd = await getProcessCwd(pid);
@@ -144,7 +145,7 @@ export const isClaudeRunning = async (panePid: number, preloadedChildPids?: numb
   const candidates = await getClaudeCandidatePids(panePid, preloadedChildPids);
   for (const pid of candidates) {
     const args = await getProcessArgs(pid);
-    if (args?.includes('claude')) return true;
+    if (args && await matchesAgentProcess(pid, args, 'claude')) return true;
   }
   return false;
 };
@@ -182,8 +183,8 @@ export const detectActiveSession = async (panePid: number, preloadedChildPids?: 
         continue;
       }
 
-      if (!processArgs.includes('claude')) {
-        try { await fs.unlink(path.join(SESSIONS_DIR, file)); } catch {}
+      if (!await matchesAgentProcess(data.pid, processArgs, 'claude')) {
+        // An unreadable argv is not evidence that the PID registration is stale.
         continue;
       }
 

@@ -456,6 +456,8 @@ Removing the `cliState` decision and the `hasPermissionPrompt` check has reduced
 
 ### Terminal WS Path (Process Detection, Independent of cliState)
 
+Agent identity checks in `/api/check-agent` and the Claude/Codex session detectors share `agent-process-identity.ts` with local process management. They classify the executable or a known Node/Bun CLI script, using `process-utils.getProcessArgv` to preserve argument boundaries (Linux procfs, macOS `sysctl(KERN_PROCARGS2)` via the existing Koffi dependency). macOS reads only the declared argc arguments, preserving spaces and empty arguments while excluding environment data; failures never fall back to splitting `ps` display text. Runtime detection resolves absolute npm bin script links before checking the package path. Provider names in prompts, paths or search-command arguments do not identify an agent; Claude PID registrations and resume fallback use the same check. Failed identity checks skip PID registrations without deleting them, since unreadable argv does not prove the registration is stale. This keeps a Codex tab attached to Codex when switching between Chat and Terminal, without changing `cliState` or the mode menu's timeout and timestamp guards.
+
 ```
 tmux title change → onTitleChange
   ├─ formatTabTitle → updates tab display name
