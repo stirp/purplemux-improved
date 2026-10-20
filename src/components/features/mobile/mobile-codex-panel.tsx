@@ -128,6 +128,7 @@ const MobileCodexPanel = ({
     sendResume,
     addPendingUserMessage,
     removePendingUserMessage,
+    syncInputAttempts,
     agentProcess: agentProcessFromTimeline,
   } = useTimeline({
     sessionName: sessionName ?? '',
@@ -368,6 +369,7 @@ const MobileCodexPanel = ({
           onOptimisticSend={addPendingUserMessage}
           onAddPendingMessage={addPendingUserMessage}
           onRemovePendingMessage={removePendingUserMessage}
+          onSyncInputAttempts={syncInputAttempts}
         />
         <QuickPromptBar
           prompts={quickPrompts}

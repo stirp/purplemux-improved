@@ -1,3 +1,5 @@
+import type { IInputAttempt } from '@/lib/input-queue';
+import type { IPendingUserMessageOptions } from '@/types/timeline';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { Plus } from 'lucide-react';
@@ -36,7 +38,8 @@ interface ICodexPanelProps {
   trustPrompt?: ITrustPromptInfo | null;
   onTrustResponse?: (answer: TTrustAnswer) => void | Promise<void>;
   scrollToBottomRef?: React.MutableRefObject<(() => void) | undefined>;
-  addPendingMessageRef?: React.MutableRefObject<((text: string, options?: { autoHide?: boolean; attachmentPlaceholder?: boolean }) => string) | undefined>;
+  addPendingMessageRef?: React.MutableRefObject<((text: string, options?: IPendingUserMessageOptions) => string) | undefined>;
+  syncInputAttemptsRef?: React.MutableRefObject<((attempts: IInputAttempt[]) => void) | undefined>;
   removePendingMessageRef?: React.MutableRefObject<((id: string) => void) | undefined>;
 }
 
@@ -55,6 +58,7 @@ const CodexPanel = ({
   scrollToBottomRef,
   addPendingMessageRef,
   removePendingMessageRef,
+  syncInputAttemptsRef,
 }: ICodexPanelProps) => {
   const t = useTranslations('terminal');
   const [resumingSessionId, setResumingSessionId] = useState<string | null>(null);
@@ -112,6 +116,7 @@ const CodexPanel = ({
     sendResume,
     addPendingUserMessage,
     removePendingUserMessage,
+    syncInputAttempts,
   } = useTimeline({
     sessionName,
     agentSessionId: codexSessionId,
@@ -145,11 +150,13 @@ const CodexPanel = ({
   useEffect(() => {
     if (addPendingMessageRef) addPendingMessageRef.current = addPendingUserMessage;
     if (removePendingMessageRef) removePendingMessageRef.current = removePendingUserMessage;
+    if (syncInputAttemptsRef) syncInputAttemptsRef.current = syncInputAttempts;
     return () => {
       if (addPendingMessageRef) addPendingMessageRef.current = undefined;
       if (removePendingMessageRef) removePendingMessageRef.current = undefined;
+      if (syncInputAttemptsRef) syncInputAttemptsRef.current = undefined;
     };
-  }, [addPendingMessageRef, removePendingMessageRef, addPendingUserMessage, removePendingUserMessage]);
+  }, [addPendingMessageRef, removePendingMessageRef, addPendingUserMessage, removePendingUserMessage, syncInputAttemptsRef, syncInputAttempts]);
 
   const prevAgentProcessRef = useRef(agentProcess);
   useEffect(() => {

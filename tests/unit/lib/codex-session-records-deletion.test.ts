@@ -6,6 +6,7 @@ const mocks = vi.hoisted(() => ({
   live: [] as string[], failWrite: vi.fn(),
 }));
 vi.mock('os', () => ({ default: { homedir: () => '/cascade-test' } }));
+vi.mock('@/lib/logger', () => ({ createLogger: () => ({ debug: vi.fn(), info: vi.fn(), warn: vi.fn(), error: vi.fn() }) }));
 vi.mock('fs/promises', () => ({ default: {
   readFile: async (file: string) => {
     if (!mocks.files.has(file)) throw Object.assign(new Error('Missing'), { code: 'ENOENT' });

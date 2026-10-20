@@ -525,6 +525,11 @@ class StatusManager {
     });
   }
 
+  getSessionJsonlPath(tabId: string, sessionId: string): string | null {
+    const entry = this.tabs.get(tabId);
+    return entry?.agentSessionId === sessionId ? entry.jsonlPath ?? null : null;
+  }
+
   getAllForClient(): Record<string, IClientTabStatusEntry> {
     const result: Record<string, IClientTabStatusEntry> = {};
     for (const [tabId, entry] of this.tabs) {

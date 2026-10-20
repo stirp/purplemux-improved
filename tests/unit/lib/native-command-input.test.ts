@@ -9,7 +9,7 @@ const mocks = vi.hoisted(() => ({
   mobile: false,
   translate: (key: string) => key,
   history: { entries: [], isLoading: false, isError: false, fetchHistory: vi.fn(), addHistory: vi.fn(), deleteHistory: vi.fn() },
-  queue: { messages: [] as { id: string; text: string }[], sending: false, enqueue: vi.fn(), submitNow: vi.fn(), remove: vi.fn() },
+  queue: { messages: [] as { id: string; text: string; attachments: { path: string; filename: string }[] }[], canceledIds: [] as string[], attempts: [] as { id: string; at: number }[], sending: false, enqueue: vi.fn(), submitNow: vi.fn(), remove: vi.fn() },
   attachments: [] as { id: string; path: string; filename: string; thumbnail: string }[],
   sendStdin: vi.fn(),
   focusTerminal: vi.fn(),
@@ -31,7 +31,7 @@ let container: HTMLDivElement;
 let focusInputRef: { current: (() => void) | undefined };
 let setInputValueRef: { current: ((value: string) => void) | undefined };
 
-const Harness = ({ provider = 'codex', cliState = 'idle', terminalWsConnected = true }: Partial<ComponentProps<typeof WebInputBar>>) => {
+const Harness = ({ provider = 'codex', cliState = 'idle', terminalWsConnected = true, ...props }: Partial<ComponentProps<typeof WebInputBar>>) => {
   const native = useNativeCommands({
     scopeKey: 'tab:session', provider,
     getBufferText: () => '',
@@ -42,6 +42,7 @@ const Harness = ({ provider = 'codex', cliState = 'idle', terminalWsConnected = 
   });
   return createElement('div', null,
     createElement(WebInputBar, {
+      ...props,
       tabId: 'tab', wsId: 'workspace', provider, cliState, terminalWsConnected, visible: true,
       sendStdin: mocks.sendStdin, focusTerminal: mocks.focusTerminal, focusInputRef, setInputValueRef,
       onNativeCommands: native.open, nativeCommandsActive: native.active,
@@ -72,6 +73,8 @@ beforeEach(() => {
   localStorage.clear();
   mocks.mobile = false;
   mocks.queue.messages = [];
+  mocks.queue.canceledIds = [];
+  mocks.queue.attempts = [];
   mocks.queue.sending = false;
   mocks.attachments = [];
   focusInputRef = { current: undefined };
@@ -89,6 +92,90 @@ afterEach(async () => {
 });
 
 describe('Web input native menus', () => {
+  it.each([false, true])('retains the bubble when DELETE returns success but delivery has already started (mobile=%s)', async (mobile) => {
+    mocks.mobile = mobile;
+    const add = vi.fn(() => 'input-racing');
+    const remove = vi.fn();
+    const message = { id: 'racing', text: 'still delivering', attachments: [] };
+    mocks.queue.messages = [message];
+    mocks.queue.remove.mockResolvedValueOnce(undefined);
+    await render({ onAddPendingMessage: add, onRemovePendingMessage: remove });
+    // The UI still has the previous idle snapshot when the server refuses cancellation.
+    await act(async () => (container.querySelector('[aria-label="cancelQueuedMessage"]') as HTMLButtonElement).click());
+    expect(mocks.queue.remove).toHaveBeenCalledWith(message.id);
+    expect(remove).not.toHaveBeenCalled();
+    mocks.queue.sending = true;
+    await render({ onAddPendingMessage: add, onRemovePendingMessage: remove });
+    expect(add).toHaveBeenLastCalledWith(message.text, expect.objectContaining({ deliveryState: 'sending' }));
+    expect(remove).not.toHaveBeenCalled();
+  });
+
+  it.each([false, true])('syncs attempts after pending messages and after rapid dequeue (mobile=%s)', async (mobile) => {
+    mocks.mobile = mobile;
+    const calls: string[] = [];
+    const add = vi.fn(() => { calls.push('add'); return 'input-q'; });
+    const sync = vi.fn(() => { calls.push('attempts'); });
+    mocks.queue.messages = [{ id: 'q', text: 'message', attachments: [] }];
+    await render({ onAddPendingMessage: add, onSyncInputAttempts: sync });
+    expect(calls).toEqual(['add', 'attempts']);
+    mocks.queue.messages = [];
+    mocks.queue.attempts = [{ id: 'q', at: 2000 }];
+    await render({ onAddPendingMessage: add, onSyncInputAttempts: sync });
+    expect(sync).toHaveBeenLastCalledWith([{ id: 'q', at: 2000 }]);
+    expect(add).toHaveBeenCalledTimes(1);
+  });
+
+  it('removes remote cancellations but keeps successfully dequeued placeholders awaiting a transcript', async () => {
+    const add = vi.fn();
+    const remove = vi.fn();
+    mocks.queue.messages = [{ id: 'remote', text: 'queued elsewhere', attachments: [] }, { id: 'sent', text: 'sent', attachments: [] }];
+    await render({ onAddPendingMessage: add, onRemovePendingMessage: remove });
+    expect(add).toHaveBeenCalledTimes(2);
+    mocks.queue.messages = [];
+    mocks.queue.canceledIds = ['remote'];
+    await render({ onAddPendingMessage: add, onRemovePendingMessage: remove });
+    expect(remove).toHaveBeenCalledWith('input-remote');
+    expect(remove).not.toHaveBeenCalledWith('input-sent');
+    expect(mocks.queue.remove).not.toHaveBeenCalled();
+  });
+
+  it.each([false, true])('shows pending input before enqueue finishes and retains a draft on failure (mobile=%s)', async (mobile) => {
+    mocks.mobile = mobile;
+    let reject!: (error: Error) => void;
+    mocks.queue.enqueue.mockImplementationOnce(() => new Promise((_, fail) => { reject = fail; }));
+    const add = vi.fn(() => 'pending-id');
+    const remove = vi.fn();
+    await render({ onAddPendingMessage: add, onRemovePendingMessage: remove });
+    await type('new message');
+    await act(async () => (container.querySelector('[aria-label="queueSend"]') as HTMLButtonElement).click());
+    expect(add).toHaveBeenCalledWith('new message', expect.objectContaining({ autoHide: false, deliveryState: 'sending' }));
+    expect(mocks.queue.enqueue).toHaveBeenCalledTimes(1);
+    expect(container.querySelector('textarea')!.value).toBe('new message');
+    await act(async () => reject(new Error('network error')));
+    expect(remove).toHaveBeenCalledWith('pending-id');
+    expect(container.querySelector('textarea')!.value).toBe('new message');
+  });
+
+  it('clears the submitted draft on enqueue success and removes its pending bubble when canceled', async () => {
+    mocks.queue.enqueue.mockResolvedValueOnce(undefined);
+    mocks.queue.remove.mockResolvedValueOnce(undefined);
+    const add = vi.fn(() => 'input-id');
+    const remove = vi.fn();
+    await render({ onAddPendingMessage: add, onRemovePendingMessage: remove });
+    await type('new message');
+    await act(async () => (container.querySelector('[aria-label="queueSend"]') as HTMLButtonElement).click());
+    const message = mocks.queue.enqueue.mock.calls[0][0];
+    expect(container.querySelector('textarea')!.value).toBe('');
+    mocks.queue.messages = [message];
+    await render({ onAddPendingMessage: add, onRemovePendingMessage: remove });
+    expect(add).toHaveBeenLastCalledWith('new message', expect.objectContaining({ deliveryState: 'queued', queueMessage: message }));
+    await act(async () => (container.querySelector('[aria-label="cancelQueuedMessage"]') as HTMLButtonElement).click());
+    expect(remove).not.toHaveBeenCalled();
+    mocks.queue.messages = [];
+    mocks.queue.canceledIds = [message.id];
+    await render({ onAddPendingMessage: add, onRemovePendingMessage: remove });
+    expect(remove).toHaveBeenCalledWith(`input-${message.id}`);
+  });
   it.each([false, true])('hands Codex $ to the terminal without submitting, then supports manual return (mobile=%s)', async (mobile) => {
     mocks.mobile = mobile;
     await render();
@@ -148,7 +235,7 @@ describe('Web input native menus', () => {
   });
 
   it.each(['queued', 'sending', 'attachment', 'disconnected', 'needs-input', 'unknown', 'inactive'] as const)('preserves the draft when %s blocks native menus', async (reason) => {
-    if (reason === 'queued') mocks.queue.messages = [{ id: 'pending', text: 'work' }];
+    if (reason === 'queued') mocks.queue.messages = [{ id: 'pending', text: 'work', attachments: [] }];
     if (reason === 'sending') mocks.queue.sending = true;
     if (reason === 'attachment') mocks.attachments = [{ id: 'image', path: '/image.png', filename: 'image.png', thumbnail: '' }];
     await render({

@@ -1,10 +1,12 @@
 import useSWR from 'swr';
-import type { IQueuedInput } from '@/lib/input-queue';
+import type { IInputAttempt, IQueuedInput } from '@/lib/input-queue';
 
 interface IQueueData {
   messages: IQueuedInput[];
   sending: boolean;
   error: string | null;
+  canceledIds?: string[];
+  attempts?: IInputAttempt[];
 }
 
 const EMPTY: IQueueData = { messages: [], sending: false, error: null };

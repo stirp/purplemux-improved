@@ -188,5 +188,11 @@
   "keyBarLoadFailed": "No se pudieron cargar las teclas",
   "keyBarSaveFailed": "No se pudieron guardar las teclas. Los cambios se conservan; inténtalo de nuevo.",
   "customCommandsAutoEnter": "Pulsar Enter automáticamente",
-  "customCommandsAutoEnterHint": "Si se desactiva, no se añade Enter al final. Se siguen enviando los saltos de línea del comando."
+  "customCommandsAutoEnterHint": "Si se desactiva, no se añade Enter al final. Se siguen enviando los saltos de línea del comando.",
+  "queueDeliveryUnconfirmed": "Codex has not confirmed receipt. Your message is retained. Check the terminal before retrying or canceling.",
+  "queueTerminalNotReady": "The terminal is not ready for input. Your message is retained. Check Codex before retrying.",
+  "inputSending": "Sending, awaiting session confirmation…",
+  "inputQueued": "Queued",
+  "inputUnconfirmed": "Receipt unconfirmed. Check the terminal.",
+  "inputFailed": "Send incomplete. Message retained."
 }

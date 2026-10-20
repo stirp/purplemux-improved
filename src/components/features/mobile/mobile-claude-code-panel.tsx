@@ -122,6 +122,7 @@ const MobileClaudeCodePanel = ({
     sendResume,
     addPendingUserMessage,
     removePendingUserMessage,
+    syncInputAttempts,
   } = useTimeline({
     sessionName,
     claudeSessionId,
@@ -368,6 +369,7 @@ const MobileClaudeCodePanel = ({
           onOptimisticSend={addPendingUserMessage}
           onAddPendingMessage={addPendingUserMessage}
           onRemovePendingMessage={removePendingUserMessage}
+          onSyncInputAttempts={syncInputAttempts}
         />
         <QuickPromptBar
           prompts={quickPrompts}

@@ -33,6 +33,46 @@ beforeEach(async () => {
 afterEach(async () => { await fs.rm(directory, { recursive: true, force: true }); });
 
 describe('AI commit messages and adopting working tree changes', () => {
+  it.each([false, true])('detects same-size changes at the index timestamp without changing staging (linked=%s)', async (linked) => {
+    const parent = directory;
+    if (linked) {
+      const child = path.join(parent, 'linked');
+      await git('worktree', 'add', '-b', 'task', child);
+      directory = child;
+    }
+    try {
+      // Model coarse stat data deterministically instead of relying on a fast write in the same clock tick.
+      await git('config', 'core.checkStat', 'minimal');
+      await git('config', 'core.trustctime', 'false');
+      const timestamp = new Date('2001-09-09T01:46:40Z');
+      const file = path.join(directory, 'file.txt');
+      const index = await git('rev-parse', '--path-format=absolute', '--git-path', 'index');
+      await fs.utimes(file, timestamp, timestamp);
+      await git('update-index', '--refresh');
+      await fs.utimes(index, timestamp, timestamp);
+      const originalIndex = await fs.readFile(index);
+      await fs.writeFile(file, 'child');
+      await fs.utimes(file, timestamp, timestamp);
+
+      const generated = await generateCommitMessage(directory, 'en');
+      expect(generated.files).toEqual(['file.txt']);
+      expect(JSON.parse(mocks.agent.mock.calls[0][1]).diff).toContain('+child');
+      expect(await fs.readFile(index)).toEqual(originalIndex);
+      expect((await fs.stat(index)).mtime).toEqual(timestamp);
+
+      await fs.writeFile(file, 'later');
+      await fs.utimes(file, timestamp, timestamp);
+      await expect(commitWorkingChanges(directory, generated.snapshot, message)).rejects.toMatchObject({ code: 'changed' });
+      expect(await git('rev-parse', 'HEAD')).toBe(generated.snapshot.head);
+      expect(await fs.readFile(index)).toEqual(originalIndex);
+
+      const latest = await generateCommitMessage(directory, 'en');
+      await commitWorkingChanges(directory, latest.snapshot, message);
+      expect(await git('show', 'HEAD:file.txt')).toBe('later');
+      expect(await git('status', '--porcelain')).toBe('');
+    } finally { directory = parent; }
+  });
+
   it('classifies AI timeout without changing HEAD or staging', async () => {
     await fs.writeFile(path.join(directory, 'file.txt'), 'changed');
     const head = await git('rev-parse', 'HEAD');

@@ -34,6 +34,8 @@ const key = async (code: string) => {
   })); });
 };
 const startDrag = async (name = '常驻助手') => {
+  // Base UI schedules initial focus in rAF; finish it before focusing the drag handle.
+  await act(async () => { await new Promise<void>((resolve) => requestAnimationFrame(() => resolve())); });
   const handle = button(`调整${name}的顺序`);
   await act(async () => handle.focus());
   await key('Space');

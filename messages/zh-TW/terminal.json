@@ -188,5 +188,11 @@
   "keyBarLoadFailed": "無法載入終端按鍵",
   "keyBarSaveFailed": "儲存終端按鍵失敗，已保留修改，請重試。",
   "customCommandsAutoEnter": "自動按下 Enter",
-  "customCommandsAutoEnterHint": "關閉後不額外加入末尾 Enter；命令本身包含的換行仍會傳送。"
+  "customCommandsAutoEnterHint": "關閉後不額外加入末尾 Enter；命令本身包含的換行仍會傳送。",
+  "queueDeliveryUnconfirmed": "尚未確認 Codex 收到訊息，內容已保留。請檢查終端輸入後重試或取消。",
+  "queueTerminalNotReady": "終端尚未準備好接收訊息，內容已保留。請檢查 Codex 畫面後重試。",
+  "inputSending": "正在傳送，等待工作階段確認…",
+  "inputQueued": "排隊中",
+  "inputUnconfirmed": "尚未確認收到，請檢查終端",
+  "inputFailed": "傳送未完成，訊息已保留"
 }

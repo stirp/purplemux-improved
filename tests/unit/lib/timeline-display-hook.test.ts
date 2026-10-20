@@ -3,8 +3,9 @@ import { act, createElement, useEffect } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import useTimeline from '@/hooks/use-timeline';
+import { InputQueue } from '@/lib/input-queue';
 import { clearTimelineDisplaySnapshot, getTimelineDisplaySnapshot, saveTimelineDisplaySnapshot, timelineDisplayKey } from '@/lib/timeline-display-cache';
-import type { ITimelineEntry, TTimelineServerMessage } from '@/types/timeline';
+import type { ITimelineUserMessage, TTimelineServerMessage } from '@/types/timeline';
 
 class Socket {
   static OPEN = 1;
@@ -20,7 +21,7 @@ class Socket {
   message(msg: TTimelineServerMessage) { this.onmessage?.({ data: JSON.stringify(msg) }); }
 }
 
-const entry = (id: string): ITimelineEntry => ({ id, type: 'user-message', timestamp: 1, text: id });
+const entry = (id: string): ITimelineUserMessage => ({ id, type: 'user-message', timestamp: 1, text: id });
 let state: ReturnType<typeof useTimeline>;
 const Harness = ({ id = 'a', session = 'pane' }: { id?: string | null; session?: string }) => {
   const timeline = useTimeline({ sessionName: session, panelType: 'codex-cli', agentSessionId: id, enabled: true });
@@ -46,6 +47,157 @@ afterEach(async () => {
 });
 
 describe('timeline cached display and revalidation', () => {
+  it.each([false, true])('uses server attempt times even when a send finishes between queue polls (receiptFirst=%s)', async (receiptFirst) => {
+    vi.useFakeTimers();
+    vi.setSystemTime(1000);
+    const status = { cliState: 'busy' as 'busy' | 'idle', workspaceId: 'ws', agentProviderId: 'codex', agentSessionId: 'a', eventSeq: 1 };
+    const queue = new InputQueue(() => status, async () => ({ completed: true }));
+    const target = { tabId: 'tab', workspaceId: 'ws', sessionName: 'pane', provider: 'codex' as const, agentSessionId: 'a' };
+    const first = { id: 'first', text: 'same', attachments: [], createdAt: 1000 };
+    const second = { ...first, id: 'second', createdAt: 1100 };
+    queue.enqueue(target, first);
+    queue.enqueue(target, second);
+    vi.setSystemTime(1500);
+    status.cliState = 'idle';
+    await queue.tick();
+    status.cliState = 'busy';
+    await act(async () => root.render(createElement(Harness)));
+    const actual = { ...entry('native-first'), timestamp: 2000, text: 'same' };
+    await act(async () => Socket.instances[0].message({ type: 'timeline:init', sessionId: 'a', totalEntries: 1, startByteOffset: 0, hasMore: false, entries: [actual] }));
+    const syncQueue = async () => act(async () => {
+      const snapshot = queue.snapshot('tab');
+      for (const message of snapshot.messages) state.addPendingUserMessage(message.text, { queueMessage: message, autoHide: false, deliveryState: 'queued' });
+      state.syncInputAttempts(snapshot.attempts);
+    });
+    await syncQueue();
+    expect(state.entries).toHaveLength(2);
+    expect(state.entries.find((e) => e.id === 'input-second')).toMatchObject({ pending: true });
+    vi.setSystemTime(3000);
+    status.cliState = 'idle';
+    await queue.tick();
+    await queue.tick();
+    expect(queue.snapshot('tab').messages).toEqual([]);
+    if (!receiptFirst) await syncQueue();
+    const secondReceipt = { ...actual, id: 'native-second', timestamp: 3100 };
+    await act(async () => Socket.instances[0].message({ type: 'timeline:append', entries: [secondReceipt] }));
+    if (receiptFirst) await syncQueue();
+    expect(state.entries).toEqual([actual, { ...secondReceipt, id: 'input-second' }]);
+  });
+
+  it.each(['snapshot-first', 'init-first', 'append-first'])('keeps never-attempted same-text input pending in a fresh client (%s)', async (order) => {
+    await act(async () => root.render(createElement(Harness)));
+    const message = { id: 'second', text: 'same', createdAt: 1100, attachments: [] };
+    const syncQueue = async () => act(async () => state.addPendingUserMessage(message.text, { queueMessage: message, autoHide: false, deliveryState: 'queued' }));
+    if (order === 'snapshot-first') await syncQueue();
+    const actual = { ...entry('native-first'), text: 'same', timestamp: 2000 };
+    await act(async () => Socket.instances[0].message(order === 'append-first'
+      ? { type: 'timeline:append', entries: [actual] }
+      : { type: 'timeline:init', sessionId: 'a', totalEntries: 1, startByteOffset: 0, hasMore: false, entries: [actual] }));
+    if (order !== 'snapshot-first') await syncQueue();
+    expect(state.entries).toHaveLength(2);
+    expect(state.entries.find((e) => e.id === 'input-second')).toMatchObject({ pending: true, deliveryState: 'queued' });
+    expect(state.entries.find((e) => e.id === 'native-first')).toEqual(actual);
+  });
+
+  it('does not reuse the first same-text receipt for a queued message after reconnect', async () => {
+    await act(async () => root.render(createElement(Harness)));
+    const first = { id: 'first', text: 'same', attachments: [], createdAt: 1000 };
+    const second = { ...first, id: 'second', createdAt: 1100 };
+    await act(async () => {
+      state.addPendingUserMessage('same', { queueMessage: first, autoHide: false });
+      state.addPendingUserMessage('same', { queueMessage: second, autoHide: false });
+    });
+    await act(async () => state.syncInputAttempts([{ id: 'first', at: 1500 }]));
+    const actual = { ...entry('native-first'), timestamp: 2000, text: 'same' };
+    await act(async () => Socket.instances[0].message({ type: 'timeline:append', entries: [actual] }));
+    await act(async () => Socket.instances[0].message({ type: 'timeline:init', sessionId: 'a', totalEntries: 1, startByteOffset: 0, hasMore: false,
+      entries: [{ ...actual, id: 'regenerated-parser-id' }] }));
+    await act(async () => state.addPendingUserMessage('same', { queueMessage: second, autoHide: false, deliveryState: 'queued' }));
+    expect(state.entries).toHaveLength(2);
+    expect(state.entries[0]).toMatchObject({ id: 'input-first' });
+    expect(state.entries[0]).not.toHaveProperty('pending');
+    expect(state.entries[1]).toMatchObject({ id: 'input-second', pending: true, deliveryState: 'queued' });
+    await act(async () => state.syncInputAttempts([{ id: 'second', at: 2500 }]));
+    await act(async () => Socket.instances[0].message({ type: 'timeline:append', entries: [{ ...actual, id: 'native-second', timestamp: 3000 }] }));
+    expect(state.entries[1]).toMatchObject({ id: 'input-second', timestamp: 3000 });
+    expect(state.entries[1]).not.toHaveProperty('pending');
+  });
+
+  it.each([false, true])('confirms Claude images when hashes arrive before/after the transcript (late=%s)', async (late) => {
+    await act(async () => root.render(createElement(Harness)));
+    const message = { id: 'claude-image', text: 'picture', createdAt: 1000,
+      attachments: [{ path: '/home/test/.purplemux/uploads/ws/tab/image.png', filename: 'image.png' }] };
+    const options = { queueMessage: message, autoHide: false, images: ['/api/uploads/ws/tab/image.png'] };
+    await act(async () => state.addPendingUserMessage(message.text, options));
+    await act(async () => state.syncInputAttempts([{ id: message.id, at: 1500 }]));
+    const enrich = async () => act(async () => state.addPendingUserMessage(message.text, {
+      ...options, queueMessage: { ...message, attachments: [{ ...message.attachments[0], imageHash: 'sha256-image' }] },
+    }));
+    if (!late) await enrich();
+    await act(async () => Socket.instances[0].message({ type: 'timeline:append', entries: [{
+      ...entry('native-image'), timestamp: 2000, text: 'picture', images: ['data:image/png;base64,aW1hZ2U='], imageHashes: ['sha256-image'],
+    }] }));
+    if (late) await enrich();
+    expect(state.entries).toHaveLength(1);
+    expect(state.entries[0]).toMatchObject({ id: 'input-claude-image' });
+    expect(state.entries[0]).not.toHaveProperty('pending');
+  });
+
+  it('reconciles a queue snapshot arriving after the transcript without duplicating the bubble', async () => {
+    await act(async () => root.render(createElement(Harness)));
+    const message = { id: 'late-queue', text: 'already received', attachments: [], createdAt: Date.now() };
+    await act(async () => Socket.instances[0].message({ type: 'timeline:init', sessionId: 'a', totalEntries: 1, startByteOffset: 0, hasMore: false,
+      entries: [{ ...entry('native'), text: message.text, timestamp: message.createdAt + 1 }] }));
+    await act(async () => {
+      state.addPendingUserMessage(message.text, { queueMessage: message, autoHide: false });
+      state.syncInputAttempts([{ id: message.id, at: message.createdAt }]);
+    });
+    expect(state.entries).toHaveLength(1);
+    expect(state.entries[0]).toMatchObject({ id: 'input-late-queue' });
+    expect(state.entries[0]).not.toHaveProperty('pending');
+  });
+
+  it('keeps queued input visible, updates its state, and confirms it only with a new matching record', async () => {
+    vi.useFakeTimers();
+    await act(async () => root.render(createElement(Harness)));
+    const message = { id: 'queued', text: 'repeat', attachments: [], createdAt: Date.now() };
+    const options = { queueMessage: message, autoHide: false, deliveryState: 'sending' as const };
+    await act(async () => {
+      state.addPendingUserMessage(message.text, options);
+      state.syncInputAttempts([{ id: message.id, at: message.createdAt }]);
+    });
+    await act(async () => Socket.instances[0].message({ type: 'timeline:init', sessionId: 'a', totalEntries: 1, startByteOffset: 0, hasMore: false,
+      entries: [{ ...entry('previous'), text: 'repeat', timestamp: message.createdAt - 1000 }] }));
+    expect(state.entries).toHaveLength(2);
+    await act(async () => vi.advanceTimersByTime(60_000));
+    expect(state.entries[1]).toMatchObject({ id: 'input-queued', pending: true });
+    await act(async () => { state.addPendingUserMessage(message.text, { ...options, deliveryState: 'unconfirmed' }); });
+    expect(state.entries).toHaveLength(2);
+    expect(state.entries[1]).toMatchObject({ deliveryState: 'unconfirmed' });
+    const actual = { ...entry('actual'), text: 'repeat', timestamp: message.createdAt + 12_000 };
+    await act(async () => Socket.instances[0].message({ type: 'timeline:append', entries: [actual] }));
+    expect(state.entries[1]).toEqual({ ...actual, id: 'input-queued' });
+    await act(async () => { state.addPendingUserMessage(message.text, options); });
+    expect(state.entries).toHaveLength(2);
+    expect(state.entries[1]).not.toHaveProperty('pending');
+  });
+
+  it('confirms attachment input on init without consuming another pending message', async () => {
+    await act(async () => root.render(createElement(Harness)));
+    const createdAt = Date.now();
+    const message = { id: 'image', text: '', createdAt, attachments: [{ path: '/home/test/.purplemux/uploads/ws/tab/image.png', filename: 'image.png' }] };
+    await act(async () => {
+      state.addPendingUserMessage('', { autoHide: false, queueMessage: message, images: ['/api/uploads/ws/tab/image.png'] });
+      state.syncInputAttempts([{ id: message.id, at: createdAt }]);
+    });
+    await act(async () => Socket.instances[0].message({ type: 'timeline:init', sessionId: 'a', totalEntries: 2, startByteOffset: 0, hasMore: false, entries: [
+      { ...entry('unrelated'), timestamp: createdAt + 1 },
+      { ...entry('image-actual'), timestamp: createdAt + 2, text: '', images: ['/api/uploads/ws/tab/image.png'] },
+    ] }));
+    expect(state.entries).toHaveLength(2);
+    expect(state.entries[1]).toMatchObject({ id: 'input-image' });
+    expect(state.entries[1]).not.toHaveProperty('pending');
+  });
   it.each([false, true])('preserves the first pending message while waiting for a new file (attachment=%s)', async (attachment) => {
     vi.useFakeTimers();
     await act(async () => root.render(createElement(Harness, { id: null })));

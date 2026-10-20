@@ -490,6 +490,24 @@ While a new session waits for its JSONL file, `session-waiting` removes confirme
 
 ---
 
+## Queued Input Delivery Feedback
+
+Message delivery state is independent of `TCliState`. Ordinary Web input immediately creates a pending user bubble with the queue message ID. Queue snapshots update its queued/sending/unconfirmed/failed label. Only a matching new transcript user message confirms it in place; the normal queued path does not use the legacy one-second pending fade. Canceling a queued input removes its pending bubble; an enqueue request failure removes the optimistic bubble and preserves the draft.
+
+Cancellation removes the bubble only when the server snapshot includes the message in `canceledIds`. A successful DELETE response alone is insufficient: delivery may have started after the client's last poll, in which case the server keeps the in-flight item and the UI must keep its pending bubble.
+
+Codex queued delivery keeps the original text and attachments until the current native transcript contains a matching user record after the attempt timestamp. It checks terminal readiness and reads the transcript incrementally on the server, independently of mounted browser panels. A 30-second receipt timeout retains the message with an explicit unconfirmed error and blocks automatic retry. Every five seconds after timeout it checks for a late receipt without writing, allowing confirmed delivery to release the queue. Explicit retry also checks for a late receipt before writing again. Busy changes and old identical transcript entries cannot acknowledge delivery. Immediate question answers and Claude terminal submission retain their existing behavior. Queue storage remains process-local; this does not add restart recovery.
+
+The `input-queue` logger records writing, confirmation and confirmation timeout with tab/session/message IDs, without recording message text. These records distinguish terminal command completion from native receipt; they do not claim a terminal write alone guarantees delivery.
+
+Receipt initialization scans back to the attempt timestamp rather than only the latest user turn, then continues incrementally. It prefers the status manager's bound JSONL path after verifying its native `session_meta` ID, so a session created more than 30 days ago is still eligible. Reconnect reconciliation retains the queue ID of already consumed native records (timestamp, text and images), before matching remaining pending messages.
+
+Queue snapshots also expose `attempts` (message ID and server attempt timestamp). These survive successful dequeue and are cleared when the tab disappears or the server restarts; no extra message bodies are retained. Desktop and mobile clients synchronize these boundaries after creating queue placeholders. Pending queue messages without a server attempt cannot consume transcript records, even in a fresh client with no cached ownership; `createdAt` is never a receipt boundary. A late attempt snapshot reconciles already appended records, covering delivery that finishes between polls. Snapshots lacking this metadata leave messages pending rather than guessing delivery.
+
+After image identities match, receipt text comparison accepts Codex's leading sequential `[Image #1]` markers, including multiple images and image-only input. It also checks the unmodified text and never removes labels in the middle of a message or from plain text without verified image attachments. Timeline display retains the original native text.
+
+Claude base64 images carry SHA-256 identities of decoded bytes; queue API responses include server-computed identities of uploaded image files. The UI reconciles matching attachments even when the enriched queue snapshot follows the native record. Queue snapshots also expose explicit `canceledIds`, retained independently of successful dequeue until the tab disappears or the server restarts. Other clients remove only these canceled placeholders; absence from the queue alone never acknowledges or deletes a pending bubble.
+
 ## Logging Configuration
 
 ### Global Level

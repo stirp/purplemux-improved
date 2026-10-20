@@ -188,5 +188,11 @@
   "keyBarLoadFailed": "Не удалось загрузить клавиши",
   "keyBarSaveFailed": "Не удалось сохранить. Изменения сохранены в форме; повторите попытку.",
   "customCommandsAutoEnter": "Автоматически нажимать Enter",
-  "customCommandsAutoEnterHint": "Если выключено, Enter в конце не добавляется. Переводы строк в самой команде отправляются."
+  "customCommandsAutoEnterHint": "Если выключено, Enter в конце не добавляется. Переводы строк в самой команде отправляются.",
+  "queueDeliveryUnconfirmed": "Codex has not confirmed receipt. Your message is retained. Check the terminal before retrying or canceling.",
+  "queueTerminalNotReady": "The terminal is not ready for input. Your message is retained. Check Codex before retrying.",
+  "inputSending": "Sending, awaiting session confirmation…",
+  "inputQueued": "Queued",
+  "inputUnconfirmed": "Receipt unconfirmed. Check the terminal.",
+  "inputFailed": "Send incomplete. Message retained."
 }
