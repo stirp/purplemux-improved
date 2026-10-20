@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 const mocks = vi.hoisted(() => ({ children: vi.fn(), args: vi.fn(), access: vi.fn(), readdir: vi.fn(), readFile: vi.fn(), cwd: vi.fn() }));
-vi.mock('@/lib/process-utils', () => ({ getChildPids: mocks.children, getProcessArgs: mocks.args, getProcessCwd: mocks.cwd, isProcessRunning: vi.fn() }));
+vi.mock('@/lib/process-utils', () => ({ getChildPids: mocks.children, getProcessArgs: mocks.args, getProcessArgv: async ({ args }: { args: string }) => args.split(/\s+/), getProcessCwd: mocks.cwd, isProcessRunning: vi.fn() }));
 vi.mock('fs/promises', () => ({ default: { access: mocks.access, readdir: mocks.readdir, readFile: mocks.readFile, unlink: vi.fn() } }));
 import { detectActiveSession, isClaudeRunning } from '@/lib/providers/claude/session-detection';
 beforeEach(() => {

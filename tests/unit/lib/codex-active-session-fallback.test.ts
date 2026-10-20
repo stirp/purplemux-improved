@@ -21,7 +21,10 @@ vi.mock('os', async (importOriginal) => {
   };
 });
 
-vi.mock('@/lib/process-utils', () => processUtils);
+vi.mock('@/lib/process-utils', () => ({
+  ...processUtils,
+  getProcessArgv: async ({ args }: { args: string }) => args.split(/\s+/),
+}));
 
 vi.mock('@/lib/providers/codex/preflight', () => ({
   runCodexPreflight: vi.fn(async () => ({

@@ -9,10 +9,11 @@ import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction } from '@/components/ui/alert-dialog';
 import { idleTabPolicySchema, type TIdleTabPolicy, type IIdleTabPreview, type IIdleTabResult, type TIdleTabTarget } from '@/lib/idle-tab-policy';
+import { PROCESS_ACTION_HEADER } from '@/lib/process-action-request';
 
 const endpoint = '/api/system/idle-tabs';
 const request = async (method: string, body?: unknown) => {
-  const response = await fetch(endpoint, { method, headers: { 'Content-Type': 'application/json' },
+  const response = await fetch(endpoint, { method, headers: { 'Content-Type': 'application/json', [PROCESS_ACTION_HEADER]: '1' },
     ...(body === undefined ? {} : { body: JSON.stringify(body) }) });
   const result = await response.json();
   if (!response.ok) throw new Error(result.error ?? 'Idle tab operation failed');

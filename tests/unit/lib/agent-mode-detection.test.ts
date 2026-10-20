@@ -64,6 +64,29 @@ afterEach(async () => {
 });
 
 describe('view mode live agent detection', () => {
+  it.each([false, true])('returns from Codex through Terminal to its original chat (desktop: %s)', async (desktop) => {
+    vi.mocked(fetch).mockResolvedValue(runningResponse('codex'));
+    useTabStore.getState().setPanelType('tab', 'codex-cli');
+    await render('codex-cli', desktop);
+    await click('Select tab mode');
+    await click('Terminal');
+    expect(switchPanel).toHaveBeenLastCalledWith('terminal');
+    await act(async () => {
+      useTabStore.getState().setPanelType('tab', 'terminal');
+      useTabStore.getState().updateFromServer('tab', {
+        workspaceId: 'ws-test', cliState: 'busy', panelType: 'terminal', currentProcess: 'node', agentSessionId: null,
+      });
+    });
+    await render('terminal', desktop);
+    await click('Select tab mode');
+    expect(button('Start Claude')).toBeUndefined();
+    expect(button('Start Codex')).toBeUndefined();
+    await click('Chat');
+    expect(switchPanel).toHaveBeenLastCalledWith('codex-cli');
+    expect(startAgent).not.toHaveBeenCalled();
+    expect(useTabStore.getState().tabs.tab).toMatchObject({ agentProviderId: 'codex', agentSessionId: 'original-session' });
+  });
+
   it('returns from Claude through Terminal to the same chat when tmux reports node', async () => {
     useTabStore.getState().setPanelType('tab', 'claude-code');
     await render('claude-code');

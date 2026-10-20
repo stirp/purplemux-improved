@@ -10,6 +10,7 @@ import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, A
 import useWorkspaceStore from '@/hooks/use-workspace-store';
 import IdleTabSettings from '@/components/features/settings/idle-tab-settings';
 import type { IAgentProcessIdentity, IAgentProcessList } from '@/types/agent-process';
+import { PROCESS_ACTION_HEADER } from '@/lib/process-action-request';
 
 const endpoint = '/api/system/agent-processes';
 const fetchProcesses = async (): Promise<IAgentProcessList> => {
@@ -36,7 +37,7 @@ const AgentProcessSettings = () => {
     if (!pending || busy) return;
     setBusy(true);
     try {
-      const response = await fetch(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' },
+      const response = await fetch(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json', [PROCESS_ACTION_HEADER]: '1' },
         body: JSON.stringify({ ...pending, confirmed: true }) });
       const result = await response.json();
       if (!response.ok) throw new Error(result.error ?? t('failed'));
