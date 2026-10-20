@@ -45,6 +45,15 @@ afterEach(async () => {
 });
 
 describe('global question notifications', () => {
+  it('rejects a stale toast after the tab moves to another workspace with the same session and question', async () => {
+    await act(async () => update());
+    const options = mocks.warning.mock.calls[0][1];
+    await act(async () => useTabStore.getState().setWorkspaceId('tab', 'other-workspace'));
+    options.action.onClick();
+    expect(mocks.navigate).not.toHaveBeenCalled();
+    expect(mocks.dismiss).toHaveBeenCalledWith(options.id);
+  });
+
   it('notifies without a mounted timeline even when completion toasts are disabled or the page is hidden', async () => {
     vi.spyOn(document, 'hidden', 'get').mockReturnValue(true);
     await act(async () => update());

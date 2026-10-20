@@ -39,7 +39,7 @@ const syncQuestionNotifications = () => {
           label: t('notification', 'openTab'),
           onClick: () => {
             const current = useTabStore.getState().tabs[tabId];
-            if (current?.agentSessionId === tab.agentSessionId && current.agentProviderId === tab.agentProviderId
+            if (current?.workspaceId === tab.workspaceId && current.agentSessionId === tab.agentSessionId && current.agentProviderId === tab.agentProviderId
               && current.pendingUserQuestions?.some((q) => q.id === question.id)) {
               void navigateToTab(tab.workspaceId, tabId);
             }

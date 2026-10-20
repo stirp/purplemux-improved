@@ -65,3 +65,28 @@ pnpm exec vitest run "tests/unit/lib/pending-user-questions.test.ts" "tests/unit
 - `pnpm exec eslint "src/lib/pending-user-questions.ts" "src/hooks/use-native-notification.ts" "tests/unit/lib/pending-user-questions.test.ts" "tests/unit/lib/question-native-notification.test.ts" "tests/unit/lib/agent-runtime-snapshot.test.ts"`：通过。
 - `git diff --check`：通过。`pnpm build`：通过，包含 Next.js 编译、24 个静态页面生成与服务端打包；仍提示既有的多个锁文件/workspace root 推断警告。
 - 本轮未执行浏览器和 Electron 实机验收；通知通道通过 jsdom 中真实 Hook/Store 与 Electron API 替身验证。Electron 主进程与 preload 本轮未修改。
+
+## PR #75 审查修正：会话与工作区归属
+
+2026-10-21，基于审查提交 `8c4907a04d6c6dd9146d11a68b49868b87dfbc89` 修复：
+
+- [轮询切换会话时清理旧问题](https://github.com/stirp/purplemux-improved/pull/75#discussion_r4327800102)：问题更新移到会话身份比较后；新会话且快照未知时传入空列表，同一会话仍保持未知结果不覆盖已有列表的规则。新会话成功读取的问题列表正常采用。
+- [Toast 导航校验工作区](https://github.com/stirp/purplemux-improved/pull/75#discussion_r4327800112)：复用现有导航前校验，增加当前与捕获的 workspaceId 比较；身份失效时关闭 Toast，不触发错误导航。
+- `docs/STATUS.md` 同步问题归属规则；实现只调整既有更新顺序和条件，没有新建同步通道或配置。
+
+### 本轮验证
+
+先添加测试再修改源码，定向运行得到 10 项通过、2 项失败，分别复现两条审查意见。修复后执行：
+
+```bash
+pnpm exec vitest run "tests/unit/lib/question-status-poll.test.ts" "tests/unit/lib/question-notification.test.ts" "tests/unit/lib/pending-user-questions.test.ts" "tests/unit/lib/question-native-notification.test.ts" "tests/unit/lib/agent-runtime-snapshot.test.ts" "tests/unit/lib/codex-review-state.test.ts" "tests/unit/lib/status-refresh-snapshot.test.ts" "tests/unit/lib/async-question-answers.test.ts" "tests/unit/lib/agent-state-transition.test.ts" "tests/unit/lib/session-parser-codex.test.ts" "tests/unit/lib/session-parser-claude.test.ts"
+pnpm tsc --noEmit
+pnpm exec eslint "src/lib/status-manager.ts" "src/hooks/use-question-notification.ts" "tests/unit/lib/question-status-poll.test.ts" "tests/unit/lib/question-notification.test.ts"
+git diff --check
+```
+
+- 11 个测试文件、111 项通过，0 项失败。新轮询测试运行真实 poll/readTabMetadata/广播路径，隔离工作区、进程、布局和 provider I/O；覆盖会话切换/不变与未知/空/非空问题列表六种组合，并检查客户端同步和广播内容。
+- Toast 测试保留同一 Tab、Provider、会话及问题，仅修改工作区；旧操作不导航且撤销 Toast。既有正常导航、回答撤销和去重测试继续通过。
+- 完整 TypeScript、改动文件 ESLint、差异格式检查通过。
+- `pnpm build`：通过，包括 Next.js 生产编译、24 个静态页面生成和服务端 tsup 打包；仅出现既有的多锁文件/workspace root 推断警告。
+- 本轮未执行浏览器、移动设备或 Electron 实机验收；未提交、推送或修改远端审查线程状态。

@@ -371,7 +371,6 @@ class StatusManager {
         const messageChanged = existing.lastUserMessage !== tab.lastUserMessage;
         const panelTypeChanged = existing.panelType !== tab.panelType;
         const refreshed = await this.readTabMetadata(paneInfo, provider, tab);
-        const questionsChanged = updatePendingQuestions(existing, refreshed.pendingUserQuestions);
         existing.tabName = tab.name || (newPaneTitle ? formatTabTitle(newPaneTitle, tab.panelType) : '');
         existing.currentProcess = currentProcess;
         existing.paneTitle = newPaneTitle;
@@ -381,6 +380,9 @@ class StatusManager {
         const nextSessionId = provider?.sessionIdFromJsonlPath(refreshed.jsonlPath)
           ?? provider?.readSessionId(tab) ?? null;
         const sessionChanged = existing.agentSessionId !== nextSessionId;
+        const questionsChanged = updatePendingQuestions(
+          existing, refreshed.pendingUserQuestions ?? (sessionChanged ? [] : undefined),
+        );
         if (sessionChanged) {
           existing.agentSummary = null;
           existing.lastUserMessage = null;

@@ -573,6 +573,8 @@ With `hooks=debug` you see, for example:
 
 ## Notification System
 
+Pending question metadata belongs to its agent session. When polling detects a new session, an unknown question snapshot clears the previous session's list; a transient read failure within the same session preserves its list. Successful snapshots replace it, including an empty list. Question toast navigation validates the current workspace as well as provider, session and question identity before opening the captured target.
+
 ### Notification Sheet (`NotificationSheet`)
 
 Shown as a Sheet when the Bell icon is clicked. Four sections: in-progress (`busy`), awaiting input (`needs-input`), review (`ready-for-review`), done (`done`).

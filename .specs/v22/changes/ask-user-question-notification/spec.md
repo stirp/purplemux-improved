@@ -3,7 +3,7 @@ page: ask-user-question-notification
 title: 待回答问题的前端通知
 status: DETAILED
 created: 2026-10-20
-updated: 2026-10-20
+updated: 2026-10-21
 depends_on:
   - ../../../v20/features/interactive-questions/spec.md
   - ../../../../docs/STATUS.md
@@ -27,6 +27,8 @@ depends_on:
 - 新增状态字段为可选，旧客户端忽略；新客户端连接旧服务端保持原行为。
 - 审查修正：Codex 回答同时兼容 `event_msg.user_message` 和 `event_msg.item_completed` 中的 `UserMessage` 文本块；同一回答的两种表示不重复消费，不清除其他未回答问题。新问题之后的相同答案仍可正常提交。
 - 审查修正：问题原生通知仅使用自身标识导航，不修改普通任务完成/需要输入通知的共享点击目标，两类通知交错出现时各自定位正确。
+- PR #75 修正：轮询切换会话时，新快照的问题字段未知（`undefined`）必须清除旧会话的问题；同一会话读取失败时继续保留已有问题，成功读取则采用最新列表。
+- PR #75 修正：Toast 导航同时验证工作区归属；Tab 已移动到其他工作区时，旧 Toast 操作只关闭提醒，不导航到已失效的原工作区。
 
 ## 验收标准
 
@@ -37,5 +39,6 @@ depends_on:
 5. 保留任务完成通知及 CLI 状态行为；原生通知遵守开关，失败不影响 Toast。
 6. 相关测试、完整 TypeScript、改动文件 ESLint 及构建通过，记录实际验证范围。
 7. `UserMessage` 完成事件使已回答问题从运行快照中消失；双格式回答的两种顺序均保留其他未回答问题。普通通知先出现、问题通知后出现以及相反顺序均导航正确。
+8. 轮询的会话切换/不变分别覆盖未知、空和非空问题列表，广播及同步不能把旧问题归到新会话；Tab 仅变更工作区且其他身份均未变时，旧 Toast 不得导航。
 
 见 [任务](./task.md) 与 [实施及验证记录](./result.md)。
