@@ -110,6 +110,7 @@ const useAgentStatus = () => {
                 dismissedAt: msg.dismissedAt,
                 compactingSince: msg.compactingSince,
                 permissionRequest: msg.permissionRequest,
+                pendingUserQuestions: msg.pendingUserQuestions,
                 lastEvent: msg.lastEvent,
                 eventSeq: msg.eventSeq,
               });

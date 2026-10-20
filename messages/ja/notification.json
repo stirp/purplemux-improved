@@ -24,6 +24,7 @@
   "toolCalls": "ツール{count}回",
   "showMore": "過去の記録 {count}件",
   "showLess": "閉じる",
+  "questionRequiredTitle": "回答が必要です",
   "toastCompleteTitle": "タスク完了",
   "openTab": "開く",
   "workStatus_pending": "未開始",

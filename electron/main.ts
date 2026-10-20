@@ -1171,7 +1171,7 @@ ipcMain.handle('set-locale', (_event, locale: string) => {
 
 // --- Native Notifications ---
 
-ipcMain.handle('show-notification', (event, title: string, body: string) => {
+ipcMain.handle('show-notification', (event, title: string, body: string, notificationId?: string) => {
   const anyFocused = BrowserWindow.getAllWindows().some((w) => !w.isDestroyed() && w.isFocused());
   if (anyFocused) return false;
   const senderWin = BrowserWindow.fromWebContents(event.sender);
@@ -1180,7 +1180,7 @@ ipcMain.handle('show-notification', (event, title: string, body: string) => {
     const target = senderWin && !senderWin.isDestroyed() ? senderWin : getPrimaryWindow();
     target?.show();
     target?.focus();
-    target?.webContents.send('notification-click');
+    target?.webContents.send('notification-click', notificationId);
   });
   notification.show();
   return true;

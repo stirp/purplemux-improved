@@ -13,6 +13,25 @@ const writeJsonl = async (lines: unknown[]): Promise<string> => {
 };
 
 describe('agent runtime snapshots', () => {
+  it.each(['claude', 'codex', 'codex-completed-user'] as const)('includes and caches %s pending questions, then clears them after an answer', async (provider) => {
+    const call = provider === 'claude'
+      ? { type: 'assistant', message: { content: [{ type: 'tool_use', name: 'AskUserQuestion', id: 'q1', input: { questions: [{ question: '确认？' }] } }] } }
+      : { type: 'response_item', payload: { type: 'function_call', name: 'request_user_input_async', call_id: 'q1', arguments: '{"questions":[{"title":"确认？"}]}' } };
+    const answer = provider === 'claude'
+      ? { type: 'user', message: { content: [{ type: 'tool_result', tool_use_id: 'q1', content: '是' }] } }
+      : provider === 'codex'
+        ? { type: 'event_msg', payload: { type: 'user_message', message: '确认？\n是' } }
+        : { type: 'event_msg', payload: { type: 'item_completed', item: {
+          type: 'UserMessage', content: [{ type: 'text', text: '确认？\n是' }],
+        } } };
+    const jsonlPath = await writeJsonl([call]);
+    const read = provider === 'claude' ? readClaudeRuntimeSnapshot : readCodexRuntimeSnapshot;
+    expect((await read(jsonlPath)).pendingUserQuestions).toEqual([{ id: 'q1', question: '确认？' }]);
+    expect((await read(jsonlPath)).pendingUserQuestions).toEqual([{ id: 'q1', question: '确认？' }]);
+    await fs.appendFile(jsonlPath, `${JSON.stringify(answer)}\n`);
+    expect((await read(jsonlPath, { force: true })).pendingUserQuestions).toEqual([]);
+  });
+
   const event = (seconds: number, payload: object) => JSON.stringify({
     timestamp: new Date(seconds * 1000).toISOString(), type: 'event_msg', payload,
   });
