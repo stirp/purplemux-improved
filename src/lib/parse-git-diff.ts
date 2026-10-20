@@ -22,7 +22,7 @@ const decodePath = (path: string): string => {
   // Git quotes non-ASCII paths as octal UTF-8 bytes, not Unicode code points.
   return path.slice(1, -1).replace(/\\([0-7]{3}(?:\\[0-7]{3})*|[abfnrtv"\\])/g, (_, escaped: string) => {
     if (escaped in escapes) return escapes[escaped];
-    return new TextDecoder().decode(Uint8Array.from(escaped.split('\\').map((byte) => parseInt(byte, 8))));
+    return new TextDecoder('utf-8', { ignoreBOM: true }).decode(Uint8Array.from(escaped.split('\\').map((byte) => parseInt(byte, 8))));
   });
 };
 

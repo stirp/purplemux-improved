@@ -76,8 +76,8 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     };
 
     const diffArgs = parents.length === 0
-      ? ['-C', cwd, 'show', '--format=', fullHash]
-      : ['-C', cwd, 'diff', `${fullHash}^..${fullHash}`];
+      ? ['-C', cwd, 'show', '--format=', '--src-prefix=a/', '--dst-prefix=b/', fullHash]
+      : ['-C', cwd, 'diff', '--src-prefix=a/', '--dst-prefix=b/', `${fullHash}^..${fullHash}`];
 
     const { stdout: diff } = await execFile('git', diffArgs, {
       timeout: CMD_TIMEOUT,

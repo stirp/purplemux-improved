@@ -49,6 +49,30 @@ const toggles = () => [...container.querySelectorAll<HTMLButtonElement>('button[
 const expanded = () => toggles().map((button) => button.getAttribute('aria-expanded'));
 
 describe('binary diff file cards', () => {
+  it.each([false, true])('keeps U+FEFF paths distinct for expansion and editor targets (mobile=%s)', async (mobile) => {
+    settings.mobile = mobile;
+    const withFeff = String.raw`diff --git "a/assets/\357\273\277image.png" "b/assets/\357\273\277image.png"
+Binary files "a/assets/\357\273\277image.png" and "b/assets/\357\273\277image.png" differ
+`;
+    const withoutFeff = 'diff --git a/assets/image.png b/assets/image.png\nBinary files a/assets/image.png and b/assets/image.png differ\n';
+    await render(withFeff + withoutFeff);
+    await act(async () => toggles()[0].click());
+    expect(expanded()).toEqual(['true', 'false']);
+    expect(toggles().map((button) => button.textContent)).toEqual(['assets/\uFEFFimage.png', 'assets/image.png']);
+    const editorButtons = [...container.querySelectorAll<HTMLButtonElement>('button[aria-label]')];
+    await act(async () => editorButtons[0].click());
+    await act(async () => editorButtons[1].click());
+    expect(vi.mocked(openEditorTarget).mock.calls).toEqual([
+      ['vscode://vscode-remote/ssh-remote+dev-box/repo/assets/%EF%BB%BFimage.png:1'],
+      ['vscode://vscode-remote/ssh-remote+dev-box/repo/assets/image.png:1'],
+    ]);
+    await render(withoutFeff + withFeff);
+    expect(expanded()).toEqual(['false', 'true']);
+    await act(async () => toggles()[1].click());
+    expect(expanded()).toEqual(['false', 'false']);
+    expect(fetch).not.toHaveBeenCalled();
+  });
+
   it.each([false, true])('keeps file expansion independent after refresh and reordering (mobile=%s)', async (mobile) => {
     settings.mobile = mobile;
     await render();
