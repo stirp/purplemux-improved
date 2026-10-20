@@ -3,11 +3,12 @@ page: host-resource-monitoring
 title: 服务器 CPU 与内存监控
 status: DETAILED
 created: 2026-10-20
-updated: 2026-10-20
+updated: 2026-10-21
 depends_on:
   - ../../../v13/features/mobile-layout/spec.md
   - ../../../v20/features/mobile-navigation/spec.md
   - ../mobile-sidebar-web-aligned-design/spec.md
+  - ../../../v20/features/region-typography/spec.md
 ---
 
 # 服务器 CPU 与内存监控
@@ -40,6 +41,13 @@ depends_on:
 - 移动详情使用底部 Sheet，展示“服务器资源”、整机口径、百分比、内存已用/总量及采样时间。内容可滚动，关闭按钮至少 44px，适配底部安全区，Escape/遮罩关闭并归还焦点。
 - 初始、失败及恢复均保持入口尺寸稳定；正常情况下不弹 toast，不打断聊天。
 - 沿用浅深色主题、本地化和已有配置保存逻辑。
+
+## PR #77 首屏配置修正
+
+- [评审问题](https://github.com/stirp/purplemux-improved/pull/77#discussion_r4328216353)：移动端直接加载 `/stats`、`/reports`、`/webview` 时缺少 initialConfig，且应用仅在 initialWorkspace 存在时初始化配置，导致保存的 false 被默认 true 替代并启动轮询。
+- 已认证页面通过共用服务端入口补齐安全完整 initialConfig；复用 toPublicConfig 去除认证秘密，并携带与首页相同的 hostEnvLocked/bindHostIsLocal 环境派生字段，避免后续同时间戳同步被忽略后丢失环境限制。已有首页配置保持原值，认证失败或页面重定向不读取配置。
+- 应用首次获得 initialConfig 时，在渲染布局前独立初始化配置；不依赖 initialWorkspace，也不提前占用后续工作区初始化标记。后续配置仍通过既有同步通道和 updatedAt 防回退逻辑维护，路由重渲染不重复灌入旧首屏配置。
+- 补充验收：无工作区首屏、已保存 false 时不挂载监控且不发送资源请求；已保存 true/缺失字段仍正常采样；之后进入首页时工作区仍初始化且当前配置不被旧 props 覆盖；服务端 props 不含 authPassword/authSecret，原鉴权与重定向行为保持。
 
 ## 验收标准
 

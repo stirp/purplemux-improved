@@ -56,3 +56,29 @@
 - 未执行生产构建、Electron 安装包、macOS 实机或 iPhone/Android 实机、实际软键盘及非零安全区测试；其他平台内存回退为单测覆盖。
 - 未实际保存用户监控设置；开关测试使用真实配置 store 的内存状态，持久化沿用原有通道。
 - 无 Git 提交、推送或发布。
+
+
+## PR #77 评审修复（2026-10-21）
+
+问题来源：[首屏未加载已保存监控开关](https://github.com/stirp/purplemux-improved/pull/77#discussion_r4328216353)。本次读取 PR 全部行内意见，只有这一项；本地起点与被评审提交均为 `c4954106`。
+
+### 原因与修复
+
+直接打开 `/stats`、`/reports`、`/webview` 时，服务端原本只返回词条，应用也仅在获得工作区数据时初始化配置。因而资源监控先使用默认 true，已保存的 false 无法在首屏生效；即使后续 WebSocket 同步成功，也会产生不应出现的采样请求。
+
+- `src/lib/require-auth.ts`：通过已有认证页面公共入口补齐 `initialConfig`，复用 `toPublicConfig` 去除认证秘密，并附上首页同样的 `hostEnvLocked`、`bindHostIsLocal`。页面已有配置不重复读取；认证失败、预检重定向及页面 redirect/notFound 保持原行为。
+- `src/pages/_app.tsx`：将工作区与配置的一次性初始化标记分开；有配置即在渲染布局前 hydrate。非首页初始化配置后，后续首页仍能初始化工作区；路由重渲染不重复应用旧首屏配置。
+- 沿用共享服务端入口与配置投影，未引入额外客户端配置请求或另一套同步状态机，保持 KISS、DRY 与原有快照防回退约定。
+
+### 本次验证
+
+- 新增 `require-auth-config.test.ts`：实际调用三个页面的 getServerSideProps，验证已保存关闭值、秘密剔除及环境派生字段，并覆盖首页快照保留、认证失败、预检失败、redirect/notFound。
+- 新增 `app-config-hydration.test.ts`：挂载真实 App、配置 store、SystemResources 和轮询 Hook，隔离通知/主题等无关副作用；验证无工作区首屏关闭时推进 10 秒仍无 fetch、true/缺失默认采样、延迟工作区初始化及旧 props 不覆盖配置。
+- `node node_modules/vitest/vitest.mjs run tests/unit/lib/require-auth-config.test.ts tests/unit/lib/app-config-hydration.test.ts tests/unit/lib/system-resources.test.ts tests/unit/lib/system-resources-ui.test.ts tests/unit/api/system-resources.test.ts tests/unit/lib/config-snapshot.test.ts tests/unit/lib/config-sync-hook.test.ts tests/unit/lib/messages-proxy.test.ts tests/unit/lib/file-preview.test.ts`：9 文件、58 项通过，其中新增 13 项。
+- `node node_modules/eslint/bin/eslint.js src/lib/require-auth.ts src/pages/_app.tsx tests/unit/lib/require-auth-config.test.ts tests/unit/lib/app-config-hydration.test.ts`：通过。
+- `node node_modules/typescript/bin/tsc --noEmit`：最终代码通过；Next 构建内置完整 TypeScript 检查也通过。
+- `node node_modules/next/dist/bin/next build --webpack`：生产编译成功（约 3.9 分钟），但完整构建失败于收集 `/login` 页面数据：`ReferenceError: self is not defined`。错误模块为现有 `@xterm/addon-clipboard` 的浏览器 UMD 入口，调用路径为 `login → onboarding-wizard → install-dialog → use-terminal`；这些源码和依赖未在本次修改。独立 Node require 该依赖同样报错。本次未修改此登录终端链路，也未宣称完整构建通过。
+- 构建另提示多 lockfile 导致工作区根目录推断为 `/home/home`；本次没有调整共享构建配置。
+- `git diff --check`、规格依赖和相对链接检查：通过。
+
+本次不涉及视觉布局改动；未重跑前文浏览器布局验收，也未执行手机/Electron 实机或已登录完整应用端到端。测试不写用户配置，未提交或推送代码、发布或修改 PR 线程状态。
