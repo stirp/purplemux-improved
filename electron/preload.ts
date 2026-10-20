@@ -8,7 +8,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   openExternal: (url: string) => ipcRenderer.invoke('open-external', url),
   getPathForFile: (file: File) => webUtils.getPathForFile(file),
   getSystemResources: () => ipcRenderer.invoke('get-system-resources'),
-  showNotification: (title: string, body: string) => ipcRenderer.invoke('show-notification', title, body),
+  showNotification: (title: string, body: string, notificationId?: string) => ipcRenderer.invoke('show-notification', title, body, notificationId),
   openNewWindow: () => ipcRenderer.invoke('open-new-window'),
   setDockBadge: (count: number) => ipcRenderer.invoke('set-dock-badge', count),
   canManageDesktopAutostart: () => ipcRenderer.invoke('desktop-autostart:can-manage'),
@@ -34,8 +34,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
       orientation?: 'portrait' | 'landscape';
     } | null,
   ) => ipcRenderer.invoke('browser:set-device-emulation', tabId, config),
-  onNotificationClick: (callback: () => void) => {
-    const handler = () => callback();
+  onNotificationClick: (callback: (notificationId?: string) => void) => {
+    const handler = (_event: Electron.IpcRendererEvent, notificationId?: string) => callback(notificationId);
     ipcRenderer.on('notification-click', handler);
     return () => { ipcRenderer.removeListener('notification-click', handler); };
   },

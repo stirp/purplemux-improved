@@ -18,7 +18,13 @@ export interface ICurrentAction {
   summary: string;
 }
 
+export interface IPendingUserQuestion {
+  id: string;
+  question: string;
+}
+
 export interface ITabStatusEntry {
+  pendingUserQuestions?: IPendingUserQuestion[];
   cliState: TCliState;
   workspaceId: string;
   tabName: string;
@@ -61,6 +67,7 @@ export interface IStatusSyncMessage {
 }
 
 export interface IStatusUpdateMessage {
+  pendingUserQuestions?: IPendingUserQuestion[];
   type: 'status:update';
   tabId: string;
   cliState: TCliState | null;

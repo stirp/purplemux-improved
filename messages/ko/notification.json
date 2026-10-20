@@ -24,6 +24,7 @@
   "toolCalls": "도구 {count}회",
   "showMore": "이전 기록 {count}개",
   "showLess": "접기",
+  "questionRequiredTitle": "답변이 필요합니다",
   "toastCompleteTitle": "작업 완료",
   "openTab": "열기",
   "workStatus_pending": "시작 전",

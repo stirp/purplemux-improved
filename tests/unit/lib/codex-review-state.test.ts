@@ -59,6 +59,25 @@ afterEach(() => {
 });
 
 describe('Codex review lifecycle and session ownership', () => {
+  it('broadcasts pending questions globally without changing busy state, and clears answered questions', async () => {
+    entry.cliState = 'busy';
+    const broadcast = vi.spyOn(manager, 'broadcast');
+    const rows = [JSON.stringify({ type: 'response_item', payload: {
+      type: 'function_call', name: 'request_user_input_async', call_id: 'question',
+      arguments: '{"questions":[{"title":"确认？"}]}',
+    } })];
+    await update(rows);
+    expect(entry.cliState).toBe('busy');
+    expect(manager.getAllForClient().tab.pendingUserQuestions).toEqual([{ id: 'question', question: '确认？' }]);
+    expect(broadcast).toHaveBeenCalledWith(expect.objectContaining({
+      type: 'status:update', tabId: 'tab', pendingUserQuestions: [{ id: 'question', question: '确认？' }],
+    }), undefined);
+    rows.push(record(2000, { type: 'user_message', message: '确认？\n是' }));
+    await update(rows);
+    expect(manager.getAllForClient().tab.pendingUserQuestions).toEqual([]);
+    broadcast.mockRestore();
+  });
+
   it('keeps the main binding when an activity hook belongs to another session', () => {
     expect(manager.applyAgentHookMeta('codex', 'tmux', { sessionId: 'child', jsonlPath: '/child.jsonl' }, false)).toBeNull();
     expect(entry.agentSessionId).toBe('root');
