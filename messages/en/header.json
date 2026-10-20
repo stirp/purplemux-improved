@@ -1,3 +1,19 @@
 {
-  "openMenu": "Open menu"
+  "openMenu": "Open menu",
+  "resources": {
+    "title": "Server resources",
+    "scope": "Whole machine running the agents · refreshes every 3 seconds",
+    "memory": "Memory",
+    "memoryShort": "MEM",
+    "sampling": "Sampling",
+    "high": "High",
+    "elevated": "Elevated",
+    "normal": "Normal",
+    "unavailable": "Temporarily unavailable. Retrying automatically.",
+    "loading": "Loading resources…",
+    "usedTotal": "Memory: {used} / {total}",
+    "availableBasis": "Used = total − available; reclaimable cache is excluded.",
+    "freeBasis": "Used = total − OS free memory; may include reclaimable cache.",
+    "updated": "Updated {time}"
+  }
 }

@@ -150,7 +150,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     }
 
     const [{ stdout: diff }, { stdout: statusOut }, hash, aheadBehind, meta, { stdout: repoRootOut }] = await Promise.all([
-      execFile('git', ['diff', 'HEAD'], { cwd, timeout: CMD_TIMEOUT, maxBuffer: 5 * 1024 * 1024 }),
+      execFile('git', ['diff', '--src-prefix=a/', '--dst-prefix=b/', 'HEAD'], { cwd, timeout: CMD_TIMEOUT, maxBuffer: 5 * 1024 * 1024 }),
       execFile('git', ['status', '--porcelain', '-uall'], { cwd, timeout: CMD_TIMEOUT }),
       computeDiffHash(cwd),
       getAheadBehind(cwd),
@@ -166,7 +166,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     let fullDiff = diff;
     for (const file of untrackedFiles) {
       try {
-        const { stdout: fileDiff } = await execFile('git', ['diff', '--no-index', '/dev/null', file], { cwd, timeout: CMD_TIMEOUT });
+        const { stdout: fileDiff } = await execFile('git', ['diff', '--no-index', '--src-prefix=a/', '--dst-prefix=b/', '/dev/null', file], { cwd, timeout: CMD_TIMEOUT });
         fullDiff += fileDiff;
       } catch (err: unknown) {
         if (err && typeof err === 'object' && 'stdout' in err) {

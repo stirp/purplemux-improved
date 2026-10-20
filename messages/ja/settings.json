@@ -204,7 +204,7 @@
       }
     },
     "showResources": "システムリソースを表示",
-    "showResourcesDescription": "ヘッダーにCPU、メモリ、tmuxセッションの使用状況を表示します。",
+    "showResourcesDescription": "エージェントを実行するマシン全体 · 3秒ごとに更新.",
     "startServerAtLogin": "ログイン時にサーバーを起動",
     "startServerAtLoginDescription": "デスクトップアプリやDockアイコンを開かずに、purplemux-improvedサーバーをバックグラウンドで起動します。",
     "startServerAtLoginUnsupported": "パッケージ化されたmacOSアプリをMacにインストールした後に利用できます。",

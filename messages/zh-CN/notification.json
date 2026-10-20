@@ -24,6 +24,7 @@
   "toolCalls": "工具调用{count}次",
   "showMore": "更早记录 {count}条",
   "showLess": "收起",
+  "questionRequiredTitle": "需要你回答",
   "toastCompleteTitle": "任务完成",
   "openTab": "打开",
   "workStatus_pending": "未开始",

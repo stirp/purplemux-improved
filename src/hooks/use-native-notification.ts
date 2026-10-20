@@ -1,13 +1,14 @@
 import { useEffect } from 'react';
 import useTabStore from '@/hooks/use-tab-store';
+import type { ITabState } from '@/hooks/use-tab-store';
 import useConfigStore from '@/hooks/use-config-store';
 import { navigateToTab } from '@/hooks/use-layout';
 import isElectron from '@/hooks/use-is-electron';
 
 interface IElectronAPI {
-  showNotification: (title: string, body: string) => Promise<boolean>;
+  showNotification: (title: string, body: string, notificationId?: string) => Promise<boolean>;
   setDockBadge: (count: number) => Promise<void>;
-  onNotificationClick: (callback: () => void) => () => void;
+  onNotificationClick: (callback: (notificationId?: string) => void) => () => void;
 }
 
 const getElectronAPI = (): IElectronAPI | null => {
@@ -18,12 +19,31 @@ const getElectronAPI = (): IElectronAPI | null => {
 let lastNotifiedTabId: string | null = null;
 let lastNotifiedWorkspaceId: string | null = null;
 
+export const showQuestionNativeNotification = (tabId: string, tab: ITabState, title: string, body: string, questionId: string) => {
+  const api = getElectronAPI();
+  if (!api || !useConfigStore.getState().notificationsEnabled) return;
+  const notificationId = JSON.stringify([tabId, tab.workspaceId, tab.agentProviderId, tab.agentSessionId, questionId]);
+  void api.showNotification(title, body, notificationId).catch(() => {});
+};
+
 const useNativeNotification = () => {
   useEffect(() => {
     const api = getElectronAPI();
     if (!api) return;
 
-    const unsubClick = api.onNotificationClick(() => {
+    const unsubClick = api.onNotificationClick((notificationId) => {
+      if (notificationId) {
+        try {
+          const [tabId, workspaceId, providerId, sessionId, questionId] = JSON.parse(notificationId);
+          const tab = useTabStore.getState().tabs[tabId];
+          if (tab?.workspaceId === workspaceId && tab.agentSessionId === sessionId
+            && (tab.agentProviderId ?? null) === providerId
+            && tab.pendingUserQuestions?.some((question) => question.id === questionId)) {
+            navigateToTab(workspaceId, tabId);
+          }
+        } catch { /* Ignore notifications from an incompatible renderer. */ }
+        return;
+      }
       if (lastNotifiedTabId && lastNotifiedWorkspaceId) {
         navigateToTab(lastNotifiedWorkspaceId, lastNotifiedTabId);
       }
@@ -35,7 +55,7 @@ const useNativeNotification = () => {
       let attentionCount = 0;
 
       for (const [tabId, tab] of Object.entries(state.tabs)) {
-        if (tab.cliState === 'ready-for-review' || tab.cliState === 'needs-input') attentionCount++;
+        if (tab.cliState === 'ready-for-review' || tab.cliState === 'needs-input' || tab.pendingUserQuestions?.length) attentionCount++;
 
         if (notified || !enabled) continue;
         const prevTab = prev.tabs[tabId];
@@ -48,7 +68,7 @@ const useNativeNotification = () => {
           lastNotifiedTabId = tabId;
           lastNotifiedWorkspaceId = tab.workspaceId;
           notified = true;
-        } else if (tab.cliState === 'needs-input') {
+        } else if (tab.cliState === 'needs-input' && !tab.pendingUserQuestions?.length) {
           api.showNotification('Input Required', body);
           lastNotifiedTabId = tabId;
           lastNotifiedWorkspaceId = tab.workspaceId;

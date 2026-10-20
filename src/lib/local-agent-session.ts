@@ -8,15 +8,7 @@ import type { IAgentProcessSession, TLocalAgent } from '@/types/agent-process';
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-export const classifyAgentArgv = (argv: string[]): TLocalAgent | null => {
-  const executable = path.basename(argv[0] ?? '');
-  if (executable === 'claude' || executable === 'codex') return executable;
-  if (!/^(node|nodejs|bun)$/.test(executable)) return null;
-  const script = argv[1] ?? '';
-  if (/(?:^|\/)@anthropic-ai\/claude-code\/(?:cli|claude)\.js$/.test(script)) return 'claude';
-  if (/(?:^|\/)@openai\/codex\/bin\/codex\.js$/.test(script)) return 'codex';
-  return null;
-};
+export { classifyAgentArgv } from '@/lib/agent-process-identity';
 
 export const resolveLocalAgentSession = async (
   pid: number, providerId: TLocalAgent, cwd: string, argv: string[], startedAt: string,

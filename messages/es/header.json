@@ -1,3 +1,19 @@
 {
-  "openMenu": "Abrir menú"
+  "openMenu": "Abrir menú",
+  "resources": {
+    "title": "Recursos del servidor",
+    "scope": "Máquina completa que ejecuta los agentes · se actualiza cada 3 segundos",
+    "memory": "Memoria",
+    "memoryShort": "RAM",
+    "sampling": "Midiendo",
+    "high": "Alto",
+    "elevated": "Elevado",
+    "normal": "Normal",
+    "unavailable": "No disponible temporalmente. Reintentando automáticamente.",
+    "loading": "Cargando recursos…",
+    "usedTotal": "Memoria: {used} / {total}",
+    "availableBasis": "Usada = total − disponible; se excluye la caché recuperable.",
+    "freeBasis": "Usada = total − memoria libre del sistema; puede incluir caché recuperable.",
+    "updated": "Actualizado {time}"
+  }
 }

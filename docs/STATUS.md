@@ -38,6 +38,8 @@ Two detection paths:
 
 Both paths write to the same `agentProcess` field; the `agentProcessCheckedAt` server timestamp prevents stale updates.
 
+Server startup initializes the status manager before auto-resume, and only resumes agents after HTTP is listening and the actual port, hooks, CLI token and workspace prompts are ready. Codex launchers request their arguments from that listener. Missing port files, connection failures and HTTP 502/503/504 are retried every 500 ms within a 15-second deadline, with a five-second cap per request including its response body. Authentication and invalid-response errors fail immediately. This retry only covers argument retrieval; it does not restart an exited Codex process or submit saved drafts.
+
 Desktop and mobile view-mode menus also call `/api/check-agent` before opening, through `refreshDetectedAgent` and `applyAgentCheckResult`. The live provider identity selects the existing Chat view even when tmux reports the Node launcher as `node`. A confirmed exit clears the detected identity in Terminal mode; failed requests preserve the last known state. Detection waits at most three seconds, including response-body reading: the deadline aborts the request and lets the menu open with its last known state. Late responses cannot change that state, and completed checks clear the deadline timer. Choosing Chat only changes the panel view and does not launch another CLI.
 
 Claude process candidates are traversed breadth-first from the pane PID through `getChildPids`, with PID deduplication and limits of 16 levels, 1024 candidates, and 16 concurrent child queries. Both running detection and session binding use this traversal, including preloaded direct children. This covers nested shells, the Node environment launcher, and non-exec shell functions beyond children and grandchildren while bounding polling cost. Descendants beyond these limits are not scanned. PID files outside this descendant tree are not bound to the pane.
@@ -456,6 +458,8 @@ Removing the `cliState` decision and the `hasPermissionPrompt` check has reduced
 
 ### Terminal WS Path (Process Detection, Independent of cliState)
 
+Agent identity checks in `/api/check-agent` and the Claude/Codex session detectors share `agent-process-identity.ts` with local process management. They classify the executable or a known Node/Bun CLI script, using `process-utils.getProcessArgv` to preserve argument boundaries (Linux procfs, macOS `sysctl(KERN_PROCARGS2)` via the existing Koffi dependency). macOS reads only the declared argc arguments, preserving spaces and empty arguments while excluding environment data; failures never fall back to splitting `ps` display text. Runtime detection resolves absolute npm bin script links before checking the package path. Provider names in prompts, paths or search-command arguments do not identify an agent; Claude PID registrations and resume fallback use the same check. Failed identity checks skip PID registrations without deleting them, since unreadable argv does not prove the registration is stale. This keeps a Codex tab attached to Codex when switching between Chat and Terminal, without changing `cliState` or the mode menu's timeout and timestamp guards.
+
 ```
 tmux title change → onTitleChange
   ├─ formatTabTitle → updates tab display name
@@ -590,6 +594,8 @@ With `hooks=debug` you see, for example:
 ---
 
 ## Notification System
+
+Pending question metadata belongs to its agent session. When polling detects a new session, an unknown question snapshot clears the previous session's list; a transient read failure within the same session preserves its list. Successful snapshots replace it, including an empty list. Question toast navigation validates the current workspace as well as provider, session and question identity before opening the captured target.
 
 ### Notification Sheet (`NotificationSheet`)
 

@@ -1,6 +1,6 @@
 import type { ISessionInfo } from '@/types/timeline';
 import type { ITab, TPanelType, IWorkspace } from '@/types/terminal';
-import type { ICurrentAction } from '@/types/status';
+import type { ICurrentAction, IPendingUserQuestion } from '@/types/status';
 import type { IPermissionRequest } from '@/types/codex-permission';
 
 export interface IAgentResumeCommandOptions {
@@ -34,6 +34,7 @@ export interface IAgentPreflight {
 }
 
 export interface IAgentRuntimeSnapshot {
+  pendingUserQuestions?: IPendingUserQuestion[];
   idle: boolean;
   stale: boolean;
   lastAssistantSnippet: string | null;

@@ -1,4 +1,5 @@
 import fs from 'fs/promises';
+import { readPendingUserQuestions } from '@/lib/pending-user-questions';
 import type { IAgentRuntimeSnapshot } from '@/lib/providers/types';
 import type { ICurrentAction } from '@/types/status';
 import type { TToolName } from '@/types/timeline';
@@ -223,6 +224,7 @@ const scanCodexLines = (lines: string[], elapsed: number): IAgentRuntimeSnapshot
   const idle = state.terminalIdle || (state.needsStaleRecheck && elapsed > state.staleMs);
   return {
     idle,
+    pendingUserQuestions: readPendingUserQuestions(lines, 'codex'),
     stale,
     lastAssistantSnippet: state.lastAssistantSnippet,
     currentAction: state.currentAction,
@@ -255,7 +257,7 @@ export const readCodexRuntimeSnapshot = async (
 ): Promise<IAgentRuntimeSnapshot> => {
   try {
     const stat = await fs.stat(jsonlPath);
-    if (stat.size === 0) return { ...emptySnapshot(), idle: true };
+    if (stat.size === 0) return { ...emptySnapshot(), idle: true, pendingUserQuestions: [] };
 
     const cached = cache.get(jsonlPath);
     if (!options.force && cached && cached.mtimeMs === stat.mtimeMs) {

@@ -1265,23 +1265,21 @@ const SystemTab = () => {
         </div>
       )}
 
-      {isElectron && (
-        <div className="flex items-center justify-between">
-          <div className="space-y-0.5">
-            <Label htmlFor="system-resources" className="text-sm font-medium">
-              {t('showResources')}
-            </Label>
-            <p className="text-sm text-muted-foreground">
-              {t('showResourcesDescription')}
-            </p>
-          </div>
-          <Switch
-            id="system-resources"
-            checked={systemResourcesEnabled}
-            onCheckedChange={setSystemResourcesEnabled}
-          />
+      <div className="flex items-center justify-between gap-4">
+        <div className="space-y-0.5">
+          <Label htmlFor="system-resources" className="text-sm font-medium">
+            {t('showResources')}
+          </Label>
+          <p className="text-sm text-muted-foreground">
+            {t('showResourcesDescription')}
+          </p>
         </div>
-      )}
+        <Switch
+          id="system-resources"
+          checked={systemResourcesEnabled}
+          onCheckedChange={setSystemResourcesEnabled}
+        />
+      </div>
 
       <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <div className="flex items-start gap-2">

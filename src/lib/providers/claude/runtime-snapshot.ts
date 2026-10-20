@@ -1,17 +1,19 @@
 import fs from 'fs/promises';
+import { readPendingUserQuestions } from '@/lib/pending-user-questions';
+import type { IPendingUserQuestion } from '@/types/status';
 import { INTERRUPT_PREFIX, summarizeToolCall } from '@/lib/session-parser';
 import type { IAgentRuntimeSnapshot } from '@/lib/providers/types';
 import type { ICurrentAction } from '@/types/status';
 import type { TToolName } from '@/types/timeline';
 
-const JSONL_TAIL_SIZE = 8192;
-const JSONL_EXTENDED_TAIL_SIZE = 131_072;
+const JSONL_TAIL_SIZE = 131_072;
 const STALE_MS_INTERRUPTED = 20_000;
 const STALE_MS_AWAITING_API = 90_000;
 const MAX_JSONL_CACHE = 256;
 const MAX_SNIPPET_LENGTH = 200;
 
 interface IJsonlIdleCache {
+  pendingUserQuestions: IPendingUserQuestion[];
   mtimeMs: number;
   idle: boolean;
   stale: boolean;
@@ -162,18 +164,18 @@ export const readClaudeRuntimeSnapshot = async (
 ): Promise<IAgentRuntimeSnapshot> => {
   try {
     const stat = await fs.stat(jsonlPath);
-    if (stat.size === 0) return { ...emptySnapshot(), idle: true };
+    if (stat.size === 0) return { ...emptySnapshot(), idle: true, pendingUserQuestions: [] };
 
     const cached = jsonlIdleCache.get(jsonlPath);
     if (!options.force && cached && cached.mtimeMs === stat.mtimeMs) {
       jsonlIdleCache.delete(jsonlPath);
       jsonlIdleCache.set(jsonlPath, cached);
-      if (cached.idle) return { idle: true, stale: cached.stale, lastAssistantSnippet: cached.lastAssistantSnippet, currentAction: cached.currentAction, reset: cached.reset, lastEntryTs: cached.lastEntryTs, staleMs: cached.staleMs, interrupted: cached.interrupted };
+      if (cached.idle) return { idle: true, stale: cached.stale, lastAssistantSnippet: cached.lastAssistantSnippet, currentAction: cached.currentAction, reset: cached.reset, lastEntryTs: cached.lastEntryTs, staleMs: cached.staleMs, interrupted: cached.interrupted, pendingUserQuestions: cached.pendingUserQuestions };
       if (cached.needsStaleRecheck) {
         const idle = Date.now() - stat.mtimeMs > cached.staleMs;
-        return { idle, stale: true, lastAssistantSnippet: cached.lastAssistantSnippet, currentAction: cached.currentAction, reset: cached.reset, lastEntryTs: cached.lastEntryTs, staleMs: cached.staleMs, interrupted: cached.interrupted };
+        return { idle, stale: true, lastAssistantSnippet: cached.lastAssistantSnippet, currentAction: cached.currentAction, reset: cached.reset, lastEntryTs: cached.lastEntryTs, staleMs: cached.staleMs, interrupted: cached.interrupted, pendingUserQuestions: cached.pendingUserQuestions };
       }
-      return { idle: false, stale: false, lastAssistantSnippet: cached.lastAssistantSnippet, currentAction: cached.currentAction, reset: cached.reset, lastEntryTs: cached.lastEntryTs, staleMs: cached.staleMs, interrupted: cached.interrupted };
+      return { idle: false, stale: false, lastAssistantSnippet: cached.lastAssistantSnippet, currentAction: cached.currentAction, reset: cached.reset, lastEntryTs: cached.lastEntryTs, staleMs: cached.staleMs, interrupted: cached.interrupted, pendingUserQuestions: cached.pendingUserQuestions };
     }
 
     const handle = await fs.open(jsonlPath, 'r');
@@ -185,23 +187,15 @@ export const readClaudeRuntimeSnapshot = async (
       await handle.read(buffer, 0, readSize, stat.size - readSize);
       const lines = buffer.toString('utf-8').split('\n').filter((l) => l.trim());
 
-      let scan = scanLines(lines, elapsed);
-      let extracted = extractAssistantInfo(lines);
-
-      if (!scan.matched && stat.size > JSONL_TAIL_SIZE) {
-        const extSize = Math.min(stat.size, JSONL_EXTENDED_TAIL_SIZE);
-        const extBuffer = Buffer.alloc(extSize);
-        await handle.read(extBuffer, 0, extSize, stat.size - extSize);
-        const extLines = extBuffer.toString('utf-8').split('\n').filter((l) => l.trim());
-        scan = scanLines(extLines, elapsed);
-        if (!extracted.lastAssistantSnippet && !extracted.currentAction) extracted = extractAssistantInfo(extLines);
-      }
+      const pendingUserQuestions = readPendingUserQuestions(lines, 'claude');
+      const scan = scanLines(lines, elapsed);
+      const extracted = extractAssistantInfo(lines);
 
       if (jsonlIdleCache.size >= MAX_JSONL_CACHE) {
         jsonlIdleCache.delete(jsonlIdleCache.keys().next().value!);
       }
-      jsonlIdleCache.set(jsonlPath, { mtimeMs: stat.mtimeMs, idle: scan.idle, stale: scan.stale, needsStaleRecheck: scan.needsStaleRecheck, staleMs: scan.staleMs, lastAssistantSnippet: extracted.lastAssistantSnippet, currentAction: extracted.currentAction, reset: extracted.reset, lastEntryTs: scan.lastEntryTs, interrupted: scan.interrupted });
-      return { idle: scan.idle, stale: scan.stale, lastAssistantSnippet: extracted.lastAssistantSnippet, currentAction: extracted.currentAction, reset: extracted.reset, lastEntryTs: scan.lastEntryTs, staleMs: scan.staleMs, interrupted: scan.interrupted };
+      jsonlIdleCache.set(jsonlPath, { mtimeMs: stat.mtimeMs, idle: scan.idle, stale: scan.stale, needsStaleRecheck: scan.needsStaleRecheck, staleMs: scan.staleMs, lastAssistantSnippet: extracted.lastAssistantSnippet, currentAction: extracted.currentAction, reset: extracted.reset, lastEntryTs: scan.lastEntryTs, interrupted: scan.interrupted, pendingUserQuestions });
+      return { idle: scan.idle, stale: scan.stale, lastAssistantSnippet: extracted.lastAssistantSnippet, currentAction: extracted.currentAction, reset: extracted.reset, lastEntryTs: scan.lastEntryTs, staleMs: scan.staleMs, interrupted: scan.interrupted, pendingUserQuestions };
     } finally {
       await handle.close();
     }

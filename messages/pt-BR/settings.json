@@ -204,7 +204,7 @@
       }
     },
     "showResources": "Mostrar recursos do sistema",
-    "showResourcesDescription": "Exibir uso de CPU, memória e sessões tmux no cabeçalho.",
+    "showResourcesDescription": "Máquina inteira que executa os agentes · atualiza a cada 3 segundos.",
     "startServerAtLogin": "Iniciar servidor ao fazer login",
     "startServerAtLoginDescription": "Inicia o servidor purplemux-improved em segundo plano sem abrir o app de desktop nem o ícone no Dock.",
     "startServerAtLoginUnsupported": "Disponível após instalar o app macOS empacotado no seu Mac.",

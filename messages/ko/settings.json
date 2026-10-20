@@ -204,7 +204,7 @@
       }
     },
     "showResources": "시스템 리소스 표시",
-    "showResourcesDescription": "헤더에 CPU, 메모리, tmux 세션 사용량을 표시합니다.",
+    "showResourcesDescription": "에이전트를 실행하는 전체 머신 · 3초마다 갱신.",
     "startServerAtLogin": "로그인 시 서버 시작",
     "startServerAtLoginDescription": "데스크톱 앱이나 Dock 아이콘을 열지 않고 purplemux-improved 서버를 백그라운드에서 시작합니다.",
     "startServerAtLoginUnsupported": "패키징된 macOS 앱을 Mac에 설치한 뒤 사용할 수 있습니다.",

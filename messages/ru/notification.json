@@ -24,6 +24,7 @@
   "toolCalls": "Вызовов инструментов: {count}",
   "showMore": "Ещё {count}",
   "showLess": "Свернуть",
+  "questionRequiredTitle": "Требуется ваш ответ",
   "toastCompleteTitle": "Задача завершена",
   "openTab": "Открыть",
   "workStatus_pending": "Не начато",

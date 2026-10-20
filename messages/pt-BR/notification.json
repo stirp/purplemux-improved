@@ -24,6 +24,7 @@
   "toolCalls": "{count} chamadas de ferramentas",
   "showMore": "{count} mais",
   "showLess": "Mostrar menos",
+  "questionRequiredTitle": "Sua resposta é necessária",
   "toastCompleteTitle": "Tarefa concluída",
   "openTab": "Abrir",
   "workStatus_pending": "Não iniciado",

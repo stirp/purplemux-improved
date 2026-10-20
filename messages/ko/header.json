@@ -1,3 +1,19 @@
 {
-  "openMenu": "메뉴 열기"
+  "openMenu": "메뉴 열기",
+  "resources": {
+    "title": "서버 리소스",
+    "scope": "에이전트를 실행하는 전체 머신 · 3초마다 갱신",
+    "memory": "메모리",
+    "memoryShort": "MEM",
+    "sampling": "측정 중",
+    "high": "높음",
+    "elevated": "다소 높음",
+    "normal": "정상",
+    "unavailable": "일시적으로 사용할 수 없습니다. 자동 재시도 중입니다.",
+    "loading": "리소스 로딩 중…",
+    "usedTotal": "메모리: {used} / {total}",
+    "availableBasis": "사용량 = 전체 − 사용 가능 메모리. 회수 가능한 캐시를 제외합니다.",
+    "freeBasis": "사용량 = 전체 − OS의 여유 메모리. 회수 가능한 캐시가 포함될 수 있습니다.",
+    "updated": "갱신 {time}"
+  }
 }

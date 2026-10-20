@@ -1,3 +1,19 @@
 {
-  "openMenu": "Menü öffnen"
+  "openMenu": "Menü öffnen",
+  "resources": {
+    "title": "Serverressourcen",
+    "scope": "Gesamter Rechner, auf dem die Agenten laufen · alle 3 Sekunden aktualisiert",
+    "memory": "Arbeitsspeicher",
+    "memoryShort": "RAM",
+    "sampling": "Messung läuft",
+    "high": "Hoch",
+    "elevated": "Erhöht",
+    "normal": "Normal",
+    "unavailable": "Vorübergehend nicht verfügbar. Automatischer Wiederholungsversuch.",
+    "loading": "Ressourcen werden geladen…",
+    "usedTotal": "Speicher: {used} / {total}",
+    "availableBasis": "Belegt = gesamt − verfügbar; rückgewinnbarer Cache ist ausgeschlossen.",
+    "freeBasis": "Belegt = gesamt − freier OS-Speicher; kann rückgewinnbaren Cache enthalten.",
+    "updated": "Aktualisiert {time}"
+  }
 }

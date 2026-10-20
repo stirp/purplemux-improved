@@ -7,6 +7,7 @@ import type { ISessionInfo } from '@/types/timeline';
 import type { IAgentSessionDetectionOptions, IAgentSessionWatchOptions, ISessionWatcher } from '@/lib/providers/types';
 import { codexHookEvents } from '@/lib/providers/codex/hook-events';
 import { runCodexPreflight } from '@/lib/providers/codex/preflight';
+import { matchesAgentProcess } from '@/lib/agent-process-identity';
 import {
   getChildPids,
   getProcessArgs,
@@ -34,8 +35,6 @@ const NOT_RUNNING: ISessionInfo = {
   startedAt: null,
   cwd: null,
 };
-
-const matchesCodexArgs = (args: string): boolean => args.includes('codex');
 
 interface ICodexSessionMeta {
   sessionId: string;
@@ -208,7 +207,7 @@ const findCodexProcess = async (
 ): Promise<{ pid: number; cwd: string | null; args: string } | null> => {
   for (const pid of pids) {
     const args = await getProcessArgs(pid);
-    if (!args || !matchesCodexArgs(args)) continue;
+    if (!args || !await matchesAgentProcess(pid, args, 'codex')) continue;
     const cwd = await getProcessCwd(pid);
     return { pid, cwd, args };
   }
@@ -249,7 +248,7 @@ export const isCodexRunning = async (
   const all = await collectDescendants(panePid, preloadedChildPids);
   for (const pid of all) {
     const args = await getProcessArgs(pid);
-    if (args && matchesCodexArgs(args)) return true;
+    if (args && await matchesAgentProcess(pid, args, 'codex')) return true;
   }
   return false;
 };

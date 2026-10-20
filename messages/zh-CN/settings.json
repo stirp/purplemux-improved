@@ -204,7 +204,7 @@
       }
     },
     "showResources": "显示系统资源",
-    "showResourcesDescription": "在标题栏显示CPU、内存和tmux会话使用情况。",
+    "showResourcesDescription": "运行 Agent 的整台机器 · 每 3 秒刷新.",
     "startServerAtLogin": "登录时启动服务器",
     "startServerAtLoginDescription": "在后台启动 purplemux-improved 服务器，不打开桌面应用或 Dock 图标。",
     "startServerAtLoginUnsupported": "将打包后的 macOS 应用安装到 Mac 后可用。",

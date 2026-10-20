@@ -24,6 +24,7 @@
   "toolCalls": "{count} araç çağrısı",
   "showMore": "{count} daha",
   "showLess": "Daha az",
+  "questionRequiredTitle": "Yanıtınız gerekiyor",
   "toastCompleteTitle": "Görev tamamlandı",
   "openTab": "Aç",
   "workStatus_pending": "Başlamadı",

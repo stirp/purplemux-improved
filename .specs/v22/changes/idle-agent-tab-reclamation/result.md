@@ -1,5 +1,12 @@
 # 实施与验证
 
+## 跨域误判修正（2026-10-20）
+
+- 闲置回收 POST 与策略 PATCH 改用共享 `isProcessActionRequestAllowed`，设置组件携带 `X-Purplemux-Process-Action: 1`。跨源明确拒绝，同源操作不因代理 Host 改写失败；回收/持久化逻辑未变。共用纯函数和常量避免两处接口规则漂移。
+- 本次 4 个文件共 64 项相关测试、完整 TypeScript、改动文件 ESLint、`pnpm build` 和差异检查通过。POST/PATCH 回归断言代理同源可调用服务，跨源/非法 Origin 返回 403 且不调用服务；OPTIONS 不开放 CORS。
+- 隔离浏览器验证实际防护函数：模拟 Host 改写及缺失 Fetch Metadata，带请求头的 POST/PATCH 返回 200；另一端口的跨源请求被预检拦截。没有连接真实回收服务、没有回收用户页签，不宣称实机回收验收通过。
+- 命令、复现记录和限制见[本机进程管理本次验证](../local-agent-process-management/result/verify.md#跨域误判修正2026-10-20)。
+
 ## 实施
 
 - 设置 → 本机进程增加闲置会话页签回收，默认手动、自动关闭，阈值默认 60 分钟，可设置 15～10080 分钟。策略持久化于 workspaces.json。使用 react-hook-form、zod 与现有组件；11 个语言目录补齐词条，简体中文和英文为完整正文，其余暂用英文。

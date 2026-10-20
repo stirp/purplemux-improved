@@ -1,3 +1,19 @@
 {
-  "openMenu": "メニューを開く"
+  "openMenu": "メニューを開く",
+  "resources": {
+    "title": "サーバーリソース",
+    "scope": "エージェントを実行するマシン全体 · 3秒ごとに更新",
+    "memory": "メモリ",
+    "memoryShort": "MEM",
+    "sampling": "計測中",
+    "high": "高負荷",
+    "elevated": "やや高い",
+    "normal": "正常",
+    "unavailable": "一時的に利用できません。自動で再試行します。",
+    "loading": "リソースを読み込み中…",
+    "usedTotal": "メモリ: {used} / {total}",
+    "availableBasis": "使用量 = 合計 − 利用可能量。回収可能なキャッシュを除きます。",
+    "freeBasis": "使用量 = 合計 − OSの空きメモリ。回収可能なキャッシュを含む場合があります。",
+    "updated": "更新 {time}"
+  }
 }

@@ -13,6 +13,34 @@ const call = async (method: string, input: unknown = body, headers = {}) => {
 };
 beforeEach(() => { vi.resetAllMocks(); mocks.scan.mockResolvedValue({ processes: [], transfers: [] }); });
 describe('process API', () => {
+  it.each(['stop', 'adopt'])('accepts proxied same-origin %s requests', async (action) => {
+    for (const headers of [
+      { host: '127.0.0.1:8022', origin: 'https://pmux.example.test', 'sec-fetch-site': 'same-origin' },
+      { host: '127.0.0.1:8022', origin: 'http://pmux.example.test', 'x-purplemux-process-action': '1' },
+      { host: 'localhost:8022', origin: 'http://localhost:8022' },
+      {},
+    ]) {
+      const input = { ...body, action };
+      expect((await call('POST', input, headers)).status).toHaveBeenCalledWith(200);
+      expect(mocks.manage).toHaveBeenLastCalledWith(action, input);
+    }
+  });
+  it.each([
+    { 'sec-fetch-site': 'cross-site', 'x-purplemux-process-action': '1' },
+    { 'sec-fetch-site': 'same-site', 'x-purplemux-process-action': '1' },
+    { origin: 'null' },
+    { origin: 'not a URL' },
+    { origin: 'https://evil.test', host: 'localhost', 'x-forwarded-host': 'evil.test' },
+  ])('rejects unsafe origins without executing actions: %j', async (headers) => {
+    expect((await call('POST', body, headers)).status).toHaveBeenCalledWith(403);
+    expect(mocks.manage).not.toHaveBeenCalled();
+  });
+  it('does not enable CORS preflight for custom headers', async () => {
+    const res = await call('OPTIONS', undefined, { origin: 'https://evil.test', 'access-control-request-headers': 'x-purplemux-process-action' });
+    expect(res.status).toHaveBeenCalledWith(405);
+    expect(res.setHeader.mock.calls.some(([name]) => String(name).toLowerCase().startsWith('access-control-'))).toBe(false);
+    expect(mocks.manage).not.toHaveBeenCalled();
+  });
   it('lists without caching and rejects unsupported methods', async () => {
     expect((await call('GET')).setHeader).toHaveBeenCalledWith('Cache-Control', 'no-store');
     expect((await call('DELETE')).status).toHaveBeenCalledWith(405);

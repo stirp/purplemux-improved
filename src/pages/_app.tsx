@@ -29,6 +29,7 @@ import useTerminalTheme from "@/hooks/use-terminal-theme";
 import useAgentStatus from "@/hooks/use-agent-status";
 import useNativeNotification from "@/hooks/use-native-notification";
 import useToastNotification from "@/hooks/use-toast-notification";
+import useQuestionNotification from "@/hooks/use-question-notification";
 import useWebPush from "@/hooks/use-web-push";
 import useIsMobile from "@/hooks/use-is-mobile";
 import useWorkspaceStore from "@/hooks/use-workspace-store";
@@ -91,6 +92,7 @@ const AgentStatusProvider = () => {
   useAgentStatus();
   useNativeNotification();
   useToastNotification();
+  useQuestionNotification();
   useWebPush();
   return null;
 };
@@ -134,10 +136,14 @@ const ElectronTitlebar = ({ isElectron }: { isElectron: boolean }) => {
 };
 
 export default function App({ Component, pageProps }: TAppPropsWithLayout) {
-  const storeHydrated = useRef(false);
-  if (!storeHydrated.current && pageProps.initialWorkspace) {
-    storeHydrated.current = true;
+  const workspaceHydrated = useRef(false);
+  const configHydrated = useRef(false);
+  if (!workspaceHydrated.current && pageProps.initialWorkspace) {
+    workspaceHydrated.current = true;
     useWorkspaceStore.getState().hydrate(pageProps.initialWorkspace);
+  }
+  if (!configHydrated.current && pageProps.initialConfig) {
+    configHydrated.current = true;
     useConfigStore.getState().hydrate(pageProps.initialConfig);
   }
 

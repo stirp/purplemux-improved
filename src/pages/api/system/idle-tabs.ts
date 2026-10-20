@@ -2,6 +2,7 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import { z } from 'zod';
 import { idleTabPolicySchema, idleTabTargetSchema } from '@/lib/idle-tab-policy';
 import { previewIdleTabs, reclaimIdleTabs, updateIdleTabPolicy } from '@/lib/idle-tab-reclaimer';
+import { isProcessActionRequestAllowed } from '@/lib/process-action-request';
 
 const reclaimSchema = z.object({
   targets: z.array(idleTabTargetSchema).min(1).max(100),
@@ -14,8 +15,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   try {
     if (req.method === 'GET') return res.status(200).json(await previewIdleTabs());
     if (req.method === 'POST' || req.method === 'PATCH') {
-      if (req.headers['sec-fetch-site'] === 'cross-site'
-        || (req.headers.origin && new URL(req.headers.origin).host !== req.headers.host)) {
+      if (!isProcessActionRequestAllowed(req.headers)) {
         return res.status(403).json({ error: 'Cross-site request denied' });
       }
       if (req.method === 'PATCH') {

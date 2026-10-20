@@ -1,5 +1,24 @@
 # 验证记录
 
+## 跨域误判修正（2026-10-20）
+
+新增回归后先运行旧实现：32 项中 9 项失败、23 项通过，复现代理同源请求 403、非法 Origin 返回 500，以及同站跨源请求未被显式拒绝。修复后执行：
+
+```bash
+pnpm exec vitest run "tests/unit/lib/agent-process-api.test.ts" "tests/unit/lib/idle-tab-api.test.ts" "tests/unit/lib/agent-process-manager.test.ts" "tests/unit/lib/idle-tab-reclaimer.test.ts"
+pnpm tsc --noEmit
+pnpm exec eslint "src/lib/process-action-request.ts" "src/pages/api/system/agent-processes.ts" "src/pages/api/system/idle-tabs.ts" "src/components/features/settings/agent-process-settings.tsx" "src/components/features/settings/idle-tab-settings.tsx" "tests/unit/lib/agent-process-api.test.ts" "tests/unit/lib/idle-tab-api.test.ts"
+pnpm build
+git diff --check
+```
+
+- 4 个文件共 64 项测试全部通过；完整 TypeScript、改动文件 ESLint、差异检查通过。
+- 完整生产构建成功：Next.js 类型检查、Turbopack 编译、24 个静态页面、post-build、服务端 tsup 均通过。构建提示多个锁文件，推断 `/home/home` 为工作区根；未因此修改配置或锁文件。
+- API 回归覆盖 stop/adopt、闲置 POST/PATCH 的代理 Host 不同；有 same-origin 标记的旧页面、无 Fetch Metadata 但有自定义头的 HTTP 客户端、直接访问及无 Origin 的 CLI 兼容；跨站/同站跨源、任意转发主机头、非法/不透明 Origin 拒绝；OPTIONS 返回 405 且没有 CORS 响应头。拒绝时操作 mock 不被调用。
+- 使用 agent-browser 命名会话 `pmux-session-origin-fix`，运行仅监听 `127.0.0.1:18701/18702` 的临时 HTTP fixture，导入实际 `isProcessActionRequestAllowed`。模拟 Host 被改为 `internal.invalid:8022`，同源 POST 返回 200；移除服务端收到的 Fetch Metadata 后，带自定义头的 POST/PATCH 仍返回 200。
+- 实际浏览器从一个端口跨源请求另一端口时，自定义请求头触发 OPTIONS，被 CORS 拒绝；计数只有 3 次合法写入、1 次预检，无跨源写入。浏览器会话及临时服务已关闭。CLI 无法读取 core skill，改用已读取的本地 core 使用指南。
+- 浏览器检查范围是实际防护函数与浏览器 CORS 机制的隔离验证，不是登录后完整应用端到端测试；用户现场的访问地址、请求头及部署尚未验证。未停止真实 Claude/Codex、未验证真实迁入或 macOS。
+
 ## PR #71 目标终端重检（2026-10-20）
 
 - 对应[评审问题](https://github.com/stirp/purplemux-improved/pull/71#discussion_r4315906343)：等待原进程退出期间目标可能被其他浏览器使用，旧的 shell/目录检查不足以保护投递。

@@ -1,0 +1,646 @@
+[
+  {
+    "width": 320,
+    "height": 640,
+    "dark": false,
+    "font": 16,
+    "closed": {
+      "scroll": 320,
+      "titleWidth": 94,
+      "trigger": {
+        "height": 44,
+        "right": 260,
+        "width": 96
+      },
+      "width": 320
+    },
+    "opened": {
+      "close": {
+        "height": 44,
+        "width": 44
+      },
+      "panel": {
+        "bottom": 640,
+        "left": 0,
+        "right": 320,
+        "top": 281.5
+      },
+      "scroll": 320,
+      "scrollable": false,
+      "text": "服务器资源运行 Agent 的整台机器 · 每 3 秒刷新CPU高93%内存偏高88%内存已用 14.0 GiB / 总量 16.0 GiB已用 = 总量 − 可用内存，已扣除可回收缓存。更新于 20:19:15",
+      "width": 320
+    },
+    "focusRestored": true
+  },
+  {
+    "width": 320,
+    "height": 640,
+    "dark": false,
+    "font": 20,
+    "closed": {
+      "scroll": 320,
+      "titleWidth": 59.5,
+      "trigger": {
+        "height": 55,
+        "right": 256,
+        "width": 120
+      },
+      "width": 320
+    },
+    "opened": {
+      "close": {
+        "height": 55,
+        "width": 55
+      },
+      "panel": {
+        "bottom": 640,
+        "left": 0,
+        "right": 320,
+        "top": 142.796875
+      },
+      "scroll": 320,
+      "scrollable": false,
+      "text": "服务器资源运行 Agent 的整台机器 · 每 3 秒刷新CPU高93%内存偏高88%内存已用 14.0 GiB / 总量 16.0 GiB已用 = 总量 − 可用内存，已扣除可回收缓存。更新于 20:19:17",
+      "width": 320
+    },
+    "focusRestored": true
+  },
+  {
+    "width": 320,
+    "height": 640,
+    "dark": true,
+    "font": 16,
+    "closed": {
+      "scroll": 320,
+      "titleWidth": 94,
+      "trigger": {
+        "height": 44,
+        "right": 260,
+        "width": 96
+      },
+      "width": 320
+    },
+    "opened": {
+      "close": {
+        "height": 44,
+        "width": 44
+      },
+      "panel": {
+        "bottom": 640,
+        "left": 0,
+        "right": 320,
+        "top": 281.5
+      },
+      "scroll": 320,
+      "scrollable": false,
+      "text": "服务器资源运行 Agent 的整台机器 · 每 3 秒刷新CPU高93%内存偏高88%内存已用 14.0 GiB / 总量 16.0 GiB已用 = 总量 − 可用内存，已扣除可回收缓存。更新于 20:19:19",
+      "width": 320
+    },
+    "focusRestored": true
+  },
+  {
+    "width": 320,
+    "height": 640,
+    "dark": true,
+    "font": 20,
+    "closed": {
+      "scroll": 320,
+      "titleWidth": 59.5,
+      "trigger": {
+        "height": 55,
+        "right": 256,
+        "width": 120
+      },
+      "width": 320
+    },
+    "opened": {
+      "close": {
+        "height": 55,
+        "width": 55
+      },
+      "panel": {
+        "bottom": 640,
+        "left": 0,
+        "right": 320,
+        "top": 142.796875
+      },
+      "scroll": 320,
+      "scrollable": false,
+      "text": "服务器资源运行 Agent 的整台机器 · 每 3 秒刷新CPU高93%内存偏高88%内存已用 14.0 GiB / 总量 16.0 GiB已用 = 总量 − 可用内存，已扣除可回收缓存。更新于 20:19:22",
+      "width": 320
+    },
+    "focusRestored": true
+  },
+  {
+    "width": 390,
+    "height": 844,
+    "dark": false,
+    "font": 16,
+    "closed": {
+      "scroll": 390,
+      "titleWidth": 130.5,
+      "trigger": {
+        "height": 44,
+        "right": 330,
+        "width": 96
+      },
+      "width": 390
+    },
+    "opened": {
+      "close": {
+        "height": 44,
+        "width": 44
+      },
+      "panel": {
+        "bottom": 844,
+        "left": 0,
+        "right": 390,
+        "top": 485.5
+      },
+      "scroll": 390,
+      "scrollable": false,
+      "text": "服务器资源运行 Agent 的整台机器 · 每 3 秒刷新CPU高93%内存偏高88%内存已用 14.0 GiB / 总量 16.0 GiB已用 = 总量 − 可用内存，已扣除可回收缓存。更新于 20:19:24",
+      "width": 390
+    },
+    "focusRestored": true
+  },
+  {
+    "width": 390,
+    "height": 844,
+    "dark": false,
+    "font": 20,
+    "closed": {
+      "scroll": 390,
+      "titleWidth": 87.625,
+      "trigger": {
+        "height": 55,
+        "right": 326,
+        "width": 120
+      },
+      "width": 390
+    },
+    "opened": {
+      "close": {
+        "height": 55,
+        "width": 55
+      },
+      "panel": {
+        "bottom": 844,
+        "left": 0,
+        "right": 390,
+        "top": 371.171875
+      },
+      "scroll": 390,
+      "scrollable": false,
+      "text": "服务器资源运行 Agent 的整台机器 · 每 3 秒刷新CPU高93%内存偏高88%内存已用 14.0 GiB / 总量 16.0 GiB已用 = 总量 − 可用内存，已扣除可回收缓存。更新于 20:19:27",
+      "width": 390
+    },
+    "focusRestored": true
+  },
+  {
+    "width": 390,
+    "height": 844,
+    "dark": true,
+    "font": 16,
+    "closed": {
+      "scroll": 390,
+      "titleWidth": 130.5,
+      "trigger": {
+        "height": 44,
+        "right": 330,
+        "width": 96
+      },
+      "width": 390
+    },
+    "opened": {
+      "close": {
+        "height": 44,
+        "width": 44
+      },
+      "panel": {
+        "bottom": 844,
+        "left": 0,
+        "right": 390,
+        "top": 485.5
+      },
+      "scroll": 390,
+      "scrollable": false,
+      "text": "服务器资源运行 Agent 的整台机器 · 每 3 秒刷新CPU高93%内存偏高88%内存已用 14.0 GiB / 总量 16.0 GiB已用 = 总量 − 可用内存，已扣除可回收缓存。更新于 20:19:29",
+      "width": 390
+    },
+    "focusRestored": true
+  },
+  {
+    "width": 390,
+    "height": 844,
+    "dark": true,
+    "font": 20,
+    "closed": {
+      "scroll": 390,
+      "titleWidth": 87.625,
+      "trigger": {
+        "height": 55,
+        "right": 326,
+        "width": 120
+      },
+      "width": 390
+    },
+    "opened": {
+      "close": {
+        "height": 55,
+        "width": 55
+      },
+      "panel": {
+        "bottom": 844,
+        "left": 0,
+        "right": 390,
+        "top": 371.171875
+      },
+      "scroll": 390,
+      "scrollable": false,
+      "text": "服务器资源运行 Agent 的整台机器 · 每 3 秒刷新CPU高93%内存偏高88%内存已用 14.0 GiB / 总量 16.0 GiB已用 = 总量 − 可用内存，已扣除可回收缓存。更新于 20:19:32",
+      "width": 390
+    },
+    "focusRestored": true
+  },
+  {
+    "width": 430,
+    "height": 932,
+    "dark": false,
+    "font": 16,
+    "closed": {
+      "scroll": 430,
+      "titleWidth": 170.5,
+      "trigger": {
+        "height": 44,
+        "right": 370,
+        "width": 96
+      },
+      "width": 430
+    },
+    "opened": {
+      "close": {
+        "height": 44,
+        "width": 44
+      },
+      "panel": {
+        "bottom": 932,
+        "left": 0,
+        "right": 430,
+        "top": 573.5
+      },
+      "scroll": 430,
+      "scrollable": false,
+      "text": "服务器资源运行 Agent 的整台机器 · 每 3 秒刷新CPU高93%内存偏高88%内存已用 14.0 GiB / 总量 16.0 GiB已用 = 总量 − 可用内存，已扣除可回收缓存。更新于 20:19:35",
+      "width": 430
+    },
+    "focusRestored": true
+  },
+  {
+    "width": 430,
+    "height": 932,
+    "dark": false,
+    "font": 20,
+    "closed": {
+      "scroll": 430,
+      "titleWidth": 127.625,
+      "trigger": {
+        "height": 55,
+        "right": 366,
+        "width": 120
+      },
+      "width": 430
+    },
+    "opened": {
+      "close": {
+        "height": 55,
+        "width": 55
+      },
+      "panel": {
+        "bottom": 932,
+        "left": 0,
+        "right": 430,
+        "top": 484.171875
+      },
+      "scroll": 430,
+      "scrollable": false,
+      "text": "服务器资源运行 Agent 的整台机器 · 每 3 秒刷新CPU高93%内存偏高88%内存已用 14.0 GiB / 总量 16.0 GiB已用 = 总量 − 可用内存，已扣除可回收缓存。更新于 20:19:37",
+      "width": 430
+    },
+    "focusRestored": true
+  },
+  {
+    "width": 430,
+    "height": 932,
+    "dark": true,
+    "font": 16,
+    "closed": {
+      "scroll": 430,
+      "titleWidth": 170.5,
+      "trigger": {
+        "height": 44,
+        "right": 370,
+        "width": 96
+      },
+      "width": 430
+    },
+    "opened": {
+      "close": {
+        "height": 44,
+        "width": 44
+      },
+      "panel": {
+        "bottom": 932,
+        "left": 0,
+        "right": 430,
+        "top": 573.5
+      },
+      "scroll": 430,
+      "scrollable": false,
+      "text": "服务器资源运行 Agent 的整台机器 · 每 3 秒刷新CPU高93%内存偏高88%内存已用 14.0 GiB / 总量 16.0 GiB已用 = 总量 − 可用内存，已扣除可回收缓存。更新于 20:19:39",
+      "width": 430
+    },
+    "focusRestored": true
+  },
+  {
+    "width": 430,
+    "height": 932,
+    "dark": true,
+    "font": 20,
+    "closed": {
+      "scroll": 430,
+      "titleWidth": 127.625,
+      "trigger": {
+        "height": 55,
+        "right": 366,
+        "width": 120
+      },
+      "width": 430
+    },
+    "opened": {
+      "close": {
+        "height": 55,
+        "width": 55
+      },
+      "panel": {
+        "bottom": 932,
+        "left": 0,
+        "right": 430,
+        "top": 484.171875
+      },
+      "scroll": 430,
+      "scrollable": false,
+      "text": "服务器资源运行 Agent 的整台机器 · 每 3 秒刷新CPU高93%内存偏高88%内存已用 14.0 GiB / 总量 16.0 GiB已用 = 总量 − 可用内存，已扣除可回收缓存。更新于 20:19:42",
+      "width": 430
+    },
+    "focusRestored": true
+  },
+  {
+    "width": 740,
+    "height": 360,
+    "dark": false,
+    "font": 16,
+    "closed": {
+      "scroll": 740,
+      "titleWidth": 443.78125,
+      "trigger": {
+        "height": 44,
+        "right": 680,
+        "width": 96
+      },
+      "width": 740
+    },
+    "opened": {
+      "close": {
+        "height": 44,
+        "width": 44
+      },
+      "panel": {
+        "bottom": 360,
+        "left": 0,
+        "right": 740,
+        "top": 54
+      },
+      "scroll": 740,
+      "scrollable": true,
+      "text": "服务器资源运行 Agent 的整台机器 · 每 3 秒刷新CPU高93%内存偏高88%内存已用 14.0 GiB / 总量 16.0 GiB已用 = 总量 − 可用内存，已扣除可回收缓存。更新于 20:19:44",
+      "width": 740
+    },
+    "focusRestored": true
+  },
+  {
+    "width": 740,
+    "height": 360,
+    "dark": false,
+    "font": 20,
+    "closed": {
+      "scroll": 740,
+      "titleWidth": 437.625,
+      "trigger": {
+        "height": 55,
+        "right": 676,
+        "width": 120
+      },
+      "width": 740
+    },
+    "opened": {
+      "close": {
+        "height": 55,
+        "width": 55
+      },
+      "panel": {
+        "bottom": 360,
+        "left": 0,
+        "right": 740,
+        "top": 54
+      },
+      "scroll": 740,
+      "scrollable": true,
+      "text": "服务器资源运行 Agent 的整台机器 · 每 3 秒刷新CPU高93%内存偏高88%内存已用 14.0 GiB / 总量 16.0 GiB已用 = 总量 − 可用内存，已扣除可回收缓存。更新于 20:19:47",
+      "width": 740
+    },
+    "focusRestored": true
+  },
+  {
+    "width": 740,
+    "height": 360,
+    "dark": true,
+    "font": 16,
+    "closed": {
+      "scroll": 740,
+      "titleWidth": 443.78125,
+      "trigger": {
+        "height": 44,
+        "right": 680,
+        "width": 96
+      },
+      "width": 740
+    },
+    "opened": {
+      "close": {
+        "height": 44,
+        "width": 44
+      },
+      "panel": {
+        "bottom": 360,
+        "left": 0,
+        "right": 740,
+        "top": 54
+      },
+      "scroll": 740,
+      "scrollable": true,
+      "text": "服务器资源运行 Agent 的整台机器 · 每 3 秒刷新CPU高93%内存偏高88%内存已用 14.0 GiB / 总量 16.0 GiB已用 = 总量 − 可用内存，已扣除可回收缓存。更新于 20:19:49",
+      "width": 740
+    },
+    "focusRestored": true
+  },
+  {
+    "width": 740,
+    "height": 360,
+    "dark": true,
+    "font": 20,
+    "closed": {
+      "scroll": 740,
+      "titleWidth": 437.625,
+      "trigger": {
+        "height": 55,
+        "right": 676,
+        "width": 120
+      },
+      "width": 740
+    },
+    "opened": {
+      "close": {
+        "height": 55,
+        "width": 55
+      },
+      "panel": {
+        "bottom": 360,
+        "left": 0,
+        "right": 740,
+        "top": 54
+      },
+      "scroll": 740,
+      "scrollable": true,
+      "text": "服务器资源运行 Agent 的整台机器 · 每 3 秒刷新CPU高93%内存偏高88%内存已用 14.0 GiB / 总量 16.0 GiB已用 = 总量 − 可用内存，已扣除可回收缓存。更新于 20:19:52",
+      "width": 740
+    },
+    "focusRestored": true
+  },
+  {
+    "width": 1280,
+    "height": 800,
+    "dark": false,
+    "font": 16,
+    "closed": {
+      "scroll": 1280,
+      "trigger": {
+        "height": 32,
+        "right": 198.34375,
+        "width": 186.34375
+      },
+      "width": 1280
+    },
+    "opened": {
+      "close": null,
+      "panel": {
+        "bottom": 399.5,
+        "left": 12,
+        "right": 332,
+        "top": 44
+      },
+      "scroll": 1280,
+      "scrollable": false,
+      "text": "服务器资源运行 Agent 的整台机器 · 每 3 秒刷新CPU高93%内存偏高88%内存已用 14.0 GiB / 总量 16.0 GiB已用 = 总量 − 可用内存，已扣除可回收缓存。更新于 20:19:54",
+      "width": 1280
+    },
+    "focusRestored": true
+  },
+  {
+    "width": 1280,
+    "height": 800,
+    "dark": false,
+    "font": 20,
+    "closed": {
+      "scroll": 1280,
+      "trigger": {
+        "height": 40,
+        "right": 247.421875,
+        "width": 232.421875
+      },
+      "width": 1280
+    },
+    "opened": {
+      "close": null,
+      "panel": {
+        "bottom": 498.328125,
+        "left": 15,
+        "right": 415,
+        "top": 54
+      },
+      "scroll": 1280,
+      "scrollable": false,
+      "text": "服务器资源运行 Agent 的整台机器 · 每 3 秒刷新CPU高93%内存偏高88%内存已用 14.0 GiB / 总量 16.0 GiB已用 = 总量 − 可用内存，已扣除可回收缓存。更新于 20:19:57",
+      "width": 1280
+    },
+    "focusRestored": true
+  },
+  {
+    "width": 1280,
+    "height": 800,
+    "dark": true,
+    "font": 16,
+    "closed": {
+      "scroll": 1280,
+      "trigger": {
+        "height": 32,
+        "right": 198.34375,
+        "width": 186.34375
+      },
+      "width": 1280
+    },
+    "opened": {
+      "close": null,
+      "panel": {
+        "bottom": 399.5,
+        "left": 12,
+        "right": 332,
+        "top": 44
+      },
+      "scroll": 1280,
+      "scrollable": false,
+      "text": "服务器资源运行 Agent 的整台机器 · 每 3 秒刷新CPU高93%内存偏高88%内存已用 14.0 GiB / 总量 16.0 GiB已用 = 总量 − 可用内存，已扣除可回收缓存。更新于 20:20:00",
+      "width": 1280
+    },
+    "focusRestored": true
+  },
+  {
+    "width": 1280,
+    "height": 800,
+    "dark": true,
+    "font": 20,
+    "closed": {
+      "scroll": 1280,
+      "trigger": {
+        "height": 40,
+        "right": 247.421875,
+        "width": 232.421875
+      },
+      "width": 1280
+    },
+    "opened": {
+      "close": null,
+      "panel": {
+        "bottom": 498.328125,
+        "left": 15,
+        "right": 415,
+        "top": 54
+      },
+      "scroll": 1280,
+      "scrollable": false,
+      "text": "服务器资源运行 Agent 的整台机器 · 每 3 秒刷新CPU高93%内存偏高88%内存已用 14.0 GiB / 总量 16.0 GiB已用 = 总量 − 可用内存，已扣除可回收缓存。更新于 20:20:02",
+      "width": 1280
+    },
+    "focusRestored": true
+  }
+]
