@@ -204,7 +204,7 @@
       }
     },
     "showResources": "Показать системные ресурсы",
-    "showResourcesDescription": "Отображать использование ЦП, памяти и сессий tmux в заголовке.",
+    "showResourcesDescription": "Весь компьютер, на котором работают агенты · обновление каждые 3 секунды.",
     "startServerAtLogin": "Запускать сервер при входе",
     "startServerAtLoginDescription": "Запускает сервер purplemux-improved в фоновом режиме, не открывая настольное приложение и значок в Dock.",
     "startServerAtLoginUnsupported": "Доступно после установки упакованного приложения macOS на ваш Mac.",

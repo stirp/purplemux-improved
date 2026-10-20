@@ -1,3 +1,19 @@
 {
-  "openMenu": "開啟選單"
+  "openMenu": "開啟選單",
+  "resources": {
+    "title": "伺服器資源",
+    "scope": "執行 Agent 的整台機器 · 每 3 秒重新整理",
+    "memory": "記憶體",
+    "memoryShort": "記憶體",
+    "sampling": "取樣中",
+    "high": "高",
+    "elevated": "偏高",
+    "normal": "正常",
+    "unavailable": "暫時無法使用，正在自動重試。",
+    "loading": "正在讀取資源…",
+    "usedTotal": "記憶體已用 {used} / 總量 {total}",
+    "availableBasis": "已用 = 總量 − 可用記憶體，已扣除可回收快取。",
+    "freeBasis": "已用 = 總量 − 系統閒置記憶體，可能包含可回收快取。",
+    "updated": "更新於 {time}"
+  }
 }

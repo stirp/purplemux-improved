@@ -1,3 +1,19 @@
 {
-  "openMenu": "Menüyü aç"
+  "openMenu": "Menüyü aç",
+  "resources": {
+    "title": "Sunucu kaynakları",
+    "scope": "Aracıların çalıştığı tüm makine · 3 saniyede bir yenilenir",
+    "memory": "Bellek",
+    "memoryShort": "RAM",
+    "sampling": "Ölçülüyor",
+    "high": "Yüksek",
+    "elevated": "Artmış",
+    "normal": "Normal",
+    "unavailable": "Geçici olarak kullanılamıyor. Otomatik yeniden deneniyor.",
+    "loading": "Kaynaklar yükleniyor…",
+    "usedTotal": "Bellek: {used} / {total}",
+    "availableBasis": "Kullanılan = toplam − kullanılabilir; geri kazanılabilir önbellek hariçtir.",
+    "freeBasis": "Kullanılan = toplam − işletim sisteminin boş belleği; geri kazanılabilir önbellek içerebilir.",
+    "updated": "Güncellendi {time}"
+  }
 }

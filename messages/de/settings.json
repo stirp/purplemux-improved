@@ -204,7 +204,7 @@
       }
     },
     "showResources": "Systemressourcen anzeigen",
-    "showResourcesDescription": "CPU-, Arbeitsspeicher- und tmux-Sitzungsauslastung in der Kopfzeile anzeigen.",
+    "showResourcesDescription": "Gesamter Rechner, auf dem die Agenten laufen · alle 3 Sekunden aktualisiert.",
     "startServerAtLogin": "Server bei der Anmeldung starten",
     "startServerAtLoginDescription": "Startet den purplemux-Server im Hintergrund, ohne die Desktop-App oder das Dock-Symbol zu öffnen.",
     "startServerAtLoginUnsupported": "Verfügbar, nachdem die paketierte macOS-App auf deinem Mac installiert wurde.",

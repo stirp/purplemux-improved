@@ -16,6 +16,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import useTabStore, { selectGlobalStatus } from '@/hooks/use-tab-store';
 import AppLogo from '@/components/layout/app-logo';
+import SystemResources from '@/components/layout/system-resources';
 import { useNotificationCount } from '@/components/features/workspace/notification-sheet';
 import EditWorkspaceDialog from '@/components/features/workspace/edit-workspace-dialog';
 
@@ -39,11 +40,11 @@ const AppHeader = ({ onMenuOpen, workspaceId, workspaceName }: IAppHeaderProps) 
   const [editOpen, setEditOpen] = useState(false);
 
   return (
-    <header className="flex h-12 shrink-0 items-center justify-between border-b border-sidebar-border bg-background px-3">
-      <div className="flex min-w-0 items-center gap-1.5">
+    <header className="flex h-12 shrink-0 items-center justify-between gap-2 border-b border-sidebar-border bg-background px-3">
+      <div className="flex min-w-0 flex-1 items-center gap-1.5">
         {onMenuOpen && (
           <button
-            className="relative flex h-8 w-8 shrink-0 items-center justify-center text-foreground"
+            className="relative flex h-[44px] w-[44px] shrink-0 items-center justify-center text-foreground"
             onClick={onMenuOpen}
             aria-label={t('openMenu')}
           >
@@ -55,15 +56,15 @@ const AppHeader = ({ onMenuOpen, workspaceId, workspaceName }: IAppHeaderProps) 
             )}
           </button>
         )}
-        <AppLogo shimmer={hasBusy} />
+        <AppLogo shimmer={hasBusy} className={workspaceName ? "hidden shrink-0 min-[360px]:flex [&>span]:hidden" : "min-w-0 [&>span]:truncate"} />
         {workspaceName && (
           <>
-            <span className="text-muted-foreground/40 text-sm">/</span>
+            <span className="hidden shrink-0 text-muted-foreground/40 text-sm min-[360px]:inline">/</span>
             {workspaceId ? (
               <button
                 type="button"
                 onClick={() => setEditOpen(true)}
-                className="truncate rounded px-1 py-0.5 text-sm font-medium text-muted-foreground hover:bg-accent hover:text-foreground"
+                className="h-11 min-w-0 truncate rounded px-1 py-0.5 text-sm font-medium text-muted-foreground hover:bg-accent hover:text-foreground"
               >
                 {workspaceName}
               </button>
@@ -75,7 +76,8 @@ const AppHeader = ({ onMenuOpen, workspaceId, workspaceName }: IAppHeaderProps) 
       </div>
 
       <TooltipProvider>
-        <div className="flex items-center gap-1">
+        <div className="flex shrink-0 items-center gap-1">
+          <SystemResources mobile />
           <AlertDialog>
             <Tooltip>
               <TooltipTrigger
@@ -85,7 +87,8 @@ const AppHeader = ({ onMenuOpen, workspaceId, workspaceName }: IAppHeaderProps) 
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-7 w-7"
+                        className="h-[44px] w-[44px]"
+                        aria-label={tc('logout')}
                       />
                     }
                   />

@@ -204,7 +204,7 @@
       }
     },
     "showResources": "Sistem kaynaklarını göster",
-    "showResourcesDescription": "Başlıkta CPU, bellek ve tmux oturum kullanımını görüntüler.",
+    "showResourcesDescription": "Aracıların çalıştığı tüm makine · 3 saniyede bir yenilenir.",
     "startServerAtLogin": "Oturum açıldığında sunucuyu başlat",
     "startServerAtLoginDescription": "Masaüstü uygulamasını veya Dock simgesini açmadan purplemux-improved sunucusunu arka planda başlatır.",
     "startServerAtLoginUnsupported": "Paketlenmiş macOS uygulaması Mac'inize yüklendikten sonra kullanılabilir.",

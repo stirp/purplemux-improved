@@ -1,3 +1,19 @@
 {
-  "openMenu": "打开菜单"
+  "openMenu": "打开菜单",
+  "resources": {
+    "title": "服务器资源",
+    "scope": "运行 Agent 的整台机器 · 每 3 秒刷新",
+    "memory": "内存",
+    "memoryShort": "内存",
+    "sampling": "采样中",
+    "high": "高",
+    "elevated": "偏高",
+    "normal": "正常",
+    "unavailable": "暂不可用，正在自动重试。",
+    "loading": "正在读取资源…",
+    "usedTotal": "内存已用 {used} / 总量 {total}",
+    "availableBasis": "已用 = 总量 − 可用内存，已扣除可回收缓存。",
+    "freeBasis": "已用 = 总量 − 系统空闲内存，可能包含可回收缓存。",
+    "updated": "更新于 {time}"
+  }
 }
