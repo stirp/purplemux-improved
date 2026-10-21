@@ -3,7 +3,7 @@ import { act, createElement, useEffect } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import useTimeline from '@/hooks/use-timeline';
-import { InputQueue } from '@/lib/input-queue';
+import { InputQueue, type IQueuedInput } from '@/lib/input-queue';
 import { clearTimelineDisplaySnapshot, getTimelineDisplaySnapshot, saveTimelineDisplaySnapshot, timelineDisplayKey } from '@/lib/timeline-display-cache';
 import type { ITimelineUserMessage, TTimelineServerMessage } from '@/types/timeline';
 
@@ -47,6 +47,58 @@ afterEach(async () => {
 });
 
 describe('timeline cached display and revalidation', () => {
+  it('restores the original queued timestamp after mounting and remounting, then uses the native receipt time', async () => {
+    vi.useFakeTimers();
+    const createdAt = Date.parse('2026-10-21T10:00:00Z');
+    const message = { id: 'queued', text: 'waiting', attachments: [], createdAt };
+    const options = { queueMessage: message, autoHide: false, deliveryState: 'queued' as const };
+    vi.setSystemTime(createdAt + 300_000);
+    await act(async () => root.render(createElement(Harness)));
+    await act(async () => state.addPendingUserMessage(message.text, options));
+    expect(state.entries).toEqual([expect.objectContaining({ id: 'input-queued', timestamp: createdAt, pending: true })]);
+
+    await act(async () => root.unmount());
+    vi.setSystemTime(createdAt + 600_000);
+    root = createRoot(container);
+    await act(async () => root.render(createElement(Harness)));
+    await act(async () => state.addPendingUserMessage(message.text, options));
+    expect(state.entries).toEqual([expect.objectContaining({ id: 'input-queued', timestamp: createdAt, pending: true })]);
+
+    const attemptedAt = createdAt + 700_000;
+    vi.setSystemTime(attemptedAt);
+    await act(async () => {
+      state.addPendingUserMessage(message.text, { ...options, deliveryState: 'sending' });
+      state.syncInputAttempts([{ id: message.id, at: attemptedAt }]);
+    });
+    expect(state.entries[0]).toMatchObject({ timestamp: createdAt, deliveryState: 'sending', attemptedAt });
+    const actual = { ...entry('native'), text: message.text, timestamp: attemptedAt + 1000 };
+    await act(async () => Socket.instances[1].message({ type: 'timeline:append', entries: [actual] }));
+    expect(state.entries).toEqual([{ ...actual, id: 'input-queued' }]);
+  });
+
+  it('keeps the initial fallback time for legacy queue snapshots without createdAt', async () => {
+    vi.useFakeTimers();
+    const now = Date.parse('2026-10-21T10:00:00Z');
+    vi.setSystemTime(now);
+    await act(async () => root.render(createElement(Harness)));
+    const message: IQueuedInput = { id: 'legacy', text: 'waiting', attachments: [] };
+    const options = { queueMessage: message, autoHide: false, deliveryState: 'queued' as const };
+    await act(async () => state.addPendingUserMessage(message.text, options));
+    expect(state.entries[0]).toMatchObject({ timestamp: now, pending: true });
+    vi.setSystemTime(now + 60_000);
+    await act(async () => state.addPendingUserMessage(message.text, { ...options, deliveryState: 'sending' }));
+    expect(state.entries).toEqual([expect.objectContaining({ timestamp: now, deliveryState: 'sending' })]);
+  });
+
+  it('uses the submission time for pending messages without queue metadata', async () => {
+    vi.useFakeTimers();
+    const now = Date.parse('2026-10-21T10:00:00Z');
+    vi.setSystemTime(now);
+    await act(async () => root.render(createElement(Harness)));
+    await act(async () => state.addPendingUserMessage('direct input', { autoHide: false }));
+    expect(state.entries).toEqual([expect.objectContaining({ timestamp: now, pending: true })]);
+  });
+
   it.each([false, true])('uses server attempt times even when a send finishes between queue polls (receiptFirst=%s)', async (receiptFirst) => {
     vi.useFakeTimers();
     vi.setSystemTime(1000);

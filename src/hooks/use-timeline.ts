@@ -266,7 +266,7 @@ const useTimeline = ({
     const pendingEntry: ITimelineEntry = {
       id,
       type: 'user-message',
-      timestamp: Date.now(),
+      timestamp: options?.queueMessage?.createdAt ?? Date.now(),
       text: trimmed,
       pending: true,
       attachmentPlaceholder: options?.attachmentPlaceholder,

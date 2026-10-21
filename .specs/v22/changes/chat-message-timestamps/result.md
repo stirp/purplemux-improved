@@ -31,3 +31,28 @@
 - 验收 5：自动化检查结果见上表。
 - 历史原始 JSONL 没有时间时，解析器已有的当前时间回退保持原样，本次无法恢复原始发送/回复时刻。
 - 未提交、推送或发布；正在运行的应用需加载本工作树构建后才能看到变更。
+
+## PR #83 审查修正
+
+针对[审查意见](https://github.com/stirp/purplemux-improved/pull/83#discussion_r4338290788)，确认 `web-input-bar.tsx` 已将包含 `createdAt` 的队列快照传入共用 hook，但 `addPendingUserMessage` 一直使用 `Date.now()`，导致稍后打开或重新挂载页面时显示错误时间。
+
+修正 `src/hooks/use-timeline.ts`：首次构建待确认条目使用 `queueMessage.createdAt ?? Date.now()`。复用已有快照和更新路径，保持状态更新期间的时间稳定、投递尝试边界及原生回执的时间语义；不新增 API 或时间存储。
+
+在 `tests/unit/lib/timeline-display-hook.test.ts` 增加 3 项回归：
+
+- 入队 5 分钟后首次挂载、10 分钟后重新挂载都保留原时间，随后发送状态更新不改时间，原生回执到达后使用回执时间。
+- 旧队列快照缺少 `createdAt` 时使用首次创建时间，后续状态更新不刷新该时间。
+- 普通非队列待确认消息使用提交时间。
+
+本轮实际执行（2026-10-21）：
+
+| 检查 | 命令 | 结果 |
+| --- | --- | --- |
+| 修复前复现 | `pnpm exec vitest run tests/unit/lib/timeline-display-hook.test.ts` | 新增恢复时间用例失败（错误显示挂载时间）；22 项通过、1 项失败 |
+| 修复后回归 | `pnpm exec vitest run tests/unit/lib/timeline-display-hook.test.ts tests/unit/lib/input-message-match.test.ts tests/unit/lib/timeline-display-cache.test.ts` | 35 项全部通过 |
+| 改动文件 ESLint | `pnpm exec eslint src/hooks/use-timeline.ts tests/unit/lib/timeline-display-hook.test.ts` | 通过 |
+| 完整类型检查 | `pnpm tsc --noEmit` | 通过 |
+| 生产构建 | `pnpm build` | 通过：Next.js、页面生成、post-build 和 tsup 均成功 |
+| 文档及差异 | 规格相对链接检查、`git diff --check` | 通过 |
+
+本轮未执行浏览器/手机视觉验收；验证重点为实际 hook 挂载、重新挂载及队列/回执交互。未提交、推送或回复远端审查。
