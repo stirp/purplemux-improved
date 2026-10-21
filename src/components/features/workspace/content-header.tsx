@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, type Ref } from 'react';
 import { useTranslations } from 'next-intl';
 import { FolderCode, GitCompareArrows } from 'lucide-react';
 import Spinner from '@/components/ui/spinner';
@@ -49,6 +49,8 @@ const SplitHorizontalIcon = ({ className }: { className?: string }) => (
 );
 
 interface IContentHeaderProps {
+  ref?: Ref<HTMLDivElement>;
+  inline?: boolean;
   activePaneId: string | null;
   root: TLayoutNode;
   paneCount: number;
@@ -67,6 +69,8 @@ const gitIndicatorToneClass: Record<TGitStatusIndicatorTone, string> = {
 };
 
 const ContentHeader = ({
+  ref,
+  inline = false,
   activePaneId,
   root,
   paneCount,
@@ -133,17 +137,21 @@ const ContentHeader = ({
   const paneId = focusedPane?.id;
 
   return (
-    <div className="shrink-0 bg-background">
-      <div
-        className="relative z-40 flex h-12 shrink-0 items-center border-b border-border px-3"
-        {...(isElectron ? { style: { WebkitAppRegion: 'drag' } as React.CSSProperties } : {})}
-      >
-      <div className="mr-auto" {...(isElectron ? { style: { WebkitAppRegion: 'no-drag' } as React.CSSProperties } : {})}>
+    <div
+      ref={ref}
+      className={cn(
+        'relative z-40 flex shrink-0 items-center bg-background',
+        inline ? 'gap-1 border-l border-border px-1' : 'h-12 border-b border-border px-3',
+      )}
+      onClick={inline ? (event) => event.stopPropagation() : undefined}
+      {...(isElectron ? { style: { WebkitAppRegion: 'drag' } as React.CSSProperties } : {})}
+    >
+      <div className="mr-auto shrink-0" {...(isElectron ? { style: { WebkitAppRegion: 'no-drag' } as React.CSSProperties } : {})}>
         <SystemResources />
       </div>
       <TooltipProvider>
         <div
-          className="flex items-center gap-1"
+          className="flex shrink-0 items-center gap-1"
           {...(isElectron ? { style: { WebkitAppRegion: 'no-drag' } as React.CSSProperties } : {})}
         >
           {editorPreset !== 'off' && (
@@ -317,7 +325,6 @@ const ContentHeader = ({
           </div>
         </div>
       </TooltipProvider>
-      </div>
     </div>
   );
 };

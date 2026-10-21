@@ -14,6 +14,8 @@ import type { ITabMetadata } from '@/hooks/use-tab-metadata-store';
 import { requestSync } from '@/hooks/use-agent-status';
 import PaneLayout from '@/components/features/workspace/pane-layout';
 import ContentHeader from '@/components/features/workspace/content-header';
+import useHeaderSpace from '@/hooks/use-header-space';
+import isElectron from '@/hooks/use-is-electron';
 import GitSidePanel from '@/components/features/workspace/git-side-panel';
 import useSidebarActions from '@/hooks/use-sidebar-actions';
 import type { TGitAskProvider } from '@/hooks/use-config-store';
@@ -40,6 +42,7 @@ const getInitialGitPanelSize = () => {
 };
 
 const TerminalPage = () => {
+  const { containerRef, headerRef, hasHeaderSpace } = useHeaderSpace();
   const t = useTranslations('terminal');
   const isLoading = useWorkspaceStore((s) => s.isLoading);
   const error = useWorkspaceStore((s) => s.error);
@@ -237,22 +240,26 @@ const TerminalPage = () => {
   }
 
   const showSwitching = !layout.layout && layout.isLoading && activeWorkspaceId;
+  const mergeHeader = !isElectron && layout.paneCount === 1 && !gitPanelOpen && hasHeaderSpace;
+  const contentHeader = layout.layout && !layout.isLoading ? (
+    <ContentHeader
+      ref={headerRef}
+      inline={mergeHeader}
+      activePaneId={layout.layout.activePaneId}
+      root={layout.layout.root}
+      paneCount={layout.paneCount}
+      canSplit={layout.canSplit}
+      isSplitting={layout.isSplitting}
+      onSplitPane={layout.splitPane}
+      onEqualizeRatios={() => equalizeRef.current?.()}
+      isGitPanelOpen={gitPanelOpen}
+      onToggleGitPanel={() => setGitPanelOpenPersisted(!gitPanelOpen)}
+    />
+  ) : null;
 
   return (
-    <div className="relative flex h-full w-full flex-col overflow-hidden bg-background">
-      {layout.layout && !layout.isLoading && (
-        <ContentHeader
-          activePaneId={layout.layout.activePaneId}
-          root={layout.layout.root}
-          paneCount={layout.paneCount}
-          canSplit={layout.canSplit}
-          isSplitting={layout.isSplitting}
-          onSplitPane={layout.splitPane}
-          onEqualizeRatios={() => equalizeRef.current?.()}
-          isGitPanelOpen={gitPanelOpen}
-          onToggleGitPanel={() => setGitPanelOpenPersisted(!gitPanelOpen)}
-        />
-      )}
+    <div ref={containerRef} className="relative flex h-full w-full flex-col overflow-hidden bg-background">
+      {!mergeHeader && contentHeader}
 
       <div className="relative min-h-0 flex-1">
         {showSwitching && (
@@ -300,6 +307,7 @@ const TerminalPage = () => {
                   onUpdateRatio={layout.updateRatio}
                   onEqualizeRatios={layout.equalizeRatios}
                   equalizeRef={equalizeRef}
+                  toolbar={mergeHeader ? contentHeader : undefined}
                 />
               </Panel>
               <Separator

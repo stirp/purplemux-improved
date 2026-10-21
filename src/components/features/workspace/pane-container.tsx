@@ -100,6 +100,7 @@ const NOOP_WS_ACTIONS: IWsActions = {
 interface IPaneContainerProps {
   paneId: string;
   paneNumber: number;
+  toolbar?: React.ReactNode;
 }
 
 const TERMINAL_FONT_SIZES: Record<string, { normal: number; claudeCode: number }> = {
@@ -111,7 +112,7 @@ const MIN_COLLAPSED_AGENT_ROWS = 40;
 
 const EMPTY_TABS: ITab[] = [];
 
-const PaneContainer = memo(({ paneId, paneNumber }: IPaneContainerProps) => {
+const PaneContainer = memo(({ paneId, paneNumber, toolbar }: IPaneContainerProps) => {
   const t = useTranslations('terminal');
 
   const pane = useLayoutStore((s) => (s.layout ? findPane(s.layout.root, paneId) : null));
@@ -1199,28 +1200,33 @@ const PaneContainer = memo(({ paneId, paneNumber }: IPaneContainerProps) => {
       onPointerDown={handlePointerDown}
       onPointerUp={handlePointerUp}
     >
-      <PaneTabBar
-        paneId={paneId}
-        tabs={tabs}
-        activeTabId={activeTabId}
-        tabTitles={tabTitles}
-        tabProcesses={tabProcesses}
-        isLoading={false}
-        error={null}
-        isCreating={isCreating}
-        paneCount={paneCount}
-        isSplitting={isSplitting}
-        onSwitchTab={handleSwitchTab}
-        onCreateTab={handleCreateTab}
-        onDeleteTab={handleDeleteTab}
-        onRenameTab={handleRenameTab}
-        onSwitchPanelType={handleSwitchPanelType}
-        onReorderTabs={handleReorderTabs}
-        onClosePane={() => closePane(paneId)}
-        onMoveTab={handleMoveTab}
-        onFocusPane={handleFocusPane}
-        onRetry={() => {}}
-      />
+      <div className="flex min-w-0 shrink-0 items-stretch border-b border-border bg-background">
+        <div className="min-w-0 flex-1">
+          <PaneTabBar
+            paneId={paneId}
+            tabs={tabs}
+            activeTabId={activeTabId}
+            tabTitles={tabTitles}
+            tabProcesses={tabProcesses}
+            isLoading={false}
+            error={null}
+            isCreating={isCreating}
+            paneCount={paneCount}
+            isSplitting={isSplitting}
+            onSwitchTab={handleSwitchTab}
+            onCreateTab={handleCreateTab}
+            onDeleteTab={handleDeleteTab}
+            onRenameTab={handleRenameTab}
+            onSwitchPanelType={handleSwitchPanelType}
+            onReorderTabs={handleReorderTabs}
+            onClosePane={() => closePane(paneId)}
+            onMoveTab={handleMoveTab}
+            onFocusPane={handleFocusPane}
+            onRetry={() => {}}
+          />
+        </div>
+        {toolbar}
+      </div>
 
       <div
         role="tabpanel"

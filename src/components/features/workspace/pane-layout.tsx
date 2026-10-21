@@ -10,6 +10,7 @@ interface IPaneLayoutProps {
   onUpdateRatio: (path: number[], ratio: number) => void;
   onEqualizeRatios: () => void;
   equalizeRef?: MutableRefObject<(() => void) | null>;
+  toolbar?: React.ReactNode;
 }
 
 const PaneLayout = (props: IPaneLayoutProps) => {
@@ -18,6 +19,7 @@ const PaneLayout = (props: IPaneLayoutProps) => {
     onUpdateRatio,
     onEqualizeRatios,
     equalizeRef,
+    toolbar,
   } = props;
 
   const rootRef = useRef<HTMLDivElement>(null);
@@ -176,6 +178,7 @@ const PaneLayout = (props: IPaneLayoutProps) => {
           <PaneContainer
             paneId={pane.id}
             paneNumber={paneNumbers.get(pane.id) ?? 1}
+            toolbar={pane.id === panes[0]?.id ? toolbar : undefined}
           />,
           getStableContainer(pane.id),
         ),
@@ -199,5 +202,6 @@ export default memo(PaneLayout, (prev, next) =>
   getShellKey(prev.root) === getShellKey(next.root)
   && prev.onUpdateRatio === next.onUpdateRatio
   && prev.onEqualizeRatios === next.onEqualizeRatios
-  && prev.equalizeRef === next.equalizeRef,
+  && prev.equalizeRef === next.equalizeRef
+  && prev.toolbar === next.toolbar,
 );

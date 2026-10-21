@@ -5,6 +5,8 @@ import { toast } from 'sonner';
 import { useTheme } from 'next-themes';
 import packageJson from '../../../../package.json';
 import isElectron from '@/hooks/use-is-electron';
+import useIsMobile from '@/hooks/use-is-mobile';
+import useVisualViewport from '@/hooks/use-visual-viewport';
 import AppUpdateSettings from '@/components/features/settings/app-update-settings';
 import { Bell, Bot, ChevronDown, ChevronRight, Dices, FolderCode, Globe, ImageIcon, Keyboard, Layout, Lock, Monitor, MonitorSmartphone, Moon, Network, Palette, RotateCcw, Settings, Sun, Terminal, Trash2, Wrench, X, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -1346,6 +1348,8 @@ interface ISettingsDialogProps {
 }
 
 const SettingsDialog = ({ open, onOpenChange }: ISettingsDialogProps) => {
+  const isMobile = useIsMobile();
+  const viewportStyle = useVisualViewport(open && isMobile);
   const t = useTranslations('settings');
   const tc = useTranslations('common');
   const [activeTab, setActiveTab] = useState<TSettingsTab>('general');
@@ -1355,10 +1359,11 @@ const SettingsDialog = ({ open, onOpenChange }: ISettingsDialogProps) => {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        className="inset-0 max-w-none sm:max-w-none translate-x-0 translate-y-0 gap-0 overflow-hidden rounded-none p-0 md:inset-auto md:top-1/2 md:left-1/2 md:h-auto md:w-[calc(100%-2rem)] md:min-w-3xl md:max-w-3xl md:-translate-x-1/2 md:-translate-y-1/2 md:rounded-xl"
+        className="inset-0 top-0 left-0 flex h-dvh w-full max-w-none translate-x-0 translate-y-0 flex-col gap-0 overflow-hidden rounded-none p-0 sm:max-w-none md:inset-auto md:top-1/2 md:left-1/2 md:h-[min(520px,calc(100dvh-2rem))] md:w-[calc(100%-2rem)] md:max-w-3xl md:-translate-x-1/2 md:-translate-y-1/2 md:rounded-xl"
+        style={viewportStyle}
         showCloseButton={false}
       >
-        <div className="flex h-full min-h-0 min-w-0 w-full flex-col overflow-hidden md:h-[520px] md:flex-row">
+        <div className="flex h-full min-h-0 min-w-0 w-full flex-col overflow-hidden pt-[env(safe-area-inset-top)] pr-[env(safe-area-inset-right)] pb-[env(safe-area-inset-bottom)] pl-[env(safe-area-inset-left)] md:flex-row md:p-0">
           <div className="flex shrink-0 flex-col border-b bg-muted/30 px-3 pt-3 pb-0 md:p-3 md:w-48 md:border-b-0 md:border-r">
             <div className="mb-2 flex items-center justify-between px-2 md:mb-4">
               <DialogTitle className="text-base font-semibold">{t('title')}</DialogTitle>
@@ -1366,20 +1371,20 @@ const SettingsDialog = ({ open, onOpenChange }: ISettingsDialogProps) => {
                 variant="ghost"
                 size="icon"
                 onClick={() => onOpenChange(false)}
-                className="h-6 w-6 opacity-70 hover:opacity-100"
+                className="h-11 w-11 shrink-0 opacity-70 hover:opacity-100 md:h-6 md:w-6"
               >
                 <X className="h-[18px] w-[18px]" />
                 <span className="sr-only">{tc('close')}</span>
               </Button>
             </div>
-            <nav className="flex gap-1 overflow-x-auto px-1 pb-2 md:flex-col md:px-0 md:pb-0">
+            <nav className="flex min-h-0 gap-1 overflow-x-auto px-1 pb-2 md:flex-col md:overflow-y-auto md:px-0 md:pb-0">
               {settingsItems.filter((item) => !item.electronOnly || isElectron).map((item) => (
                 <Button
                   key={item.id}
                   variant="ghost"
                   onClick={() => setActiveTab(item.id)}
                   className={cn(
-                    'shrink-0 justify-start gap-2 whitespace-nowrap px-3 py-2 text-sm font-medium md:gap-3',
+                    'min-h-11 shrink-0 justify-start gap-2 whitespace-nowrap px-3 py-2 text-sm font-medium md:min-h-0 md:gap-3',
                     activeTab === item.id
                       ? 'bg-accent text-accent-foreground'
                       : 'text-muted-foreground hover:bg-accent/50 hover:text-accent-foreground',
