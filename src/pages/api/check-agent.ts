@@ -33,9 +33,8 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   const layout = parsed ? await readLayoutFile(resolveLayoutFile(parsed.wsId)) : null;
   const tab = layout ? collectAllTabs(layout.root).find((item) => item.sessionName === session) : undefined;
   const boundProvider = getTabAgentProvider(tab);
-  const providers = listProviders();
-  const ordered = boundProvider ? [boundProvider, ...providers.filter((provider) => provider.id !== boundProvider.id)] : providers;
-  for (const provider of ordered) {
+  const providers = boundProvider ? [boundProvider] : listProviders();
+  for (const provider of providers) {
     if (!await provider.isAgentRunning(panePid, childPids)) continue;
 
     const info = await provider.detectActiveSession(panePid, childPids);

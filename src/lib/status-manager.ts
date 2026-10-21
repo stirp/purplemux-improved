@@ -127,7 +127,7 @@ class StatusManager {
         const persisted: TCliState = (tab.cliState as TCliState | undefined) ?? 'idle';
         const cliState: TCliState = persisted === 'busy' ? 'unknown' : persisted;
 
-        const { terminalStatus, listeningPorts } = provider
+        const { terminalStatus, listeningPorts } = provider && tab.panelType && tab.panelType !== 'terminal'
           ? { terminalStatus: 'idle' as const, listeningPorts: [] as number[] }
           : await this.detectTerminalStatus(paneInfo);
         const currentProcess = paneInfo?.command;
@@ -325,7 +325,7 @@ class StatusManager {
         const paneInfo = panesInfo.get(tab.sessionName);
         const provider = getTabAgentProvider(tab);
 
-        const { terminalStatus, listeningPorts } = provider
+        const { terminalStatus, listeningPorts } = provider && tab.panelType && tab.panelType !== 'terminal'
           ? { terminalStatus: 'idle' as const, listeningPorts: [] as number[] }
           : await this.detectTerminalStatus(paneInfo);
         const currentProcess = paneInfo?.command;

@@ -84,3 +84,31 @@ pnpm exec vitest run "tests/unit/lib/worktree-session-idle.test.ts" "tests/unit/
 ```
 
 未执行浏览器/手机实机验收；组件验证使用 React/jsdom。没有操作用户正在运行的 Agent 或真实 Worktree，没有提交、推送或部署。
+
+## PR #86：端口检测与绑定校验
+
+本次读取 [P1 评论](https://github.com/stirp/purplemux-improved/pull/86#discussion_r4340374278) 和 [P2 评论](https://github.com/stirp/purplemux-improved/pull/86#discussion_r4340374287)，确认本地 HEAD 与远端被审查提交均为 `706186c652adf4301afad28a2764896b2eac75a9`，且实施前工作树干净。这是后续两条新评论，不重复沿用上一轮的验证结论。
+
+实施：
+
+- P1：`status-manager.ts` 在初始扫描和轮询中，对 Terminal / 缺省面板执行原有 `detectTerminalStatus()`，保留真实端口及 server/running/idle 状态，不以持久 provider 绑定合成 idle。Chat 视图原有策略继续沿用。复用原检测入口，不引入额外进程采集器。
+- P2：`check-agent.ts` 已绑定时只校验对应 provider，未运行直接返回 running=false；未绑定才使用 provider 注册表遍历。显式切换后使用新绑定。保持原根会话、不修改布局，避免客户端检测结果和随后状态同步产生身份冲突。
+- 同步本需求规格、任务与 `docs/STATUS.md` 的行为说明。
+
+针对性证据：先运行 `tab-agent-status.test.ts` 和 `tab-agent-api.test.ts`，修复前共 6 项失败、11 项通过。失败分别覆盖两种 provider 的 Terminal/缺省面板端口丢失（4 项），以及绑定 provider 退出后错误回退到另一 provider（2 项）。
+
+回归覆盖：初始 rescan、新 Tab 轮询、已有 Tab 轮询、后台端口消失后恢复 idle；实际 `areSessionsIdle()` 在服务器存在时拒绝操作；接口结果经过真实 `applyAgentCheckResult()` 后仍保留原身份；未绑定发现、显式切换、根会话保持。
+
+本次检查：
+
+- 相关回归：12 个测试文件、161 项测试通过，退出码 0；命令如下。
+- `pnpm exec tsc --noEmit`：完整类型检查通过，退出码 0。
+- `pnpm exec eslint "src/lib/status-manager.ts" "src/pages/api/check-agent.ts" "tests/unit/lib/tab-agent-status.test.ts" "tests/unit/lib/tab-agent-api.test.ts"`：通过，无警告，退出码 0。
+- 规格本地链接及 `depends_on` 校验、`git diff --check` 通过。
+- `pnpm build`：Next.js 生产构建、post-build 和 tsup 服务端构建全部通过，退出码 0。
+
+```bash
+pnpm exec vitest run "tests/unit/lib/tab-agent" "tests/unit/lib/worktree-session-idle.test.ts" "tests/unit/lib/status-refresh-snapshot.test.ts" "tests/unit/lib/question-status-poll.test.ts" "tests/unit/lib/codex-review-state.test.ts" "tests/unit/lib/agent-mode-detection.test.ts" "tests/unit/lib/agent-provider-detection.test.ts" "tests/unit/lib/worktree-manager.test.ts" "tests/unit/lib/worktree-tools.test.ts" "tests/unit/lib/app-update-guard.test.ts"
+```
+
+未执行真实后台服务器、Worktree 操作、浏览器或手机实机验收；测试模拟系统进程/端口观测，调用真实状态管理、接口与客户端更新逻辑。未修改用户现场数据，未提交、推送或在 PR 发送消息。

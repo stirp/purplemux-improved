@@ -51,3 +51,9 @@ depends_on:
 - 回归覆盖两种 provider、空闲状态下的非 shell 前台、严格快照与缓存不一致、busy 状态的 shell；实际组件覆盖绑定 Agent 的 Terminal 自定义名称、名称更新和空名称回退。
 
 见 [任务](./task.md)和[结果](./result.md)。
+
+## PR #86 修正：端口检测与绑定校验
+
+- [P1：Terminal 端口检测](https://github.com/stirp/purplemux-improved/pull/86#discussion_r4340374278)：初始化扫描及每次轮询时，Terminal（包括缺省面板）都须执行既有终端状态与监听端口检测，即使具有持久 Agent 绑定。前台 shell 下仍有后台服务器时，状态为 server，保留端口列表，不允许 Worktree 或应用更新操作；端口消失后按既有规则恢复。Chat 面板现有端口策略不变。
+- [P2：仅校验已绑定 provider](https://github.com/stirp/purplemux-improved/pull/86#discussion_r4340374287)：`/api/check-agent` 对有绑定的 Tab 只检测该 provider；它未运行时返回 running=false，不回退到另一 provider，也不清空持久根会话。仅未绑定 Tab 沿用全 provider 扫描；显式切换修改绑定后检测新 provider。
+- 验证两种 Agent、初始化/新 Tab 轮询/已有 Tab 轮询、Terminal/缺省面板、后台端口存在与消失；接口验证绑定 Agent 退出但另一 Agent 存活、未绑定探测、显式切换和根会话保持。

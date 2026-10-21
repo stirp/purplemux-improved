@@ -4,6 +4,7 @@ import { changeTabPanelType } from '@/lib/tab-agent-identity';
 
 const mocks = vi.hoisted(() => ({
   tab: {} as ITab, running: true, snapshot: vi.fn(), persist: vi.fn(),
+  ports: vi.fn(), panes: vi.fn(),
   watch: vi.fn(() => ({ on: vi.fn(), close: vi.fn() })),
 }));
 vi.mock('fs', async (original) => ({ ...await original<typeof import('fs')>(), watch: mocks.watch }));
@@ -18,7 +19,8 @@ vi.mock('@/lib/layout-store', () => ({
 }));
 vi.mock('@/lib/process-utils', () => ({ getChildPids: async () => [] }));
 vi.mock('@/lib/tmux', () => ({
-  SAFE_SHELLS: new Set(['bash']), getListeningPorts: async () => [], getPaneTitle: async () => 'node|/project',
+  SAFE_SHELLS: new Set(['bash']), getListeningPorts: mocks.ports, getAllPanesInfo: mocks.panes,
+  getPaneTitle: async () => 'node|/project',
 }));
 vi.mock('@/lib/providers/registry', () => {
   const provider = (id: string) => ({
@@ -50,6 +52,8 @@ beforeEach(() => {
   vi.clearAllMocks();
   manager.removeTab('tab');
   mocks.running = true;
+  mocks.ports.mockResolvedValue([]);
+  mocks.panes.mockResolvedValue(panes);
   mocks.snapshot.mockResolvedValue({ idle: false, stale: false, lastAssistantSnippet: 'Reviewing', currentAction: null });
   mocks.tab = { id: 'tab', sessionName: 'tmux', name: '', order: 0, panelType: 'codex-cli', cliState: 'idle',
     agentState: { providerId: 'codex', sessionId: 'root', jsonlPath: '/root.jsonl', summary: 'Review' } };
@@ -59,6 +63,35 @@ afterEach(() => {
 });
 
 describe('status polling with durable Tab ownership', () => {
+  describe.each(['codex', 'claude'])('background server with a %s binding', (providerId) => {
+    it.each(['terminal', undefined] as const)('retains ports through initial scanning and polling in %s view', async (panelType) => {
+      mocks.tab.panelType = panelType;
+      mocks.tab.agentState!.providerId = providerId;
+      mocks.tab.cliState = 'inactive';
+      mocks.running = false;
+      const shell = new Map([['tmux', { ...panes.get('tmux')!, command: 'bash' }]]);
+      mocks.panes.mockResolvedValue(shell);
+      mocks.ports.mockResolvedValue([3000]);
+      for (const refresh of [() => manager.rescan(), () => manager.poll(shell)]) {
+        await refresh();
+        expect(manager.getAllForClient().tab).toMatchObject({
+          agentProviderId: providerId, agentSessionId: 'root', terminalStatus: 'server', listeningPorts: [3000],
+        });
+        expect(mocks.ports).toHaveBeenCalledWith(123);
+        expect(manager.areSessionsIdle(['tmux'], shell)).toBe(false);
+      }
+      mocks.ports.mockResolvedValue([]);
+      await manager.poll(shell);
+      expect(manager.getAllForClient().tab).toMatchObject({ terminalStatus: 'idle', listeningPorts: [] });
+      expect(manager.areSessionsIdle(['tmux'], shell)).toBe(true);
+      manager.removeTab('tab');
+      mocks.ports.mockResolvedValue([8080]);
+      await manager.poll(shell);
+      expect(manager.getAllForClient().tab).toMatchObject({ terminalStatus: 'server', listeningPorts: [8080] });
+      expect(manager.areSessionsIdle(['tmux'], shell)).toBe(false);
+    });
+  });
+
   it.each(['codex', 'claude'])('keeps %s bound across view changes, node observations and runtime reconstruction', async (providerId) => {
     mocks.tab.panelType = providerId === 'codex' ? 'codex-cli' : 'claude-code';
     mocks.tab.agentState!.providerId = providerId;

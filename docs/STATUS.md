@@ -17,6 +17,8 @@ Terminal panels and inactive agent panels require both an idle terminal status a
 
 This foreground-shell requirement also applies to Terminal views with a persistent Agent binding, including legacy tabs without an explicit panel type. Such bindings must additionally satisfy the Agent work-state checks. A suspended idle Agent cannot authorize worktree operations while `make`, `vim`, or another non-shell command owns the foreground.
 
+Initial scanning and polling still run terminal status and listening-port detection for these bound Terminal views. A background server keeps `terminalStatus=server` and its port list even after the Agent exits to a foreground shell, so worktree and application-update guards remain blocked until the server stops.
+
 Idle tab reclamation requires an idle / ready-for-review / cancelled status and a fresh native snapshot explicitly reporting idle. Compaction, permission requests, queued input (including delivery awaiting completion), unknown state and extra child processes prevent reclamation. The last activity time includes transcript writes/events, terminal input and process start time. The reclaimer retains the original session identity and directory in the workflow index before closing a tab; it does not change manual work status, titles, tags, or historical records. Sessions navigation prefers the retained directory over older turn metadata.
 
 ### Tab identity and display view
@@ -24,6 +26,8 @@ Idle tab reclamation requires an idle / ready-for-review / cancelled status and 
 The persistent `ITab.agentState` owns the provider, root session ID, JSONL path and summary. `panelType` selects a view; `currentProcess` records tmux's foreground command; neither replaces the binding. `getTabAgentProviderId` / `getTabAgentProvider` resolve identity consistently across polling, hooks, transcript watchers, CLI queries, workflow aggregation, auto-resume and idle reclamation. New Agent tabs are bound before their first native session exists. Layout reads migrate legacy Agent panels and Claude fields in memory; ordinary layout writes persist that normalized representation.
 
 Chat/Terminal transitions retain the binding. Explicit provider changes initialize the selected provider through the same client/server transition. Process exit marks runtime state inactive but retains the recoverable session. A same-provider process check cannot overwrite a known root session with a review child. Unknown terminal/node processes gain no identity from their executable name alone. Codex review watching continues in Terminal view; provider hook validation uses the binding as well. See [Tab identity specification](../.specs/v22/changes/tab-agent-identity/spec.md).
+
+`/api/check-agent` validates only the bound provider when a Tab already has an Agent identity. If that provider has exited, it reports `running=false` even when another Agent exists under the pane; detection does not replace the binding. Provider-wide discovery remains available for unbound tabs, and an explicit provider switch selects the new binding before checking it.
 
 ### Agent Process State (`agentProcess: boolean | null`)
 
