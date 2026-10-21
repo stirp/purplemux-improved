@@ -494,6 +494,8 @@ While a new session waits for its JSONL file, `session-waiting` removes confirme
 
 ## Queued Input Delivery Feedback
 
+The shared desktop/mobile Web input bar keeps its red stop square at the right edge whenever `useWebInput` selects interrupt mode (`busy` or `needs-input`), regardless of draft text, attachments or an in-flight enqueue request. A separate send button appears to its left when there is draft content or an enqueue request in progress. Stopping uses the existing confirmation dialog and interrupt channel, preserving unsent text and attachments; a disconnected terminal disables the stop control. This applies to both Codex and Claude and does not infer execution from pending messages. See [the delivery and stop-control specification](../.specs/v22/changes/codex-input-delivery-stall/spec.md).
+
 Message delivery state is independent of `TCliState`. Ordinary Web input immediately creates a pending user bubble with the queue message ID. Queue snapshots update its queued/sending/unconfirmed/failed label. Only a matching new transcript user message confirms it in place; the normal queued path does not use the legacy one-second pending fade. Canceling a queued input removes its pending bubble; an enqueue request failure removes the optimistic bubble and preserves the draft.
 
 Cancellation removes the bubble only when the server snapshot includes the message in `canceledIds`. A successful DELETE response alone is insufficient: delivery may have started after the client's last poll, in which case the server keeps the in-flight item and the UI must keep its pending bubble.
