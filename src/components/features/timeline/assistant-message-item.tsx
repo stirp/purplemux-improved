@@ -1,5 +1,6 @@
 import EditorFileLink, { editorMarkdownUrlTransform } from '@/components/features/timeline/editor-file-link';
 import MarkdownCodeBlock from '@/components/features/timeline/markdown-code-block';
+import MessageTimestamp from '@/components/features/timeline/message-timestamp';
 import { memo } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -29,6 +30,7 @@ const AssistantMessageItem = ({ entry }: IAssistantMessageItemProps) => (
         {entry.markdown ?? ''}
       </ReactMarkdown>
     </div>
+    <MessageTimestamp timestamp={entry.timestamp} />
   </div>
 );
 
