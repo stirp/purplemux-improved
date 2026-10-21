@@ -1,9 +1,10 @@
 import { createAppUpdateManager } from '../src/lib/app-update-manager';
 import type { AppUpdater } from 'electron-updater';
+import type { IUpdatePreferences } from '../src/types/app-update';
 
 export const createDesktopUpdater = (
   updater: AppUpdater,
-  options: { version: string; supported: boolean; assertIdle: () => Promise<void>; restart: () => Promise<void>; prepareNative?: (version: string) => Promise<void> },
+  options: { version: string; supported: boolean; assertIdle: () => Promise<void>; restart: () => Promise<void>; prepareNative?: (version: string) => Promise<void>; preferences?: IUpdatePreferences },
 ) => {
   updater.autoDownload = false;
   updater.autoInstallOnAppQuit = false;
@@ -17,12 +18,13 @@ export const createDesktopUpdater = (
       return result.updateInfo.version;
     },
     assertIdle: options.assertIdle,
+    preferences: options.preferences,
     download: async (version) => {
       await updater.downloadUpdate();
       return version;
     },
     restart: async (version) => {
-      // Squirrel preparation arms installation on quit, so it must follow the final idle check.
+      // Squirrel preparation arms installation on quit; commit only after idle checks or explicit force authorization.
       await options.prepareNative?.(version);
       await options.restart();
     },

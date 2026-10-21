@@ -7,6 +7,7 @@ import pkg from '../../package.json';
 import { createAppUpdateManager, type TAppUpdateManager } from '@/lib/app-update-manager';
 import { assertUpdateSessionsIdle } from '@/lib/app-update-guard';
 import { isStableVersion } from '@/lib/app-update-version';
+import { getSkippedAppVersion, saveSkippedAppVersion } from '@/lib/workspace-store';
 
 const exec = promisify(execFile);
 const REGISTRY = 'https://registry.npmjs.org';
@@ -49,6 +50,10 @@ export const initAppUpdates = () => {
       return data.version;
     },
     assertIdle: assertUpdateSessionsIdle,
+    preferences: {
+      readSkippedVersion: () => getSkippedAppVersion('server'),
+      saveSkippedVersion: (version) => saveSkippedAppVersion('server', version),
+    },
     download: downloadServerUpdate,
     restart: async (directory) => {
       if (!process.send || !process.connected) throw new Error('Server supervisor is unavailable');

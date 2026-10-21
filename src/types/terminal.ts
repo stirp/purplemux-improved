@@ -92,6 +92,7 @@ export interface IWorkspaceGroup {
 }
 
 export interface IWorkspacesData {
+  skippedAppVersions?: Partial<Record<import('@/types/app-update').TAppUpdateTarget, string>>;
   idleTabPolicy?: import('@/lib/idle-tab-policy').TIdleTabPolicy;
   scheduledTasks?: import('@/lib/scheduled-tasks').IScheduledTask[];
   terminalCommands?: import('@/lib/terminal-custom-commands').ITerminalCommand[];

@@ -1,27 +1,30 @@
 import { useEffect, useRef, useState } from 'react';
 import useSWR from 'swr';
-import type { IAppUpdateState } from '@/types/app-update';
+import type { IAppUpdateState, TAppUpdateAction } from '@/types/app-update';
 
 interface IUpdateBridge {
   isElectron?: boolean;
   getAppUpdate?: () => Promise<IAppUpdateState>;
-  appUpdateAction?: (action: 'check' | 'install') => Promise<IAppUpdateState>;
+  appUpdateAction?: (action: TAppUpdateAction, version?: string) => Promise<IAppUpdateState>;
 }
 
 export const getUpdateBridge = (): IUpdateBridge | undefined =>
   typeof window === 'undefined' ? undefined : (window as unknown as { electronAPI?: IUpdateBridge }).electronAPI;
 
-export const requestAppUpdate = async (action?: 'check' | 'install'): Promise<IAppUpdateState> => {
+export const requestAppUpdate = async (action?: TAppUpdateAction, version?: string): Promise<IAppUpdateState> => {
   const bridge = getUpdateBridge();
   if (bridge?.isElectron) {
     if (!bridge.getAppUpdate || !bridge.appUpdateAction) throw new Error('This desktop version does not expose update controls. Use the application menu.');
-    return action ? bridge.appUpdateAction(action) : bridge.getAppUpdate();
+    return action ? bridge.appUpdateAction(action, version) : bridge.getAppUpdate();
   }
   const response = await fetch('/api/app-update', {
     method: action ? 'POST' : 'GET', cache: 'no-store',
-    ...(action ? { headers: { 'Content-Type': 'application/json', 'x-purplemux-update': '1' }, body: JSON.stringify({ action }) } : {}),
+    ...(action ? { headers: { 'Content-Type': 'application/json', 'x-purplemux-update': '1' }, body: JSON.stringify({ action, version }) } : {}),
   });
-  if (!response.ok) throw new Error(`Update service: HTTP ${response.status}`);
+  if (!response.ok) {
+    const failure = await response.json().catch(() => null);
+    throw new Error(failure?.error || `Update service: HTTP ${response.status}`);
+  }
   return response.json();
 };
 
@@ -45,12 +48,12 @@ const useAppUpdate = () => {
     if (previousVersion.current && previousVersion.current !== data.currentVersion) window.location.reload();
     previousVersion.current = data.currentVersion;
   }, [data]);
-  const run = async (action: 'check' | 'install') => {
+  const run = async (action: TAppUpdateAction, version?: string) => {
     setRequesting(true);
     setActionError(null);
     setReconnectTimedOut(false);
     try {
-      await mutate(await requestAppUpdate(action), { revalidate: false });
+      await mutate(await requestAppUpdate(action, version), { revalidate: false });
     } catch (failure) {
       setActionError(failure instanceof Error ? failure.message : String(failure));
     } finally {

@@ -75,7 +75,9 @@ describe('application updates', () => {
     idle.reject(new Error('busy'));
     await installation;
     expect(snapshot.phase).toBe('checking');
+    expect(snapshot.installing).toBe(true);
     expect(manager.getState().phase).toBe('blocked');
+    expect(manager.getState().installing).toBe(false);
     expect(deps.restart).not.toHaveBeenCalled();
   });
   it('installs the refreshed version once after an in-flight background check', async () => {
@@ -84,7 +86,9 @@ describe('application updates', () => {
     const latest = deferred<string>();
     deps.latest.mockReturnValueOnce(latest.promise);
     const checking = manager.check();
+    expect(manager.getState()).toMatchObject({ phase: 'checking', installing: false });
     const installation = manager.install();
+    expect(manager.getState()).toMatchObject({ phase: 'checking', installing: true });
     const duplicate = manager.install();
     const anotherCheck = manager.check();
     expect(deps.assertIdle).not.toHaveBeenCalled();
@@ -147,9 +151,15 @@ describe('application updates', () => {
   it('rechecks after download and retains the package for an explicit retry', async () => {
     const { deps, manager } = setup();
     await manager.check();
-    deps.assertIdle.mockResolvedValueOnce().mockRejectedValueOnce(new Error('busy'));
-    await manager.install();
-    expect(manager.getState().phase).toBe('blocked');
+    const idle = deferred<void>();
+    deps.assertIdle.mockResolvedValueOnce().mockReturnValueOnce(idle.promise);
+    const installation = manager.install();
+    await vi.waitFor(() => expect(deps.assertIdle).toHaveBeenCalledTimes(2));
+    expect(manager.getState()).toMatchObject({ phase: 'ready', installing: true });
+    expect(deps.restart).not.toHaveBeenCalled();
+    idle.reject(new Error('busy'));
+    await installation;
+    expect(manager.getState()).toMatchObject({ phase: 'blocked', installing: false });
     expect(deps.restart).not.toHaveBeenCalled();
     await manager.check();
     expect(deps.latest).toHaveBeenCalledTimes(1);
@@ -185,4 +195,143 @@ describe('application updates', () => {
     expect(manager.getState().phase).toBe('error');
     expect(deps.download).not.toHaveBeenCalled();
   });
+  it('forces a blocked update without either idle check and reuses downloaded files', async () => {
+    const { deps, manager } = setup();
+    await manager.check();
+    deps.assertIdle.mockResolvedValueOnce().mockRejectedValue(new Error('long-lived session'));
+    await manager.install();
+    expect(manager.getState().phase).toBe('blocked');
+    const checks = deps.assertIdle.mock.calls.length;
+    await Promise.all([manager.install({ force: true, version: '0.6.0' }), manager.install({ force: true, version: '0.6.0' })]);
+    expect(deps.assertIdle).toHaveBeenCalledTimes(checks);
+    expect(deps.download).toHaveBeenCalledTimes(1);
+    expect(deps.restart).toHaveBeenCalledTimes(1);
+  });
+  it('does not persist force authorization after a download failure', async () => {
+    const { deps, manager } = setup();
+    await manager.check();
+    deps.download.mockRejectedValueOnce(new Error('offline'));
+    deps.assertIdle.mockRejectedValue(new Error('busy'));
+    await manager.install({ force: true, version: '0.6.0' });
+    expect(deps.assertIdle).not.toHaveBeenCalled();
+    expect(deps.restart).not.toHaveBeenCalled();
+    await manager.install();
+    expect(manager.getState().phase).toBe('blocked');
+    expect(deps.assertIdle).toHaveBeenCalledTimes(1);
+    expect(deps.download).toHaveBeenCalledTimes(1);
+  });
+  it('does not escalate a normal installation when a concurrent force request arrives', async () => {
+    const { deps, manager } = setup();
+    await manager.check();
+    const idle = deferred<void>();
+    deps.assertIdle.mockReturnValueOnce(idle.promise);
+    const normal = manager.install();
+    const forced = manager.install({ force: true, version: '0.6.0' });
+    idle.reject(new Error('busy'));
+    await Promise.all([normal, forced]);
+    expect(manager.getState().phase).toBe('blocked');
+    expect(deps.download).not.toHaveBeenCalled();
+  });
+  it('rejects force authorization for a version changed by an in-flight check', async () => {
+    const { deps, manager } = setup();
+    await manager.check();
+    const latest = deferred<string>();
+    deps.latest.mockReturnValueOnce(latest.promise);
+    const checking = manager.check();
+    const forced = manager.install({ force: true, version: '0.6.0' });
+    latest.resolve('0.7.0');
+    await Promise.all([checking, forced]);
+    expect(manager.getState().phase).toBe('error');
+    expect(deps.download).not.toHaveBeenCalled();
+  });
+  it.each([false, true])('does not force an unsupported or current version (supported=%s)', async (supported) => {
+    const { deps } = setup();
+    deps.latest.mockResolvedValue(supported ? '0.5.6' : '0.6.0');
+    const manager = createAppUpdateManager({ ...deps, supported });
+    await manager.check();
+    await manager.install({ force: true, version: manager.getState().latestVersion! });
+    expect(deps.download).not.toHaveBeenCalled();
+    expect(deps.restart).not.toHaveBeenCalled();
+  });
+});
+
+describe('skipped update versions', () => {
+  const setupPreferences = () => {
+    const { deps } = setup();
+    let saved: string | null = null;
+    const preferences = {
+      readSkippedVersion: vi.fn(async () => saved),
+      saveSkippedVersion: vi.fn(async (version: string) => { saved = version; }),
+    };
+    return { deps, preferences, manager: createAppUpdateManager({ ...deps, preferences }) };
+  };
+  it('persists an exact skipped version across managers without suppressing a later release or manual install', async () => {
+    const { deps, preferences, manager } = setupPreferences();
+    await manager.check();
+    await manager.skip('0.6.0');
+    expect(deps.download).not.toHaveBeenCalled();
+    expect(manager.getState().skippedVersion).toBe('0.6.0');
+    const restored = createAppUpdateManager({ ...deps, preferences });
+    await restored.check();
+    expect(restored.getState()).toMatchObject({ latestVersion: '0.6.0', skippedVersion: '0.6.0' });
+    deps.latest.mockResolvedValueOnce('0.7.0');
+    await restored.check();
+    expect(restored.getState()).toMatchObject({ latestVersion: '0.7.0', skippedVersion: '0.6.0' });
+    await restored.skip('0.7.0');
+    await restored.install();
+    expect(deps.download).toHaveBeenCalledExactlyOnceWith('0.7.0');
+  });
+  it('allows detection of newer releases after skipping a downloaded but blocked release', async () => {
+    const { deps, manager } = setupPreferences();
+    await manager.check();
+    deps.assertIdle.mockResolvedValueOnce().mockRejectedValueOnce(new Error('busy'));
+    await manager.install();
+    await manager.skip('0.6.0');
+    deps.latest.mockResolvedValue('0.7.0');
+    await manager.check();
+    await manager.install();
+    expect(deps.download.mock.calls).toEqual([['0.6.0'], ['0.7.0']]);
+  });
+  it('rejects stale versions and skip requests while an install or check is running', async () => {
+    const { deps, manager, preferences } = setupPreferences();
+    await manager.check();
+    for (const version of ['bad', '0.5.6', '0.7.0']) await expect(manager.skip(version)).rejects.toThrow('version');
+    const latest = deferred<string>();
+    deps.latest.mockReturnValueOnce(latest.promise);
+    const checking = manager.check();
+    await expect(manager.skip('0.6.0')).rejects.toThrow('already running');
+    latest.resolve('0.6.0');
+    await checking;
+    const download = deferred<string>();
+    deps.download.mockReturnValueOnce(download.promise);
+    const installing = manager.install();
+    await expect(manager.skip('0.6.0')).rejects.toThrow('already running');
+    download.resolve('/staged');
+    await installing;
+    expect(preferences.saveSkippedVersion).not.toHaveBeenCalled();
+  });
+  it('preserves visibility when saving fails and serializes skip with other actions', async () => {
+    const { deps, manager, preferences } = setupPreferences();
+    await manager.check();
+    const save = deferred<void>();
+    preferences.saveSkippedVersion.mockReturnValueOnce(save.promise);
+    const skipping = manager.skip('0.6.0');
+    const installing = manager.install({ force: true, version: '0.6.0' });
+    const checking = manager.check();
+    const outcomes = Promise.allSettled([skipping, installing, checking]);
+    save.reject(new Error('disk full'));
+    expect((await outcomes).map((result) => result.status)).toEqual(['rejected', 'fulfilled', 'fulfilled']);
+    expect(manager.getState().skippedVersion).toBeNull();
+    expect(deps.download).not.toHaveBeenCalled();
+    await manager.skip('0.6.0');
+    expect(manager.getState().skippedVersion).toBe('0.6.0');
+  });
+  it('reports preference read failures without downloading', async () => {
+    const { manager, deps, preferences } = setupPreferences();
+    preferences.readSkippedVersion.mockRejectedValueOnce(new Error('unreadable preferences'));
+    await manager.check();
+    expect(manager.getState()).toMatchObject({ phase: 'error', error: 'unreadable preferences', skippedVersion: null });
+    expect(deps.download).not.toHaveBeenCalled();
+  });
+
 });
