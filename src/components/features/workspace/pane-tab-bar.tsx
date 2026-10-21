@@ -157,7 +157,7 @@ const PaneTabBar = ({
   return (
     <div
       className={cn(
-        'region-typography-tabs flex min-h-[36px] shrink-0 items-stretch py-1 border-b border-border transition-colors',
+        'region-typography-tabs flex min-h-[36px] shrink-0 items-stretch py-1 transition-colors',
         isDragOverFromOther ? 'bg-accent-color/10' : 'bg-background',
       )}
       onDragEnter={handleTabBarDragEnter}

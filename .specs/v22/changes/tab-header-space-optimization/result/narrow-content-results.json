@@ -1,0 +1,279 @@
+{
+  "scenarios": [
+    {
+      "font": 12,
+      "addRect": {
+        "bottom": 83,
+        "height": 28,
+        "left": 369,
+        "right": 397,
+        "top": 55,
+        "width": 28,
+        "x": 369,
+        "y": 55
+      },
+      "addUncovered": true,
+      "contentWidth": 400,
+      "merged": false,
+      "rowOverflow": false,
+      "tabOverflow": true,
+      "tabWidth": 326
+    },
+    {
+      "font": 12,
+      "addRect": {
+        "bottom": 83,
+        "height": 28,
+        "left": 289,
+        "right": 317,
+        "top": 55,
+        "width": 28,
+        "x": 289,
+        "y": 55
+      },
+      "addUncovered": true,
+      "contentWidth": 320,
+      "merged": false,
+      "rowOverflow": false,
+      "tabOverflow": true,
+      "tabWidth": 246
+    },
+    {
+      "font": 12,
+      "addRect": {
+        "bottom": 83,
+        "height": 28,
+        "left": 449,
+        "right": 477,
+        "top": 55,
+        "width": 28,
+        "x": 449,
+        "y": 55
+      },
+      "addUncovered": true,
+      "contentWidth": 480,
+      "merged": false,
+      "rowOverflow": false,
+      "tabOverflow": true,
+      "tabWidth": 406
+    },
+    {
+      "font": 12,
+      "addRect": {
+        "bottom": 35,
+        "height": 28,
+        "left": 267.65625,
+        "right": 295.65625,
+        "top": 7,
+        "width": 28,
+        "x": 267.65625,
+        "y": 7
+      },
+      "addUncovered": true,
+      "contentWidth": 640,
+      "merged": true,
+      "rowOverflow": false,
+      "tabOverflow": true,
+      "tabWidth": 225
+    },
+    {
+      "font": 12,
+      "addRect": {
+        "bottom": 35,
+        "height": 28,
+        "left": 427.65625,
+        "right": 455.65625,
+        "top": 7,
+        "width": 28,
+        "x": 427.65625,
+        "y": 7
+      },
+      "addUncovered": true,
+      "contentWidth": 800,
+      "merged": true,
+      "rowOverflow": false,
+      "tabOverflow": true,
+      "tabWidth": 385
+    },
+    {
+      "font": 40,
+      "addRect": {
+        "bottom": 96,
+        "height": 28,
+        "left": 369,
+        "right": 397,
+        "top": 68,
+        "width": 28,
+        "x": 369,
+        "y": 68
+      },
+      "addUncovered": true,
+      "contentWidth": 400,
+      "merged": false,
+      "rowOverflow": false,
+      "tabOverflow": true,
+      "tabWidth": 326
+    },
+    {
+      "font": 40,
+      "addRect": {
+        "bottom": 96,
+        "height": 28,
+        "left": 289,
+        "right": 317,
+        "top": 68,
+        "width": 28,
+        "x": 289,
+        "y": 68
+      },
+      "addUncovered": true,
+      "contentWidth": 320,
+      "merged": false,
+      "rowOverflow": false,
+      "tabOverflow": true,
+      "tabWidth": 246
+    },
+    {
+      "font": 40,
+      "addRect": {
+        "bottom": 96,
+        "height": 28,
+        "left": 449,
+        "right": 477,
+        "top": 68,
+        "width": 28,
+        "x": 449,
+        "y": 68
+      },
+      "addUncovered": true,
+      "contentWidth": 480,
+      "merged": false,
+      "rowOverflow": false,
+      "tabOverflow": true,
+      "tabWidth": 406
+    },
+    {
+      "font": 40,
+      "addRect": {
+        "bottom": 48,
+        "height": 28,
+        "left": 267.65625,
+        "right": 295.65625,
+        "top": 20,
+        "width": 28,
+        "x": 267.65625,
+        "y": 20
+      },
+      "addUncovered": true,
+      "contentWidth": 640,
+      "merged": true,
+      "rowOverflow": false,
+      "tabOverflow": true,
+      "tabWidth": 225
+    },
+    {
+      "font": 40,
+      "addRect": {
+        "bottom": 48,
+        "height": 28,
+        "left": 427.65625,
+        "right": 455.65625,
+        "top": 20,
+        "width": 28,
+        "x": 427.65625,
+        "y": 20
+      },
+      "addUncovered": true,
+      "contentWidth": 800,
+      "merged": true,
+      "rowOverflow": false,
+      "tabOverflow": true,
+      "tabWidth": 385
+    },
+    {
+      "boundary": 561,
+      "addRect": {
+        "bottom": 83,
+        "height": 28,
+        "left": 529,
+        "right": 557,
+        "top": 55,
+        "width": 28,
+        "x": 529,
+        "y": 55
+      },
+      "addUncovered": true,
+      "contentWidth": 560,
+      "merged": false,
+      "rowOverflow": false,
+      "tabOverflow": true,
+      "tabWidth": 486
+    },
+    {
+      "boundary": 561,
+      "addRect": {
+        "bottom": 35,
+        "height": 28,
+        "left": 188.65625,
+        "right": 216.65625,
+        "top": 7,
+        "width": 28,
+        "x": 188.65625,
+        "y": 7
+      },
+      "addUncovered": true,
+      "contentWidth": 561,
+      "merged": true,
+      "rowOverflow": false,
+      "tabOverflow": true,
+      "tabWidth": 146
+    },
+    {
+      "boundary": 561,
+      "addRect": {
+        "bottom": 83,
+        "height": 28,
+        "left": 529,
+        "right": 557,
+        "top": 55,
+        "width": 28,
+        "x": 529,
+        "y": 55
+      },
+      "addUncovered": true,
+      "contentWidth": 560,
+      "merged": false,
+      "rowOverflow": false,
+      "tabOverflow": true,
+      "tabWidth": 486
+    },
+    {
+      "boundary": 561,
+      "addRect": {
+        "bottom": 35,
+        "height": 28,
+        "left": 188.65625,
+        "right": 216.65625,
+        "top": 7,
+        "width": 28,
+        "x": 188.65625,
+        "y": 7
+      },
+      "addUncovered": true,
+      "contentWidth": 561,
+      "merged": true,
+      "rowOverflow": false,
+      "tabOverflow": true,
+      "tabWidth": 146
+    }
+  ],
+  "interactions": [
+    "tab switch",
+    "new browser tab",
+    "resource/editor settings",
+    "Git status expansion",
+    "split/close",
+    "Git open/close"
+  ],
+  "browserErrors": ""
+}
