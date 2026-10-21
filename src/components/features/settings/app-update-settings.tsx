@@ -12,7 +12,7 @@ const AppUpdateSettings = ({ compact = false }: { compact?: boolean }) => {
   const [forceVersion, setForceVersion] = useState<string | null>(null);
   const available = !!state?.latestVersion && isNewerVersion(state.latestVersion, state.currentVersion);
   const skipped = available && state?.skippedVersion === state?.latestVersion;
-  const busy = requesting || ['checking', 'downloading', 'restarting'].includes(state?.phase || '');
+  const busy = requesting || !!state?.installing || ['checking', 'downloading', 'restarting'].includes(state?.phase || '');
   const installing = state?.installing || ['downloading', 'ready', 'blocked', 'restarting'].includes(state?.phase || '');
   if (compact && skipped && !installing && !state?.error && !error) return null;
   if (compact && !available && !state?.error && !['downloading', 'blocked', 'restarting'].includes(state?.phase || '')) return null;

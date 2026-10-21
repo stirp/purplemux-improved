@@ -78,7 +78,7 @@ describe('update controls', () => {
     await render(false);
     expect(container.textContent).toContain('已跳过版本 0.6.0');
   });
-  it.each(['checking', 'downloading', 'restarting'] as const)('shows explicit installation progress for a skipped version during %s', async (phase) => {
+  it.each(['checking', 'downloading', 'ready', 'restarting'] as const)('shows explicit installation progress for a skipped version during %s', async (phase) => {
     state.skippedVersion = state.latestVersion;
     state.phase = phase;
     state.installing = true;
@@ -116,6 +116,29 @@ describe('update controls', () => {
     state.phase = phase;
     await render();
     expect([...container.querySelectorAll('button')].every((button) => button.disabled)).toBe(true);
+  });
+  it.each([false, true])('keeps actions disabled during the final idle check (compact=%s)', async (compact) => {
+    state.phase = 'ready';
+    state.installing = true;
+    await render(compact);
+    const controls = [...container.querySelectorAll('button')];
+    expect(controls).toHaveLength(compact ? 3 : 4);
+    expect(controls.every((button) => button.disabled)).toBe(true);
+    await act(async () => { controls.forEach((button) => button.click()); });
+    expect(actions).toEqual([]);
+    expect(document.querySelector('[role="alertdialog"]')).toBeNull();
+  });
+  it.each([false, true])('allows actions after installation is blocked (compact=%s)', async (compact) => {
+    state.phase = 'blocked';
+    state.installing = false;
+    state.error = 'busy';
+    await render(compact);
+    const controls = [...container.querySelectorAll('button')];
+    expect(controls).toHaveLength(compact ? 3 : 4);
+    expect(controls.every((button) => !button.disabled)).toBe(true);
+    await click(settings.appUpdate.forceInstall);
+    await click(settings.appUpdate.forceInstall, 1);
+    expect(actions).toEqual([{ action: 'force-install', version: '0.6.0' }]);
   });
   it('routes new actions only through the desktop bridge in Electron', async () => {
     const appUpdateAction = vi.fn(async () => state);

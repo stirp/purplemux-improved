@@ -151,9 +151,15 @@ describe('application updates', () => {
   it('rechecks after download and retains the package for an explicit retry', async () => {
     const { deps, manager } = setup();
     await manager.check();
-    deps.assertIdle.mockResolvedValueOnce().mockRejectedValueOnce(new Error('busy'));
-    await manager.install();
-    expect(manager.getState().phase).toBe('blocked');
+    const idle = deferred<void>();
+    deps.assertIdle.mockResolvedValueOnce().mockReturnValueOnce(idle.promise);
+    const installation = manager.install();
+    await vi.waitFor(() => expect(deps.assertIdle).toHaveBeenCalledTimes(2));
+    expect(manager.getState()).toMatchObject({ phase: 'ready', installing: true });
+    expect(deps.restart).not.toHaveBeenCalled();
+    idle.reject(new Error('busy'));
+    await installation;
+    expect(manager.getState()).toMatchObject({ phase: 'blocked', installing: false });
     expect(deps.restart).not.toHaveBeenCalled();
     await manager.check();
     expect(deps.latest).toHaveBeenCalledTimes(1);

@@ -94,3 +94,34 @@ Web 构建阻断定位：`login.tsx → onboarding-wizard.tsx → install-dialog
 首次同时执行测试、两套类型检查和构建时，原有存储测试在约 5.09 秒处失败；其余 70 项通过。构建/类型检查结束后以 `--maxWorkers=2` 重跑整组，71 项全部通过，没有放宽断言或提高该测试的超时配置。
 
 本轮未执行完整 Web 构建或新的真实浏览器截图；UI 使用真实组件的 jsdom 交互回归，构建覆盖服务端与桌面。启动冒烟仅执行到 bootstrap 前的入口注册阶段，环境顺序由独立测试覆盖；不等同于安装包 GUI 启动、签名安装或真实升级重启验收。前文 Web 构建阻断和截图属于上一轮，不能当作本轮执行结果。
+
+## PR #84：安装期间按钮禁用修正
+
+对应 [review 5601879962](https://github.com/stirp/purplemux-improved/pull/84#pullrequestreview-5601879962) 的 [P2 评论](https://github.com/stirp/purplemux-improved/pull/84#discussion_r4338500535)。本轮先补充规格验收 9，再增加回归并修改组件。
+
+### 实施
+
+- `app-update-settings.tsx` 的共用 `busy` 条件纳入 `state.installing`。下载完成后的第二次空闲检查即使处于 `ready`，检查、普通升级、强制升级、跳过和强制确认仍禁用。
+- 保留展示状态与操作禁用条件的区分：阻断结束后 `installing=false`，允许用户重新操作。复用已有安装标志及统一禁用条件，不增加状态或修改管理器行为（KISS、DRY、YAGNI）。
+- `app-update-ui.test.ts` 覆盖已跳过版本的 `ready` 进度可见且按钮禁用；分别验证工作区与设置页安装中不发送动作、不打开确认框，阻断结束后可确认强制升级。
+- `app-update-manager.test.ts` 延迟第二次空闲检查，验证期间快照为 `ready + installing=true`，阻断结束变为 `blocked + installing=false`，显式重试继续复用已下载包。
+
+### 本轮验证
+
+| 检查 | 结果 |
+| --- | --- |
+| 修复前运行 UI 和管理器回归 | 45 项通过、3 项失败，均复现 `ready` 安装期间按钮未禁用 |
+| `pnpm exec vitest run tests/unit/lib/app-update*.test.ts tests/unit/lib/desktop-updater.test.ts tests/unit/lib/desktop-update-preferences.test.ts tests/unit/lib/desktop-bootstrap.test.ts tests/unit/lib/desktop-runtime.test.ts --maxWorkers=2` | 76 项全部通过；包含正式包入口临时构建冒烟 |
+| `pnpm exec tsc --noEmit` | 通过 |
+| `pnpm exec tsc --noEmit -p electron/tsconfig.json` | 通过 |
+| `pnpm exec eslint --no-ignore src/components/features/settings/app-update-settings.tsx tests/unit/lib/app-update-ui.test.ts tests/unit/lib/app-update-manager.test.ts` | 通过 |
+| 隔离组件浏览器构建与交互 | esbuild 打包真实组件、hook、SWR 和确认框成功；agent-browser 验证通过 |
+| `git diff --check` | 通过 |
+
+浏览器会话 `pr84-ready-ws-b4hr9B` 使用 `127.0.0.1:18392` 临时页面，HTTP 和 Electron bridge 均模拟，不调用实际更新服务：
+
+- 工作区 `ready + installing=true` 的三个操作按钮、模拟 Electron 设置页的四个操作按钮均禁用；执行按钮点击没有动作请求或确认框。
+- 同一页面切换至 `blocked + installing=false` 后按钮恢复可用。
+- 打开强制确认框后切换到安装中，确认按钮禁用且不发送请求；再次阻断结束后确认可用，仅发送一次目标版本为 `0.6.0` 的 `force-install`。
+
+浏览器会话和临时 HTTP 服务已关闭。本轮未重跑完整 Web 生产构建、未执行完整应用或原生 Electron 实机验收、未执行真实升级重启。隔离页未挂载字体及 favicon，对应 404 不影响按钮验证；没有新增截图。前文构建和截图不作为本轮结果。未执行 Git 提交、推送或 GitHub 评论/解决审查操作。
