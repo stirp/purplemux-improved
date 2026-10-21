@@ -1,6 +1,7 @@
 import { memo, useEffect, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
+import MessageTimestamp from '@/components/features/timeline/message-timestamp';
 import type { ITimelineUserMessage } from '@/types/timeline';
 
 const PENDING_FADE_DELAY_MS = 3000;
@@ -113,6 +114,7 @@ const UserMessageItem = ({ entry }: IUserMessageItemProps) => {
                 : entry.deliveryState === 'failed' ? 'inputFailed' : 'inputQueued')}
           </p>
         )}
+        <MessageTimestamp timestamp={entry.timestamp} className="text-right" />
       </div>
     </div>
   );
