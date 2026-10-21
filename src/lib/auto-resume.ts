@@ -1,7 +1,8 @@
 import { readLayoutFile, resolveLayoutFile, collectAllTabs } from '@/lib/layout-store';
 import { hasSession, createSession, getPaneCurrentCommand, getSessionPanePid, sendKeysSeparated } from '@/lib/tmux';
 import { getWorkspaces } from '@/lib/workspace-store';
-import { getProviderByPanelType, getProviderByProcessName } from '@/lib/providers';
+import { getProviderByProcessName } from '@/lib/providers';
+import { getTabAgentProvider } from '@/lib/tab-agent-provider';
 import type { IAgentPreflight, IAgentProvider } from '@/lib/providers/types';
 import { getStatusManager } from '@/lib/status-manager';
 import { getChildPids, getProcessArgs } from '@/lib/process-utils';
@@ -39,7 +40,7 @@ const findAutoResumeTargets = async (): Promise<IAutoResumeTarget[]> => {
 
     const tabs = collectAllTabs(layout.root);
     for (const tab of tabs) {
-      const provider = getProviderByPanelType(tab.panelType);
+      const provider = getTabAgentProvider(tab);
       if (!provider) continue;
       const preflight = await getProviderPreflight(provider);
       if (!preflight.installed) {

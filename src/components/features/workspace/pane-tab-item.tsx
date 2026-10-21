@@ -1,3 +1,4 @@
+import { getTabAgentPanelType } from '@/lib/tab-agent-identity';
 import ContextMenuSettingsButton from "@/components/ui/context-menu-settings-button";
 import { useState, useRef, useEffect } from 'react';
 import type { ReactNode } from 'react';
@@ -77,8 +78,9 @@ const PaneTabItem = ({
   };
 
   const typeDisplayName = tab.panelType === 'agent-sessions' ? t('sessionList') : '';
-  const isAgent = tab.panelType === 'claude-code' || tab.panelType === 'codex-cli';
-  const displayName = (isAgent ? displayTitle || tab.name : tab.name || typeDisplayName || displayTitle) || '';
+  const identityPanelType = getTabAgentPanelType(tab) ?? tab.panelType;
+  const isAgentView = tab.panelType === 'claude-code' || tab.panelType === 'codex-cli';
+  const displayName = (isAgentView ? displayTitle || tab.name : tab.name || typeDisplayName || displayTitle) || '';
 
   return (
     <ContextMenu>
@@ -130,10 +132,10 @@ const PaneTabItem = ({
           />
         ) : (
           <>
-            <TabStatusIndicator tabId={tab.id} panelType={tab.panelType} />
-            {tab.panelType === 'claude-code' ? (
+            <TabStatusIndicator tabId={tab.id} panelType={identityPanelType} />
+            {identityPanelType === 'claude-code' ? (
               <ClaudeCodeIcon className="mx-0.5 h-3 w-3 shrink-0" />
-            ) : tab.panelType === 'codex-cli' ? (
+            ) : identityPanelType === 'codex-cli' ? (
               <OpenAIIcon className="mx-0.5 h-3 w-3 shrink-0 text-foreground" aria-label="Codex" />
             ) : tab.panelType === 'web-browser' ? (
               <Globe className="mx-0.5 h-3 w-3 shrink-0 text-muted-foreground" />

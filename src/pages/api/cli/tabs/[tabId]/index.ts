@@ -2,7 +2,8 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import { verifyCliToken } from '@/lib/cli-token';
 import { findTab } from '@/lib/cli-utils';
 import { removeTabFromPane } from '@/lib/layout-store';
-import { getProviderByPanelType } from '@/lib/providers';
+import '@/lib/providers';
+import { getTabAgentProvider } from '@/lib/tab-agent-provider';
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   if (!verifyCliToken(req)) {
@@ -18,7 +19,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   if (req.method === 'GET') {
     const found = await findTab(workspaceId, tabId);
     if (!found) return res.status(404).json({ error: 'Tab not found' });
-    const provider = getProviderByPanelType(found.tab.panelType);
+    const provider = getTabAgentProvider(found.tab);
     return res.status(200).json({
       tabId: found.tab.id,
       workspaceId: found.workspaceId,

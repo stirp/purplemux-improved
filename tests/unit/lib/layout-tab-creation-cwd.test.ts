@@ -59,6 +59,16 @@ beforeEach(async () => {
 afterEach(() => vi.useRealTimers());
 
 describe('tab creation working directory', () => {
+  it('persists provider identity before the first session and retains it through a Terminal patch', async () => {
+    const { tab } = await call({ panelType: 'codex-cli' });
+    expect(tab.agentState).toEqual({ providerId: 'codex', sessionId: null, jsonlPath: null, summary: null });
+    const { patchTab, readLayoutFile } = await import('@/lib/layout-store');
+    await patchTab('ws-test', 'pane-test', tab.id, { panelType: 'terminal' });
+    const saved = JSON.parse(await fs.readFile(layoutPath, 'utf8'));
+    expect(saved.root.tabs[0]).toMatchObject({ panelType: 'terminal', agentState: tab.agentState });
+    expect(await readLayoutFile(layoutPath)).toEqual(saved);
+  });
+
   it.each(['missing', 'missing/nested', 'worktree (deleted)'])('recovers %s and persists the actual directory', async (suffix) => {
     const { res, tab } = await call({ cwd: path.join(projectDir, suffix) });
     expect(res.status).toHaveBeenCalledWith(200);

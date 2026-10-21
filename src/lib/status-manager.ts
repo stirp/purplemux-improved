@@ -3,7 +3,9 @@ import { getWorkspaces, synchronizeSessionWorkflow } from '@/lib/workspace-store
 import { readLayoutFile, resolveLayoutFile, collectAllTabs, updateTabCliStatus, updateTabAgentSummary, updateTabAgentState, parseSessionName, setLayoutReconciler } from '@/lib/layout-store';
 import { getAllPanesInfo, getListeningPorts, SAFE_SHELLS, getPaneTitle, getSessionCwd, getSessionPanePid } from '@/lib/tmux';
 import { getChildPids } from '@/lib/process-utils';
-import { getProvider, getProviderByPanelType } from '@/lib/providers/registry';
+import { getTabAgentProvider } from '@/lib/tab-agent-provider';
+import { getProvider } from '@/lib/providers/registry';
+import { getTabAgentProviderId } from '@/lib/tab-agent-identity';
 import { detectAnyActiveSession } from '@/lib/providers/session-scan';
 import type { IAgentProvider } from '@/lib/providers/types';
 import type { IAgentHookMetaPatch, TAgentWorkStateEvent } from '@/lib/providers/types';
@@ -74,8 +76,8 @@ const AGENT_GUARDED_STATES: Set<TCliState> = new Set(['busy', 'idle', 'needs-inp
 const SHELL_TITLE_RE = /^[^|]+\|[^|]+$/;
 const PROCESS_RETRY_COUNT = 3;
 const JSONL_WATCH_DEBOUNCE_MS = 100;
-const shouldWatchCodex = (entry: Pick<ITabStatusEntry, 'panelType' | 'cliState'>): boolean =>
-  entry.panelType === 'codex-cli' && entry.cliState !== 'inactive' && entry.cliState !== 'cancelled';
+const shouldWatchCodex = (entry: Pick<ITabStatusEntry, 'panelType' | 'agentProviderId' | 'cliState'>): boolean =>
+  getTabAgentProviderId(entry) === 'codex' && entry.cliState !== 'inactive' && entry.cliState !== 'cancelled';
 const LAUNCH_READY_POLL_DELAYS_MS = [700, 1_500, 3_000, 5_000, 8_000] as const;
 
 const g = globalThis as unknown as { __ptStatusManager?: StatusManager };
@@ -120,7 +122,7 @@ class StatusManager {
       const tabs = collectAllTabs(layout.root);
       for (const tab of tabs) {
         const paneInfo = panesInfo.get(tab.sessionName);
-        const provider = getProviderByPanelType(tab.panelType);
+        const provider = getTabAgentProvider(tab);
         const detected = await this.readTabMetadata(paneInfo, provider, tab);
         const persisted: TCliState = (tab.cliState as TCliState | undefined) ?? 'idle';
         const cliState: TCliState = persisted === 'busy' ? 'unknown' : persisted;
@@ -138,7 +140,7 @@ class StatusManager {
         this.tabs.set(tab.id, {
           cliState,
           workspaceId: ws.id,
-          tabName: tab.name || (paneTitle ? formatTabTitle(paneTitle, tab.panelType) : ''),
+          tabName: tab.name || (paneTitle ? formatTabTitle(paneTitle, tab.panelType, provider?.id) : ''),
           currentProcess,
           paneTitle,
           tmuxSession: tab.sessionName,
@@ -157,7 +159,7 @@ class StatusManager {
           lastEvent: syntheticLastEvent,
           eventSeq: 0,
         });
-        if ((cliState === 'needs-input' || cliState === 'unknown' || shouldWatchCodex({ panelType: tab.panelType, cliState })) && detected.jsonlPath) {
+        if ((cliState === 'needs-input' || cliState === 'unknown' || shouldWatchCodex({ panelType: tab.panelType, agentProviderId: provider?.id, cliState })) && detected.jsonlPath) {
           this.startJsonlWatch(tab.id, detected.jsonlPath);
         }
         if (cliState === 'unknown') {
@@ -171,7 +173,7 @@ class StatusManager {
     const entry = this.tabs.get(tabId);
     if (!entry || entry.cliState !== 'unknown') return;
 
-    const provider = getProviderByPanelType(entry.panelType);
+    const provider = getTabAgentProvider(entry);
     const paneInfo = (await getAllPanesInfo()).get(entry.tmuxSession);
     const childPids = paneInfo?.pid ? await getChildPids(paneInfo.pid) : [];
     const agentRunning = paneInfo?.pid && provider
@@ -321,7 +323,7 @@ class StatusManager {
         knownTabIds.add(tab.id);
         const existing = this.tabs.get(tab.id);
         const paneInfo = panesInfo.get(tab.sessionName);
-        const provider = getProviderByPanelType(tab.panelType);
+        const provider = getTabAgentProvider(tab);
 
         const { terminalStatus, listeningPorts } = provider
           ? { terminalStatus: 'idle' as const, listeningPorts: [] as number[] }
@@ -341,7 +343,7 @@ class StatusManager {
           const entry: ITabStatusEntry = {
             cliState: initialState,
             workspaceId: ws.id,
-            tabName: tab.name || (newPaneTitle ? formatTabTitle(newPaneTitle, tab.panelType) : ''),
+            tabName: tab.name || (newPaneTitle ? formatTabTitle(newPaneTitle, tab.panelType, provider?.id) : ''),
             currentProcess,
             paneTitle: newPaneTitle,
             tmuxSession: tab.sessionName,
@@ -371,7 +373,7 @@ class StatusManager {
         const messageChanged = existing.lastUserMessage !== tab.lastUserMessage;
         const panelTypeChanged = existing.panelType !== tab.panelType;
         const refreshed = await this.readTabMetadata(paneInfo, provider, tab);
-        existing.tabName = tab.name || (newPaneTitle ? formatTabTitle(newPaneTitle, tab.panelType) : '');
+        existing.tabName = tab.name || (newPaneTitle ? formatTabTitle(newPaneTitle, tab.panelType, provider?.id) : '');
         existing.currentProcess = currentProcess;
         existing.paneTitle = newPaneTitle;
         existing.workspaceId = ws.id;
@@ -471,7 +473,7 @@ class StatusManager {
           }
         }
 
-        if (existing.cliState === 'inactive' && existing.panelType === 'claude-code' && provider
+        if (existing.cliState === 'inactive' && provider?.id === 'claude'
           && await checkAgentRunning()) {
           const content = await capturePaneAtWidth(existing.tmuxSession, 120, 30).catch(() => null);
           if (content && existing.cliState === 'inactive' && isClaudeTuiReadyContent(content)) {
@@ -480,7 +482,7 @@ class StatusManager {
           }
         }
 
-        if (existing.cliState === 'inactive' && existing.panelType === 'codex-cli' && provider) {
+        if (existing.cliState === 'inactive' && provider?.id === 'codex') {
           if (await this.checkCodexTuiReady(existing, checkAgentRunning)) {
             hookLog.debug({ tabId: tab.id }, 'codex tui ready — synthetic session-start');
             this.updateTabFromHook(existing.tmuxSession, 'session-start');
@@ -517,8 +519,10 @@ class StatusManager {
         if (entry.permissionRequest || entry.compactingSince) return false;
         const process = paneSnapshot ? paneSnapshot.get(session)?.command : entry.currentProcess;
         const idleShell = entry.terminalStatus === 'idle' && SAFE_SHELLS.has(process ?? '');
-        if (entry.panelType === 'terminal' || !entry.panelType) return idleShell;
-        if (!getProviderByPanelType(entry.panelType)) return false;
+        if ((entry.panelType === 'terminal' || !entry.panelType) && !idleShell) return false;
+        if (!getTabAgentProvider(entry)) {
+          return (entry.panelType === 'terminal' || !entry.panelType) && idleShell;
+        }
         return ['idle', 'ready-for-review', 'cancelled'].includes(entry.cliState)
           || (entry.cliState === 'inactive' && idleShell);
       });
@@ -605,7 +609,7 @@ class StatusManager {
   private async saveSessionHistory(tabId: string, entry: ITabStatusEntry, prevBusySince: number | null | undefined, cancelled: boolean): Promise<void> {
     if (!entry.lastUserMessage) return;
 
-    const provider = entry.agentProviderId ? getProvider(entry.agentProviderId) : getProviderByPanelType(entry.panelType);
+    const provider = getTabAgentProvider(entry);
     const stats = entry.jsonlPath && provider
       ? await provider.readSessionHistoryStats(entry.jsonlPath)
       : null;
@@ -777,7 +781,7 @@ class StatusManager {
 
     if (eventName === 'stop' && entry.jsonlPath) {
       const refreshSnippet = (force = false) => {
-        const provider = getProviderByPanelType(entry.panelType);
+        const provider = getTabAgentProvider(entry);
         if (!provider) return;
         const jsonlPath = entry.jsonlPath!;
         provider.readRuntimeSnapshot(jsonlPath, { force }).then(({ currentAction, lastAssistantSnippet, reset, pendingUserQuestions }) => {
@@ -817,7 +821,7 @@ class StatusManager {
       hookLog.debug({ providerId, tabId, event: event.kind }, 'no entry for provider event tab');
       return false;
     }
-    const expectedProvider = getProviderByPanelType(entry.panelType);
+    const expectedProvider = getTabAgentProvider(entry);
     if (expectedProvider && expectedProvider.id !== providerId) {
       hookLog.debug(
         { providerId, expectedProviderId: expectedProvider.id, tabId, event: event.kind },
@@ -839,7 +843,7 @@ class StatusManager {
     if (!tabId) return null;
     const entry = this.tabs.get(tabId);
     if (!entry) return null;
-    const expectedProvider = getProviderByPanelType(entry.panelType);
+    const expectedProvider = getTabAgentProvider(entry);
     if (expectedProvider && expectedProvider.id !== providerId) {
       hookLog.debug(
         { providerId, expectedProviderId: expectedProvider.id, tabId },
@@ -1025,7 +1029,7 @@ class StatusManager {
         this.jsonlWatchers.delete(tabId);
       }
       this.persistToLayout(entry);
-      const provider = getProviderByPanelType(entry.panelType);
+      const provider = getTabAgentProvider(entry);
       if (provider) {
         updateTabAgentState(entry.tmuxSession, provider, {
           sessionId: null,
@@ -1126,7 +1130,7 @@ class StatusManager {
       const layout = await readLayoutFile(resolveLayoutFile(parsed.wsId));
       if (layout) {
         const tab = collectAllTabs(layout.root).find((t) => t.sessionName === tmuxSession);
-        const tabProvider = getProviderByPanelType(tab?.panelType);
+        const tabProvider = getTabAgentProvider(tab);
         const tabSessionId = tab && tabProvider ? tabProvider.readSessionId(tab) : null;
         if (tab && tabProvider && tabSessionId) {
           if (tabProvider.id === CODEX_PROVIDER_ID) {
@@ -1153,15 +1157,22 @@ class StatusManager {
     if (!jsonlPath) {
       const panePid = await getSessionPanePid(tmuxSession);
       if (panePid) {
-        const { info } = await detectAnyActiveSession(panePid);
-        jsonlPath = info.jsonlPath;
+        const boundProvider = getTabAgentProvider(entry);
+        if (boundProvider) {
+          const info = await boundProvider.detectActiveSession(panePid);
+          jsonlPath = info.jsonlPath;
+        } else {
+          const detected = await detectAnyActiveSession(panePid);
+          entry.agentProviderId = detected.provider?.id;
+          jsonlPath = detected.info.jsonlPath;
+        }
       }
     }
 
     if (!jsonlPath) return;
 
     entry.jsonlPath = jsonlPath;
-    const provider = getProviderByPanelType(entry.panelType);
+    const provider = getTabAgentProvider(entry);
     if (provider) {
       entry.agentProviderId = provider.id;
       entry.agentSessionId = provider.sessionIdFromJsonlPath(jsonlPath) ?? entry.agentSessionId;
@@ -1218,11 +1229,11 @@ class StatusManager {
       return;
     }
 
-    const provider = getProviderByPanelType(entry.panelType);
+    const provider = getTabAgentProvider(entry);
     if (!provider) return;
     const { currentAction, lastAssistantSnippet, reset, interrupted, lastEntryTs, workStateEvent, pendingUserQuestions } = await provider.readRuntimeSnapshot(jsonlPath);
     if (this.tabs.get(tabId) !== entry || entry.jsonlPath !== jsonlPath) return;
-    if (entry.agentProviderId === CODEX_PROVIDER_ID || entry.panelType === 'codex-cli') {
+    if (getTabAgentProviderId(entry) === CODEX_PROVIDER_ID) {
       cacheCodexRateLimitsFromJsonl(jsonlPath).catch(() => {});
       if (shouldWatchCodex(entry) && workStateEvent && workStateEvent.at > (entry.lastEvent?.at ?? 0)) {
         this.updateTabFromHook(entry.tmuxSession, workStateEvent.name, undefined, workStateEvent.at);

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import useTabStore from '@/hooks/use-tab-store';
-import { getAgentPanelTypeFromProvider, isAgentPanel, isAgentRunning, tryAgentSwitch } from '@/lib/agent-switch-lock';
+import { hasConfirmedAgentExit, getAgentPanelTypeFromProvider, isAgentPanel, isAgentRunning, tryAgentSwitch } from '@/lib/agent-switch-lock';
 import { refreshDetectedAgent } from '@/lib/agent-check';
 import { cn } from '@/lib/utils';
 import type { TPanelType } from '@/types/terminal';
@@ -59,7 +59,11 @@ const AgentModeSwitcher = ({
   const [open, setOpen] = useState(false);
   const tabEntry = useTabStore((s) => s.tabs[tabId]);
   const runtimeAgentPanelType = getAgentPanelTypeFromProvider(tabEntry?.agentProviderId);
-  const hasDetectedAgent = !!runtimeAgentPanelType
+  const hasDetectedAgent = !hasConfirmedAgentExit({
+    agentProcess: tabEntry?.agentProcess,
+    agentProcessCheckedAt: tabEntry?.agentProcessCheckedAt,
+    lastAgentEventAt: tabEntry?.lastEvent?.at,
+  }) && !!runtimeAgentPanelType
     && (
       tabEntry?.agentProcess === true
       || isAgentRunning(tabEntry?.cliState)
@@ -102,6 +106,8 @@ const AgentModeSwitcher = ({
       target: mode.type,
       cliState: tabEntry?.cliState,
       agentProcess: tabEntry?.agentProcess,
+      agentProcessCheckedAt: tabEntry?.agentProcessCheckedAt,
+      lastAgentEventAt: tabEntry?.lastEvent?.at,
       runningAgentPanelType: runtimeAgentPanelType,
     })) return;
     setOpen(false);

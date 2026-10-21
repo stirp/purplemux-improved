@@ -4,7 +4,8 @@ import { getLayout, addTabToPane } from '@/lib/layout-store';
 import { collectPanes } from '@/lib/layout-tree';
 import { getWorkspaceById, getWorkspaces } from '@/lib/workspace-store';
 import { resolveFirstPaneId } from '@/lib/cli-utils';
-import { getProviderByPanelType } from '@/lib/providers';
+import '@/lib/providers';
+import { getTabAgentProvider } from '@/lib/tab-agent-provider';
 import { checkAgentAvailabilityForPanelType, toAgentAvailabilityError } from '@/lib/agent-availability';
 import { createLogger } from '@/lib/logger';
 import type { TPanelType } from '@/types/terminal';
@@ -38,7 +39,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       const layout = await getLayout(id);
       for (const pane of collectPanes(layout.root)) {
         for (const tab of pane.tabs) {
-          const provider = getProviderByPanelType(tab.panelType);
+          const provider = getTabAgentProvider(tab);
           tabs.push({
             tabId: tab.id,
             workspaceId: id,

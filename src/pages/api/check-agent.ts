@@ -2,6 +2,8 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import { getSessionPanePid, hasSession } from '@/lib/tmux';
 import { getChildPids } from '@/lib/process-utils';
 import { listProviders } from '@/lib/providers';
+import { collectAllTabs, parseSessionName, readLayoutFile, resolveLayoutFile } from '@/lib/layout-store';
+import { getTabAgentProvider } from '@/lib/tab-agent-provider';
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   if (req.method !== 'GET') {
@@ -27,15 +29,22 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   }
 
   const childPids = await getChildPids(panePid);
-  for (const provider of listProviders()) {
+  const parsed = parseSessionName(session);
+  const layout = parsed ? await readLayoutFile(resolveLayoutFile(parsed.wsId)) : null;
+  const tab = layout ? collectAllTabs(layout.root).find((item) => item.sessionName === session) : undefined;
+  const boundProvider = getTabAgentProvider(tab);
+  const providers = listProviders();
+  const ordered = boundProvider ? [boundProvider, ...providers.filter((provider) => provider.id !== boundProvider.id)] : providers;
+  for (const provider of ordered) {
     if (!await provider.isAgentRunning(panePid, childPids)) continue;
 
     const info = await provider.detectActiveSession(panePid, childPids);
+    const boundSessionId = tab && provider.id === boundProvider?.id ? provider.readSessionId(tab) : null;
     return res.status(200).json({
       running: true,
       checkedAt,
-      sessionId: info.sessionId,
-      resumable: !!info.jsonlPath,
+      sessionId: boundSessionId ?? info.sessionId,
+      resumable: !!(boundSessionId && tab ? provider.readJsonlPath(tab) : info.jsonlPath),
       providerId: provider.id,
       providerDisplayName: provider.displayName,
       providerPanelType: provider.panelType,

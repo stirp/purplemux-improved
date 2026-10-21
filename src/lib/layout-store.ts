@@ -20,6 +20,7 @@ import type { TCliState } from '@/types/timeline';
 import type { IAgentProvider } from '@/lib/providers/types';
 import { claudeProvider } from '@/lib/providers/claude';
 import { defaultTabNameForPanelType, resolveTabNameForPanelTypeChange } from '@/lib/tab-name';
+import { changeTabPanelType, ensureTabAgentIdentity, getTabAgentPanelType } from '@/lib/tab-agent-identity';
 
 const log = createLogger('layout');
 
@@ -97,7 +98,9 @@ export const readLayoutFile = async (filePath: string): Promise<ILayoutData | nu
   }
 
   try {
-    return JSON.parse(raw) as ILayoutData;
+    const layout = JSON.parse(raw) as ILayoutData;
+    for (const tab of collectAllTabs(layout.root)) ensureTabAgentIdentity(tab);
+    return layout;
   } catch {
     log.warn(`${filePath} parse failed`);
     try {
@@ -113,6 +116,7 @@ const extractWsIdFromPath = (filePath: string): string | null => {
 };
 
 export const writeLayoutFile = async (data: ILayoutData, filePath: string): Promise<void> => {
+  for (const tab of collectAllTabs(data.root)) ensureTabAgentIdentity(tab);
   const contentKey = JSON.stringify({ root: data.root, activePaneId: data.activePaneId, diffSettings: data.diffSettings });
   const cache = g.__ptLayoutContentCache!;
 
@@ -190,7 +194,7 @@ export const crossCheckLayout = async (
       if (tab.panelType === 'web-browser') continue;
       layoutSessions.add(tab.sessionName);
 
-      if (!tmuxSet.has(tab.sessionName) && isAgentPanelType(tab.panelType)) {
+      if (!tmuxSet.has(tab.sessionName) && isAgentPanelType(getTabAgentPanelType(tab))) {
         const cwd = tab.cwd || defaultCwd;
         log.debug(`crossCheck: agent tab session recreated: ${tab.sessionName} (cwd: ${cwd})`);
         await createSession(tab.sessionName, 80, 24, cwd);
@@ -806,7 +810,7 @@ export const patchTab = async (
       const layout = await readLayoutFile(filePath);
       if (!layout) return null;
       const tab = findPane(layout.root, paneId)?.tabs.find((t) => t.id === tabId);
-      return tab ? { sessionName: tab.sessionName, panelType: patch.panelType ?? tab.panelType } : null;
+      return tab ? { sessionName: tab.sessionName, panelType: getTabAgentPanelType(tab) ?? patch.panelType ?? tab.panelType } : null;
     })();
     if (tabInfo?.sessionName) {
       const { getSessionCwd, getPaneCurrentCommand } = await import('@/lib/tmux');
@@ -837,7 +841,7 @@ export const patchTab = async (
       if (patch.name === undefined) {
         tab.name = resolveTabNameForPanelTypeChange(tab.name, tab.panelType, patch.panelType);
       }
-      tab.panelType = patch.panelType;
+      Object.assign(tab, changeTabPanelType(tab, patch.panelType));
     }
     if (resolvedTitle !== undefined) tab.title = resolvedTitle;
     if (patch.cwd !== undefined) tab.cwd = authoritativeCwd ?? patch.cwd;

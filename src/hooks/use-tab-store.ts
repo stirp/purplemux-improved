@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import type { TCliState } from '@/types/timeline';
 import type { IPendingUserQuestion, ICurrentAction, ILastEvent, TTabDisplayStatus, TTerminalStatus } from '@/types/status';
 import type { ITab, TPanelType } from '@/types/terminal';
+import { ensureTabAgentIdentity, getTabAgentProviderId, providerIdForPanel } from '@/lib/tab-agent-identity';
 import type { IPermissionRequest } from '@/types/codex-permission';
 import type { ISessionMetaData } from '@/hooks/use-session-meta';
 import { deriveAgentCliState } from '@/lib/agent-state-transition';
@@ -242,7 +243,13 @@ const useTabStore = create<ITabStore>((set) => ({
     set((state) => {
       const prev = state.tabs[tabId];
       if (!prev || prev.panelType === panelType) return state;
-      return { tabs: updateTab(state.tabs, tabId, { panelType }) };
+      const previousProvider = getTabAgentProviderId(prev);
+      const providerId = providerIdForPanel(panelType) ?? previousProvider;
+      const changedProvider = providerId !== previousProvider;
+      return { tabs: updateTab(state.tabs, tabId, {
+        panelType, agentProviderId: providerId,
+        ...(changedProvider ? { agentSessionId: null, agentSummary: null, lastUserMessage: null, cliState: 'inactive' as const } : {}),
+      }) };
     }),
 
   setCurrentProcess: (tabId, process) =>
@@ -267,19 +274,12 @@ const useTabStore = create<ITabStore>((set) => ({
 
       if (update.running) {
         if (update.providerId) patch.agentProviderId = update.providerId;
-        if (update.sessionId !== undefined) {
+        if (update.sessionId !== undefined && (!prev.agentSessionId || prev.agentProviderId !== update.providerId)) {
           patch.agentSessionId = update.sessionId;
           Object.assign(patch, resetFallbackOnSessionChange(prev, update.sessionId));
         }
         if (prev.sessionView === 'check' || prev.sessionView === 'session-list') {
           patch.sessionView = 'timeline';
-        }
-      } else if (prev.panelType === 'terminal') {
-        patch.agentProviderId = undefined;
-        patch.agentSessionId = null;
-        Object.assign(patch, resetFallbackOnSessionChange(prev, null));
-        if (prev.agentProcess === true && prev.sessionView === 'timeline') {
-          patch.sessionView = 'session-list';
         }
       } else if (
         prev.sessionView === 'timeline'
@@ -398,15 +398,16 @@ export const selectSessionView = (tabs: Record<string, ITabState>, tabId: string
 };
 
 export const getInitialTabStateFromLayoutTab = (tab: ITab): Partial<ITabState> => {
+  tab = { ...tab };
+  ensureTabAgentIdentity(tab);
   const patch: Partial<ITabState> = { panelType: tab.panelType };
-  const providerId = tab.agentState?.providerId
-    ?? (tab.panelType === 'codex-cli' ? 'codex' : tab.panelType === 'claude-code' ? 'claude' : undefined);
-  const sessionId = tab.agentState?.sessionId ?? tab.claudeSessionId ?? null;
+  const providerId = getTabAgentProviderId(tab);
+  const sessionId = tab.agentState?.sessionId ?? null;
 
   if (providerId) patch.agentProviderId = providerId;
   if (sessionId) {
     patch.agentSessionId = sessionId;
-    patch.agentSummary = tab.agentState?.summary ?? tab.claudeSummary ?? null;
+    patch.agentSummary = tab.agentState?.summary ?? null;
     patch.sessionView = 'timeline';
   }
 

@@ -1,3 +1,4 @@
+import { getTabAgentProviderId } from '@/lib/tab-agent-identity';
 import fs from 'fs/promises';
 import { DEFAULT_IDLE_TAB_POLICY, idleTabPolicySchema, type TIdleTabPolicy } from '@/lib/idle-tab-policy';
 import { isTaskRunning } from '@/lib/scheduled-tasks';
@@ -755,7 +756,7 @@ export const updateSessionWorkflow = async (update:
 });
 
 const workflowTabDirectory = (tab: IWorkflowTab, workflow: ISessionWorkflow, workspace: IWorkspace): string | null => {
-  const provider = tab.agentProviderId === 'codex' || tab.panelType === 'codex-cli' ? 'codex' : 'claude';
+  const provider = getTabAgentProviderId(tab) ?? '';
   const saved = workflow.sessions?.[sessionWorkKey(provider, tab.agentSessionId, '')]?.navigation;
   return tab.workspaceDir ?? (saved?.workspaceId === workspace.id ? saved.workspaceDir : null) ?? workspace.directories[0] ?? null;
 };

@@ -5,7 +5,8 @@ import { getWorkspaces, getIdleTabPolicy, saveIdleTabPolicy, retainReclaimedSess
 import { getAllPanesInfo } from '@/lib/tmux';
 import { listUserProcesses, getProcessArgv, type ISystemProcess } from '@/lib/process-utils';
 import { classifyAgentArgv } from '@/lib/local-agent-session';
-import { getProviderByPanelType } from '@/lib/providers';
+import '@/lib/providers';
+import { getTabAgentProvider } from '@/lib/tab-agent-provider';
 import { getStatusManager } from '@/lib/status-manager';
 import { getInputQueue } from '@/lib/input-queue-server';
 import { getLastTerminalInput } from '@/lib/terminal-input-activity';
@@ -69,7 +70,7 @@ const scan = async (target?: TIdleTabTarget): Promise<{ policy: TIdleTabPolicy; 
       for (const tab of pane.tabs) {
         if (target && tab.id !== target.tabId) continue;
         try {
-          const provider = getProviderByPanelType(tab.panelType);
+          const provider = getTabAgentProvider(tab);
           if (!provider || (provider.id !== 'claude' && provider.id !== 'codex')) continue;
           const state = statuses[tab.id];
           const sessionId = provider.readSessionId(tab);
