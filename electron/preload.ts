@@ -4,7 +4,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   isElectron: true,
   platform: process.platform,
   getAppUpdate: () => ipcRenderer.invoke('app-update:status'),
-  appUpdateAction: (action: 'check' | 'install') => ipcRenderer.invoke('app-update:action', action),
+  appUpdateAction: (action: import('../src/types/app-update').TAppUpdateAction, version?: string) => ipcRenderer.invoke('app-update:action', action, version),
   openExternal: (url: string) => ipcRenderer.invoke('open-external', url),
   getPathForFile: (file: File) => webUtils.getPathForFile(file),
   getSystemResources: () => ipcRenderer.invoke('get-system-resources'),

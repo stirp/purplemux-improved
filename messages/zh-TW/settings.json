@@ -394,14 +394,19 @@
     "blocked": "等待会话空闲",
     "restarting": "正在重启…",
     "error": "更新失败",
-    "busyHint": "有任务正在运行或无法确认状态。请在全部会话空闲后重试，不会自动延后重启。",
+    "busyHint": "有工作正在執行或無法確認狀態。可在所有工作階段閒置後重試，或選擇強制升級；不會自動延後重新啟動。",
     "reconnecting": "正在等待服务重启并重新连接；若新版启动失败，服务端将恢复旧版本。",
     "desktopUnsupported": "一键更新仅适用于正式桌面安装版，且需要已发布的安装包。",
     "serverUnsupported": "一键更新需要通过 purplemux-improved 启动生产服务；源码与开发实例仅支持检测。",
     "notChecked": "尚未检查",
     "reconnectFailed": "重启后仍未连接成功，请刷新页面或检查服务日志。",
     "reload": "刷新页面",
-    "desktopReconnecting": "正在安装并重启桌面应用，请等待应用重新打开。"
+    "desktopReconnecting": "正在安装并重启桌面应用，请等待应用重新打开。",
+    "skip": "略過此版本",
+    "skipped": "已略過版本 {version}，仍可手動升級。",
+    "forceInstall": "強制升級並重新啟動",
+    "forceConfirm": "將升級至 {version}，略過工作階段閒置檢查。連線會中斷，執行中的工作可能中斷。是否繼續？",
+    "cancel": "取消"
   },
   "linuxStartup": {
     "title": "登入後開啟桌面應用程式",

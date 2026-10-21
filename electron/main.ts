@@ -1,8 +1,9 @@
-import { capturePristineEnv } from './pristine-env';
-import { applyResolvedShellEnv } from './shell-env';
+import { prepareDesktopRuntime } from './desktop-runtime';
 import { app, BrowserWindow, shell, Menu, ipcMain, session, screen, Notification, nativeTheme, dialog, autoUpdater as nativeUpdater, type IpcMainInvokeEvent } from 'electron';
 import { autoUpdater } from 'electron-updater';
 import { createDesktopUpdater } from './app-updater';
+import { createDesktopUpdatePreferences } from './app-update-preferences';
+import { isStableVersion } from '@/lib/app-update-version';
 import { createNativeUpdatePreparation } from './native-update-preparation';
 import * as path from 'path';
 import * as fs from 'fs';
@@ -561,6 +562,7 @@ const UPDATE_CHECK_INTERVAL_MS = 6 * 60 * 60 * 1000;
 const FIRST_CHECK_DELAY_MS = 3000;
 
 let updateCheckTimer: ReturnType<typeof setInterval> | null = null;
+let desktopRuntimeReady: Promise<void> | null = null;
 let desktopUpdater: ReturnType<typeof createDesktopUpdater> | null = null;
 let installingUpdate = false;
 let updateCleanupComplete = false;
@@ -594,6 +596,10 @@ const setupAutoUpdater = () => {
   if (desktopUpdater) return;
   desktopUpdater = createDesktopUpdater(autoUpdater, {
     version: app.getVersion(), supported: canRunUpdater(), assertIdle: assertDesktopIdle,
+    preferences: createDesktopUpdatePreferences({
+      readSkippedVersion: async () => (await getDesktopWorkspaceStore()).getSkippedAppVersion('desktop'),
+      saveSkippedVersion: async (version) => (await getDesktopWorkspaceStore()).saveSkippedAppVersion('desktop', version),
+    }, getExistingLocalServerPort, CONFIG_DIR),
     prepareNative: process.platform === 'darwin' ? createNativeUpdatePreparation(nativeUpdater) : undefined,
     restart: async () => {
       installingUpdate = true;
@@ -627,16 +633,33 @@ const checkForUpdatesManual = async () => {
   const m = mt();
   if (state.phase === 'downloading' || state.phase === 'restarting') return;
   if (state.latestVersion && ['available', 'blocked', 'ready'].includes(state.phase)) {
+    const zh = currentLocale.startsWith('zh');
+    const forceLabel = zh ? '强制升级并重启' : 'Force upgrade and restart';
     const result = await showUpdateDialog({
-      type: 'info', buttons: [currentLocale.startsWith('zh') ? '升级并重启' : 'Upgrade and restart', m.later],
-      defaultId: 0, cancelId: 1,
+      type: 'info', buttons: [zh ? '升级并重启' : 'Upgrade and restart', zh ? '跳过此版本' : 'Skip this version', forceLabel, m.later],
+      defaultId: 0, cancelId: 3,
       message: formatMsg(m.updateAvailableMessage, { version: state.latestVersion }),
       detail: m.updateReadyDetail,
     });
-    if (result.response === 0) {
-      await desktopUpdater.install();
+    try {
+      if (result.response === 1) await desktopUpdater.skip(state.latestVersion);
+      if (result.response === 0) await desktopUpdater.install();
+      if (result.response === 2) {
+        const confirmation = await showUpdateDialog({
+          type: 'warning', buttons: [m.later, forceLabel], defaultId: 0, cancelId: 0,
+          message: forceLabel,
+          detail: zh
+            ? `将升级至 ${state.latestVersion}，跳过会话空闲检查。连接会断开，运行中的任务可能中断。是否继续？`
+            : `Upgrade to ${state.latestVersion} without waiting for idle sessions. Connections will disconnect and running tasks may be interrupted. Continue?`,
+        });
+        if (confirmation.response !== 1) return;
+        await desktopUpdater.install({ force: true, version: state.latestVersion });
+      }
+      if (result.response === 3) return;
       const error = desktopUpdater.getState().error;
       if (error) await showUpdateDialog({ type: 'error', message: m.updateErrorMessage, detail: error });
+    } catch (error) {
+      await showUpdateDialog({ type: 'error', message: m.updateErrorMessage, detail: error instanceof Error ? error.message : String(error) });
     }
   } else {
     await showUpdateDialog({
@@ -669,11 +692,16 @@ ipcMain.handle('app-update:status', (event) => {
   setupAutoUpdater();
   return desktopUpdater!.getState();
 });
-ipcMain.handle('app-update:action', async (event, action: string) => {
+ipcMain.handle('app-update:action', async (event, action: string, version?: string) => {
   assertUpdateRenderer(event);
   setupAutoUpdater();
   if (action === 'check') await desktopUpdater!.check();
   else if (action === 'install') void desktopUpdater!.install();
+  else if (action === 'force-install' || action === 'skip') {
+    if (!isStableVersion(version)) throw new Error('Invalid update version');
+    if (action === 'force-install') void desktopUpdater!.install({ force: true, version });
+    else await desktopUpdater!.skip(version);
+  }
   else throw new Error('Invalid update action');
   return desktopUpdater!.getState();
 });
@@ -765,9 +793,6 @@ const getManagedServerPort = async (): Promise<number | null> => {
 const startLocalServer = async (): Promise<number> => {
   if (!cachedStart) {
     const appDir = process.env.__PMUX_APP_DIR!;
-    const standaloneMods = path.join(appDir, '.next', 'standalone', 'node_modules');
-    process.env.NODE_PATH = [standaloneMods, process.env.NODE_PATH].filter(Boolean).join(':');
-    require('module').Module._initPaths(); // eslint-disable-line @typescript-eslint/no-require-imports
     const mod = await import(path.join(appDir, 'dist', 'server.js'));
     cachedStart = mod.start;
   }
@@ -1096,13 +1121,20 @@ const prepareLocalServerEnv = () => {
 
 // --- Bootstrap ---
 
+const getDesktopWorkspaceStore = async () => {
+  if (!desktopRuntimeReady) throw new Error('Desktop runtime is not ready');
+  await desktopRuntimeReady;
+  return import('@/lib/workspace-store');
+};
+
 const bootstrap = async () => {
   // Finder/Dock 런치 시 launchd env가 빈약해 child shell이 초기화에 실패함.
   // shell resolve는 100~500ms 걸리므로 splash 렌더와 오버랩시키고,
   // 로컬 서버 spawn 직전에만 완료를 대기한다.
   fixEnv();
   initBrowserBridge();
-  const shellEnvReady = applyResolvedShellEnv().then(capturePristineEnv);
+  desktopRuntimeReady = prepareDesktopRuntime(isDev || devUrl ? process.cwd() : app.getAppPath());
+  const shellEnvReady = desktopRuntimeReady;
 
   if (devUrl) {
     await shellEnvReady;
