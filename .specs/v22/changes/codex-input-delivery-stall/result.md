@@ -253,3 +253,32 @@ pnpm exec vitest run tests/unit/lib/codex-input-receipt.test.ts tests/unit/lib/i
 ### 后续全量测试修复
 
 用户进一步要求修复全量测试问题后，已在[Git 索引时间边界增量规格](../git-index-copy-timestamp/spec.md)中稳定复现并修复私有索引漏检。最新 `pnpm test` 完整通过：Vitest 1939 项通过、14 项跳过，CLI 153 项通过；完整 TypeScript、全仓 ESLint 通过。详见[本轮验证证据](../git-index-copy-timestamp/result.md)，上述初次失败记录保留为排查历史。
+
+## 执行中停止入口修正（2026-10-21）
+
+### 实施与原因
+
+用户截图输入框已有“做 code review”草稿。`useWebInput` 将 `busy/needs-input` 映射为 `interrupt`，但 `WebInputBar` 原来的互斥渲染条件还要求 `!hasValue && !hasAttachments && !isDispatching`；任一条件不满足就只渲染发送按钮。因此即使执行状态正确，有草稿仍必然隐藏停止入口。此结论由源码和真实组件 DOM 回归复现，不将截图当作当时服务端状态的完整证据。
+
+- 先补充本需求规格验收 18、19，再调整 `src/components/features/workspace/web-input-bar.tsx`：停止与发送独立渲染，执行中最右侧始终保留红色方块，有待发内容或入队请求时发送按钮位于左侧。
+- 复用现有 `mode`、确认弹窗、中断回调及排队投递，不增加状态源、接口或依赖（KISS/DRY/YAGNI）；桌面、移动和 Codex/Claude 共用该修复。
+- `docs/STATUS.md` 同步按钮与状态的对应规则。
+- `tests/unit/lib/native-command-input.test.ts` 复用已有组件测试环境，新增 18 项用例，并用真实停止确认弹窗验证取消和确认行为。
+
+### 本轮验证
+
+| 验收 | 检查方式及结果 |
+| --- | --- |
+| 18：草稿及发送过程中停止始终可见 | Codex/Claude × busy/needs-input × 桌面/移动，共 8 项 DOM 用例通过；检查红色实心图标、按钮顺序、请求中仍可停止，入队成功后恢复仅停止 |
+| 18：仅附件及发送失败 | 桌面/移动 DOM 用例通过；入队携带附件，失败保留附件及停止/发送两个入口 |
+| 19：停止确认与草稿保留 | 真实确认弹窗 DOM 用例通过；取消不写终端，确认只发送既有双 Escape，不入队，不清除正文或附件 |
+| 19：连接和状态变化 | 断连禁用停止、点击不弹窗，重连恢复；切换 idle/ready-for-review/unknown/inactive/cancelled 后移除停止，保留草稿 |
+
+- 修复前运行新增用例，复现输入草稿后停止按钮消失；该轮测试失败，不作为通过证据。
+- `pnpm exec vitest run tests/unit/lib/native-command-input.test.ts tests/unit/lib/native-command-completion.test.ts tests/unit/lib/queued-message-display.test.ts tests/unit/lib/input-queue.test.ts`：88 项通过、0 失败。
+- `pnpm exec tsc --noEmit`：完整类型检查通过。
+- `pnpm exec eslint src/components/features/workspace/web-input-bar.tsx tests/unit/lib/native-command-input.test.ts`：通过，无问题。
+- 当前工作树初始无依赖目录，复用本机同版本依赖的软链接，未安装或更新依赖。`pnpm build` 在 TypeScript 阶段通过后失败：Turbopack 拒绝指向工作树根目录外的 `node_modules` 软链接。
+- `pnpm exec next build --webpack && node scripts/post-build.js && pnpm build:server`：失败，输出过滤器仅报告 4 个错误，未保留详情；后续两个步骤未执行。为获取原始错误执行 `rtk proxy pnpm exec next build --webpack`：TypeScript 阶段和 Webpack 编译通过，收集 `/login` 页面数据时失败，`ReferenceError: self is not defined`，栈指向 `.next/server/chunks/3074.js` 的终端库代码。本轮未修改登录页或终端库加载，不将编译成功表述为完整生产构建通过。
+- `git diff --check` 及本需求 `spec.md/task.md/result.md` 的相对链接、`depends_on` 路径检查通过。
+- 未执行真实浏览器或 Codex TUI 实机验收；DOM 中的移动模式验证不能代替移动端布局和实机验证。本轮不沿用前轮全量测试、构建或实机结果。
