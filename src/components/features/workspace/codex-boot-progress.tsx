@@ -3,15 +3,15 @@ import OpenAIIcon from '@/components/icons/openai-icon';
 import AgentBootProgress from '@/components/features/workspace/agent-boot-progress';
 
 const ALMOST_READY_MS = 3_000;
-const ERROR_THRESHOLD_MS = 10_000;
 
 interface ICodexBootProgressProps {
+  hasFailed: boolean;
   className?: string;
   onRestart?: () => void;
   onShowTerminal?: () => void;
 }
 
-const CodexBootProgress = ({ className, onRestart, onShowTerminal }: ICodexBootProgressProps) => {
+const CodexBootProgress = ({ hasFailed, className, onRestart, onShowTerminal }: ICodexBootProgressProps) => {
   const t = useTranslations('terminal');
 
   return (
@@ -31,7 +31,7 @@ const CodexBootProgress = ({ className, onRestart, onShowTerminal }: ICodexBootP
       showTerminalLabel={t('codexBootShowTerminal')}
       className={className}
       almostReadyMs={ALMOST_READY_MS}
-      errorThresholdMs={ERROR_THRESHOLD_MS}
+      hasFailed={hasFailed}
       onRestart={onRestart}
       onShowTerminal={onShowTerminal}
     />

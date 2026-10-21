@@ -1,5 +1,37 @@
 # 实施与验证
 
+## 2026-10-21：TUI 已启动而 Chat 报失败
+
+### 现场与原因
+
+- `pmuxi tab result -w ws-OeRRes tab-zaoVW0` 显示 `OpenAI Codex (v0.163.0)`、`› Ask Codex to do anything` 和模型状态行；`pmuxi tab status` 返回 `alive=true`、`command=node`、`cliState=idle`、`agentSessionId=null`。未向该会话发送任何输入。
+- 当前源码 `CodexBootProgress` 给通用启动组件传入 10 秒 `errorThresholdMs`；该组件只看挂载时长，无论检测请求是否返回、进程是否运行都可以显示启动失败。这是已确认的误报路径，不能用之前的启动器取参中止解释本次现场。
+- 本次没有取得用户浏览器当时的 store/网络记录，不能断言客户端未及时收到状态的具体原因。空会话 ID 是允许的启动阶段状态，不是进程失败依据。
+
+### 实施
+
+- `src/hooks/use-codex-boot-check.ts`：提取桌面和移动端原有重复检查。已知运行进程或有效工作状态立即切到 timeline，无需会话 ID。失败必须来自 60 秒后新发起的成功检查且明确 `running=false`；其他代理、无效响应、HTTP/网络/超时都不算启动失败，后续成功能恢复。
+- 检查串行执行，完成后间隔 800 ms；单次请求含响应体最多 10 秒。请求卸载取消、迟到结果丢弃、store 时间戳保护，避免旧检测覆盖新状态；切换 Tab/会话重新计时。
+- `CodexBootProgress` 接受明确失败状态，移除无条件 10 秒错误；通用 `AgentBootProgress` 保留原有计时接口以兼容其他调用方。两端面板接入共用 hook；信任/升级卡片仍优先。
+- 更新 `docs/STATUS.md`。KISS/DRY：沿用现有检查 API、状态 store 和启动组件，不新增 API、进程扫描器或自动重启行为。
+
+### 本次验证
+
+| 检查 | 命令或方法 | 结果 |
+| --- | --- | --- |
+| 组件/状态/启动器回归 | `pnpm exec vitest run tests/unit/lib/codex-boot-check.test.ts tests/unit/lib/tab-store-session-view.test.ts tests/unit/lib/agent-mode-detection.test.ts tests/unit/lib/codex-tui-ready-detector.test.ts tests/unit/lib/codex-launcher-lifecycle.test.ts` | 76 项通过 |
+| 完整 TypeScript | `pnpm exec tsc --noEmit` | 通过；最终补充测试后再次完整复查通过 |
+| 改动文件 ESLint | `pnpm exec eslint`，指定共用 hook、三个启动/桌面组件、移动面板和新增测试 | 通过；补充测试后再次检查测试文件通过 |
+| 生产构建 | `pnpm build` | 通过：Next.js 类型检查、Turbopack、24 个静态页面、standalone 后处理和 tsup 服务打包完成 |
+| 差异和文档 | `git diff --check`、本需求相对链接检查 | 通过 |
+
+新增测试在 jsdom 中挂载真实 hook、Zustand store 和 Codex 启动提示组件，模拟 fetch 和时钟，覆盖 10 秒不误报、60 秒新负向检查、无 ID 的工作状态/运行检测、失败后恢复、网络/HTTP/JSON/其他代理、响应头和体超时、请求串行、迟到检测、时间戳、切换会话/Tab、卸载计时器清理。两端接入由源码与类型/构建检查确认，未将测试 harness 称为完整页面验收。
+
+### 本次限制
+
+- 已读取 browser skill，但 `browser-harness` 不在当前 PATH（退出 127），未执行浏览器/移动实机验收。TUI 与服务端状态只读核对已完成。
+- 未部署、未重启运行服务、未改写用户配置；当前现场不会因工作树源码修改自动切换到新版本。未提交或推送 Git。
+
 ## 2026-10-21：创建会话时取参中止的后续修正
 
 ### 诊断和实施
