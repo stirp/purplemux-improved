@@ -1,3 +1,4 @@
+import { getTabAgentProviderId } from '@/lib/tab-agent-identity';
 import { resolveTerminalTypography } from '@/lib/terminal-appearance';
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { Plus, WifiOff } from 'lucide-react';
@@ -273,7 +274,7 @@ const MobileSurfaceView = ({
       if (activeTab.panelType === 'web-browser' || activeTab.panelType === 'agent-sessions') return;
       if (title === lastTitleRef.current) return;
       lastTitleRef.current = title;
-      const formatted = formatTabTitle(title, activeTab?.panelType);
+      const formatted = formatTabTitle(title, activeTab?.panelType, getTabAgentProviderId(activeTab));
       useTabMetadataStore.getState().setTitle(tabId, formatted);
       if (isShellProcess(title) && pendingRestartRef.current) {
         const cmd = pendingRestartRef.current;

@@ -16,7 +16,7 @@ import useGitStatusStore, {
   getGitStatusIndicators,
 } from '@/hooks/use-git-status-store';
 import type { TGitStatusIndicatorTone } from '@/hooks/use-git-status-store';
-import { getAgentPanelTypeFromProvider, isAgentPanel, tryAgentSwitch } from '@/lib/agent-switch-lock';
+import { hasConfirmedAgentExit, getAgentPanelTypeFromProvider, isAgentPanel, isAgentRunning, tryAgentSwitch } from '@/lib/agent-switch-lock';
 import { refreshDetectedAgent } from '@/lib/agent-check';
 import {
   Drawer,
@@ -133,8 +133,12 @@ const MobileTabHeader = ({
   }, [cwdKey, fetchGitStatusForTarget, resetGitStatusForTarget, sessionName]);
   const switchable = canSwitchMode(panelType);
   const runtimeAgentPanelType = getAgentPanelTypeFromProvider(tabEntry?.agentProviderId);
-  const hasDetectedAgent = !!runtimeAgentPanelType
-    && (tabEntry?.agentProcess === true || processMatchesAgent(runtimeAgentPanelType, tabEntry?.currentProcess));
+  const hasDetectedAgent = !hasConfirmedAgentExit({
+    agentProcess: tabEntry?.agentProcess,
+    agentProcessCheckedAt: tabEntry?.agentProcessCheckedAt,
+    lastAgentEventAt: tabEntry?.lastEvent?.at,
+  }) && !!runtimeAgentPanelType
+    && (tabEntry?.agentProcess === true || isAgentRunning(tabEntry?.cliState) || processMatchesAgent(runtimeAgentPanelType, tabEntry?.currentProcess));
   const visibleAgentPanelType = isAgentPanel(panelType)
     ? panelType
     : hasDetectedAgent
@@ -186,6 +190,8 @@ const MobileTabHeader = ({
       target: mode.type,
       cliState: tabEntry?.cliState,
       agentProcess: tabEntry?.agentProcess,
+      agentProcessCheckedAt: tabEntry?.agentProcessCheckedAt,
+      lastAgentEventAt: tabEntry?.lastEvent?.at,
       runningAgentPanelType: runtimeAgentPanelType,
     })) return;
     setModeDrawerOpen(false);

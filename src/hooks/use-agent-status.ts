@@ -84,7 +84,7 @@ const useAgentStatus = () => {
               for (const [tabId, entry] of Object.entries(msg.tabs)) {
                 if (entry.panelType === 'agent-sessions') continue;
                 if (entry.paneTitle && !useTabMetadataStore.getState().metadata[tabId]?.title) {
-                  useTabMetadataStore.getState().setTitle(tabId, formatTabTitle(entry.paneTitle, entry.panelType));
+                  useTabMetadataStore.getState().setTitle(tabId, formatTabTitle(entry.paneTitle, entry.panelType, entry.agentProviderId));
                 }
               }
               break;
@@ -115,7 +115,7 @@ const useAgentStatus = () => {
                 eventSeq: msg.eventSeq,
               });
               if (msg.paneTitle && msg.panelType !== 'agent-sessions') {
-                useTabMetadataStore.getState().setTitle(msg.tabId, formatTabTitle(msg.paneTitle, msg.panelType));
+                useTabMetadataStore.getState().setTitle(msg.tabId, formatTabTitle(msg.paneTitle, msg.panelType, msg.agentProviderId));
               }
               break;
 

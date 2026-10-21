@@ -1,6 +1,7 @@
 import type { ISessionHistoryEntry, TSessionNavigationTarget } from '@/types/session-history';
 import type { TCliState } from '@/types/timeline';
 import type { ISessionTag } from '@/lib/session-tags';
+import { getTabAgentProviderId } from '@/lib/tab-agent-identity';
 
 export const WORK_STATUSES = ['pending', 'in-progress', 'review', 'completed'] as const;
 export type TWorkStatus = typeof WORK_STATUSES[number];
@@ -72,8 +73,8 @@ export const collectWorkSessions = (
     });
   }
   for (const [tabId, tab] of Object.entries(tabs)) {
-    if (!tab.agentSessionId && tab.panelType !== 'claude-code' && tab.panelType !== 'codex-cli') continue;
-    const provider = tab.agentProviderId === 'codex' || tab.panelType === 'codex-cli' ? 'codex' : 'claude';
+    const provider = getTabAgentProviderId(tab);
+    if (provider !== 'codex' && provider !== 'claude') continue;
     const key = sessionWorkKey(provider, tab.agentSessionId, `tab:${tabId}`);
     const fallback = sessionWorkKey(provider, null, `tab:${tabId}`);
     if (tab.agentSessionId && !workflow.tabBindings?.[fallback]) sessions.delete(fallback);
@@ -116,7 +117,8 @@ export const reconcileSessionWorkflow = (
   }
   for (const [tabId, tab] of Object.entries(tabs)) {
     if (!tab.agentSessionId) continue;
-    const provider = tab.agentProviderId === 'codex' || tab.panelType === 'codex-cli' ? 'codex' : 'claude';
+    const provider = getTabAgentProviderId(tab);
+    if (provider !== 'codex' && provider !== 'claude') continue;
     const fallback = sessionWorkKey(provider, null, `tab:${tabId}`);
     const key = sessionWorkKey(provider, tab.agentSessionId, '');
     if (next.sessionTags?.[fallback]) {

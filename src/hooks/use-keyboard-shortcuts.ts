@@ -154,6 +154,8 @@ const useKeyboardShortcuts = ({
       target: panelType,
       cliState: tabState?.cliState,
       agentProcess: tabState?.agentProcess,
+      agentProcessCheckedAt: tabState?.agentProcessCheckedAt,
+      lastAgentEventAt: tabState?.lastEvent?.at,
       runningAgentPanelType: getAgentPanelTypeFromProvider(tabState?.agentProviderId),
     })) return;
     useLayoutStore.getState().updateTabPanelType(pane.id, pane.activeTabId, panelType);

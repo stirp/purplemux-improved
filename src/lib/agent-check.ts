@@ -65,6 +65,10 @@ export const applyAgentCheckResult = (
     return { running: true, checkedAt };
   }
 
-  useTabStore.getState().setDetectedAgent(tabId, { running: false, checkedAt });
-  return { running: false, checkedAt };
+  if (data.running === false) {
+    useTabStore.getState().setDetectedAgent(tabId, { running: false, checkedAt });
+    return { running: false, checkedAt };
+  }
+  const previous = useTabStore.getState().tabs[tabId];
+  return { running: previous?.agentProcess === true, checkedAt: previous?.agentProcessCheckedAt ?? 0 };
 };

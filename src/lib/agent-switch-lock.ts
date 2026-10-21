@@ -30,17 +30,27 @@ interface IAgentSwitchInput {
   target: TPanelType;
   cliState: TCliState | undefined;
   agentProcess?: boolean | null | undefined;
+  agentProcessCheckedAt?: number;
+  lastAgentEventAt?: number;
   runningAgentPanelType?: TAgentPanelType | undefined;
 }
+
+export const hasConfirmedAgentExit = ({
+  agentProcess, agentProcessCheckedAt, lastAgentEventAt,
+}: Pick<IAgentSwitchInput, 'agentProcess' | 'agentProcessCheckedAt' | 'lastAgentEventAt'>): boolean =>
+  agentProcess === false && (agentProcessCheckedAt ?? 0) >= (lastAgentEventAt ?? 0);
 
 export const isAgentSwitchBlocked = ({
   current,
   target,
   cliState,
   agentProcess,
+  agentProcessCheckedAt,
+  lastAgentEventAt,
   runningAgentPanelType,
 }: IAgentSwitchInput): boolean => {
   if (!current || current === target) return false;
+  if (hasConfirmedAgentExit({ agentProcess, agentProcessCheckedAt, lastAgentEventAt })) return false;
   if (agentProcess !== true && !isAgentRunning(cliState)) return false;
   if (isAgentPanel(current) && isAgentPanel(target)) return true;
   if (current === 'terminal' && isAgentPanel(target) && runningAgentPanelType) {

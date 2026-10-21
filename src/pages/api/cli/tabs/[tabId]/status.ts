@@ -2,7 +2,8 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import { verifyCliToken } from '@/lib/cli-token';
 import { findTab } from '@/lib/cli-utils';
 import { hasSession, getPaneCurrentCommand } from '@/lib/tmux';
-import { getProviderByPanelType } from '@/lib/providers';
+import '@/lib/providers';
+import { getTabAgentProvider } from '@/lib/tab-agent-provider';
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   if (req.method !== 'GET') {
@@ -22,7 +23,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   const found = await findTab(workspaceId, tabId);
   if (!found) return res.status(404).json({ error: 'Tab not found' });
 
-  const provider = getProviderByPanelType(found.tab.panelType);
+  const provider = getTabAgentProvider(found.tab);
   const agentSessionId = provider?.readSessionId(found.tab) ?? null;
   const alive = await hasSession(found.tab.sessionName);
   if (!alive) {

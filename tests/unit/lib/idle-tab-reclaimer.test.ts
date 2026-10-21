@@ -17,7 +17,7 @@ vi.mock('@/lib/status-manager', () => ({ getStatusManager: () => ({ getAllForCli
 vi.mock('@/lib/input-queue-server', () => ({ getInputQueue: () => ({ hasPendingInput: m.pending }) }));
 vi.mock('@/lib/terminal-input-activity', () => ({ getLastTerminalInput: m.activity }));
 vi.mock('@/lib/idle-agent-shutdown', () => ({ stopIdleAgentChain: m.graceful }));
-vi.mock('@/lib/providers', () => ({ getProviderByPanelType: (type: string) => type === 'codex-cli' ? ({
+vi.mock('@/lib/tab-agent-provider', () => ({ getTabAgentProvider: (tab: ITab) => tab.agentState?.providerId === 'codex' ? ({
   id: 'codex', readSessionId: (tab: ITab) => tab.agentState?.sessionId,
   readJsonlPath: () => '/session.jsonl', isValidSessionId: () => true,
   sessionIdFromJsonlPath: () => 'session', readRuntimeSnapshot: m.snapshot,
@@ -53,7 +53,7 @@ beforeEach(() => {
   m.activity.mockReturnValue(0); m.pending.mockReturnValue(false);
   m.retain.mockImplementation(async () => { m.events.push('retain'); });
   m.remove.mockImplementation(async (_ws, _pane, _tab, guard) => {
-    await guard.beforeClose(tab);
+    await guard.beforeClose((await m.layout()).root[0].tabs[0]);
     m.events.push('stop'); m.alive = false;
     await guard.afterClose(); m.events.push('remove');
     return true;
@@ -62,7 +62,8 @@ beforeEach(() => {
 afterEach(() => { stopIdleTabReclamation(); vi.restoreAllMocks(); vi.useRealTimers(); });
 
 describe('idle agent tab reclamation', () => {
-  it('previews safe tabs and retains the original directory before stopping', async () => {
+  it.each(['codex-cli', 'terminal'] as const)('previews safe tabs in %s and retains the original directory before stopping', async (panelType) => {
+    m.layout.mockResolvedValue({ root: [{ id: 'pane', tabs: [{ ...tab, panelType }] }] });
     const selected = await targets();
     expect(selected).toHaveLength(1);
     expect(await reclaimIdleTabs(selected, policy)).toMatchObject({ reclaimed: selected, skipped: [] });

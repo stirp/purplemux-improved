@@ -1,3 +1,4 @@
+import { getTabAgentProviderId } from '@/lib/tab-agent-identity';
 import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import { AlertTriangle, RefreshCw, Monitor, Plus } from 'lucide-react';
 import { useTranslations } from 'next-intl';
@@ -168,7 +169,7 @@ const MobileTerminalPage = () => {
     if (currentTab.name) return currentTab.name;
     if (currentTab.panelType === 'agent-sessions') return t('sessionList');
     const rawTitle = tabMetadata?.title || currentTab.title;
-    const formatted = rawTitle ? formatTabTitle(rawTitle, currentTab.panelType) : '';
+    const formatted = rawTitle ? formatTabTitle(rawTitle, currentTab.panelType, getTabAgentProviderId(currentTab)) : '';
     if (formatted) return formatted;
     return '';
   }, [currentTab, tabMetadata, t]);

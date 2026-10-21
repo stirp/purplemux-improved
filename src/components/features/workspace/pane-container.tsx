@@ -1,3 +1,4 @@
+import { getTabAgentProviderId } from '@/lib/tab-agent-identity';
 import type { IInputAttempt } from '@/lib/input-queue';
 import type { IPendingUserMessageOptions } from '@/types/timeline';
 import { resolveTerminalTypography } from '@/lib/terminal-appearance';
@@ -479,7 +480,7 @@ const PaneContainer = memo(({ paneId, paneNumber, toolbar }: IPaneContainerProps
       if (title === lastTitleRef.current) return;
       lastTitleRef.current = title;
 
-      const formatted = formatTabTitle(title, activeTab?.panelType);
+      const formatted = formatTabTitle(title, activeTab?.panelType, getTabAgentProviderId(activeTab));
       const process = parseCurrentCommand(title);
       useTabMetadataStore.getState().setTitle(tabId, formatted);
       useTabStore.getState().setCurrentProcess(tabId, process);

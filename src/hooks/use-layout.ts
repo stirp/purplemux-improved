@@ -1,3 +1,4 @@
+import { changeTabPanelType } from '@/lib/tab-agent-identity';
 import { useEffect } from 'react';
 import Router from 'next/router';
 import { create } from 'zustand';
@@ -613,12 +614,8 @@ const useLayoutStore = create<ILayoutState>((set, get) => ({
       tabs: pane.tabs.map((t) => {
         if (t.id !== tabId) return t;
         const nextName = resolveTabNameForPanelTypeChange(t.name, t.panelType, panelType);
-        const updated: ITab = { ...t, panelType, name: nextName };
+        const updated = { ...changeTabPanelType(t, panelType), name: nextName };
         if (nextName !== t.name) resolvedName = nextName;
-        if (panelType === 'codex-cli' && t.panelType === 'claude-code') {
-          updated.claudeSessionId = null;
-          updated.agentState = undefined;
-        }
         return updated;
       }),
     }));
