@@ -74,6 +74,10 @@
     "workflowButton": "Commit ve yayınla",
     "workflowTitle": "Commit, push ve PR/MR",
     "workflowDescription": "Commit mesajını oluşturun veya düzenleyin, commit işlemini onaylayın, ardından dalı gönderip PR/MR taslağı oluşturun. Mevcut commitler doğrudan yayınlanabilir.",
-    "cleanPublish": "Commit yapılacak değişiklik yok. Geçerli dalı gönderebilir veya PR/MR taslağı oluşturabilirsiniz."
+    "cleanPublish": "Commit yapılacak değişiklik yok. Geçerli dalı gönderebilir veya PR/MR taslağı oluşturabilirsiniz.",
+    "generateCommitAndPublish": "Yapay zekâyla oluştur, commit et, gönder ve PR/MR oluştur",
+    "commitAndPublish": "Commit et, gönder ve PR/MR oluştur",
+    "publishAfterGeneration": "Oluşturulduktan sonra commit et, gönder ve PR/MR oluştur",
+    "publishQueued": "Oluşturulduktan sonra otomatik yayımlanacak"
   }
 }

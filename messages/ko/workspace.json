@@ -179,7 +179,13 @@
     "generateDraft": "커밋에서 제목과 설명 생성",
     "generatingDraft": "제목과 설명 생성 중…",
     "generateDraftHint": "Claude Code가 대상 브랜치와 비교하여 커밋된 변경 사항을 요약합니다. 결과를 수정할 수 있습니다.",
-    "replaceDraftConfirm": "기존 제목과 설명을 새로 생성한 내용으로 바꾸시겠습니까?"
+    "replaceDraftConfirm": "기존 제목과 설명을 새로 생성한 내용으로 바꾸시겠습니까?",
+    "pushAndCreateDraft": "푸시 및 PR/MR 생성",
+    "finishPublish": "PR/MR 생성",
+    "generateAndPublish": "AI 생성 및 PR/MR 생성 (필요 시 푸시)",
+    "pushingBranch": "브랜치 푸시 중…",
+    "creatingDraft": "PR/MR 초안 생성 중…",
+    "completePublishSettings": "원격 저장소와 대상 브랜치를 설정한 후 계속하세요."
   },
   "worktreeTree": {
     "title": "Worktree relationships",

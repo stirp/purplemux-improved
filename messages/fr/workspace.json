@@ -179,7 +179,13 @@
     "generateDraft": "Générer le titre et la description à partir des commits",
     "generatingDraft": "Génération du titre et de la description…",
     "generateDraftHint": "Claude Code résume les modifications commitées par rapport à la branche cible. Le résultat reste modifiable.",
-    "replaceDraftConfirm": "Remplacer le titre et la description existants par le contenu généré ?"
+    "replaceDraftConfirm": "Remplacer le titre et la description existants par le contenu généré ?",
+    "pushAndCreateDraft": "Pousser et créer une PR/MR",
+    "finishPublish": "Créer une PR/MR",
+    "generateAndPublish": "Générer avec l’IA et créer une PR/MR (pousser si nécessaire)",
+    "pushingBranch": "Envoi de la branche…",
+    "creatingDraft": "Création du brouillon de PR/MR…",
+    "completePublishSettings": "Renseignez le dépôt distant et la branche cible pour continuer."
   },
   "worktreeTree": {
     "title": "Worktree relationships",

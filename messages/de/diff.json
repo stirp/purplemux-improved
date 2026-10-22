@@ -74,6 +74,10 @@
     "workflowButton": "Commit & veröffentlichen",
     "workflowTitle": "Commit, Push & PR/MR",
     "workflowDescription": "Commit-Nachricht erstellen oder bearbeiten, Commit bestätigen, dann den Branch pushen und einen PR/MR-Entwurf erstellen. Vorhandene Commits können direkt veröffentlicht werden.",
-    "cleanPublish": "Keine Änderungen zum Committen. Sie können den aktuellen Branch pushen oder einen PR/MR-Entwurf erstellen."
+    "cleanPublish": "Keine Änderungen zum Committen. Sie können den aktuellen Branch pushen oder einen PR/MR-Entwurf erstellen.",
+    "generateCommitAndPublish": "KI generieren, committen, pushen und PR/MR erstellen",
+    "commitAndPublish": "Committen, pushen und PR/MR erstellen",
+    "publishAfterGeneration": "Nach Generierung committen, pushen und PR/MR erstellen",
+    "publishQueued": "Nach Generierung wird automatisch veröffentlicht"
   }
 }

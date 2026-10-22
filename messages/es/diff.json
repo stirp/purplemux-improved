@@ -74,6 +74,10 @@
     "workflowButton": "Confirmar y publicar",
     "workflowTitle": "Commit, push y PR/MR",
     "workflowDescription": "Genera o edita el mensaje, confirma el commit y luego sube la rama y crea un borrador de PR/MR. Los cambios ya confirmados se pueden publicar directamente.",
-    "cleanPublish": "No hay cambios para confirmar. Puedes subir la rama actual o crear un borrador de PR/MR."
+    "cleanPublish": "No hay cambios para confirmar. Puedes subir la rama actual o crear un borrador de PR/MR.",
+    "generateCommitAndPublish": "Generar con IA, confirmar, subir y crear PR/MR",
+    "commitAndPublish": "Confirmar, subir y crear PR/MR",
+    "publishAfterGeneration": "Tras generar: confirmar, subir y crear PR/MR",
+    "publishQueued": "Se publicará automáticamente tras generar"
   }
 }
