@@ -188,7 +188,13 @@
     "generateDraft": "Generate title and description from commits",
     "generatingDraft": "Generating title and description…",
     "generateDraftHint": "Uses Claude Code to summarize committed changes against the target branch. You can edit the result.",
-    "replaceDraftConfirm": "Replace the existing title and description with newly generated content?"
+    "replaceDraftConfirm": "Replace the existing title and description with newly generated content?",
+    "pushAndCreateDraft": "Push & create PR/MR",
+    "finishPublish": "Create PR/MR",
+    "generateAndPublish": "AI generate & create PR/MR (push if needed)",
+    "pushingBranch": "Pushing branch…",
+    "creatingDraft": "Creating PR/MR draft…",
+    "completePublishSettings": "Complete the remote and target branch settings, then continue with the remaining steps."
   },
   "worktreeTree": {
     "title": "Worktree relationships",

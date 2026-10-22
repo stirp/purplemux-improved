@@ -179,7 +179,13 @@
     "generateDraft": "Titel und Beschreibung aus Commits generieren",
     "generatingDraft": "Titel und Beschreibung werden generiert…",
     "generateDraftHint": "Claude Code fasst die committeten Änderungen gegenüber dem Zielbranch zusammen. Das Ergebnis ist bearbeitbar.",
-    "replaceDraftConfirm": "Vorhandenen Titel und Beschreibung durch neu generierte Inhalte ersetzen?"
+    "replaceDraftConfirm": "Vorhandenen Titel und Beschreibung durch neu generierte Inhalte ersetzen?",
+    "pushAndCreateDraft": "Pushen und PR/MR erstellen",
+    "finishPublish": "PR/MR erstellen",
+    "generateAndPublish": "KI generieren und PR/MR erstellen (bei Bedarf pushen)",
+    "pushingBranch": "Branch wird gepusht…",
+    "creatingDraft": "PR/MR-Entwurf wird erstellt…",
+    "completePublishSettings": "Remote und Zielbranch ergänzen, dann fortfahren."
   },
   "worktreeTree": {
     "title": "Worktree relationships",

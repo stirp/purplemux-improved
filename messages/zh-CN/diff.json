@@ -73,7 +73,11 @@
     "deliveryUnavailable": "该提交未关联可管理的工作树，或 HEAD 已变化；请到 Worktree 管理界面继续交付。",
     "workflowButton": "提交与发布",
     "workflowTitle": "提交、推送与 PR/MR",
-    "workflowDescription": "先生成或编辑提交信息并确认提交，再推送分支并发起 PR/MR 草稿。已提交的改动可直接继续发布。",
-    "cleanPublish": "没有待提交改动，可继续推送当前分支或创建 PR/MR 草稿。"
+    "workflowDescription": "生成或编辑提交信息，可逐步操作，也可一键完成剩余步骤。PR/MR 草稿复用提交标题和正文。",
+    "cleanPublish": "没有待提交改动，可继续推送当前分支或创建 PR/MR 草稿。",
+    "generateCommitAndPublish": "AI 生成、提交、推送并发起 PR/MR",
+    "commitAndPublish": "提交、推送并发起 PR/MR",
+    "publishAfterGeneration": "生成后提交、推送并发起 PR/MR",
+    "publishQueued": "生成后将自动提交、推送并发起 PR/MR"
   }
 }

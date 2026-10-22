@@ -179,7 +179,13 @@
     "generateDraft": "コミットからタイトルと説明を生成",
     "generatingDraft": "タイトルと説明を生成中…",
     "generateDraftHint": "Claude Code が対象ブランチとの差分をコミット済みコードから要約します。生成後に編集できます。",
-    "replaceDraftConfirm": "現在のタイトルと説明を生成した内容で置き換えますか？"
+    "replaceDraftConfirm": "現在のタイトルと説明を生成した内容で置き換えますか？",
+    "pushAndCreateDraft": "プッシュして PR/MR 作成",
+    "finishPublish": "PR/MR 作成",
+    "generateAndPublish": "AI 生成して PR/MR 作成（必要に応じてプッシュ）",
+    "pushingBranch": "ブランチをプッシュ中…",
+    "creatingDraft": "PR/MR ドラフトを作成中…",
+    "completePublishSettings": "リモートと対象ブランチを設定してから続行してください。"
   },
   "worktreeTree": {
     "title": "Worktree relationships",

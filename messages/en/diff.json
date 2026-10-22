@@ -73,7 +73,11 @@
     "deliveryUnavailable": "This commit is not linked to a managed worktree, or its HEAD changed. Use Worktree management to continue.",
     "workflowButton": "Commit & publish",
     "workflowTitle": "Commit, push & PR/MR",
-    "workflowDescription": "Generate or edit a commit message, confirm the commit, then push the branch and create a PR/MR draft. Already committed changes can be published directly.",
-    "cleanPublish": "No changes to commit. You can push the current branch or create a PR/MR draft."
+    "workflowDescription": "Generate or edit a commit message, then proceed step by step or complete the remaining steps in one click. PR/MR drafts reuse the commit message.",
+    "cleanPublish": "No changes to commit. You can push the current branch or create a PR/MR draft.",
+    "generateCommitAndPublish": "AI generate, commit, push & create PR/MR",
+    "commitAndPublish": "Commit, push & create PR/MR",
+    "publishAfterGeneration": "Commit, push & create PR/MR after generation",
+    "publishQueued": "Will commit, push & create PR/MR after generation"
   }
 }

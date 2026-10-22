@@ -5,8 +5,9 @@ import { requestWorktreeAction } from '@/lib/worktree-action-client';
 import WorktreeDraftForm from '@/components/features/workspace/worktree-draft-form';
 import type { IWorktreeOverview, IWorktreeSyncInfo, TWorktreeSnapshot } from '@/types/worktree';
 
-export default function GitCommitDelivery({ sessionName, directory, branch, head, onBusy }: {
+export default function GitCommitDelivery({ sessionName, directory, branch, head, onBusy, message, autoPublish = false }: {
   sessionName: string; directory: string; branch: string; head: string; onBusy: (busy: boolean) => void;
+  message?: { title: string; body: string }; autoPublish?: boolean;
 }) {
   const t = useTranslations('diff.commit');
   const workspaces = useWorkspaceStore((state) => state.workspaces);
@@ -17,7 +18,7 @@ export default function GitCommitDelivery({ sessionName, directory, branch, head
   const [refresh, setRefresh] = useState(0);
 
   useEffect(() => {
-    if (!workspace) { setError(t('deliveryUnavailable')); setLoading(false); return; }
+    if (!workspace) { setError(t('deliveryUnavailable')); setLoading(false); onBusy(false); return; }
     const controller = new AbortController();
     const load = async () => {
       setLoading(true);
@@ -35,12 +36,12 @@ export default function GitCommitDelivery({ sessionName, directory, branch, head
         if (info.head !== head || info.branch !== branch) throw new Error(t('deliveryUnavailable'));
         if (!controller.signal.aborted) { setTarget({ item, info }); setError(''); }
       } catch (reason) {
-        if (!controller.signal.aborted) { setTarget(null); setError(reason instanceof Error ? reason.message : String(reason)); }
+        if (!controller.signal.aborted) { setTarget(null); setError(reason instanceof Error ? reason.message : String(reason)); onBusy(false); }
       } finally { if (!controller.signal.aborted) setLoading(false); }
     };
     void load();
     return () => controller.abort();
-  }, [workspace, directory, branch, head, refresh, t]);
+  }, [workspace, directory, branch, head, refresh, t, onBusy]);
 
   return <section className="min-w-0 border-t pt-3">
     <h3 className="font-medium">{t('deliveryNext')}</h3>
@@ -49,6 +50,7 @@ export default function GitCommitDelivery({ sessionName, directory, branch, head
     {loading && <p role="status" className="text-sm">{t('deliveryLoading')}</p>}
     {error && <p role="alert" className="break-all text-sm text-muted-foreground">{error}</p>}
     {target && workspace && <WorktreeDraftForm workspaceId={workspace.id} item={target.item} info={target.info}
-      disabled={loading} onBusy={onBusy} onDone={() => setRefresh((value) => value + 1)} />}
+      disabled={loading} onBusy={onBusy} onDone={() => setRefresh((value) => value + 1)}
+      message={message} autoPublish={autoPublish} />}
   </section>;
 }

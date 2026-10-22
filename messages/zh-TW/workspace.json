@@ -179,7 +179,13 @@
     "generateDraft": "根據提交產生標題和說明",
     "generatingDraft": "正在產生標題和說明…",
     "generateDraftHint": "使用 Claude Code，根據相對目標分支的已提交程式碼產生，可繼續編輯。",
-    "replaceDraftConfirm": "重新產生將覆蓋現有標題和說明，是否繼續？"
+    "replaceDraftConfirm": "重新產生將覆蓋現有標題和說明，是否繼續？",
+    "pushAndCreateDraft": "推送並發起 PR/MR",
+    "finishPublish": "發起 PR/MR",
+    "generateAndPublish": "AI 產生並發起 PR/MR（按需推送）",
+    "pushingBranch": "正在推送分支…",
+    "creatingDraft": "正在建立 PR/MR 草稿…",
+    "completePublishSettings": "請補齊遠端和目標分支設定，再繼續完成剩餘步驟。"
   },
   "worktreeTree": {
     "title": "Worktree relationships",

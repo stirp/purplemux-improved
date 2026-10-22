@@ -179,7 +179,13 @@
     "generateDraft": "Gerar título e descrição a partir dos commits",
     "generatingDraft": "Gerando título e descrição…",
     "generateDraftHint": "O Claude Code resume as alterações commitadas em relação à branch de destino. Você pode editar o resultado.",
-    "replaceDraftConfirm": "Substituir o título e a descrição existentes pelo conteúdo gerado?"
+    "replaceDraftConfirm": "Substituir o título e a descrição existentes pelo conteúdo gerado?",
+    "pushAndCreateDraft": "Enviar e criar PR/MR",
+    "finishPublish": "Criar PR/MR",
+    "generateAndPublish": "Gerar com IA e criar PR/MR (enviar se necessário)",
+    "pushingBranch": "Enviando branch…",
+    "creatingDraft": "Criando rascunho de PR/MR…",
+    "completePublishSettings": "Preencha o remoto e a branch de destino para continuar."
   },
   "worktreeTree": {
     "title": "Worktree relationships",
