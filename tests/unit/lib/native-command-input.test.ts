@@ -9,7 +9,7 @@ const mocks = vi.hoisted(() => ({
   mobile: false,
   translate: (key: string) => key,
   history: { entries: [], isLoading: false, isError: false, fetchHistory: vi.fn(), addHistory: vi.fn(), deleteHistory: vi.fn() },
-  queue: { messages: [] as { id: string; text: string; attachments: { path: string; filename: string }[] }[], canceledIds: [] as string[], attempts: [] as { id: string; at: number }[], sending: false, enqueue: vi.fn(), submitNow: vi.fn(), remove: vi.fn() },
+  queue: { messages: [] as { id: string; text: string; attachments: { path: string; filename: string }[] }[], canceledIds: [] as string[], attempts: [] as { id: string; at: number }[], sending: false, error: null as string | null, enqueue: vi.fn(), submitNow: vi.fn(), remove: vi.fn() },
   attachments: [] as { id: string; path: string; filename: string; thumbnail: string }[],
   sendStdin: vi.fn(),
   focusTerminal: vi.fn(),
@@ -75,6 +75,7 @@ beforeEach(() => {
   mocks.queue.canceledIds = [];
   mocks.queue.attempts = [];
   mocks.queue.sending = false;
+  mocks.queue.error = null;
   mocks.attachments = [];
   focusInputRef = { current: undefined };
   setInputValueRef = { current: undefined };
@@ -94,6 +95,20 @@ const stopButton = () => container.querySelector<HTMLButtonElement>('[aria-label
 const sendButton = () => container.querySelector<HTMLButtonElement>('[aria-label="queueSend"]');
 
 describe('Web input execution controls', () => {
+  it.each([false, true])('explains a blocked draft without automatically retrying or canceling (mobile=%s)', async (mobile) => {
+    mocks.mobile = mobile;
+    mocks.queue.messages = [{ id: 'blocked', text: 'original message', attachments: [] }];
+    mocks.queue.error = 'terminalHasDraft';
+    const onAddPendingMessage = vi.fn();
+    await render({ onAddPendingMessage });
+    expect(container.textContent).toContain('queueTerminalHasDraft');
+    expect(container.textContent).toContain('original message');
+    expect(onAddPendingMessage).toHaveBeenCalledWith('original message', expect.objectContaining({ deliveryState: 'failed' }));
+    expect(mocks.queue.submitNow).not.toHaveBeenCalled();
+    expect(mocks.queue.remove).not.toHaveBeenCalled();
+    expect(mocks.sendStdin).not.toHaveBeenCalled();
+  });
+
   it.each([
     { provider: 'codex', cliState: 'busy', mobile: false },
     { provider: 'codex', cliState: 'busy', mobile: true },

@@ -5,12 +5,15 @@ const mocks = vi.hoisted(() => ({
   paste: vi.fn(async () => {}),
   exists: vi.fn(async () => true),
   capture: vi.fn(async () => '›\n\n? for shortcuts'),
+  cursor: vi.fn(async (): Promise<{ x: number; y: number } | null> => ({ x: 2, y: 0 })),
   receipt: vi.fn(async () => ({ received: false, completed: false })),
   status: { cliState: 'busy', workspaceId: 'ws', agentProviderId: 'codex' },
 }));
 vi.mock('@/lib/tmux', () => ({ sendRawKeys: mocks.send, pasteText: mocks.paste, hasSession: mocks.exists, capturePaneContent: mocks.capture,
+  getPaneCursorPosition: mocks.cursor,
   checkTerminalProcess: async () => ({ isSafe: false, processName: 'codex' }),
 }));
+vi.mock('@/lib/logger', () => ({ createLogger: () => ({ info: vi.fn(), warn: vi.fn() }) }));
 vi.mock('@/lib/status-manager', () => ({ getStatusManager: () => ({ getAllForClient: () => ({ tab: mocks.status }) }) }));
 vi.mock('@/lib/codex-input-receipt', () => ({ createCodexInputReceipt: () => mocks.receipt }));
 
@@ -22,6 +25,7 @@ beforeEach(() => {
   vi.clearAllMocks();
   mocks.receipt.mockReset().mockImplementation(async () => ({ received: mocks.send.mock.calls.length > 0, completed: false }));
   mocks.capture.mockResolvedValue('›\n\n? for shortcuts');
+  mocks.cursor.mockResolvedValue({ x: 2, y: 0 });
   delete globals.__purplemuxInputQueue;
 });
 afterEach(() => {
@@ -31,6 +35,50 @@ afterEach(() => {
 });
 
 describe('queued terminal input delivery', () => {
+  it('retains both messages instead of appending to an existing draft, then retries after it is cleared', async () => {
+    mocks.status = { cliState: 'idle', workspaceId: 'ws', agentProviderId: 'codex' };
+    mocks.capture.mockResolvedValue('› 确定\n\n? for shortcuts');
+    const queue = getInputQueue();
+    const target = { tabId: 'tab', workspaceId: 'ws', sessionName: 'session', provider: 'codex' as const };
+    queue.enqueue(target, { id: 'first', text: '严重：本轮导入校验可能根本走不到', attachments: [] });
+    queue.enqueue(target, { id: 'second', text: 'follow up', attachments: [] });
+    await vi.advanceTimersByTimeAsync(1000);
+    expect(queue.snapshot('tab')).toMatchObject({ error: 'terminalHasDraft', sending: false, messages: [{ id: 'first' }, { id: 'second' }] });
+    await vi.advanceTimersByTimeAsync(60_000);
+    expect(mocks.paste).not.toHaveBeenCalled();
+    expect(mocks.send).not.toHaveBeenCalled();
+    mocks.capture.mockResolvedValue('› \x1b[2mAsk Codex to do anything\x1b[0m\n\n? for shortcuts');
+    const retry = queue.flush('tab', true);
+    await vi.advanceTimersByTimeAsync(250);
+    await retry;
+    expect(mocks.paste).toHaveBeenCalledExactlyOnceWith('session', '严重：本轮导入校验可能根本走不到');
+    expect(mocks.send).toHaveBeenCalledExactlyOnceWith('session', 'Enter');
+    expect(queue.snapshot('tab')).toMatchObject({ error: null, messages: [{ id: 'second' }] });
+  });
+
+  it('checks late receipts before rejecting the composer or writing again', async () => {
+    mocks.status = { cliState: 'idle', workspaceId: 'ws', agentProviderId: 'codex' };
+    mocks.receipt.mockResolvedValue({ received: true, completed: true });
+    mocks.capture.mockResolvedValue('› another draft\n\n? for shortcuts');
+    const queue = getInputQueue();
+    queue.enqueue({ tabId: 'tab', workspaceId: 'ws', sessionName: 'session', provider: 'codex' }, { id: 'late', text: 'message', attachments: [] });
+    await queue.flush('tab', true);
+    expect(queue.snapshot('tab')).toMatchObject({ messages: [], error: null });
+    expect(mocks.capture).not.toHaveBeenCalled();
+    expect(mocks.paste).not.toHaveBeenCalled();
+    expect(mocks.send).not.toHaveBeenCalled();
+  });
+
+  it('retains input if the composer cursor cannot be read', async () => {
+    mocks.status = { cliState: 'idle', workspaceId: 'ws', agentProviderId: 'codex' };
+    mocks.cursor.mockResolvedValue(null);
+    const queue = getInputQueue();
+    queue.enqueue({ tabId: 'tab', workspaceId: 'ws', sessionName: 'session', provider: 'codex' }, { id: 'first', text: 'message', attachments: [] });
+    await queue.flush('tab');
+    expect(queue.snapshot('tab')).toMatchObject({ error: 'terminalNotReady', messages: [{ id: 'first' }] });
+    expect(mocks.paste).not.toHaveBeenCalled();
+    expect(mocks.send).not.toHaveBeenCalled();
+  });
   it('does not press Enter after the session changes during the paste delay', async () => {
     mocks.status = { cliState: 'idle', workspaceId: 'ws', agentProviderId: 'codex' };
     mocks.receipt.mockResolvedValueOnce({ received: false, completed: false });

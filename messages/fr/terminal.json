@@ -191,6 +191,7 @@
   "customCommandsAutoEnterHint": "Si désactivé, aucune Entrée finale n’est ajoutée. Les sauts de ligne du contenu sont toujours envoyés.",
   "queueDeliveryUnconfirmed": "Codex has not confirmed receipt. Your message is retained. Check the terminal before retrying or canceling.",
   "queueTerminalNotReady": "The terminal is not ready for input. Your message is retained. Check Codex before retrying.",
+  "queueTerminalHasDraft": "Codex still has unsent input. Sending is paused to avoid combining messages. Your message is retained; handle the existing input in the terminal before retrying.",
   "inputSending": "Sending, awaiting session confirmation…",
   "inputQueued": "Queued",
   "inputUnconfirmed": "Receipt unconfirmed. Check the terminal.",
