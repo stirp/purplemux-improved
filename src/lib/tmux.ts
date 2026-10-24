@@ -502,14 +502,27 @@ export const killServer = async (): Promise<void> => {
   }
 };
 
-export const capturePaneContent = async (sessionName: string): Promise<string | null> => {
+export const capturePaneContent = async (sessionName: string, options?: { escapeSequences?: boolean }): Promise<string | null> => {
   try {
     const { stdout } = await execFile(
       'tmux',
-      ['-L', TMUX_SOCKET, 'capture-pane', '-p', '-t', sessionName],
+      ['-L', TMUX_SOCKET, 'capture-pane', '-p', ...(options?.escapeSequences ? ['-e'] : []), '-t', sessionName],
       { timeout: CMD_TIMEOUT },
     );
     return stdout;
+  } catch {
+    return null;
+  }
+};
+
+export const getPaneCursorPosition = async (sessionName: string): Promise<{ x: number; y: number } | null> => {
+  try {
+    const { stdout } = await execFile('tmux',
+      ['-L', TMUX_SOCKET, 'display-message', '-p', '-t', sessionName, '#{cursor_x}\t#{cursor_y}'],
+      { timeout: CMD_TIMEOUT });
+    const values = stdout.trim().split('\t');
+    if (values.length !== 2 || values.some((value) => !/^\d+$/.test(value))) return null;
+    return { x: Number(values[0]), y: Number(values[1]) };
   } catch {
     return null;
   }
