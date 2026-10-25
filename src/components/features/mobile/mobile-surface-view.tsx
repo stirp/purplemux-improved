@@ -209,12 +209,18 @@ const MobileSurfaceView = ({
     });
   }, []);
 
-  const { trustPrompt, onTerminalData: onTrustData, onTrustResponse } = useTrustPromptDetector({
+  const { trustPrompt, nativeTrustPrompt, onTerminalData: onTrustData, onTrustResponse } = useTrustPromptDetector({
     enabled: isClaudeCode || isCodex,
+    nativePromptEnabled: isCodex && !claudeSessionId && (claudeCliState === 'inactive' || claudeCliState === 'unknown'),
     scopeKey: `${activeTabId}:${claudeSessionId}`,
     getBufferText: () => termActionsRef.current.getBufferText(),
     sendStdin: (data) => wsActionsRef.current.sendStdin(data),
   });
+  useEffect(() => {
+    if (isCodex && nativeTrustPrompt && activeTabId) {
+      onUpdateTabPanelType(paneId, activeTabId, 'terminal');
+    }
+  }, [isCodex, nativeTrustPrompt, activeTabId, paneId, onUpdateTabPanelType]);
   const {
     updatePrompt: codexUpdatePrompt,
     onTerminalData: onCodexUpdateData,
@@ -843,6 +849,9 @@ const MobileSurfaceView = ({
           setInputValueRef={setInputValueRef}
           onNewSession={handleNewCodexSession}
           onRestart={handleRestartCodexSession}
+          onCheckTerminal={() => {
+            if (activeTabId) onUpdateTabPanelType(paneId, activeTabId, 'terminal');
+          }}
           updatePrompt={codexUpdatePrompt}
           onUpdatePromptResponse={onCodexUpdateResponse}
           trustPrompt={trustPrompt}

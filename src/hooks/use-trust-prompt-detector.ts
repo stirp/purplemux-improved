@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { getTrustResponseKeys, matchTrustPrompt, type ITrustPromptInfo, type TTrustAnswer } from '@/lib/trust-prompt-detector';
+import { getTrustResponseKeys, hasNativeCodexTrustPrompt, matchTrustPrompt, type ITrustPromptInfo, type TTrustAnswer } from '@/lib/trust-prompt-detector';
 
 const DEBOUNCE_MS = 200;
 const SUBMIT_DELAY_MS = 80;
 
 interface IUseTrustPromptDetectorOptions {
   enabled: boolean;
+  nativePromptEnabled?: boolean;
   scopeKey?: string | null;
   getBufferText: () => string;
   sendStdin: (data: string) => void;
@@ -13,24 +14,30 @@ interface IUseTrustPromptDetectorOptions {
 
 interface IUseTrustPromptDetectorReturn {
   trustPrompt: ITrustPromptInfo | null;
+  nativeTrustPrompt: boolean;
   onTerminalData: () => void;
   onTrustResponse: (answer: TTrustAnswer) => Promise<void>;
 }
 
 const useTrustPromptDetector = ({
   enabled,
+  nativePromptEnabled = false,
   scopeKey = null,
   getBufferText,
   sendStdin,
 }: IUseTrustPromptDetectorOptions): IUseTrustPromptDetectorReturn => {
-  const [detected, setDetected] = useState<{ scopeKey: string | null; prompt: ITrustPromptInfo } | null>(null);
+  const [detected, setDetected] = useState<{
+    scopeKey: string | null;
+    prompt: ITrustPromptInfo | null;
+    nativeTrustPrompt: boolean;
+  } | null>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const submitRef = useRef<{ timer: ReturnType<typeof setTimeout>; resolve: (ready: boolean) => void } | null>(null);
-  const detectorRef = useRef({ enabled, scopeKey, getBufferText });
+  const detectorRef = useRef({ enabled, nativePromptEnabled, scopeKey, getBufferText });
 
   useEffect(() => {
-    detectorRef.current = { enabled, scopeKey, getBufferText };
-  }, [enabled, scopeKey, getBufferText]);
+    detectorRef.current = { enabled, nativePromptEnabled, scopeKey, getBufferText };
+  }, [enabled, nativePromptEnabled, scopeKey, getBufferText]);
 
   const onTerminalData = useCallback(() => {
     if (!detectorRef.current.enabled || debounceRef.current) return;
@@ -38,14 +45,17 @@ const useTrustPromptDetector = ({
       debounceRef.current = null;
       const current = detectorRef.current;
       if (!current.enabled) return;
-      const prompt = matchTrustPrompt(current.getBufferText());
+      const text = current.getBufferText();
+      const nativeTrustPrompt = current.nativePromptEnabled && hasNativeCodexTrustPrompt(text);
+      const prompt = nativeTrustPrompt ? null : matchTrustPrompt(text);
       setDetected((prev) => {
-        if (!prompt) return null;
+        if (!prompt && !nativeTrustPrompt) return null;
         if (prev?.scopeKey === current.scopeKey
-          && prev.prompt.folderPath === prompt.folderPath
-          && prev.prompt.agent === prompt.agent
-          && prev.prompt.selection.mode === prompt.selection.mode) return prev;
-        return { scopeKey: current.scopeKey, prompt };
+          && prev.nativeTrustPrompt === nativeTrustPrompt
+          && prev.prompt?.folderPath === prompt?.folderPath
+          && prev.prompt?.agent === prompt?.agent
+          && prev.prompt?.selection.mode === prompt?.selection.mode) return prev;
+        return { scopeKey: current.scopeKey, prompt, nativeTrustPrompt };
       });
     }, DEBOUNCE_MS);
   }, []);
@@ -53,6 +63,7 @@ const useTrustPromptDetector = ({
   useEffect(() => {
     onTerminalData();
     return () => {
+      setDetected(null);
       if (debounceRef.current) clearTimeout(debounceRef.current);
       debounceRef.current = null;
       if (submitRef.current) {
@@ -61,9 +72,10 @@ const useTrustPromptDetector = ({
         submitRef.current = null;
       }
     };
-  }, [enabled, scopeKey, onTerminalData]);
+  }, [enabled, nativePromptEnabled, scopeKey, onTerminalData]);
 
   const trustPrompt = enabled && detected?.scopeKey === scopeKey ? detected.prompt : null;
+  const nativeTrustPrompt = enabled && nativePromptEnabled && detected?.scopeKey === scopeKey && detected.nativeTrustPrompt;
 
   const onTrustResponse = useCallback(async (answer: TTrustAnswer) => {
     const current = detectorRef.current;
@@ -92,7 +104,7 @@ const useTrustPromptDetector = ({
     setDetected(null);
   }, [trustPrompt, scopeKey, sendStdin]);
 
-  return { trustPrompt, onTerminalData, onTrustResponse };
+  return { trustPrompt, nativeTrustPrompt, onTerminalData, onTrustResponse };
 };
 
 export default useTrustPromptDetector;

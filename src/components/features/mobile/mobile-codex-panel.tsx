@@ -47,6 +47,7 @@ interface IMobileCodexPanelProps {
   onUpdatePromptResponse?: (answer: TCodexUpdateAnswer) => void;
   trustPrompt?: ITrustPromptInfo | null;
   onTrustResponse?: (answer: TTrustAnswer) => void | Promise<void>;
+  onCheckTerminal?: () => void;
 }
 
 const MobileCodexPanel = ({
@@ -67,6 +68,7 @@ const MobileCodexPanel = ({
   onUpdatePromptResponse,
   trustPrompt,
   onTrustResponse,
+  onCheckTerminal,
 }: IMobileCodexPanelProps) => {
   const t = useTranslations('terminal');
   const agentProcess = useTabStore((s) => (tabId ? s.tabs[tabId]?.agentProcess ?? null : null));
@@ -229,6 +231,11 @@ const MobileCodexPanel = ({
           canRespond={trustPrompt.selection.mode !== 'unavailable'}
           onRespond={onTrustResponse}
         />
+        {onCheckTerminal && (
+          <button className="mt-3 text-xs text-muted-foreground underline underline-offset-2 hover:text-foreground" onClick={onCheckTerminal}>
+            {t('checkTerminal')}
+          </button>
+        )}
       </div>
     );
   }
@@ -236,7 +243,7 @@ const MobileCodexPanel = ({
   if (view === 'check') {
     return (
       <div className="animate-delayed-fade-in flex min-h-0 flex-1 flex-col items-center justify-center bg-muted px-4">
-        <CodexBootProgress hasFailed={bootFailed} onRestart={onRestart} />
+        <CodexBootProgress hasFailed={bootFailed} onRestart={onRestart} onShowTerminal={onCheckTerminal} />
       </div>
     );
   }

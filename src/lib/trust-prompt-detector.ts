@@ -16,6 +16,20 @@ export interface ITrustPromptInfo {
 
 const ANCHOR_RE = /Quick safety check|Do you trust the contents of this directory/i;
 const ABS_PATH_RE = /(\/[^\s│]+)/;
+
+export const hasNativeCodexTrustPrompt = (text: string): boolean => {
+  const lines = text.split('\n').map((line) => line.replace(/^\s*[│┃]/, '').replace(/[│┃]\s*$/, ''));
+  let titleIndex = -1;
+  for (let i = 0; i < lines.length; i++) {
+    if (/^\s*Folder access\s*$/.test(lines[i])) titleIndex = i;
+  }
+  if (titleIndex < 0) return false;
+  const block = lines.slice(titleIndex + 1).join('\n');
+  const hasDisclosure = /Trust\s+this\s+folder\?|Opening\s+will\s+not\s+change\s+saved\s+trust\.|The\s+folder's\s+trust\s+setting\s+will\s+not\s+change\./.test(block);
+  return hasDisclosure
+    && /^\s*[›❯>]\s+(?:\d+\.\s*)?(?:Trust\s+and\s+continue|Open\s+restricted|Open\s+existing\s+task|Quit|Back\s+to\s+Agent\s+Command\s+Center|Keep\s+current\s+directory)\s*$/m.test(block);
+};
+
 const answerFromLabel = (label: string, agent: TTrustAgent): TTrustAnswer | null => {
   const compact = stripNumberPrefix(label).replace(/\s/g, '');
   if ((agent === 'claude' ? /^Yes,Itrustthisfolder/i : /^Yes,continue/i).test(compact)) return 'yes';

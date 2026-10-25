@@ -1,6 +1,40 @@
 import { describe, expect, it } from 'vitest';
 
-import { getTrustResponseKeys, matchTrustPrompt } from '@/lib/trust-prompt-detector';
+import { getTrustResponseKeys, hasNativeCodexTrustPrompt, matchTrustPrompt } from '@/lib/trust-prompt-detector';
+
+describe('native Codex folder access', () => {
+  it.each(['Trust and continue', 'Quit', 'Back to Agent Command Center', 'Keep current directory'])(
+    'recognizes the trust disclosure with %s focused without inventing yes/no answers', (focused) => {
+      const options = focused === 'Trust and continue'
+        ? '› 1. Trust and continue\n  2. Quit'
+        : `  1. Trust and continue\n› 2. ${focused}`;
+      const text = `  Folder access\n  /project with spaces\n\n  Trust this folder? Codex can read, edit, and run files here.\n\n${options}\n\n  enter continue · esc quit`;
+      expect(hasNativeCodexTrustPrompt(text)).toBe(true);
+      expect(matchTrustPrompt(text)).toBeNull();
+    },
+  );
+
+  it.each([
+    ['Open restricted', 'Opening will not change saved trust.'],
+    ['Open existing task', "The folder's trust setting will not change."],
+  ])('recognizes the %s disclosure', (option, disclosure) => {
+    expect(hasNativeCodexTrustPrompt(`Folder access\n/project\n${disclosure}\n› 1. ${option}\n  2. Quit`)).toBe(true);
+  });
+
+  it('handles narrow wrapped disclosure and selection without requiring a complete path', () => {
+    expect(hasNativeCodexTrustPrompt('  Folder access\n  /long/…/path\n  Trust this\n  folder? Codex can read files.\n› 1. Trust and\n     continue\n  2. Quit')).toBe(true);
+  });
+
+  it.each([
+    'Trust this folder?\n› 1. Trust and continue',
+    'Folder access\nTrust this folder?\n1. Trust and continue\n2. Quit',
+    'Folder access\n› 1. Trust and continue\n2. Quit',
+    'The new Folder access prompt asks Trust this folder? and offers Trust and continue.',
+    'Folder access\nTrust this folder?\n› 1. Trust and continue\nFolder access\nloading',
+  ])('does not switch for incomplete or quoted prompts: %s', (text) => {
+    expect(hasNativeCodexTrustPrompt(text)).toBe(false);
+  });
+});
 
 describe('matchTrustPrompt', () => {
   it('uses the option prefix instead of explanatory text on the focused row', () => {

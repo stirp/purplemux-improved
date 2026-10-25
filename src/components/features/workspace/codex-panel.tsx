@@ -47,7 +47,7 @@ const CodexPanel = ({
   sessionName,
   cwd,
   className,
-  onClose: _onClose,
+  onClose,
   onNewSession,
   onRestart,
   updatePrompt,
@@ -235,6 +235,11 @@ const CodexPanel = ({
           canRespond={trustPrompt.selection.mode !== 'unavailable'}
           onRespond={onTrustResponse}
         />
+        {onClose && (
+          <button className="mt-3 text-xs text-muted-foreground underline underline-offset-2 hover:text-foreground" onClick={onClose}>
+            {t('checkTerminal')}
+          </button>
+        )}
       </div>
     );
   }
@@ -247,7 +252,7 @@ const CodexPanel = ({
           className,
         )}
       >
-        <CodexBootProgress hasFailed={bootFailed} onRestart={onRestart} />
+        <CodexBootProgress hasFailed={bootFailed} onRestart={onRestart} onShowTerminal={onClose} />
       </div>
     );
   }

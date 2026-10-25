@@ -8,13 +8,14 @@ import TrustPromptCard from '@/components/features/workspace/trust-prompt-card';
 vi.mock('next-intl', () => ({ useTranslations: () => (key: string) => key }));
 
 const snapshot = (path = '/project') => `${path}\nQuick safety check\n› No, exit\n  Yes, I trust this folder`;
+const nativeSnapshot = '  Folder access\n  /project\n\n  Trust this folder? Codex can read, edit, and run files here.\n\n› 1. Trust and continue\n  2. Quit';
 let buffer: string;
 let root: Root;
 let container: HTMLDivElement;
 let detector: ReturnType<typeof useTrustPromptDetector>;
 const sendStdin = vi.fn();
-const Harness = ({ enabled = true, scopeKey = 'a', card = false }: { enabled?: boolean; scopeKey?: string; card?: boolean }) => {
-  const current = useTrustPromptDetector({ enabled, scopeKey, getBufferText: () => buffer, sendStdin });
+const Harness = ({ enabled = true, nativePromptEnabled = true, scopeKey = 'a', card = false }: { enabled?: boolean; nativePromptEnabled?: boolean; scopeKey?: string; card?: boolean }) => {
+  const current = useTrustPromptDetector({ enabled, nativePromptEnabled, scopeKey, getBufferText: () => buffer, sendStdin });
   useEffect(() => { detector = current; });
   if (card && current.trustPrompt) return createElement(TrustPromptCard, {
     folderPath: current.trustPrompt.folderPath,
@@ -46,6 +47,79 @@ afterEach(async () => {
 });
 
 describe('startup trust prompt lifecycle', () => {
+  it('never requests a terminal switch for a complete quoted menu outside startup, including after returning to Chat', async () => {
+    buffer = nativeSnapshot;
+    await render({ nativePromptEnabled: false });
+    await flush();
+    expect(detector.nativeTrustPrompt).toBe(false);
+    await render({ enabled: false, nativePromptEnabled: false });
+    await render({ nativePromptEnabled: false });
+    detector.onTerminalData();
+    await flush();
+    expect(detector.nativeTrustPrompt).toBe(false);
+    expect(sendStdin).not.toHaveBeenCalled();
+  });
+
+  it.each([false, true])('blocks a startup detection immediately on entering a session (already detected: %s)', async (detected) => {
+    buffer = nativeSnapshot;
+    await render();
+    if (detected) await flush();
+    await render({ nativePromptEnabled: false });
+    expect(detector.nativeTrustPrompt).toBe(false);
+    await flush();
+    expect(detector.nativeTrustPrompt).toBe(false);
+    await render();
+    await flush();
+    expect(detector.nativeTrustPrompt).toBe(true);
+  });
+
+  it('detects native Codex trust on mount and clears it on terminal output without sending input', async () => {
+    buffer = nativeSnapshot;
+    await render();
+    await flush();
+    expect(detector.nativeTrustPrompt).toBe(true);
+    expect(detector.trustPrompt).toBeNull();
+    await act(async () => detector.onTrustResponse('yes'));
+    expect(sendStdin).not.toHaveBeenCalled();
+    buffer = '› Ask Codex to do anything';
+    detector.onTerminalData();
+    await flush();
+    expect(detector.nativeTrustPrompt).toBe(false);
+  });
+
+  it('isolates native trust by scope and detects replayed output after reenabling', async () => {
+    buffer = nativeSnapshot;
+    await render();
+    await flush();
+    expect(detector.nativeTrustPrompt).toBe(true);
+    buffer = 'shell';
+    await render({ scopeKey: 'b' });
+    expect(detector.nativeTrustPrompt).toBe(false);
+    await flush();
+    await render({ enabled: false, scopeKey: 'b' });
+    buffer = nativeSnapshot;
+    detector.onTerminalData();
+    await flush();
+    expect(detector.nativeTrustPrompt).toBe(false);
+    await render({ scopeKey: 'b' });
+    await flush();
+    expect(detector.nativeTrustPrompt).toBe(true);
+    expect(sendStdin).not.toHaveBeenCalled();
+  });
+
+  it('does not reopen the terminal from stale detection when returning to Chat', async () => {
+    buffer = nativeSnapshot;
+    await render();
+    await flush();
+    expect(detector.nativeTrustPrompt).toBe(true);
+    await render({ enabled: false });
+    buffer = '› Ask Codex to do anything';
+    await render();
+    expect(detector.nativeTrustPrompt).toBe(false);
+    await flush();
+    expect(detector.nativeTrustPrompt).toBe(false);
+  });
+
   it('separates navigation and Enter and confirms the new cursor before submitting', async () => {
     await render();
     await flush();
