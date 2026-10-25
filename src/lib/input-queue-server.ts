@@ -1,9 +1,9 @@
 import { InputDeliveryError, InputQueue } from '@/lib/input-queue';
 import { getStatusManager } from '@/lib/status-manager';
-import { capturePaneContent, checkTerminalProcess, hasSession, pasteText, sendRawKeys } from '@/lib/tmux';
+import { capturePaneContent, checkTerminalProcess, getPaneCursorPosition, hasSession, pasteText, sendRawKeys } from '@/lib/tmux';
 import { countImageRefs, waitForImageAttachments } from '@/lib/image-attach-detector';
 import { createCodexInputReceipt } from '@/lib/codex-input-receipt';
-import { isCodexTuiReadyContent } from '@/lib/codex-tui-ready-detector';
+import { readCodexInputState } from '@/lib/codex-input-state';
 import { createLogger } from '@/lib/logger';
 import { escapeInputAttachmentPath } from '@/lib/input-message-match';
 
@@ -29,7 +29,13 @@ export const getInputQueue = (): InputQueue => {
         if (previous.received) return { completed: previous.completed };
         const process = await checkTerminalProcess(sessionName);
         if (process.isSafe || process.processName === 'unknown') throw new InputDeliveryError('terminalNotReady');
-        if (!isCodexTuiReadyContent(await capture())) throw new InputDeliveryError('terminalNotReady');
+        const [content, cursor] = await Promise.all([
+          capturePaneContent(sessionName, { escapeSequences: true }), getPaneCursorPosition(sessionName),
+        ]);
+        const inputState = readCodexInputState(content, cursor);
+        if (inputState !== 'empty') log.warn({ ...context, inputState }, 'input retained before paste');
+        if (inputState === 'occupied') throw new InputDeliveryError('terminalHasDraft');
+        if (inputState !== 'empty') throw new InputDeliveryError('terminalNotReady');
       }
       log.info(context, 'writing input');
       let baselineRefs = provider === 'claude' && message.attachments.length

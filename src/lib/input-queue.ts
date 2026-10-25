@@ -13,7 +13,7 @@ export interface IInputAttempt {
 }
 
 export class InputDeliveryError extends Error {
-  constructor(public readonly code: 'deliveryUnconfirmed' | 'terminalNotReady' | 'sessionChanged') {
+  constructor(public readonly code: 'deliveryUnconfirmed' | 'terminalNotReady' | 'terminalHasDraft' | 'sessionChanged') {
     super(code);
   }
 }

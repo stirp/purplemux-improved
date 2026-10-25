@@ -191,6 +191,7 @@
   "customCommandsAutoEnterHint": "关闭后不额外追加末尾回车；命令本身包含的换行仍会发送。",
   "queueDeliveryUnconfirmed": "尚未确认 Codex 收到消息，正文已保留。请检查终端输入后重试或取消。",
   "queueTerminalNotReady": "终端尚未准备好接收消息，正文已保留。请检查 Codex 界面后重试。",
+  "queueTerminalHasDraft": "Codex 输入框中仍有未发送内容，已暂停发送以避免拼接。消息已保留，请在终端处理现有内容后重试。",
   "inputSending": "正在发送，等待会话确认…",
   "inputQueued": "排队中",
   "inputUnconfirmed": "尚未确认收到，请检查终端",

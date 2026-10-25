@@ -191,6 +191,7 @@
   "customCommandsAutoEnterHint": "끄면 마지막 Enter를 추가하지 않습니다. 명령에 포함된 줄바꿈은 그대로 전송됩니다.",
   "queueDeliveryUnconfirmed": "Codex has not confirmed receipt. Your message is retained. Check the terminal before retrying or canceling.",
   "queueTerminalNotReady": "The terminal is not ready for input. Your message is retained. Check Codex before retrying.",
+  "queueTerminalHasDraft": "Codex still has unsent input. Sending is paused to avoid combining messages. Your message is retained; handle the existing input in the terminal before retrying.",
   "inputSending": "Sending, awaiting session confirmation…",
   "inputQueued": "Queued",
   "inputUnconfirmed": "Receipt unconfirmed. Check the terminal.",

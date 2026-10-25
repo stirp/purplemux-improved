@@ -14,9 +14,13 @@ interface INativeCommandsOptions {
 const useNativeCommands = ({ scopeKey, provider, getBufferText, sendStdin, focusTerminal, focusInput, revealTerminal }: INativeCommandsOptions) => {
   const [openScopes, setOpenScopes] = useState<Set<string>>(() => new Set());
   const completions = useRef(new Map<string, NativeCommandCompletion>());
-  const current = useRef({ scopeKey, focusInput });
+  const current = useRef({ scopeKey, focusInput, focusTerminal });
   const focusTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  useEffect(() => { current.current = { scopeKey, focusInput }; }, [scopeKey, focusInput]);
+  useEffect(() => { current.current = { scopeKey, focusInput, focusTerminal }; }, [scopeKey, focusInput, focusTerminal]);
+  const active = openScopes.has(scopeKey);
+  useEffect(() => {
+    if (active) current.current.focusTerminal();
+  }, [active, scopeKey]);
   useEffect(() => {
     const sessions = completions.current;
     return () => { for (const completion of sessions.values()) completion.cancelPending(); };
@@ -49,7 +53,6 @@ const useNativeCommands = ({ scopeKey, provider, getBufferText, sendStdin, focus
     revealTerminal?.();
     // Forward typing only. Enter and command execution remain under CLI control.
     sendStdin(text);
-    focusTerminal();
     if (focusTimer.current) clearTimeout(focusTimer.current);
     focusTimer.current = setTimeout(focusTerminal, 180);
   }, [scopeKey, provider, getBufferText, finish, sendStdin, focusTerminal, revealTerminal]);
@@ -68,7 +71,7 @@ const useNativeCommands = ({ scopeKey, provider, getBufferText, sendStdin, focus
     if (completion) completion.parsed(getBufferText());
   }, [scopeKey, getBufferText]);
 
-  return { active: openScopes.has(scopeKey), open, close, onInput, onParsed };
+  return { active, open, close, onInput, onParsed };
 };
 
 export default useNativeCommands;

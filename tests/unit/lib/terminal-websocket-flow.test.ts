@@ -8,6 +8,7 @@ import { TerminalWriteQueue, type TTerminalWriteCallback } from '@/lib/terminal-
 vi.mock('react', () => ({
   useCallback: (callback: unknown) => callback,
   useEffect: (effect: () => void) => { effect(); },
+  useLayoutEffect: (effect: () => void) => { effect(); },
   useRef: (current: unknown) => ({ current }),
   useState: (initial: unknown) => [initial, vi.fn()],
 }));
