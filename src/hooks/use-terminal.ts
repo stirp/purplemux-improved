@@ -22,6 +22,7 @@ interface IUseTerminalOptions {
   lineHeight?: number;
   onInput?: (data: string) => void;
   onResize?: (cols: number, rows: number) => void;
+  normalizeSize?: (cols: number, rows: number) => { cols: number; rows: number };
   onTitleChange?: (title: string) => void;
   onWriteParsed?: () => void;
   customKeyEventHandler?: (event: KeyboardEvent) => boolean;
@@ -70,7 +71,7 @@ const loadFonts = () => {
   return fontLoadPromise;
 };
 
-const useTerminal = ({ inputEnabled = true, theme, fontSize = DEFAULT_FONT_SIZE, fontFamily = DEFAULT_TERMINAL_FONT_FAMILY, lineHeight = DEFAULT_LINE_HEIGHT, onInput, onResize, onTitleChange, onWriteParsed, customKeyEventHandler }: IUseTerminalOptions = {}) => {
+const useTerminal = ({ inputEnabled = true, theme, fontSize = DEFAULT_FONT_SIZE, fontFamily = DEFAULT_TERMINAL_FONT_FAMILY, lineHeight = DEFAULT_LINE_HEIGHT, onInput, onResize, normalizeSize, onTitleChange, onWriteParsed, customKeyEventHandler }: IUseTerminalOptions = {}) => {
   const [containerNode, setContainerNode] = useState<HTMLDivElement | null>(null);
   const terminalRef = useCallback((node: HTMLDivElement | null) => {
     setContainerNode(node);
@@ -81,11 +82,11 @@ const useTerminal = ({ inputEnabled = true, theme, fontSize = DEFAULT_FONT_SIZE,
   const [isReady, setIsReady] = useState(false);
   const t = useTranslations('terminal');
 
-  const callbacksRef = useRef({ inputEnabled, theme, fontFamily, fontSize, lineHeight, onInput, onResize, onTitleChange, onWriteParsed, customKeyEventHandler, t });
+  const callbacksRef = useRef({ inputEnabled, theme, fontFamily, fontSize, lineHeight, onInput, onResize, normalizeSize, onTitleChange, onWriteParsed, customKeyEventHandler, t });
 
   useLayoutEffect(() => {
-    callbacksRef.current = { inputEnabled, theme, fontFamily, fontSize, lineHeight, onInput, onResize, onTitleChange, onWriteParsed, customKeyEventHandler, t };
-  }, [inputEnabled, theme, fontFamily, fontSize, lineHeight, onInput, onResize, onTitleChange, onWriteParsed, customKeyEventHandler, t]);
+    callbacksRef.current = { inputEnabled, theme, fontFamily, fontSize, lineHeight, onInput, onResize, normalizeSize, onTitleChange, onWriteParsed, customKeyEventHandler, t };
+  }, [inputEnabled, theme, fontFamily, fontSize, lineHeight, onInput, onResize, normalizeSize, onTitleChange, onWriteParsed, customKeyEventHandler, t]);
 
   useLayoutEffect(() => {
     const terminal = terminalInstance.current;
@@ -133,7 +134,16 @@ const useTerminal = ({ inputEnabled = true, theme, fontSize = DEFAULT_FONT_SIZE,
     const terminal = terminalInstance.current;
     if (!fitAddon || !terminal) return { cols: 80, rows: 24 };
 
-    fitAddon.fit();
+    const normalize = callbacksRef.current.normalizeSize;
+    if (normalize) {
+      const proposed = fitAddon.proposeDimensions();
+      if (proposed && Number.isFinite(proposed.cols) && Number.isFinite(proposed.rows)) {
+        const size = normalize(proposed.cols, proposed.rows);
+        terminal.resize(size.cols, size.rows);
+      }
+    } else {
+      fitAddon.fit();
+    }
     return { cols: terminal.cols, rows: terminal.rows };
   }, []);
 
@@ -250,8 +260,8 @@ const useTerminal = ({ inputEnabled = true, theme, fontSize = DEFAULT_FONT_SIZE,
       });
 
       const doFit = () => {
-        fitAddon.fit();
-        callbacksRef.current.onResize?.(terminal.cols, terminal.rows);
+        const size = fit();
+        callbacksRef.current.onResize?.(size.cols, size.rows);
       };
 
       doFit();
@@ -325,7 +335,7 @@ const useTerminal = ({ inputEnabled = true, theme, fontSize = DEFAULT_FONT_SIZE,
       terminalInstance.current = null;
       fitAddonRef.current = null;
     };
-  }, [containerNode]);
+  }, [containerNode, fit]);
 
   useEffect(() => {
     const terminal = terminalInstance.current;
@@ -338,18 +348,18 @@ const useTerminal = ({ inputEnabled = true, theme, fontSize = DEFAULT_FONT_SIZE,
     terminal.options.fontFamily = fontFamily;
     terminal.options.fontSize = fontSize;
     terminal.options.lineHeight = lineHeight;
-    fitAddonRef.current?.fit();
+    fit();
     callbacksRef.current.onResize?.(terminal.cols, terminal.rows);
     // Refit once a custom font has loaded, and ignore stale font selections.
     let cancelled = false;
     document.fonts.load(`${fontSize}px ${fontFamily}`).then(() => {
       if (cancelled || terminalInstance.current !== terminal) return;
       terminal.refresh(0, terminal.rows - 1);
-      fitAddonRef.current?.fit();
+      fit();
       callbacksRef.current.onResize?.(terminal.cols, terminal.rows);
     }).catch(() => {});
     return () => { cancelled = true; };
-  }, [fontFamily, fontSize, lineHeight, isReady]);
+  }, [fontFamily, fontSize, lineHeight, isReady, normalizeSize, fit]);
 
   return { terminalRef, write, clear, reset, fit, focus, focusAtBottom, isReady, getBufferText };
 };

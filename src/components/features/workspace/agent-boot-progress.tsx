@@ -108,6 +108,12 @@ const AgentBootProgress = ({
         <Skeleton className="h-3 w-5/6" />
         <Skeleton className="h-3 w-2/3" />
       </div>
+      {onShowTerminal && showTerminalLabel && (
+        <Button variant="outline" size="sm" onClick={onShowTerminal}>
+          <TerminalSquare className="h-3.5 w-3.5" />
+          {showTerminalLabel}
+        </Button>
+      )}
     </div>
   );
 };

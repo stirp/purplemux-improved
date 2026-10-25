@@ -63,6 +63,8 @@ The server-side `detectActiveSession` still uses its own `TSessionDetectionStatu
 
 ### CLI Work State (`TCliState`)
 
+Codex startup trust fallback only switches Chat to the terminal when no Agent session ID is bound and `cliState` is `inactive` or `unknown`. Once a session is bound or the CLI enters a working state, menu text alone cannot switch panels; this prevents quoted trust menus in normal chat from taking focus. Native prompts encountered inside an established session remain accessible through the existing terminal controls. This UI guard does not change the server's work-state derivation.
+
 State of the work in progress inside the Claude CLI. Only changed by deterministic derivation from hook events.
 
 | State | Meaning | Trigger |

@@ -52,6 +52,16 @@ afterEach(async () => {
 });
 
 describe('Codex Chat startup checks', () => {
+  it.each([false, true])('allows opening the terminal while hasFailed=%s', async (hasFailed) => {
+    const onShowTerminal = vi.fn();
+    await act(async () => root.render(createElement(CodexBootProgress, { hasFailed, onShowTerminal })));
+    const button = Array.from(container.querySelectorAll('button')).find((node) => node.textContent?.includes('codexBootShowTerminal'));
+    expect(button).toBeDefined();
+    await act(async () => button!.click());
+    expect(onShowTerminal).toHaveBeenCalledOnce();
+    expect(restart).not.toHaveBeenCalled();
+  });
+
   it('does not report failure at ten seconds; requires a fresh negative check after sixty seconds', async () => {
     await render();
     await advance(10_000);
