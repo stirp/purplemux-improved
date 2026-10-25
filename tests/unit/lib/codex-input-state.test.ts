@@ -29,6 +29,33 @@ describe('Codex input state before queued paste', () => {
     expect(readCodexInputState(screen('› \n\n  draft'), { x: 7, y: 4 })).toBe('occupied');
   });
 
+  it('rejects the PR #88 multiline draft with its cursor at the beginning', () => {
+    expect(readCodexInputState('› \n\n  existing draft\n\n  GPT-6 · Full Access\n  ? for shortcuts', { x: 2, y: 0 })).toBe('occupied');
+  });
+
+  it.each([
+    '› \n\n  existing draft',
+    '› \n\n\n  existing draft',
+    '› \n  \n  existing draft',
+    '› \n\n  existing draft\n',
+    '› \n\n  existing draft\n\n',
+    '› \n\n  \x1b[2m[Image #1]\x1b[0m',
+    '› \n\n  ? for shortcuts',
+    '› \n\n',
+  ])('rejects continuation rows before the footer: %s', (composer) => {
+    expect(readCodexInputState(screen(composer) + '\n'.repeat(20), start)).toBe('occupied');
+  });
+
+  it.each([
+    '  GPT-6 · Full Access\n  ? for shortcuts',
+    '  custom model · project\n  Context 20% used\n  ? for shortcuts',
+    '  gpt-5.5 high · ~/repo',
+    '  100% context left',
+    '  ? for shortcuts',
+  ])('preserves empty composers with footer and trailing pane padding: %s', (footer) => {
+    expect(readCodexInputState(`› \x1b[2mAsk Codex\x1b[0m\n\n${footer}\n\n\n`, { x: 2, y: 0 })).toBe('empty');
+  });
+
   it('does not infer readiness from missing snapshots or modal/disabled screens', () => {
     expect(readCodexInputState(null, start)).toBe('unknown');
     expect(readCodexInputState(screen('› '), null)).toBe('unknown');

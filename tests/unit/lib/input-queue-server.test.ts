@@ -35,18 +35,26 @@ afterEach(() => {
 });
 
 describe('queued terminal input delivery', () => {
-  it('retains both messages instead of appending to an existing draft, then retries after it is cleared', async () => {
+  it.each([
+    '› 确定\n\n? for shortcuts',
+    '› \n\n  existing draft\n\n  GPT-6 · Full Access\n  ? for shortcuts',
+  ])('retains both messages instead of appending to a draft, then retries after it is cleared: %s', async (draft) => {
     mocks.status = { cliState: 'idle', workspaceId: 'ws', agentProviderId: 'codex' };
-    mocks.capture.mockResolvedValue('› 确定\n\n? for shortcuts');
+    mocks.capture.mockResolvedValue(draft);
     const queue = getInputQueue();
     const target = { tabId: 'tab', workspaceId: 'ws', sessionName: 'session', provider: 'codex' as const };
+    const attachments = [{ path: '/upload/test.png', filename: 'test.png' }];
     queue.enqueue(target, { id: 'first', text: '严重：本轮导入校验可能根本走不到', attachments: [] });
-    queue.enqueue(target, { id: 'second', text: 'follow up', attachments: [] });
+    queue.enqueue(target, { id: 'second', text: 'follow up', attachments });
     await vi.advanceTimersByTimeAsync(1000);
     expect(queue.snapshot('tab')).toMatchObject({ error: 'terminalHasDraft', sending: false, messages: [{ id: 'first' }, { id: 'second' }] });
     await vi.advanceTimersByTimeAsync(60_000);
     expect(mocks.paste).not.toHaveBeenCalled();
     expect(mocks.send).not.toHaveBeenCalled();
+    expect(queue.snapshot('tab').messages).toMatchObject([
+      { id: 'first', text: '严重：本轮导入校验可能根本走不到', attachments: [] },
+      { id: 'second', text: 'follow up', attachments },
+    ]);
     mocks.capture.mockResolvedValue('› \x1b[2mAsk Codex to do anything\x1b[0m\n\n? for shortcuts');
     const retry = queue.flush('tab', true);
     await vi.advanceTimersByTimeAsync(250);

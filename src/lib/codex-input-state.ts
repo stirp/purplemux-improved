@@ -37,7 +37,13 @@ export const readCodexInputState = (
   const marker = /^(\s*)›/.exec(lines[row])!;
   if (cursor.y !== row || cursor.x !== marker[1].length + 2) return 'occupied';
   if (withoutDimmedText(content).split('\n')[row].trim() !== '›') return 'occupied';
-  if (lines[row + 1]?.trim()) return 'occupied';
+  let footerEnd = lines.length;
+  while (footerEnd > row + 1 && !lines[footerEnd - 1].trim()) footerEnd -= 1;
+  let footerStart = footerEnd;
+  while (footerStart > row + 1 && lines[footerStart - 1].trim()) footerStart -= 1;
+  // Codex separates the trailing footer block from the composer with one blank row.
+  // Locate it from the bottom so blank draft lines cannot hide later input.
+  if (footerEnd > row + 1 && footerStart !== row + 2) return 'occupied';
   // Attachment/paste chips can be dimmed, but they are still submitted content.
   if (/\[(?:Image #\d+|Pasted[^\]]*)\]/i.test(lines.slice(Math.max(0, row - 1), row + 1).join('\n'))) return 'occupied';
   return 'empty';
