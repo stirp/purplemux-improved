@@ -1,5 +1,5 @@
 import { applyTerminalTheme, DEFAULT_TERMINAL_FONT_FAMILY } from '@/lib/terminal-appearance';
-import { useEffect, useRef, useCallback, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useCallback, useState } from "react";
 import { Terminal, type ITheme } from "@xterm/xterm";
 import { FitAddon } from "@xterm/addon-fit";
 
@@ -15,6 +15,7 @@ import isElectron from "@/hooks/use-is-electron";
 import { TerminalWriteQueue, type TTerminalWriteCallback } from '@/lib/terminal-write-queue';
 
 interface IUseTerminalOptions {
+  inputEnabled?: boolean;
   theme?: ITheme;
   fontSize?: number;
   fontFamily?: string;
@@ -70,7 +71,7 @@ const loadFonts = () => {
   return fontLoadPromise;
 };
 
-const useTerminal = ({ theme, fontSize = DEFAULT_FONT_SIZE, fontFamily = DEFAULT_TERMINAL_FONT_FAMILY, lineHeight = DEFAULT_LINE_HEIGHT, onInput, onResize, normalizeSize, onTitleChange, onWriteParsed, customKeyEventHandler }: IUseTerminalOptions = {}) => {
+const useTerminal = ({ inputEnabled = true, theme, fontSize = DEFAULT_FONT_SIZE, fontFamily = DEFAULT_TERMINAL_FONT_FAMILY, lineHeight = DEFAULT_LINE_HEIGHT, onInput, onResize, normalizeSize, onTitleChange, onWriteParsed, customKeyEventHandler }: IUseTerminalOptions = {}) => {
   const [containerNode, setContainerNode] = useState<HTMLDivElement | null>(null);
   const terminalRef = useCallback((node: HTMLDivElement | null) => {
     setContainerNode(node);
@@ -81,11 +82,21 @@ const useTerminal = ({ theme, fontSize = DEFAULT_FONT_SIZE, fontFamily = DEFAULT
   const [isReady, setIsReady] = useState(false);
   const t = useTranslations('terminal');
 
-  const callbacksRef = useRef({ theme, fontFamily, fontSize, lineHeight, onInput, onResize, normalizeSize, onTitleChange, onWriteParsed, customKeyEventHandler, t });
+  const callbacksRef = useRef({ inputEnabled, theme, fontFamily, fontSize, lineHeight, onInput, onResize, normalizeSize, onTitleChange, onWriteParsed, customKeyEventHandler, t });
 
-  useEffect(() => {
-    callbacksRef.current = { theme, fontFamily, fontSize, lineHeight, onInput, onResize, normalizeSize, onTitleChange, onWriteParsed, customKeyEventHandler, t };
-  }, [theme, fontFamily, fontSize, lineHeight, onInput, onResize, normalizeSize, onTitleChange, onWriteParsed, customKeyEventHandler, t]);
+  useLayoutEffect(() => {
+    callbacksRef.current = { inputEnabled, theme, fontFamily, fontSize, lineHeight, onInput, onResize, normalizeSize, onTitleChange, onWriteParsed, customKeyEventHandler, t };
+  }, [inputEnabled, theme, fontFamily, fontSize, lineHeight, onInput, onResize, normalizeSize, onTitleChange, onWriteParsed, customKeyEventHandler, t]);
+
+  useLayoutEffect(() => {
+    const terminal = terminalInstance.current;
+    if (!terminal) return;
+    terminal.options.disableStdin = !inputEnabled;
+    if (terminal.textarea) {
+      terminal.textarea.tabIndex = inputEnabled ? 0 : -1;
+      if (!inputEnabled && document.activeElement === terminal.textarea) terminal.blur();
+    }
+  }, [inputEnabled, isReady]);
 
   const write = useCallback((data: Uint8Array, callback?: TTerminalWriteCallback) => {
     const queue = writeQueueRef.current;
@@ -141,10 +152,12 @@ const useTerminal = ({ theme, fontSize = DEFAULT_FONT_SIZE, fontFamily = DEFAULT
   }, []);
 
   const focus = useCallback(() => {
+    if (!callbacksRef.current.inputEnabled) return;
     terminalInstance.current?.focus();
   }, []);
 
   const focusAtBottom = useCallback(() => {
+    if (!callbacksRef.current.inputEnabled) return;
     terminalInstance.current?.scrollToBottom();
     terminalInstance.current?.focus();
   }, []);
@@ -162,6 +175,7 @@ const useTerminal = ({ theme, fontSize = DEFAULT_FONT_SIZE, fontFamily = DEFAULT
       if (disposed) return;
 
       const terminal = new Terminal({
+        disableStdin: !callbacksRef.current.inputEnabled,
         fontFamily: callbacksRef.current.fontFamily,
         fontWeight: "400",
         fontWeightBold: "700",
@@ -211,6 +225,7 @@ const useTerminal = ({ theme, fontSize = DEFAULT_FONT_SIZE, fontFamily = DEFAULT
       fitAddonRef.current = fitAddon;
 
       terminal.onData((data) => {
+        if (!callbacksRef.current.inputEnabled) return;
         if (/^\x1b\[[\?>]?[\d;]*[cnR]$/.test(data)) return;
         callbacksRef.current.onInput?.(data);
       });
@@ -221,6 +236,7 @@ const useTerminal = ({ theme, fontSize = DEFAULT_FONT_SIZE, fontFamily = DEFAULT
       terminal.onWriteParsed(() => callbacksRef.current.onWriteParsed?.());
 
       terminal.attachCustomKeyEventHandler((event) => {
+        if (!callbacksRef.current.inputEnabled) return false;
         // IME 조합 단계의 keydown(keyCode 229)은 가로채지 않는다. 같은 키가 조합용으로 한 번,
         // 실제 키로 한 번 들어오므로 실제 키만 처리해 중복 전송(단어 2칸 이동 등)을 막는다.
         if (event.isComposing || event.keyCode === 229) return true;

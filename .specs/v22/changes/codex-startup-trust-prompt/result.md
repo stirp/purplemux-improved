@@ -63,3 +63,22 @@ git diff --check
 - 本轮 `pnpm build`：通过，Next.js 编译、24 个静态页面生成、post-build 及 tsup 服务端构建均成功。
 - 本轮 `git diff --check` 与规格链接/depends_on 路径检查通过。
 - 真实 xterm 测试仍运行于 jsdom，容器尺寸/字体加载/resize 观察器为替身；不等同于完整浏览器、移动设备或原生 Codex 启动流程验收，这些项目本轮未执行。
+
+## 合并冲突解决
+
+- 当前分支合入 `ece0433a0c08d3df059bed65af2fbd50358a01fb` 时，唯一冲突文件为 `src/hooks/use-terminal.ts`。依据本需求与 [duplicate-message-on-send](../duplicate-message-on-send/spec.md) 现有约定合并，不新增产品行为。
+- 同时保留 `normalizeSize` 和 `inputEnabled`；回调引用使用合入分支的 `useLayoutEffect` 更新，并将尺寸策略纳入引用和依赖，避免丢失隐藏终端输入防护或尺寸归一化。
+- 扩展既有终端尺寸回归：折叠时显式关闭输入，但仍可用真实 xterm 解析器读取第 1 行标题和第 30 行菜单；展开后验证恢复输入及可见尺寸。其余自动合并文件保留原合并结果。
+- 本轮相关测试：10 个文件、164 项通过，覆盖 trust 解析/Hook、终端尺寸、输入隔离、桌面/移动接线、原生命令、WebSocket、Codex 输入状态与回执、服务端队列。
+
+```bash
+pnpm exec vitest run "tests/unit/lib/trust-prompt-detector.test.ts" "tests/unit/lib/trust-prompt-hook.test.ts" "tests/unit/lib/terminal-typography-hook.test.ts" "tests/unit/lib/terminal-input-isolation.test.ts" "tests/unit/lib/terminal-surface-input.test.ts" "tests/unit/lib/native-command-input.test.ts" "tests/unit/lib/terminal-websocket-flow.test.ts" "tests/unit/lib/codex-input-state.test.ts" "tests/unit/lib/codex-input-receipt.test.ts" "tests/unit/lib/input-queue-server.test.ts"
+pnpm exec tsc --noEmit
+pnpm exec eslint "src/hooks/use-terminal.ts" "tests/unit/lib/terminal-typography-hook.test.ts"
+pnpm build
+git diff --check
+```
+
+- 本轮 ESLint、完整 TypeScript、`pnpm build` 全部通过；构建包含 Next.js 编译、24 个静态页面生成、post-build 和 tsup。
+- 已将冲突解决及本次测试/证据文件暂存，`git ls-files -u` 为空，`git diff --cached --check` 通过；合并仍等待提交。
+- 本轮没有执行真实浏览器/移动设备验收；没有创建合并提交或推送。

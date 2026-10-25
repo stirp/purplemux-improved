@@ -51,6 +51,7 @@ interface ITermActions {
   reset: () => void;
   fit: () => { cols: number; rows: number };
   focus: () => void;
+  focusAtBottom: () => void;
   getBufferText: () => string;
 }
 
@@ -73,6 +74,7 @@ const NOOP_TERM_ACTIONS: ITermActions = {
   reset: () => {},
   fit: () => ({ cols: 40, rows: 24 }),
   focus: () => {},
+  focusAtBottom: () => {},
   getBufferText: () => '',
 };
 
@@ -255,10 +257,21 @@ const MobileSurfaceView = ({
     return true;
   }, []);
 
-  const nativeCommandEventsRef = useRef<Pick<ReturnType<typeof useNativeCommands>, 'onInput' | 'onParsed'> | null>(null);
+  const nativeCommands = useNativeCommands({
+    provider: isCodex ? 'codex' : 'claude',
+    getBufferText: () => termActionsRef.current.getBufferText(),
+    scopeKey: `${activeTabId}:${claudeSessionId}`,
+    sendStdin: (data) => wsActionsRef.current.sendStdin(data),
+    focusTerminal: () => termActionsRef.current.focusAtBottom(),
+    focusInput: () => focusInputRef.current?.(),
+  });
+  const showNativeCommands = isAgentPanel && nativeCommands.active;
+  const terminalInputEnabled = !!activeTabId && !isWebBrowser && !isDiff
+    && (showNativeCommands || (!usesHiddenTerminal && showTerminal));
 
   const { terminalRef, write, clear, reset, fit, focus, focusAtBottom, isReady, getBufferText } = useTerminal({
-    onWriteParsed: () => nativeCommandEventsRef.current?.onParsed(),
+    inputEnabled: terminalInputEnabled,
+    onWriteParsed: nativeCommands.onParsed,
     ...resolveTerminalTypography({ theme: terminalTheme.colors, fontSize: isAgentPanel ? undefined : MOBILE_FONT_SIZE }, terminalTypography),
     lineHeight: resolveLineHeight(configLineHeight, configLineHeightCustom),
     onInput: (data) => wsActionsRef.current.sendStdin(data),
@@ -358,7 +371,7 @@ const MobileSurfaceView = ({
     sendWebStdin,
     sendResize,
   } = useTerminalWebSocket({
-    onStdin: (data) => nativeCommandEventsRef.current?.onInput(data),
+    onStdin: nativeCommands.onInput,
     onData: (data, onParsed) => {
       termActionsRef.current.write(data, (error) => {
         onParsed(error);
@@ -381,7 +394,7 @@ const MobileSurfaceView = ({
   });
 
   useEffect(() => {
-    termActionsRef.current = { write, reset, fit, focus, getBufferText };
+    termActionsRef.current = { write, reset, fit, focus, focusAtBottom, getBufferText };
     wsActionsRef.current = { sendStdin, sendResize };
   });
 
@@ -739,16 +752,6 @@ const MobileSurfaceView = ({
   }, [activeTabId, paneId, layoutWsId]);
 
   const noTabs = tabs.length === 0;
-  const nativeCommands = useNativeCommands({
-    provider: isCodex ? 'codex' : 'claude',
-    getBufferText,
-    scopeKey: `${activeTabId}:${claudeSessionId}`,
-    sendStdin,
-    focusTerminal: focusAtBottom,
-    focusInput: () => focusInputRef.current?.(),
-  });
-  useEffect(() => { nativeCommandEventsRef.current = nativeCommands; });
-  const showNativeCommands = isAgentPanel && nativeCommands.active;
   const ready = isWebBrowser || isDiff || isAgentSessionList || (isReady && status === 'connected' && !noTabs);
   const isFirstConnectionForTab =
     activeTabId !== null && attemptedTabId !== activeTabId;
@@ -867,6 +870,7 @@ const MobileSurfaceView = ({
       {!isWebBrowser && !isDiff && (
         <TerminalContainer
           ref={terminalRef}
+          inert={!terminalInputEnabled}
           className={cn(
             !usesHiddenTerminal && 'transition-opacity duration-150',
             showNativeCommands ? 'absolute inset-x-0 bottom-10 top-12 z-30 h-auto opacity-100' : usesHiddenTerminal ? 'absolute inset-0 pointer-events-none opacity-0' : 'min-h-0 flex-1',

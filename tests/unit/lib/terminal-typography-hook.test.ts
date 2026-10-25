@@ -95,12 +95,13 @@ describe('terminal typography hook', () => {
     let actions!: ReturnType<typeof useTerminal>;
     const SizeHarness = ({ collapsed = true, fontSize = 12 }) => {
       const normalizeSize = useCallback((cols: number, rows: number) => ({ cols, rows: collapsed ? Math.max(rows, 40) : rows }), [collapsed]);
-      const current = useTerminal({ theme, fontSize, normalizeSize, onResize });
+      const current = useTerminal({ theme, fontSize, normalizeSize, onResize, inputEnabled: !collapsed });
       useEffect(() => { actions = current; });
       return createElement('div', { ref: current.terminalRef });
     };
     await act(async () => root.render(createElement(SizeHarness)));
     const terminal = mocks.terminals.at(-1)!;
+    expect(terminal.options.disableStdin).toBe(true);
     expect(terminal.rows).toBe(40);
     expect(onResize).toHaveBeenLastCalledWith(80, 40);
     expect(mocks.fit).not.toHaveBeenCalled();
@@ -124,6 +125,7 @@ describe('terminal typography hook', () => {
     await act(async () => root.render(createElement(SizeHarness, { collapsed: false })));
     expect(actions.fit()).toEqual({ cols: 80, rows: 12 });
     expect(terminal.rows).toBe(12);
+    expect(terminal.options.disableStdin).toBe(false);
     expect(onResize).toHaveBeenLastCalledWith(80, 12);
   });
 

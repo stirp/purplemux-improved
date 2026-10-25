@@ -462,8 +462,10 @@ const PaneContainer = memo(({ paneId, paneNumber, toolbar }: IPaneContainerProps
   }, []);
 
   const nativeCommandEventsRef = useRef<Pick<ReturnType<typeof useNativeCommands>, 'onInput' | 'onParsed'> | null>(null);
+  const terminalInputEnabled = !!activeTabId && (activePanelType === 'terminal' || (isAgentPanel && !isTerminalCollapsed));
 
   const { terminalRef, write, clear, reset, fit, focus, focusAtBottom, isReady, getBufferText } = useTerminal({
+    inputEnabled: terminalInputEnabled,
     onWriteParsed: () => nativeCommandEventsRef.current?.onParsed(),
     ...resolveTerminalTypography({ theme: terminalTheme.colors, fontSize: (TERMINAL_FONT_SIZES[configFontSize] ?? TERMINAL_FONT_SIZES.normal)[isAgentPanel ? 'claudeCode' : 'normal'] }, terminalTypography),
     lineHeight: resolveLineHeight(configLineHeight, configLineHeightCustom),
@@ -595,7 +597,7 @@ const PaneContainer = memo(({ paneId, paneNumber, toolbar }: IPaneContainerProps
       if (tabId) useTabStore.getState().setTerminalConnected(tabId, true);
       const { cols, rows } = termActionsRef.current.fit();
       sendEffectiveResize(cols, rows);
-      if (isFocusedRef.current) {
+      if (isFocusedRef.current && (!document.activeElement || document.activeElement === document.body)) {
         termActionsRef.current.focus();
       }
       fetchAndUpdateCwd();
@@ -1433,7 +1435,7 @@ const PaneContainer = memo(({ paneId, paneNumber, toolbar }: IPaneContainerProps
           )}
 
           <Panel id="terminal-area" minSize={0} collapsible collapsedSize={0}>
-            <div className="flex h-full flex-col" onMouseDown={() => { clickedTerminalRef.current = true; }}>
+            <div inert={!terminalInputEnabled} aria-hidden={!terminalInputEnabled || undefined} className="flex h-full flex-col" onMouseDown={() => { clickedTerminalRef.current = true; }}>
               {isAgentPanel && nativeCommands.active && <NativeCommandToolbar onClose={nativeCommands.close} />}
               <TerminalContainer
                 ref={terminalRef}

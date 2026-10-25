@@ -647,7 +647,8 @@ const WebInputBar = ({
                   <p className="mt-1 text-xs text-ui-red" role="alert">
                     {t(queue.error === 'sessionChanged' ? 'queueSessionChanged'
                       : queue.error === 'deliveryUnconfirmed' ? 'queueDeliveryUnconfirmed'
-                        : queue.error === 'terminalNotReady' ? 'queueTerminalNotReady' : 'queueSendFailed')}
+                        : queue.error === 'terminalNotReady' ? 'queueTerminalNotReady'
+                          : queue.error === 'terminalHasDraft' ? 'queueTerminalHasDraft' : 'queueSendFailed')}
                   </p>
                 )}
               </div>
