@@ -1,6 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { TIdleTabTarget } from '@/lib/idle-tab-policy';
 import type { ITab } from '@/types/terminal';
+import { CODEX_LAUNCHER_SCRIPT } from '@/lib/providers/codex/launcher-path';
+import { CLAUDE_LAUNCHER_SCRIPT } from '@/lib/providers/claude/launcher';
 
 const m = vi.hoisted(() => ({
   policy: vi.fn(), save: vi.fn(), retain: vi.fn(), workspaces: vi.fn(), layout: vi.fn(), panes: vi.fn(),
@@ -12,13 +14,12 @@ vi.mock('@/lib/workspace-store', () => ({ getWorkspaces: m.workspaces, getIdleTa
 vi.mock('@/lib/layout-store', () => ({ collectPanes: (root: unknown) => root, readLayoutFile: m.layout, resolveLayoutFile: (id: string) => id, removeTabFromPane: m.remove }));
 vi.mock('@/lib/tmux', () => ({ getAllPanesInfo: m.panes }));
 vi.mock('@/lib/process-utils', () => ({ listUserProcesses: m.processes, getProcessArgv: m.argv }));
-vi.mock('@/lib/local-agent-session', () => ({ classifyAgentArgv: (args: string[]) => args[0] === 'codex' || args[1]?.includes('@openai/codex') ? 'codex' : null }));
 vi.mock('@/lib/status-manager', () => ({ getStatusManager: () => ({ getAllForClient: m.states, removeTab: m.unregister }) }));
 vi.mock('@/lib/input-queue-server', () => ({ getInputQueue: () => ({ hasPendingInput: m.pending }) }));
 vi.mock('@/lib/terminal-input-activity', () => ({ getLastTerminalInput: m.activity }));
 vi.mock('@/lib/idle-agent-shutdown', () => ({ stopIdleAgentChain: m.graceful }));
-vi.mock('@/lib/tab-agent-provider', () => ({ getTabAgentProvider: (tab: ITab) => tab.agentState?.providerId === 'codex' ? ({
-  id: 'codex', readSessionId: (tab: ITab) => tab.agentState?.sessionId,
+vi.mock('@/lib/tab-agent-provider', () => ({ getTabAgentProvider: (tab: ITab) => tab.agentState && ['codex', 'claude'].includes(tab.agentState.providerId) ? ({
+  id: tab.agentState.providerId, readSessionId: (tab: ITab) => tab.agentState?.sessionId,
   readJsonlPath: () => '/session.jsonl', isValidSessionId: () => true,
   sessionIdFromJsonlPath: () => 'session', readRuntimeSnapshot: m.snapshot,
 }) : null }));
@@ -103,6 +104,45 @@ describe('idle agent tab reclamation', () => {
     expect(await idleAgentProcessChain(1, wrapped, 'codex')).toHaveLength(3);
     m.argv.mockImplementation(async (p) => [p.args]);
     expect(await idleAgentProcessChain(1, wrapped, 'codex')).toBeNull();
+  });
+  it('automatically reclaims the application launcher chain after retaining the original session', async () => {
+    const launcher = { ...rows[1], args: 'node' };
+    const native = { ...rows[1], pid: 3, ppid: launcher.pid };
+    m.processes.mockImplementation(async () => m.alive ? [rows[0], launcher, native] : []);
+    m.argv.mockImplementation(async (p) => p.pid === launcher.pid ? ['node', CODEX_LAUNCHER_SCRIPT] : [p.args]);
+    m.policy.mockResolvedValue({ ...policy, enabled: true });
+    expect(await targets()).toHaveLength(1);
+    await runIdleTabReclamation();
+    expect(m.events).toEqual(['retain', 'stop', 'remove']);
+    expect(m.graceful).toHaveBeenCalledWith([rows[0], launcher, native], 'codex');
+    expect(m.retain).toHaveBeenCalledWith('tab', expect.objectContaining({
+      agentSessionId: 'session', workspaceDir: '/original', agentProviderId: 'codex',
+    }));
+  });
+  it.each([false, true])('handles the old Claude launcher in preview and automatic reclamation (independent child: %s)', async (hasChild) => {
+    const claudeTab: ITab = { ...tab, panelType: 'claude-code', agentState: { ...tab.agentState!, providerId: 'claude' } };
+    m.layout.mockResolvedValue({ root: [{ id: 'pane', tabs: [claudeTab] }] });
+    const processes = [rows[0], { ...rows[1], args: 'node' },
+      { ...rows[1], pid: 3, ppid: 2, args: 'node' },
+      ...(hasChild ? [{ ...rows[1], pid: 4, ppid: 3, args: 'claude' }] : [])];
+    m.processes.mockImplementation(async () => m.alive ? processes : []);
+    m.argv.mockImplementation(async (p) => p.pid === 2
+      ? ['node', '-e', CLAUDE_LAUNCHER_SCRIPT.trim().replace(/\n\s*/g, ' ')]
+      : p.pid === 3 ? ['node', '/pkg/@anthropic-ai/claude-code/cli.js'] : [p.args]);
+    m.policy.mockResolvedValue({ ...policy, enabled: true });
+    expect(await targets()).toHaveLength(hasChild ? 0 : 1);
+    await runIdleTabReclamation();
+    if (hasChild) {
+      expect(m.retain).not.toHaveBeenCalled();
+      expect(m.graceful).not.toHaveBeenCalled();
+      expect(m.remove).not.toHaveBeenCalled();
+    } else {
+      expect(m.events).toEqual(['retain', 'stop', 'remove']);
+      expect(m.graceful).toHaveBeenCalledWith(processes, 'claude');
+      expect(m.retain).toHaveBeenCalledWith('tab', expect.objectContaining({
+        agentSessionId: 'session', workspaceDir: '/original', agentProviderId: 'claude',
+      }));
+    }
   });
   it('never stops after persistence failure or activity changing during persistence', async () => {
     const selected = await targets();

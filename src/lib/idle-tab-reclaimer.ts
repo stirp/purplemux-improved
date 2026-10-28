@@ -1,10 +1,9 @@
 import fs from 'fs/promises';
-import path from 'path';
 import { collectPanes, readLayoutFile, resolveLayoutFile, removeTabFromPane } from '@/lib/layout-store';
 import { getWorkspaces, getIdleTabPolicy, saveIdleTabPolicy, retainReclaimedSession } from '@/lib/workspace-store';
 import { getAllPanesInfo } from '@/lib/tmux';
-import { listUserProcesses, getProcessArgv, type ISystemProcess } from '@/lib/process-utils';
-import { classifyAgentArgv } from '@/lib/local-agent-session';
+import { listUserProcesses, type ISystemProcess } from '@/lib/process-utils';
+import { idleAgentProcessChain } from '@/lib/idle-agent-process';
 import '@/lib/providers';
 import { getTabAgentProvider } from '@/lib/tab-agent-provider';
 import { getStatusManager } from '@/lib/status-manager';
@@ -27,28 +26,7 @@ const serial = <T>(action: () => Promise<T>): Promise<T> => {
   return result;
 };
 
-// Only a shell / known Node launcher / native agent chain can be reclaimed.
-export const idleAgentProcessChain = async (
-  rootPid: number, processes: ISystemProcess[], providerId: 'claude' | 'codex',
-): Promise<ISystemProcess[] | null> => {
-  const chain: ISystemProcess[] = [];
-  let current = processes.find((item) => item.pid === rootPid);
-  let foundAgent = false;
-  while (current && chain.length < 32) {
-    if (chain.some((item) => item.pid === current!.pid)) return null;
-    const argv = await getProcessArgv(current);
-    const agent = classifyAgentArgv(argv);
-    const executable = path.basename(argv[0] ?? '');
-    if (agent !== providerId && (foundAgent || !/^(bash|zsh|sh|fish|dash|ksh)$/.test(executable))) return null;
-    if (agent) foundAgent = true;
-    chain.push(current);
-    const children = processes.filter((item) => item.ppid === current!.pid);
-    if (!children.length) return foundAgent ? chain : null;
-    if (children.length !== 1 || (agent && !/^(node|nodejs|bun)$/.test(executable))) return null;
-    current = children[0];
-  }
-  return null;
-};
+export { idleAgentProcessChain } from '@/lib/idle-agent-process';
 
 interface IReclaimableTab extends IIdleTabCandidate {
   tab: ITab;

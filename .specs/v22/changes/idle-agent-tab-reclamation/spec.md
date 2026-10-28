@@ -43,4 +43,20 @@ PR #71 修正：销毁 tmux 会话前，仅向已核验的末端 Agent 发送 SI
 
 回收 POST 与策略保存 PATCH 复用[本机进程管理的同源防护修正](../local-agent-process-management/spec.md#停止操作跨域误判修正)，均携带 `X-Purplemux-Process-Action: 1`。反向代理改写 Host 不阻断同源操作；真实跨源请求返回 403 且不调用保存/回收服务。预览、策略默认值和回收语义不变。
 
+### 超期不回收修正（2026-10-28）
+
+用户反馈：开启 60 分钟自动回收后，多个启动多日的 Codex 仍在运行，预期终止闲置进程释放内存，保留会话供下次 resume。
+
+- 本次修正属于本需求的启动链兼容缺陷，关联 [Codex 启动生命周期](../codex-launch-lifecycle/spec.md)及 [Agent 环境启动器](../../../v20/requirements/per-agent-environment.md)。进程列表日期是启动时间，不等同于最后对话时间。
+- “已知包装链”包含应用自己的 Codex 固定路径启动器、Claude 当前 bootstrap 和旧版完整内联启动器，以及真实路径指向已知 Agent npm 包的 bin 符号链接。必须最终连接到同 provider 的实际 Agent；仅有启动器、同名其他路径、任意 node -e、provider 不匹配均不能回收。
+- Claude 已知启动器后的 shell 回退链可通过，但实际 Agent 后的工具、后台进程、独立子代理、多分支或多 pane 仍保护。不因修正包装器识别而放宽运行状态、原生记录及输入核验。
+- 预览和退出使用一致的进程角色判定；仅向末端实际 Agent 发送 SIGTERM，等待全部 Agent/npm 包装器/应用启动器退出，仅剩原有 shell 后才清理终端。启动器存活、身份变化或查询失败时保留终端及页签。
+- 验收覆盖两种应用启动器、npm bin 链、Claude shell 回退、假冒/异类/后台进程拒绝、包装器延迟退出及超时；回归确认先保存恢复索引，再停止进程，历史与原目录恢复保持不变。截图机器的具体 PID 未读取时，不把本机或模拟证据声称为现场逐进程诊断。
+
+### 代码评审修正（2026-10-29）
+
+- P1：实际 Agent 有任何后代都不允许回收，包括 Node/npm 形式的 Claude 主进程。只有已确认的应用启动器及 Codex npm 转发脚本可以继续到下一进程；Codex npm 转发脚本必须直接连接原生 Codex，不接受 shell 或另一个 Node Agent。预览与关闭前复检共用此边界，拒绝链不得发送信号。
+- P2：旧 Claude 内联启动器按旧生成器的 `trim().replace(/\n\s*/g, ' ')` 实际参数验收，不能只测试原始多行常量。允许已知开发、服务端与 webpack 压缩构建中的环境校验函数形式，使用静态语法结构比对消除空白、引号、括号差异；不执行待识别脚本。未知构建变体、增加/修改语句或字面量、任意 node -e 均拒绝，不以宽泛关键词匹配放行。
+- 验收新增：应用 bootstrap → Node/npm Claude → 同 provider 独立子进程必须被拒绝且无 SIGTERM；无后代的 Node Claude 正常回收；Codex npm → native 保持可用。旧生成器的真实单行 argv 和已知压缩构建变体能够预览/关停，改动脚本仍拒绝。
+
 见 [任务](./task.md)、[实施与验证](./result.md)。

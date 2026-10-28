@@ -5,6 +5,7 @@ import { getDangerouslySkipPermissions } from '@/lib/config-store';
 import { createLogger } from '@/lib/logger';
 import { buildCodexHookFlags } from '@/lib/providers/codex/hook-config';
 import { runCodexPreflight } from '@/lib/providers/codex/preflight';
+import { CODEX_LAUNCHER_SCRIPT } from '@/lib/providers/codex/launcher-path';
 import { getCodexPromptPath, toTomlBasicString, writeCodexPromptFile } from '@/lib/providers/codex/prompt';
 import { readCodexRuntimeSnapshot } from '@/lib/providers/codex/runtime-snapshot';
 import { readCodexSessionHistoryStats } from '@/lib/providers/codex/session-history-stats';
@@ -20,7 +21,6 @@ const log = createLogger('codex-provider');
 
 export const CODEX_PROVIDER_ID = 'codex';
 const PURPLEMUX_DIR = path.join(os.homedir(), '.purplemux');
-const CODEX_LAUNCHER_SCRIPT = path.join(PURPLEMUX_DIR, 'codex-launcher.js');
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
