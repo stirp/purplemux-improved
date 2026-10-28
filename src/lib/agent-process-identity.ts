@@ -13,16 +13,18 @@ export const classifyAgentArgv = (argv: string[]): TLocalAgent | null => {
   return null;
 };
 
-export const matchesAgentProcess = async (pid: number, args: string, provider: TLocalAgent): Promise<boolean> => {
-  const argv = await getProcessArgv({ pid, args });
+export const resolveAgentArgv = async (argv: string[]): Promise<TLocalAgent | null> => {
   const detected = classifyAgentArgv(argv);
-  if (detected) return detected === provider;
-  if (!/^(node|nodejs|bun)$/.test(path.basename(argv[0] ?? '')) || !path.isAbsolute(argv[1] ?? '')) return false;
+  if (detected) return detected;
+  if (!/^(node|nodejs|bun)$/.test(path.basename(argv[0] ?? '')) || !path.isAbsolute(argv[1] ?? '')) return null;
   try {
     // npm bin links keep their alias in argv; identify the actual package script.
     const script = await fs.realpath(argv[1]);
-    return classifyAgentArgv([argv[0], script]) === provider;
+    return classifyAgentArgv([argv[0], script]);
   } catch {
-    return false;
+    return null;
   }
 };
+
+export const matchesAgentProcess = async (pid: number, args: string, provider: TLocalAgent): Promise<boolean> =>
+  await resolveAgentArgv(await getProcessArgv({ pid, args })) === provider;
