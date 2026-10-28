@@ -2,5 +2,5 @@
 
 - [x] 核对 main、最新版本及规范，创建发布规格。
 - [x] 更新版本并完成发布前检查。
-- [ ] 提交、推送发布标签并跟踪 Actions。
-- [ ] 验证 npm 与 GitHub Release，补录结果。
+- [x] 提交、推送发布标签并跟踪 Actions。
+- [x] 验证 npm 与 GitHub Release，补录结果。
