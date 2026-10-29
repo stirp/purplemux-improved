@@ -1,85 +1,23 @@
-import { useState } from 'react';
-import { Terminal, History } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import Spinner from '@/components/ui/spinner';
-import ClaudeCodeIcon from '@/components/icons/claude-code-icon';
-import OpenAIIcon from '@/components/icons/openai-icon';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import type { TPanelType } from '@/types/terminal';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import NewTabPicker, { type INewTabPickerProps } from '@/components/features/workspace/new-tab-picker';
 
 interface IMobileNewTabDialogProps {
+  paneId: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onCreateTab: (panelType?: TPanelType, options?: { command?: string; resumeSessionId?: string }) => Promise<void>;
+  onCreateTab: INewTabPickerProps['onCreateTab'];
 }
 
-const MobileNewTabDialog = ({ open, onOpenChange, onCreateTab }: IMobileNewTabDialogProps) => {
-  const tt = useTranslations('terminal');
-  const tm = useTranslations('mobile');
-  const [creatingKey, setCreatingKey] = useState<string | null>(null);
-
-  const MENU_ITEMS = [
-    { key: 'claude', type: 'claude-code' as const, icon: <ClaudeCodeIcon className="h-5 w-5" />, label: tt('claudeNewConversation'), startCommand: 'claude-new' as const },
-    { key: 'codex', type: 'codex-cli' as const, icon: <OpenAIIcon className="h-5 w-5" />, label: tt('codexNewConversation'), startCommand: 'codex-new' as const },
-    { key: 'agent-sessions', type: 'agent-sessions' as const, icon: <History className="h-5 w-5 text-muted-foreground" />, label: tt('sessionList') },
-    { key: 'terminal', type: 'terminal' as const, icon: <Terminal className="h-5 w-5 text-muted-foreground" />, label: 'Terminal' },
-  ] as const;
-
-  const handleOpenList = async (item: (typeof MENU_ITEMS)[number]) => {
-    setCreatingKey(item.key);
-    await onCreateTab(item.type);
-    setCreatingKey(null);
-    onOpenChange(false);
-  };
-
-  const handleStartNew = async (item: Extract<(typeof MENU_ITEMS)[number], { startCommand: 'claude-new' | 'codex-new' }>) => {
-    const key = `${item.key}-new`;
-    setCreatingKey(key);
-    await onCreateTab(item.type, { command: item.startCommand });
-    setCreatingKey(null);
-    onOpenChange(false);
-  };
-
-  const handleSelect = async (item: (typeof MENU_ITEMS)[number]) => {
-    if ('startCommand' in item) {
-      await handleStartNew(item);
-      return;
-    }
-    await handleOpenList(item);
-  };
-
+const MobileNewTabDialog = ({ paneId, open, onOpenChange, onCreateTab }: IMobileNewTabDialogProps) => {
+  const t = useTranslations('mobile');
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="w-[calc(100%-2rem)] max-w-xs gap-2 rounded-xl p-4">
-        <DialogHeader>
-          <DialogTitle className="text-sm font-medium">{tm('newTab')}</DialogTitle>
+      <DialogContent className="flex h-[min(40rem,85dvh)] w-[calc(100%-1rem)] max-w-md flex-col gap-0 overflow-hidden rounded-xl p-0">
+        <DialogHeader className="shrink-0 px-4 pt-4 pb-1">
+          <DialogTitle className="text-sm font-medium">{t('newTab')}</DialogTitle>
         </DialogHeader>
-        <div className="grid grid-cols-2 gap-2">
-          {MENU_ITEMS.map((item) => (
-            <div
-              key={item.key}
-              className="relative aspect-square rounded-lg border border-border bg-background text-foreground transition-colors"
-            >
-              <button
-                className="flex h-full w-full flex-col items-center justify-center gap-2 rounded-lg transition-colors active:bg-accent disabled:pointer-events-none disabled:opacity-50"
-                disabled={creatingKey !== null}
-                onClick={() => handleSelect(item)}
-              >
-                <span className="flex h-5 w-5 items-center justify-center">
-                  {creatingKey === `${item.key}-new` ? <Spinner className="h-4 w-4" /> : item.icon}
-                </span>
-                <span className="line-clamp-2 max-w-full px-1 text-center text-xs leading-tight">
-                  {item.label}
-                </span>
-              </button>
-            </div>
-          ))}
-        </div>
+        {open && <NewTabPicker paneId={paneId} mobile onClose={() => onOpenChange(false)} onCreateTab={onCreateTab} />}
       </DialogContent>
     </Dialog>
   );
