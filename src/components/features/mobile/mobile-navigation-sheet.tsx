@@ -1,3 +1,4 @@
+import { getTabAgentProviderId } from '@/lib/tab-agent-identity';
 import { useMemo, useState, useCallback } from 'react';
 import {
   ChevronDown,
@@ -151,7 +152,7 @@ const MobileNavigationSheet = ({
     if (tab.panelType === 'agent-sessions') return tt('sessionList');
     const meta = metadata[tab.id];
     const rawTitle = meta?.title || tab.title;
-    const formatted = rawTitle ? formatTabTitle(rawTitle, tab.panelType) : '';
+    const formatted = rawTitle ? formatTabTitle(rawTitle, tab.panelType, getTabAgentProviderId(tab)) : '';
     if (formatted) return formatted;
     return '';
   };

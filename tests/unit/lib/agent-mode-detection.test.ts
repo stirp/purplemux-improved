@@ -64,6 +64,19 @@ afterEach(async () => {
 });
 
 describe('view mode live agent detection', () => {
+  it.each([false, true])('keeps Chat available when newer activity supersedes a cached exit (desktop: %s)', async (desktop) => {
+    useTabStore.getState().setDetectedAgent('tab', { running: false, checkedAt: 10 });
+    useTabStore.getState().updateFromServer('tab', {
+      workspaceId: 'ws', panelType: 'terminal', agentProviderId: 'codex', agentSessionId: 'root',
+      cliState: 'busy', lastEvent: { name: 'prompt-submit', at: 20, seq: 2 }, eventSeq: 2,
+    });
+    vi.mocked(fetch).mockRejectedValue(new Error('offline'));
+    await render('terminal', desktop);
+    await click('Select tab mode');
+    expect(button('Chat')).toBeDefined();
+    expect(button('Start Claude')).toBeUndefined();
+  });
+
   it.each([false, true])('returns from Codex through Terminal to its original chat (desktop: %s)', async (desktop) => {
     vi.mocked(fetch).mockResolvedValue(runningResponse('codex'));
     useTabStore.getState().setPanelType('tab', 'codex-cli');
@@ -129,14 +142,15 @@ describe('view mode live agent detection', () => {
   });
 
   it('shows start actions after a confirmed exit even while the foreground command is node', async () => {
-    useTabStore.getState().setDetectedAgent('tab', { running: true, checkedAt: 1, providerId: 'claude' });
+    useTabStore.getState().setDetectedAgent('tab', { running: true, checkedAt: 1, providerId: 'claude', sessionId: 'original-session' });
     vi.mocked(fetch).mockResolvedValue(response({ running: false, checkedAt: 10 }));
     await render();
     await click('Select tab mode');
     expect(button('Chat')).toBeUndefined();
     expect(button('Start Claude')).toBeDefined();
     expect(button('Start Codex')).toBeDefined();
-    expect(useTabStore.getState().tabs.tab.agentProviderId).toBeUndefined();
+    expect(useTabStore.getState().tabs.tab.agentProviderId).toBe('claude');
+    expect(useTabStore.getState().tabs.tab.agentSessionId).toBe('original-session');
   });
 
   it.each(['network', 'http'])('opens with the last detected identity on %s failure', async (failure) => {

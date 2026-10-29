@@ -74,6 +74,10 @@
     "workflowButton": "コミットと公開",
     "workflowTitle": "コミット・プッシュ・PR/MR",
     "workflowDescription": "コミットメッセージを生成または編集してコミットを確認し、ブランチをプッシュして PR/MR の下書きを作成します。既存のコミットは直接公開できます。",
-    "cleanPublish": "コミットする変更はありません。現在のブランチをプッシュするか、PR/MR の下書きを作成できます。"
+    "cleanPublish": "コミットする変更はありません。現在のブランチをプッシュするか、PR/MR の下書きを作成できます。",
+    "generateCommitAndPublish": "AI 生成・コミット・プッシュ・PR/MR 作成",
+    "commitAndPublish": "コミット・プッシュ・PR/MR 作成",
+    "publishAfterGeneration": "生成後にコミット・プッシュ・PR/MR 作成",
+    "publishQueued": "生成後に自動でコミット・プッシュ・PR/MR 作成"
   }
 }

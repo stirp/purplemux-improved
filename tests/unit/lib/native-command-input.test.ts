@@ -9,7 +9,7 @@ const mocks = vi.hoisted(() => ({
   mobile: false,
   translate: (key: string) => key,
   history: { entries: [], isLoading: false, isError: false, fetchHistory: vi.fn(), addHistory: vi.fn(), deleteHistory: vi.fn() },
-  queue: { messages: [] as { id: string; text: string; attachments: { path: string; filename: string }[] }[], canceledIds: [] as string[], attempts: [] as { id: string; at: number }[], sending: false, enqueue: vi.fn(), submitNow: vi.fn(), remove: vi.fn() },
+  queue: { messages: [] as { id: string; text: string; attachments: { path: string; filename: string }[] }[], canceledIds: [] as string[], attempts: [] as { id: string; at: number }[], sending: false, error: null as string | null, enqueue: vi.fn(), submitNow: vi.fn(), remove: vi.fn() },
   attachments: [] as { id: string; path: string; filename: string; thumbnail: string }[],
   sendStdin: vi.fn(),
   focusTerminal: vi.fn(),
@@ -23,7 +23,6 @@ vi.mock('@/hooks/use-message-history', () => ({ default: () => mocks.history }))
 vi.mock('@/hooks/use-input-queue', () => ({ default: () => mocks.queue }));
 vi.mock('@/hooks/use-web-push', () => ({ registerPushTarget: vi.fn() }));
 vi.mock('@/lib/attachment-draft', () => ({ loadAttachmentDraft: () => mocks.attachments, saveAttachmentDraft: vi.fn() }));
-vi.mock('@/components/features/workspace/interrupt-dialog', () => ({ default: () => null }));
 vi.mock('@/components/features/workspace/message-history-picker', () => ({ default: () => null }));
 
 let root: Root;
@@ -76,6 +75,7 @@ beforeEach(() => {
   mocks.queue.canceledIds = [];
   mocks.queue.attempts = [];
   mocks.queue.sending = false;
+  mocks.queue.error = null;
   mocks.attachments = [];
   focusInputRef = { current: undefined };
   setInputValueRef = { current: undefined };
@@ -89,6 +89,113 @@ afterEach(async () => {
   container.remove();
   vi.useRealTimers();
   vi.unstubAllGlobals();
+});
+
+const stopButton = () => container.querySelector<HTMLButtonElement>('[aria-label="interruptAriaLabel"]');
+const sendButton = () => container.querySelector<HTMLButtonElement>('[aria-label="queueSend"]');
+
+describe('Web input execution controls', () => {
+  it.each([false, true])('explains a blocked draft without automatically retrying or canceling (mobile=%s)', async (mobile) => {
+    mocks.mobile = mobile;
+    mocks.queue.messages = [{ id: 'blocked', text: 'original message', attachments: [] }];
+    mocks.queue.error = 'terminalHasDraft';
+    const onAddPendingMessage = vi.fn();
+    await render({ onAddPendingMessage });
+    expect(container.textContent).toContain('queueTerminalHasDraft');
+    expect(container.textContent).toContain('original message');
+    expect(onAddPendingMessage).toHaveBeenCalledWith('original message', expect.objectContaining({ deliveryState: 'failed' }));
+    expect(mocks.queue.submitNow).not.toHaveBeenCalled();
+    expect(mocks.queue.remove).not.toHaveBeenCalled();
+    expect(mocks.sendStdin).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    { provider: 'codex', cliState: 'busy', mobile: false },
+    { provider: 'codex', cliState: 'busy', mobile: true },
+    { provider: 'codex', cliState: 'needs-input', mobile: false },
+    { provider: 'codex', cliState: 'needs-input', mobile: true },
+    { provider: 'claude', cliState: 'busy', mobile: false },
+    { provider: 'claude', cliState: 'busy', mobile: true },
+    { provider: 'claude', cliState: 'needs-input', mobile: false },
+    { provider: 'claude', cliState: 'needs-input', mobile: true },
+  ] as const)('keeps stop after draft entry and enqueue ($provider/$cliState/mobile=$mobile)', async ({ mobile, ...props }) => {
+    mocks.mobile = mobile;
+    let complete!: () => void;
+    mocks.queue.enqueue.mockImplementationOnce(() => new Promise<void>((resolve) => { complete = resolve; }));
+    await render(props);
+    expect(stopButton()?.disabled).toBe(false);
+    expect(sendButton()).toBeNull();
+    await type('做 code review');
+    expect(stopButton()?.className).toContain('text-ui-red');
+    expect(stopButton()?.querySelector('svg')?.getAttribute('fill')).toBe('currentColor');
+    expect(sendButton()?.nextElementSibling).toBe(stopButton());
+    await act(async () => sendButton()!.click());
+    expect(mocks.queue.enqueue).toHaveBeenCalledWith(expect.objectContaining({ text: '做 code review' }));
+    expect(sendButton()?.disabled).toBe(true);
+    expect(stopButton()?.disabled).toBe(false);
+    await act(async () => complete());
+    expect(container.querySelector('textarea')!.value).toBe('');
+    expect(stopButton()?.disabled).toBe(false);
+    expect(sendButton()).toBeNull();
+    expect(mocks.sendStdin).not.toHaveBeenCalled();
+  });
+
+  it.each([false, true])('preserves stop and an attachment-only draft after enqueue failure (mobile=%s)', async (mobile) => {
+    mocks.mobile = mobile;
+    mocks.attachments = [{ id: 'image', path: '/upload/image.png', filename: 'image.png', thumbnail: 'blob:image' }];
+    mocks.queue.enqueue.mockRejectedValueOnce(new Error('network error'));
+    await render({ cliState: 'busy' });
+    expect(stopButton()?.disabled).toBe(false);
+    await act(async () => sendButton()!.click());
+    expect(mocks.queue.enqueue).toHaveBeenCalledWith(expect.objectContaining({ text: '', attachments: [{ path: '/upload/image.png', filename: 'image.png' }] }));
+    expect(stopButton()?.disabled).toBe(false);
+    expect(sendButton()?.disabled).toBe(false);
+    expect(container.querySelector('img[alt="image.png"]')).not.toBeNull();
+    expect(mocks.sendStdin).not.toHaveBeenCalled();
+  });
+
+  it.each([false, true])('confirms interruption independently of the draft and attachments (mobile=%s)', async (mobile) => {
+    mocks.mobile = mobile;
+    mocks.attachments = [{ id: 'image', path: '/upload/image.png', filename: 'image.png', thumbnail: 'blob:image' }];
+    await render({ cliState: 'busy' });
+    await type('keep this draft');
+    await act(async () => stopButton()!.click());
+    expect(document.querySelector('[role="alertdialog"]')).not.toBeNull();
+    expect(mocks.sendStdin).not.toHaveBeenCalled();
+    const dialogButton = (label: string) => Array.from(document.querySelectorAll<HTMLButtonElement>('[role="alertdialog"] button')).find((button) => button.textContent === label)!;
+    await act(async () => dialogButton('cancel').click());
+    expect(mocks.sendStdin).not.toHaveBeenCalled();
+    await act(async () => stopButton()!.click());
+    await act(async () => dialogButton('interruptConfirm').click());
+    expect(mocks.sendStdin.mock.calls).toEqual([['\x1b\x1b']]);
+    expect(mocks.queue.enqueue).not.toHaveBeenCalled();
+    expect(container.querySelector('textarea')!.value).toBe('keep this draft');
+    expect(container.querySelector('img[alt="image.png"]')).not.toBeNull();
+  });
+
+  it('disables stop while disconnected and restores it after reconnect', async () => {
+    await render({ cliState: 'busy' });
+    await type('draft');
+    await render({ cliState: 'busy', terminalWsConnected: false });
+    expect(stopButton()?.disabled).toBe(true);
+    expect(sendButton()?.disabled).toBe(true);
+    await act(async () => stopButton()!.click());
+    expect(document.querySelector('[role="alertdialog"]')).toBeNull();
+    expect(mocks.sendStdin).not.toHaveBeenCalled();
+    await render({ cliState: 'busy', terminalWsConnected: true });
+    expect(stopButton()?.disabled).toBe(false);
+    expect(container.querySelector('textarea')!.value).toBe('draft');
+  });
+
+  it.each(['idle', 'ready-for-review', 'unknown', 'inactive', 'cancelled'] as const)('removes stop when the state changes to %s', async (cliState) => {
+    await render({ cliState: 'busy' });
+    await type('draft');
+    expect(stopButton()).not.toBeNull();
+    await render({ cliState });
+    expect(stopButton()).toBeNull();
+    expect(sendButton()).not.toBeNull();
+    expect(container.querySelector('textarea')!.value).toBe('draft');
+  });
 });
 
 describe('Web input native menus', () => {

@@ -1,3 +1,4 @@
+import { getTabAgentPanelType } from '@/lib/tab-agent-identity';
 import { useRef, useEffect, useMemo } from 'react';
 import useTabStore, { selectTabDisplayStatus } from '@/hooks/use-tab-store';
 import { cn } from '@/lib/utils';
@@ -52,7 +53,7 @@ const MobileWorkspaceTabBar = ({
       for (const pane of panes) {
         const sorted = [...pane.tabs].sort((a, b) => a.order - b.order);
         for (const tab of sorted) {
-          wsTabs.push({ workspaceId: ws.id, paneId: pane.id, tabId: tab.id, panelType: tab.panelType });
+          wsTabs.push({ workspaceId: ws.id, paneId: pane.id, tabId: tab.id, panelType: getTabAgentPanelType(tab) ?? tab.panelType });
         }
       }
 
@@ -114,7 +115,7 @@ const MobileWorkspaceTabBar = ({
                   isActive && 'bg-foreground/15',
                 )}
               >
-                <CompactTabIcon panelType={item.panelType} status={status} terminalStatus={termStatus} process={currentProcess} />
+                <CompactTabIcon panelType={getTabAgentPanelType(statusTabs[item.tabId]) ?? item.panelType} status={status} terminalStatus={termStatus} process={currentProcess} />
               </span>
             </button>
           );

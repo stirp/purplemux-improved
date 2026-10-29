@@ -20,13 +20,16 @@ it('keeps the optimistic message and explicit status visible until receipt confi
     await act(async () => root.render(createElement(UserMessageItem, { entry })));
     expect(container.textContent).toContain(message.text);
     expect(container.querySelector('[role="status"]')?.textContent).toBe('inputSending');
+    expect(container.querySelector('time')?.getAttribute('datetime')).toBe(new Date(entry.timestamp).toISOString());
     await act(async () => vi.advanceTimersByTime(30_000));
     expect(container.querySelector('.opacity-50')).toBeNull();
     await act(async () => root.render(createElement(UserMessageItem, { entry: { ...entry, deliveryState: 'unconfirmed' } })));
     expect(container.querySelector('[role="status"]')?.textContent).toBe('inputUnconfirmed');
     await act(async () => root.render(createElement(UserMessageItem, { entry: { ...entry, pending: false } })));
     expect(container.querySelector('[role="status"]')).toBeNull();
-    expect(container.textContent).toBe(message.text);
+    expect(container.querySelectorAll('p')).toHaveLength(1);
+    expect(container.querySelector('p')?.textContent).toBe(message.text);
+    expect(container.querySelector('time')?.getAttribute('datetime')).toBe(new Date(entry.timestamp).toISOString());
   } finally {
     await act(async () => root.unmount());
     vi.useRealTimers();

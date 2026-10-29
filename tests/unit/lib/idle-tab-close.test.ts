@@ -14,6 +14,7 @@ vi.mock('fs/promises', () => ({ default: {
 } }));
 vi.mock('@/lib/tmux', () => ({ killSession: m.kill }));
 vi.mock('@/lib/sync-server', () => ({ broadcastSync: m.broadcast }));
+vi.mock('@/lib/logger', () => ({ createLogger: () => ({ debug: vi.fn(), info: vi.fn(), warn: vi.fn(), error: vi.fn() }) }));
 vi.mock('@/lib/workspace-store', () => ({ updateWorkspaceDirectories: vi.fn() }));
 import { removeTabFromPane, resolveLayoutFile } from '@/lib/layout-store';
 
@@ -32,7 +33,10 @@ describe('guarded idle tab close', () => {
     const beforeClose = vi.fn(async () => {});
     const afterClose = vi.fn(async () => { expect(stored().root.tabs).toHaveLength(1); });
     expect(await removeTabFromPane('ws-idle', 'pane', 'tab', { beforeClose, afterClose })).toBe(true);
-    expect(beforeClose).toHaveBeenCalledWith(tab);
+    expect(beforeClose).toHaveBeenCalledWith({
+      ...tab,
+      agentState: { providerId: 'codex', sessionId: null, jsonlPath: null, summary: null },
+    });
     expect(afterClose).toHaveBeenCalledOnce();
     expect(stored().root).toMatchObject({ tabs: [], activeTabId: null });
     expect(m.broadcast).toHaveBeenCalledWith({ type: 'layout', workspaceId: 'ws-idle' });

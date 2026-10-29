@@ -179,7 +179,13 @@
     "generateDraft": "Создать заголовок и описание по коммитам",
     "generatingDraft": "Создание заголовка и описания…",
     "generateDraftHint": "Claude Code описывает закоммиченные изменения относительно целевой ветки. Результат можно редактировать.",
-    "replaceDraftConfirm": "Заменить существующие заголовок и описание сгенерированным содержимым?"
+    "replaceDraftConfirm": "Заменить существующие заголовок и описание сгенерированным содержимым?",
+    "pushAndCreateDraft": "Отправить и создать PR/MR",
+    "finishPublish": "Создать PR/MR",
+    "generateAndPublish": "Сгенерировать с ИИ и создать PR/MR (отправить при необходимости)",
+    "pushingBranch": "Отправка ветки…",
+    "creatingDraft": "Создание черновика PR/MR…",
+    "completePublishSettings": "Укажите удалённый репозиторий и целевую ветку, чтобы продолжить."
   },
   "worktreeTree": {
     "title": "Worktree relationships",

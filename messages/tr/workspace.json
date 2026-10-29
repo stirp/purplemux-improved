@@ -179,7 +179,13 @@
     "generateDraft": "Commitlerden başlık ve açıklama oluştur",
     "generatingDraft": "Başlık ve açıklama oluşturuluyor…",
     "generateDraftHint": "Claude Code, hedef dala göre commitlenmiş değişiklikleri özetler. Sonucu düzenleyebilirsiniz.",
-    "replaceDraftConfirm": "Mevcut başlık ve açıklama, oluşturulan içerikle değiştirilsin mi?"
+    "replaceDraftConfirm": "Mevcut başlık ve açıklama, oluşturulan içerikle değiştirilsin mi?",
+    "pushAndCreateDraft": "Gönder ve PR/MR oluştur",
+    "finishPublish": "PR/MR oluştur",
+    "generateAndPublish": "Yapay zekâyla üret ve PR/MR oluştur (gerekirse gönder)",
+    "pushingBranch": "Dal gönderiliyor…",
+    "creatingDraft": "PR/MR taslağı oluşturuluyor…",
+    "completePublishSettings": "Devam etmek için uzak depo ve hedef dal ayarlarını tamamlayın."
   },
   "worktreeTree": {
     "title": "Worktree relationships",

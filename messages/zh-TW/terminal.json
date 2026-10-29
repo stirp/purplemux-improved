@@ -191,6 +191,7 @@
   "customCommandsAutoEnterHint": "關閉後不額外加入末尾 Enter；命令本身包含的換行仍會傳送。",
   "queueDeliveryUnconfirmed": "尚未確認 Codex 收到訊息，內容已保留。請檢查終端輸入後重試或取消。",
   "queueTerminalNotReady": "終端尚未準備好接收訊息，內容已保留。請檢查 Codex 畫面後重試。",
+  "queueTerminalHasDraft": "Codex 輸入框中仍有未傳送內容，已暫停傳送以避免拼接。訊息已保留，請在終端處理現有內容後重試。",
   "inputSending": "正在傳送，等待工作階段確認…",
   "inputQueued": "排隊中",
   "inputUnconfirmed": "尚未確認收到，請檢查終端",

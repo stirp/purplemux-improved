@@ -1,3 +1,4 @@
+import { getTabAgentProviderId } from '@/lib/tab-agent-identity';
 import type { IInputAttempt } from '@/lib/input-queue';
 import type { IPendingUserMessageOptions } from '@/types/timeline';
 import { resolveTerminalTypography } from '@/lib/terminal-appearance';
@@ -100,6 +101,7 @@ const NOOP_WS_ACTIONS: IWsActions = {
 interface IPaneContainerProps {
   paneId: string;
   paneNumber: number;
+  toolbar?: React.ReactNode;
 }
 
 const TERMINAL_FONT_SIZES: Record<string, { normal: number; claudeCode: number }> = {
@@ -111,7 +113,7 @@ const MIN_COLLAPSED_AGENT_ROWS = 40;
 
 const EMPTY_TABS: ITab[] = [];
 
-const PaneContainer = memo(({ paneId, paneNumber }: IPaneContainerProps) => {
+const PaneContainer = memo(({ paneId, paneNumber, toolbar }: IPaneContainerProps) => {
   const t = useTranslations('terminal');
 
   const pane = useLayoutStore((s) => (s.layout ? findPane(s.layout.root, paneId) : null));
@@ -352,8 +354,9 @@ const PaneContainer = memo(({ paneId, paneNumber }: IPaneContainerProps) => {
     });
   }, []);
 
-  const { trustPrompt, onTerminalData: onTrustData, onTrustResponse } = useTrustPromptDetector({
+  const { trustPrompt, nativeTrustPrompt, onTerminalData: onTrustData, onTrustResponse } = useTrustPromptDetector({
     enabled: isClaudeCode || isCodex,
+    nativePromptEnabled: isCodex && !claudeSessionId && (claudeCliState === 'inactive' || claudeCliState === 'unknown'),
     scopeKey: `${activeTabId}:${claudeSessionId}`,
     getBufferText: () => termActionsRef.current.getBufferText(),
     sendStdin: (data) => wsActionsRef.current.sendStdin(data),
@@ -442,9 +445,9 @@ const PaneContainer = memo(({ paneId, paneNumber }: IPaneContainerProps) => {
     return true;
   }, []);
 
-  const normalizeTerminalSize = useCallback((cols: number, rows: number, collapsed = isTerminalCollapsed): { cols: number; rows: number } => {
+  const normalizeTerminalSize = useCallback((cols: number, rows: number): { cols: number; rows: number } => {
     if (!isAgentPanel) return { cols, rows };
-    if (!collapsed) {
+    if (!effectiveTerminalCollapsed) {
       lastVisibleTerminalSizeRef.current = { cols, rows };
       return { cols, rows };
     }
@@ -452,16 +455,17 @@ const PaneContainer = memo(({ paneId, paneNumber }: IPaneContainerProps) => {
       cols,
       rows: Math.max(rows, lastVisibleTerminalSizeRef.current?.rows ?? 0, MIN_COLLAPSED_AGENT_ROWS),
     };
-  }, [isAgentPanel, isTerminalCollapsed]);
+  }, [isAgentPanel, effectiveTerminalCollapsed]);
 
-  const sendEffectiveResize = useCallback((cols: number, rows: number, collapsed?: boolean) => {
-    const size = normalizeTerminalSize(cols, rows, collapsed);
-    wsActionsRef.current.sendResize(size.cols, size.rows);
-  }, [normalizeTerminalSize]);
+  const sendEffectiveResize = useCallback((cols: number, rows: number) => {
+    wsActionsRef.current.sendResize(cols, rows);
+  }, []);
 
   const nativeCommandEventsRef = useRef<Pick<ReturnType<typeof useNativeCommands>, 'onInput' | 'onParsed'> | null>(null);
+  const terminalInputEnabled = !!activeTabId && (activePanelType === 'terminal' || (isAgentPanel && !isTerminalCollapsed));
 
   const { terminalRef, write, clear, reset, fit, focus, focusAtBottom, isReady, getBufferText } = useTerminal({
+    inputEnabled: terminalInputEnabled,
     onWriteParsed: () => nativeCommandEventsRef.current?.onParsed(),
     ...resolveTerminalTypography({ theme: terminalTheme.colors, fontSize: (TERMINAL_FONT_SIZES[configFontSize] ?? TERMINAL_FONT_SIZES.normal)[isAgentPanel ? 'claudeCode' : 'normal'] }, terminalTypography),
     lineHeight: resolveLineHeight(configLineHeight, configLineHeightCustom),
@@ -469,6 +473,7 @@ const PaneContainer = memo(({ paneId, paneNumber }: IPaneContainerProps) => {
       wsActionsRef.current.sendStdin(applyArmedModifier(data));
     },
     onResize: sendEffectiveResize,
+    normalizeSize: normalizeTerminalSize,
     onTitleChange: (title) => {
       const tabId = activeTabIdRef.current;
       if (!tabId) return;
@@ -478,7 +483,7 @@ const PaneContainer = memo(({ paneId, paneNumber }: IPaneContainerProps) => {
       if (title === lastTitleRef.current) return;
       lastTitleRef.current = title;
 
-      const formatted = formatTabTitle(title, activeTab?.panelType);
+      const formatted = formatTabTitle(title, activeTab?.panelType, getTabAgentProviderId(activeTab));
       const process = parseCurrentCommand(title);
       useTabMetadataStore.getState().setTitle(tabId, formatted);
       useTabStore.getState().setCurrentProcess(tabId, process);
@@ -592,7 +597,7 @@ const PaneContainer = memo(({ paneId, paneNumber }: IPaneContainerProps) => {
       if (tabId) useTabStore.getState().setTerminalConnected(tabId, true);
       const { cols, rows } = termActionsRef.current.fit();
       sendEffectiveResize(cols, rows);
-      if (isFocusedRef.current) {
+      if (isFocusedRef.current && (!document.activeElement || document.activeElement === document.body)) {
         termActionsRef.current.focus();
       }
       fetchAndUpdateCwd();
@@ -641,13 +646,7 @@ const PaneContainer = memo(({ paneId, paneNumber }: IPaneContainerProps) => {
 
     connectedSessionRef.current = tab.sessionName;
     const { cols, rows } = fit();
-    const isAgentTab = tab.panelType === 'claude-code' || tab.panelType === 'codex-cli';
-    const initialSize = normalizeTerminalSize(
-      cols,
-      rows,
-      isAgentTab ? (tab.terminalCollapsed ?? !claudeShowTerminal) : false,
-    );
-    connect(tab.sessionName, initialSize.cols, initialSize.rows);
+    connect(tab.sessionName, cols, rows);
   }, [isReady, activeTabId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
@@ -816,6 +815,10 @@ const PaneContainer = memo(({ paneId, paneNumber }: IPaneContainerProps) => {
     setIsPanelTransitioning(true);
     updateTabPanelType(paneId, activeTabId, next);
   }, [paneId, activeTabId, updateTabPanelType]);
+
+  useEffect(() => {
+    if (isCodex && nativeTrustPrompt) handleSwitchPanelType('terminal');
+  }, [isCodex, nativeTrustPrompt, handleSwitchPanelType]);
 
   const handleSendToAgent = useCallback(async (text: string, provider: TGitAskProvider) => {
     if (!await ensureAgentInstalled(provider)) return;
@@ -1118,7 +1121,7 @@ const PaneContainer = memo(({ paneId, paneNumber }: IPaneContainerProps) => {
       suppressTerminalSaveRef.current = false;
       if (!isReady || status !== 'connected') return;
       const { cols, rows } = fit();
-      sendEffectiveResize(cols, rows, next);
+      sendEffectiveResize(cols, rows);
     }, 150);
   }, [isTerminalCollapsed, isReady, status, fit, isAgentPanel, activeTabId, paneId, activeTab?.terminalRatio, updateTabTerminalLayout, sendEffectiveResize]);
 
@@ -1153,7 +1156,7 @@ const PaneContainer = memo(({ paneId, paneNumber }: IPaneContainerProps) => {
       suppressTerminalSaveRef.current = false;
       if (!isReady || status !== 'connected') return;
       const { cols, rows } = fit();
-      sendEffectiveResize(cols, rows, isAgentPanel ? effectiveTerminalCollapsed : false);
+      sendEffectiveResize(cols, rows);
       if (isFocused) {
         if (isAgentPanel) {
           if (agentInputVisible) deferredFocusInput(() => focusInputRef.current?.());
@@ -1200,28 +1203,33 @@ const PaneContainer = memo(({ paneId, paneNumber }: IPaneContainerProps) => {
       onPointerDown={handlePointerDown}
       onPointerUp={handlePointerUp}
     >
-      <PaneTabBar
-        paneId={paneId}
-        tabs={tabs}
-        activeTabId={activeTabId}
-        tabTitles={tabTitles}
-        tabProcesses={tabProcesses}
-        isLoading={false}
-        error={null}
-        isCreating={isCreating}
-        paneCount={paneCount}
-        isSplitting={isSplitting}
-        onSwitchTab={handleSwitchTab}
-        onCreateTab={handleCreateTab}
-        onDeleteTab={handleDeleteTab}
-        onRenameTab={handleRenameTab}
-        onSwitchPanelType={handleSwitchPanelType}
-        onReorderTabs={handleReorderTabs}
-        onClosePane={() => closePane(paneId)}
-        onMoveTab={handleMoveTab}
-        onFocusPane={handleFocusPane}
-        onRetry={() => {}}
-      />
+      <div className="flex min-w-0 shrink-0 items-stretch border-b border-border bg-background">
+        <div className="min-w-0 flex-1">
+          <PaneTabBar
+            paneId={paneId}
+            tabs={tabs}
+            activeTabId={activeTabId}
+            tabTitles={tabTitles}
+            tabProcesses={tabProcesses}
+            isLoading={false}
+            error={null}
+            isCreating={isCreating}
+            paneCount={paneCount}
+            isSplitting={isSplitting}
+            onSwitchTab={handleSwitchTab}
+            onCreateTab={handleCreateTab}
+            onDeleteTab={handleDeleteTab}
+            onRenameTab={handleRenameTab}
+            onSwitchPanelType={handleSwitchPanelType}
+            onReorderTabs={handleReorderTabs}
+            onClosePane={() => closePane(paneId)}
+            onMoveTab={handleMoveTab}
+            onFocusPane={handleFocusPane}
+            onRetry={() => {}}
+          />
+        </div>
+        {toolbar}
+      </div>
 
       <div
         role="tabpanel"
@@ -1428,7 +1436,7 @@ const PaneContainer = memo(({ paneId, paneNumber }: IPaneContainerProps) => {
           )}
 
           <Panel id="terminal-area" minSize={0} collapsible collapsedSize={0}>
-            <div className="flex h-full flex-col" onMouseDown={() => { clickedTerminalRef.current = true; }}>
+            <div inert={!terminalInputEnabled} aria-hidden={!terminalInputEnabled || undefined} className="flex h-full flex-col" onMouseDown={() => { clickedTerminalRef.current = true; }}>
               {isAgentPanel && nativeCommands.active && <NativeCommandToolbar onClose={nativeCommands.close} />}
               <TerminalContainer
                 ref={terminalRef}

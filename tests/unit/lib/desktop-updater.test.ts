@@ -102,4 +102,26 @@ describe('desktop update integration', () => {
     await prepare('0.6.0');
     expect(native.checkForUpdates).toHaveBeenCalledTimes(2);
   });
+  it('forces an update past idle checks but still requires successful native preparation', async () => {
+    const updater = Object.assign(new EventEmitter(), {
+      checkForUpdates: vi.fn(async () => ({ updateInfo: { version: '0.6.0' } })),
+      downloadUpdate: vi.fn(async () => []),
+    });
+    const assertIdle = vi.fn(async () => { throw new Error('busy'); });
+    const prepareNative = vi.fn(async () => {}).mockRejectedValueOnce(new Error('signature invalid'));
+    const restart = vi.fn(async () => {});
+    const manager = createDesktopUpdater(updater as unknown as AppUpdater, {
+      version: '0.5.6', supported: true, assertIdle, prepareNative, restart,
+    });
+    await manager.check();
+    await manager.install({ force: true, version: '0.6.0' });
+    expect(manager.getState().error).toBe('signature invalid');
+    expect(assertIdle).not.toHaveBeenCalled();
+    expect(restart).not.toHaveBeenCalled();
+    await manager.install({ force: true, version: '0.6.0' });
+    expect(updater.downloadUpdate).toHaveBeenCalledTimes(1);
+    expect(prepareNative).toHaveBeenCalledTimes(2);
+    expect(restart).toHaveBeenCalledTimes(1);
+  });
+
 });

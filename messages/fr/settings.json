@@ -394,14 +394,19 @@
     "blocked": "Waiting for idle sessions",
     "restarting": "Restarting…",
     "error": "Update failed",
-    "busyHint": "Some tasks are running or their state cannot be confirmed. Retry when all sessions are idle. No restart is scheduled.",
+    "busyHint": "Des tâches sont en cours ou leur état est inconnu. Réessayez quand les sessions seront inactives ou forcez la mise à jour. Aucun redémarrage n’est programmé.",
     "reconnecting": "Reconnecting after restart. If startup fails, the server will restore the previous version.",
     "desktopUnsupported": "One-click updates require a packaged desktop app and a published installer.",
     "serverUnsupported": "One-click updates require a production server started with purplemux-improved. Source and development instances can only check for updates.",
     "notChecked": "Not checked yet",
     "reconnectFailed": "The app has not reconnected. Reload the page or check the server logs.",
     "reload": "Reload page",
-    "desktopReconnecting": "Installing and restarting the desktop app. Wait for the app to reopen."
+    "desktopReconnecting": "Installing and restarting the desktop app. Wait for the app to reopen.",
+    "skip": "Ignorer cette version",
+    "skipped": "Version {version} ignorée. La mise à jour manuelle reste possible.",
+    "forceInstall": "Forcer la mise à jour et redémarrer",
+    "forceConfirm": "Mettre à jour vers {version} sans attendre que les sessions soient inactives ? Les connexions seront coupées et les tâches en cours risquent d’être interrompues.",
+    "cancel": "Annuler"
   },
   "linuxStartup": {
     "title": "Ouvrir l’application à la connexion",

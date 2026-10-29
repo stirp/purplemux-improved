@@ -58,7 +58,8 @@ afterEach(() => {
   vi.useRealTimers();
 });
 
-describe('Codex review lifecycle and session ownership', () => {
+describe.each(['codex-cli', 'terminal'] as const)('Codex review lifecycle in %s', (panelType) => {
+  beforeEach(() => { entry.panelType = panelType; });
   it('broadcasts pending questions globally without changing busy state, and clears answered questions', async () => {
     entry.cliState = 'busy';
     const broadcast = vi.spyOn(manager, 'broadcast');

@@ -1,3 +1,4 @@
+import { getTabAgentPanelType } from '@/lib/tab-agent-identity';
 import { memo, useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 import { Check, CircleDot, CircleHelp, Clock3, Loader2, MessageCircleQuestion } from 'lucide-react';
@@ -30,7 +31,7 @@ const WorkspaceStatusIndicator = ({ id, workspaceId, tabs: layoutTabs, compact =
       return layoutTabs.map((tab) => ({
         tabId: tab.id,
         status: selectTabDisplayStatus(tabs, tab.id),
-        panelType: tab.panelType ?? tabs[tab.id]?.panelType,
+        panelType: getTabAgentPanelType(tab) ?? getTabAgentPanelType(tabs[tab.id]) ?? tab.panelType ?? tabs[tab.id]?.panelType,
         terminalStatus: tabs[tab.id]?.terminalStatus,
         currentProcess: tabs[tab.id]?.currentProcess,
       }));
@@ -49,7 +50,7 @@ const WorkspaceStatusIndicator = ({ id, workspaceId, tabs: layoutTabs, compact =
     return ordered.map((tabId) => ({
       tabId,
       status: selectTabDisplayStatus(tabs, tabId),
-      panelType: tabs[tabId]?.panelType,
+      panelType: getTabAgentPanelType(tabs[tabId]) ?? tabs[tabId]?.panelType,
       terminalStatus: tabs[tabId]?.terminalStatus,
       currentProcess: tabs[tabId]?.currentProcess,
     }));

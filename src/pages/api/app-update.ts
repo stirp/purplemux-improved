@@ -1,6 +1,8 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { getAppUpdateManager } from '@/lib/app-update-server';
 import { assertUpdateSessionsIdle } from '@/lib/app-update-guard';
+import { isStableVersion } from '@/lib/app-update-version';
+import { saveSkippedAppVersion } from '@/lib/workspace-store';
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   res.setHeader('Cache-Control', 'no-store');
@@ -24,6 +26,18 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   }
   if (req.body?.action === 'check') await manager.check();
   else if (req.body?.action === 'install') void manager.install();
+  else if (req.body?.action === 'force-install' || req.body?.action === 'skip' || req.body?.action === 'skip-desktop-version') {
+    if (!isStableVersion(req.body.version)) return res.status(400).json({ error: 'Invalid update version' });
+    if (req.body.action === 'force-install') void manager.install({ force: true, version: req.body.version });
+    else {
+      try {
+        if (req.body.action === 'skip-desktop-version') await saveSkippedAppVersion('desktop', req.body.version);
+        else await manager.skip(req.body.version);
+      } catch (error) {
+        return res.status(409).json({ error: error instanceof Error ? error.message : String(error) });
+      }
+    }
+  }
   else return res.status(400).json({ error: 'Invalid update action' });
   return res.status(202).json(manager.getState());
 };

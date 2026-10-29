@@ -179,7 +179,13 @@
     "generateDraft": "Generar título y descripción a partir de los commits",
     "generatingDraft": "Generando título y descripción…",
     "generateDraftHint": "Claude Code resume los cambios confirmados respecto a la rama de destino. Puedes editar el resultado.",
-    "replaceDraftConfirm": "¿Reemplazar el título y la descripción existentes por el contenido generado?"
+    "replaceDraftConfirm": "¿Reemplazar el título y la descripción existentes por el contenido generado?",
+    "pushAndCreateDraft": "Subir y crear PR/MR",
+    "finishPublish": "Crear PR/MR",
+    "generateAndPublish": "Generar con IA y crear PR/MR (subir si hace falta)",
+    "pushingBranch": "Subiendo rama…",
+    "creatingDraft": "Creando borrador de PR/MR…",
+    "completePublishSettings": "Completa el remoto y la rama de destino para continuar."
   },
   "worktreeTree": {
     "title": "Worktree relationships",

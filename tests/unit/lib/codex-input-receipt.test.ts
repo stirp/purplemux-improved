@@ -33,6 +33,11 @@ beforeEach(async () => {
 afterEach(async () => { await rm(directory, { recursive: true, force: true }); });
 
 describe('Codex input receipt from real incremental JSONL', () => {
+  it('does not confirm a contaminated message merely because it contains the queued text', async () => {
+    await appendFile(file, event(2100, 'user_message', { message: `确定${message.text}` }));
+    expect(await createCodexInputReceipt(target, message, 2000)()).toEqual({ received: false, completed: false });
+  });
+
   it('confirms a real Codex image record with a generated marker, including a new retry checker', async () => {
     const attachment = { path: path.join(UPLOADS_DIR, 'ws', 'tab', 'image.png'), filename: 'image.png' };
     const imageMessage = { ...message, text: 'describe this', attachments: [attachment] };

@@ -1,4 +1,7 @@
+import { getTabAgentProviderId } from '@/lib/tab-agent-identity';
 import fs from 'fs/promises';
+import type { TAppUpdateTarget } from '@/types/app-update';
+import { isStableVersion } from '@/lib/app-update-version';
 import { DEFAULT_IDLE_TAB_POLICY, idleTabPolicySchema, type TIdleTabPolicy } from '@/lib/idle-tab-policy';
 import { isTaskRunning } from '@/lib/scheduled-tasks';
 import { MAX_TERMINAL_COMMANDS, type ITerminalCommand } from '@/lib/terminal-custom-commands';
@@ -161,8 +164,8 @@ const cleanOrphanScheduledTasks = (data: IWorkspacesData): void => {
 const writeWorkspacesFile = async (data: IWorkspacesData): Promise<void> => {
   cleanOrphanScheduledTasks(data);
   normalizeWorkspaceOrder(data);
-  const { workspaces, groups, activeWorkspaceId, sidebarCollapsed, sidebarWidth, sessionWorkflow, terminalCommands, terminalKeys, idleTabPolicy, scheduledTasks } = data;
-  const contentKey = JSON.stringify({ workspaces, groups: groups ?? [], activeWorkspaceId, sidebarCollapsed, sidebarWidth, sessionWorkflow, terminalCommands, terminalKeys, idleTabPolicy, scheduledTasks });
+  const { workspaces, groups, activeWorkspaceId, sidebarCollapsed, sidebarWidth, sessionWorkflow, terminalCommands, terminalKeys, idleTabPolicy, scheduledTasks, skippedAppVersions } = data;
+  const contentKey = JSON.stringify({ workspaces, groups: groups ?? [], activeWorkspaceId, sidebarCollapsed, sidebarWidth, sessionWorkflow, terminalCommands, terminalKeys, idleTabPolicy, scheduledTasks, skippedAppVersions });
 
   if (g.__purplemuxWorkspacesContentCache === contentKey) return;
 
@@ -363,6 +366,19 @@ export const retainReclaimedSession = async (
     data.sessionWorkflow.titles ??= {};
     data.sessionWorkflow.titles[key] = tab.tabName;
   }
+  await writeWorkspacesFile(data);
+});
+
+export const getSkippedAppVersion = async (target: TAppUpdateTarget): Promise<string | null> => {
+  const version = (await readWorkspacesFile(true))?.skippedAppVersions?.[target];
+  return isStableVersion(version) ? version : null;
+};
+
+export const saveSkippedAppVersion = async (target: TAppUpdateTarget, version: string): Promise<void> => withLock(async () => {
+  if (!isStableVersion(version)) throw new Error('Invalid update version');
+  const data = (await readWorkspacesFile(true)) ?? emptyState();
+  data.skippedAppVersions = { ...data.skippedAppVersions, [target]: version };
+  await fs.mkdir(BASE_DIR, { recursive: true });
   await writeWorkspacesFile(data);
 });
 
@@ -755,7 +771,7 @@ export const updateSessionWorkflow = async (update:
 });
 
 const workflowTabDirectory = (tab: IWorkflowTab, workflow: ISessionWorkflow, workspace: IWorkspace): string | null => {
-  const provider = tab.agentProviderId === 'codex' || tab.panelType === 'codex-cli' ? 'codex' : 'claude';
+  const provider = getTabAgentProviderId(tab) ?? '';
   const saved = workflow.sessions?.[sessionWorkKey(provider, tab.agentSessionId, '')]?.navigation;
   return tab.workspaceDir ?? (saved?.workspaceId === workspace.id ? saved.workspaceDir : null) ?? workspace.directories[0] ?? null;
 };

@@ -73,7 +73,11 @@
     "deliveryUnavailable": "This commit is not linked to a managed worktree, or its HEAD changed. Use Worktree management to continue.",
     "workflowButton": "提交與發布",
     "workflowTitle": "提交、推送與 PR/MR",
-    "workflowDescription": "先產生或編輯提交訊息並確認提交，再推送分支並建立 PR/MR 草稿。已提交的變更可直接繼續發布。",
-    "cleanPublish": "沒有待提交變更，可繼續推送目前分支或建立 PR/MR 草稿。"
+    "workflowDescription": "產生或編輯提交訊息，可逐步操作，也可一鍵完成剩餘步驟。PR/MR 草稿沿用提交標題和內文。",
+    "cleanPublish": "沒有待提交變更，可繼續推送目前分支或建立 PR/MR 草稿。",
+    "generateCommitAndPublish": "AI 產生、提交、推送並發起 PR/MR",
+    "commitAndPublish": "提交、推送並發起 PR/MR",
+    "publishAfterGeneration": "產生後提交、推送並發起 PR/MR",
+    "publishQueued": "產生後將自動提交、推送並發起 PR/MR"
   }
 }

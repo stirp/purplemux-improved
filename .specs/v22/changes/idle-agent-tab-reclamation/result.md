@@ -90,3 +90,71 @@ pnpm exec eslint src/components/features/workspace/settings-dialog.tsx src/lib/w
 ```
 
 - 完整类型检查和冲突涉及的 4 个 TS/TSX 文件 ESLint 通过；`pnpm build` 完成 Next.js 编译、页面生成、post-build 与服务端 tsup。`git diff --cached --check` 通过，`git ls-files -u` 为空。15 个冲突文件及本记录已暂存，没有创建合并提交或推送。本次未执行实机进程操作、启动项注册或浏览器验证。
+
+## 超期不回收修正（2026-10-28）
+
+### 原因与实施
+
+- 旧 `idleAgentProcessChain` 只识别 shell、原生命令及已知 npm 包脚本，应用自己的 `node ~/.purplemux/codex-launcher.js` 和 Claude `node -e <bootstrap>` 均被判为未知进程。npm bin 符号链接也没有复用已有真实路径解析。因此即使时间与会话状态符合要求，正常启动链也可能永远无法成为候选。
+- `src/lib/idle-agent-process.ts` 集中维护回收所需的进程角色和单链核验，识别应用启动器、Claude shell 回退链及真实 npm bin 身份；最终必须存在同 provider 的实际 Agent。固定 Codex 路径由 `providers/codex/launcher-path.ts` 在启动和识别之间复用。
+- `agent-process-identity.ts` 抽取已有 npm 路径解析供回收复用，原运行检测行为保持一致；不会把应用启动器本身冒充真实 Agent。`idle-agent-shutdown.ts` 与预览使用同一规则，确认应用启动器与 npm 包装器全部退出后才允许销毁 tmux。
+- KISS/DRY：复用既有进程查询、身份解析、关闭保护和恢复索引；未新增配置或持久格式。未知工具、MCP 子进程、独立原生子代理、多分支、多 pane、忙碌/输入等待等保护继续生效。
+- 进程列表日期是启动时间，不是闲置起点。本机仅只读查看进程身份摘要，未读取截图服务器 `/home/stirp` 下 PID 的实时状态；不将上述代码缺陷断言为截图每个进程的唯一原因。
+
+### 本次验证
+
+以下两组 Vitest 命令分别通过 59 项和 188 项，共 16 个文件、247 项，无失败；进程查询、信号及 tmux 操作使用模拟，不终止真实用户进程。
+
+```bash
+pnpm exec vitest run "tests/unit/lib/idle-agent-process.test.ts" "tests/unit/lib/idle-agent-shutdown.test.ts" "tests/unit/lib/idle-tab-reclaimer.test.ts" "tests/unit/lib/agent-provider-detection.test.ts"
+pnpm exec vitest run "tests/unit/lib/idle-tab-api.test.ts" "tests/unit/lib/idle-tab-close.test.ts" "tests/unit/lib/layout-empty-workspace.test.ts" "tests/unit/lib/session-workspace-navigation.test.ts" "tests/unit/lib/session-workflow-storage.test.ts" "tests/unit/lib/session-workflow-ui.test.ts" "tests/unit/lib/local-agent-processes.test.ts" "tests/unit/lib/agent-process-manager.test.ts" "tests/unit/lib/codex-launcher-lifecycle.test.ts" "tests/unit/lib/codex-launcher-environment.test.ts" "tests/unit/lib/claude-launcher-install.test.ts" "tests/unit/lib/claude-launcher-environment.test.ts"
+pnpm exec tsc --noEmit
+pnpm exec eslint "src/lib/agent-process-identity.ts" "src/lib/idle-agent-process.ts" "src/lib/idle-agent-shutdown.ts" "src/lib/idle-tab-reclaimer.ts" "src/lib/providers/codex/launcher-path.ts" "src/lib/providers/codex/index.ts" "tests/unit/lib/idle-agent-process.test.ts" "tests/unit/lib/idle-agent-shutdown.test.ts" "tests/unit/lib/idle-tab-reclaimer.test.ts"
+pnpm run build:server
+git diff --check
+```
+
+| 验收 | 本次证据 |
+| --- | --- |
+| 应用启动链不被误拦 | Codex launcher → npm bin → native；Claude 当前 bootstrap/完整内联 → shell 回退 → npm bin 均通过 |
+| 不扩大到其他任务 | 异路径同名脚本、任意 node -e、不同 provider、不可读 bin、无实际 Agent、工具/MCP/子代理/分支/环均拒绝 |
+| 停止与等待 | 只向实际 Agent 发送 SIGTERM；等待应用启动器退出；超时/新子进程/PID 变化/查询失败时保留终端 |
+| 自动回收 | 真实预览与自动回收函数接受应用启动链，先 retain，再 stop/remove |
+| 历史与 resume | 原身份和原目录、标题/标签/人工状态持久化；Sessions 导航使用保留目录；最后空页签及失败保护回归通过 |
+| 静态与服务端构建 | 完整 TypeScript、9 个改动 TS 文件 ESLint、服务端 tsup 构建通过 |
+
+前端生产构建使用 `pnpm exec next build --webpack`：本工作树复用主目录的 node_modules 符号链接，未使用限制项目根的 Turbopack。首次命令输出被 RTK 压缩，随后通过 `rtk proxy pnpm exec next build --webpack` 获取完整日志：TypeScript 与生产编译通过，但 `/login` 页面数据收集失败，报 `ReferenceError: self is not defined`，栈指向包含 xterm 浏览器代码的 `.next/server/chunks/3074.js`。该构建未完成，也未执行 post-build；未修改登录页或终端 SSR 链路，未对未修改基线执行同环境构建对比，不能将完整应用构建标记为通过。独立 `pnpm run build:server` 成功生成服务端 bundle。
+
+本次没有界面改动，未重新进行浏览器/移动端验证；未执行真实 Agent 停止 → Sessions → 原生 resume 的实机链路及 macOS 验收。未提交、发布或重启现有服务。
+
+## 代码评审修正（2026-10-29）
+
+### 实施
+
+- P1：`idle-agent-process.ts` 将 Node/npm Claude 视为实际 Agent，有任何后代即拒绝；Codex npm 包脚本使用独立转发角色，只允许直接连接原生 Codex。关闭前继续复用同一链核验，避免先向独立子代理发送 SIGTERM、再因父进程未退出而失败。
+- P2：历史提交 `b23d9ff6^` 中的生成器实际使用 `CLAUDE_LAUNCHER_SCRIPT.trim().replace(/\n\s*/g, ' ')`。新增 `legacy-claude-launcher.ts`，使用已有 acorn 依赖只解析不执行脚本，比较去除位置及原始字面量拼写后的完整语法结构，保留语句、标识符、字面量值和正则表达式内容约束。允许当前开发格式以及已核对的服务端、webpack 环境校验函数字符串形式，解决 Function#toString 的构建格式差异；未知构建变体继续拒绝，不宣称兼容所有历史版本。
+- JSON 序列化前拒绝非有限数值，防止 `1e400` 被序列化为 null 后错误匹配合法脚本。脚本长度限制为 64 KiB，解析错误和不完整脚本返回不匹配。
+- KISS/DRY：角色区分继续集中在既有链核验入口，预览/退出不各自实现规则；兼容逻辑独立于启动脚本，不改变启动/恢复命令、配置、会话记录或时间阈值。同步 `docs/STATUS.md`。
+
+### 验证
+
+先补回归、后修代码：修复前运行 `idle-agent-process.test.ts` 和 `idle-agent-shutdown.test.ts`，24 项通过、6 项失败，复现旧单行启动器无法识别、Node/nodejs/bun Claude 子代理误放行、Codex 包装器缺少实际 Agent 被放行，以及错误发送终止信号。
+
+修复后本次运行以下命令，最终合计 **17 个文件、267 项通过**（核心 64 项、关联回归 203 项）：
+
+```bash
+pnpm exec vitest run "tests/unit/lib/idle-agent-process.test.ts" "tests/unit/lib/idle-agent-shutdown.test.ts" "tests/unit/lib/legacy-claude-launcher.test.ts" "tests/unit/lib/idle-tab-reclaimer.test.ts"
+pnpm exec vitest run "tests/unit/lib/agent-provider-detection.test.ts" "tests/unit/lib/idle-tab-api.test.ts" "tests/unit/lib/idle-tab-close.test.ts" "tests/unit/lib/layout-empty-workspace.test.ts" "tests/unit/lib/session-workspace-navigation.test.ts" "tests/unit/lib/session-workflow-storage.test.ts" "tests/unit/lib/session-workflow-ui.test.ts" "tests/unit/lib/local-agent-processes.test.ts" "tests/unit/lib/agent-process-manager.test.ts" "tests/unit/lib/codex-launcher-lifecycle.test.ts" "tests/unit/lib/codex-launcher-environment.test.ts" "tests/unit/lib/claude-launcher-install.test.ts" "tests/unit/lib/claude-launcher-environment.test.ts"
+pnpm exec tsc --noEmit
+pnpm exec eslint "src/lib/agent-process-identity.ts" "src/lib/idle-agent-process.ts" "src/lib/idle-agent-shutdown.ts" "src/lib/idle-tab-reclaimer.ts" "src/lib/legacy-claude-launcher.ts" "src/lib/providers/codex/launcher-path.ts" "src/lib/providers/codex/index.ts" "tests/unit/lib/idle-agent-process.test.ts" "tests/unit/lib/idle-agent-shutdown.test.ts" "tests/unit/lib/idle-tab-reclaimer.test.ts" "tests/unit/lib/legacy-claude-launcher.test.ts"
+pnpm run build:server
+rtk proxy pnpm exec next build --webpack
+git diff --check
+```
+
+- P1 测试覆盖应用 bootstrap → npm bin Claude → 独立 Claude 子进程，显式断言 `process.kill` 未调用、tmux 保留；同时验证无后代的 Node Claude 和 Codex npm → native 链正常关停。
+- P2 测试复用历史生成器的单行化与 shell 转义规则，经真实 bash `set --`/`printf` 读取 argv；不执行 Agent。另覆盖已核对的服务端/webpack 函数字符串、空白/引号/括号差异，以及改目标程序、配置路径、校验条件、超时、增加语句、非有限数字、无效/过长脚本的拒绝。关停测试验证旧单行启动器后的 Node Claude 可以退出并等待包装器。
+- 预览及自动回收服务测试覆盖旧单行启动器 → Node Claude 的完整路径：无后代时先保存原身份/目录再关闭；有独立子代理时无候选、不保存、不调用停止或移除。最后补入这两项后再次运行 4 个核心测试文件、完整 TypeScript 及改动测试文件 ESLint，均通过。
+- 完整 TypeScript、全部 11 个改动 TS 文件 ESLint、服务端 tsup 构建通过。补入非有限数字保护后，重新运行 4 个核心测试文件、完整 TypeScript、该实现及测试的 ESLint、服务端构建，均通过。
+- 本次前端 webpack 构建 TypeScript 与生产编译均通过，但页面数据收集仍报 `ReferenceError: self is not defined`，栈仍指向 `.next/server/chunks/3074.js` 的浏览器代码，本次失败页面为 `/tools-required`，与前次 `/login` 的页面不同。完整应用构建未通过，未运行 post-build；未修改该共享 SSR 路径。
+- 本次所有 Agent 终止信号与 tmux 操作仍使用模拟；未进行浏览器、macOS 或真实进程停止/resume 实机验收，也未部署、重启或提交。上述是修复后的自动化证据，不是再次运行 claude-code-review 或双模型交叉审查的结果。

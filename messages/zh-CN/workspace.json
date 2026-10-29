@@ -188,7 +188,13 @@
     "generateDraft": "根据提交生成标题和说明",
     "generatingDraft": "正在生成标题和说明…",
     "generateDraftHint": "使用 Claude Code，根据相对目标分支的已提交代码生成，可继续编辑。",
-    "replaceDraftConfirm": "重新生成将覆盖现有标题和说明，是否继续？"
+    "replaceDraftConfirm": "重新生成将覆盖现有标题和说明，是否继续？",
+    "pushAndCreateDraft": "推送并发起 PR/MR",
+    "finishPublish": "发起 PR/MR",
+    "generateAndPublish": "AI 生成并发起 PR/MR（按需推送）",
+    "pushingBranch": "正在推送分支…",
+    "creatingDraft": "正在创建 PR/MR 草稿…",
+    "completePublishSettings": "请补齐远程和目标分支设置，再继续完成剩余步骤。"
   },
   "worktreeTree": {
     "title": "Worktree 关系与同步",

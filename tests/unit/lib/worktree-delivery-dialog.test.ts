@@ -13,6 +13,7 @@ vi.mock('react', async (original) => ({
     }];
   },
   useEffect: (effect: typeof hooks.effect) => { hooks.effect = effect; },
+  useEffectEvent: (callback: unknown) => callback,
   useRef: (current: unknown) => ({ current }),
 }));
 vi.mock('next-intl', () => ({ useTranslations: () => (key: string) => key, useLocale: () => 'en' }));

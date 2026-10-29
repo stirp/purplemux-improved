@@ -25,6 +25,10 @@ export default function GitCommitDialog({ sessionName, repository, onClose, onCo
   const [notice, setNotice] = useState('');
   const [result, setResult] = useState<ICommitResult | null>(null);
   const [deliveryBusy, setDeliveryBusy] = useState(false);
+  const [publishAfterCommit, setPublishAfterCommit] = useState(false);
+  const [committedMessage, setCommittedMessage] = useState<{ title: string; body: string }>();
+  const continueAfterGeneration = useRef(false);
+  const [continuationQueued, setContinuationQueued] = useState(false);
   const [noChanges, setNoChanges] = useState(false);
   const mounted = useRef(true);
   useEffect(() => {
@@ -49,29 +53,48 @@ export default function GitCommitDialog({ sessionName, repository, onClose, onCo
     return () => controller.abort();
   }, [sessionName, repository]);
 
-  const generate = async () => {
+  const saveCommit = async (data: ICommitPreview, message: { title: string; body: string }, publish: boolean) => {
+    setBusy('commit');
+    try {
+      const committed = await requestCommit<ICommitResult>(sessionName, 'commit', { snapshot: data.snapshot, message });
+      if (mounted.current) {
+        setCommittedMessage(message); setPublishAfterCommit(publish); setDeliveryBusy(publish);
+        setResult(committed); onCommitted();
+      }
+    } catch (error) {
+      if (mounted.current && ['changed', 'noChanges', 'operation', 'conflicts', 'detached', 'commitUnknown'].includes((error as { code?: string }).code ?? '')) setPreview(null);
+      throw error;
+    }
+  };
+
+  const generate = async (publish = false) => {
     if (pending.current || busy) return;
     pending.current = true;
     setBusy('generate'); setError(null); setNotice(''); setReplaceConfirm(false);
+    continueAfterGeneration.current = publish;
+    setContinuationQueued(publish);
     try {
       const data = await requestCommit<IGeneratedCommit>(sessionName, 'generate', { locale });
-      if (mounted.current) { setPreview(data); setTitle(data.title); setBody(data.body); setTruncated(data.truncated); }
+      if (mounted.current) {
+        const message = { title: data.title.trim(), body: (publish && body.trim() ? body : data.body).trim() };
+        setPreview(data); setTitle(message.title); setBody(message.body); setTruncated(data.truncated);
+        if (continueAfterGeneration.current) await saveCommit(data, message, true);
+      }
     } catch (error) { if (mounted.current) setError(error as Error); }
-    finally { pending.current = false; if (mounted.current) setBusy(null); }
+    finally {
+      pending.current = false; continueAfterGeneration.current = false;
+      if (mounted.current) { setBusy(null); setContinuationQueued(false); }
+    }
   };
 
-  const commit = async () => {
+  const commit = async (publish = false) => {
     if (pending.current || busy || !preview || !title.trim() || result) return;
     pending.current = true;
     setBusy('commit'); setError(null); setNotice('');
     try {
-      const data = await requestCommit<ICommitResult>(sessionName, 'commit', { snapshot: preview.snapshot, message: { title, body } });
-      if (mounted.current) { setResult(data); onCommitted(); }
+      await saveCommit(preview, { title: title.trim(), body: body.trim() }, publish);
     } catch (error) {
-      if (mounted.current) {
-        setError(error as Error);
-        if (['changed', 'noChanges', 'operation', 'conflicts', 'detached', 'commitUnknown'].includes((error as { code?: string }).code ?? '')) setPreview(null);
-      }
+      if (mounted.current) setError(error as Error);
     } finally { pending.current = false; if (mounted.current) setBusy(null); }
   };
 
@@ -109,10 +132,17 @@ export default function GitCommitDialog({ sessionName, repository, onClose, onCo
           </Button>
           <Button variant="outline" disabled={!!busy || !title.trim()} onClick={async () => setNotice(t(await copyToClipboard(`${title.trim()}${body.trim() ? `\n\n${body.trim()}` : ''}`) ? 'copied' : 'copyFailed'))}>{t('copy')}</Button>
           <Button disabled={!!busy || !preview || !title.trim()} onClick={() => void commit()}>{t('adoptAndCommit')}</Button>
+          <Button className="h-auto min-h-8 max-w-full whitespace-normal py-1" disabled={deliveryBusy || continuationQueued || (busy !== null && busy !== 'generate') || (!preview && busy !== 'generate')}
+            onClick={() => {
+              if (busy === 'generate') { continueAfterGeneration.current = true; setContinuationQueued(true); }
+              else if (title.trim()) void commit(true);
+              else void generate(true);
+            }}>{t(continuationQueued ? 'publishQueued' : busy === 'generate' ? 'publishAfterGeneration' : title.trim() ? 'commitAndPublish' : 'generateCommitAndPublish')}</Button>
         </div>
       </>}
       {result && preview && <GitCommitDelivery sessionName={sessionName} directory={preview.snapshot.directory}
-        branch={preview.snapshot.branch.replace(/^refs\/heads\//, '')} head={result.head} onBusy={setDeliveryBusy} />}
+        branch={preview.snapshot.branch.replace(/^refs\/heads\//, '')} head={result.head} onBusy={setDeliveryBusy}
+        message={committedMessage} autoPublish={publishAfterCommit} />}
       {noChanges && repository && <GitCommitDelivery sessionName={sessionName} directory={repository.directory}
         branch={repository.branch} head={repository.head} onBusy={setDeliveryBusy} />}
       <div className="flex justify-end"><Button variant="outline" disabled={!!busy || deliveryBusy} onClick={onClose}>{t('close')}</Button></div>

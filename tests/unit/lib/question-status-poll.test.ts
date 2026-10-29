@@ -13,7 +13,7 @@ vi.mock('@/lib/layout-store', () => ({
 }));
 vi.mock('@/lib/process-utils', () => ({ getChildPids: async () => [] }));
 vi.mock('@/lib/providers/registry', () => ({
-  getProviderByPanelType: () => ({
+  getProvider: () => ({
     id: 'claude', isAgentRunning: async () => true,
     readJsonlPath: () => null, readSessionId: () => null, readSummary: () => null,
     detectActiveSession: mocks.detect, readRuntimeSnapshot: mocks.snapshot,

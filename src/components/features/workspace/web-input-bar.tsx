@@ -565,21 +565,7 @@ const WebInputBar = ({
               }}
             />
 
-            {mode === 'interrupt' && !hasValue && !hasAttachments && !isDispatching ? (
-              <Button
-                variant="ghost"
-                size="sm"
-                className={cn(
-                  'h-7 w-7 shrink-0 p-0 text-ui-red hover:text-ui-red/80',
-                  !canSend && 'opacity-30',
-                )}
-                onClick={handleInterruptClick}
-                disabled={!canSend}
-                aria-label={t('interruptAriaLabel')}
-              >
-                <Square size={14} fill="currentColor" />
-              </Button>
-            ) : (
+            {(mode !== 'interrupt' || hasValue || hasAttachments || isDispatching) && (
               <Button
                 variant="ghost"
                 size="sm"
@@ -594,6 +580,22 @@ const WebInputBar = ({
                 title={t('queueSend')}
               >
                 {isDispatching ? <Loader2 size={14} className="animate-spin" /> : isDisabled ? <Ban size={14} /> : <SendHorizontal size={16} />}
+              </Button>
+            )}
+            {mode === 'interrupt' && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className={cn(
+                  'h-7 w-7 shrink-0 p-0 text-ui-red hover:text-ui-red/80',
+                  !canSend && 'opacity-30',
+                )}
+                onClick={handleInterruptClick}
+                disabled={!canSend}
+                aria-label={t('interruptAriaLabel')}
+                title={t('interruptAriaLabel')}
+              >
+                <Square size={14} fill="currentColor" />
               </Button>
             )}
             </div>
@@ -645,7 +647,8 @@ const WebInputBar = ({
                   <p className="mt-1 text-xs text-ui-red" role="alert">
                     {t(queue.error === 'sessionChanged' ? 'queueSessionChanged'
                       : queue.error === 'deliveryUnconfirmed' ? 'queueDeliveryUnconfirmed'
-                        : queue.error === 'terminalNotReady' ? 'queueTerminalNotReady' : 'queueSendFailed')}
+                        : queue.error === 'terminalNotReady' ? 'queueTerminalNotReady'
+                          : queue.error === 'terminalHasDraft' ? 'queueTerminalHasDraft' : 'queueSendFailed')}
                   </p>
                 )}
               </div>

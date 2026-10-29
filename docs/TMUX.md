@@ -85,6 +85,8 @@ Relative targets are resolved against the application cwd before validation and 
 
 WebSocket endpoint: `/api/terminal?session={name}&clientId={id}`.
 
+Client-side `useTerminal.fit()` applies the optional size policy to `FitAddon.proposeDimensions()` before resizing xterm. A collapsed desktop Agent terminal keeps at least 40 rows (or its last visible height) in both the local buffer and the PTY. Initial connections and resize messages use the dimensions returned by that fit; do not enlarge only the WebSocket dimensions or temporarily fit the local buffer to the smaller hidden DOM, as ANSI cursor positioning can then lose prompt content. Visible, mobile and login terminals retain their normal fitting behavior.
+
 ### Binary Protocol
 
 Defined in `src/lib/terminal-protocol.ts` and imported by `terminal-server.ts`.

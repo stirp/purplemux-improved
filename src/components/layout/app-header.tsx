@@ -14,8 +14,6 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-import useTabStore, { selectGlobalStatus } from '@/hooks/use-tab-store';
-import AppLogo from '@/components/layout/app-logo';
 import SystemResources from '@/components/layout/system-resources';
 import { useNotificationCount } from '@/components/features/workspace/notification-sheet';
 import EditWorkspaceDialog from '@/components/features/workspace/edit-workspace-dialog';
@@ -34,7 +32,6 @@ const handleLogout = async () => {
 const AppHeader = ({ onMenuOpen, workspaceId, workspaceName }: IAppHeaderProps) => {
   const t = useTranslations('header');
   const tc = useTranslations('common');
-  const hasBusy = useTabStore((s) => selectGlobalStatus(s.tabs).busyCount > 0);
   const { attentionCount, busyCount } = useNotificationCount();
   const sessionsBadge = attentionCount + busyCount;
   const [editOpen, setEditOpen] = useState(false);
@@ -56,10 +53,8 @@ const AppHeader = ({ onMenuOpen, workspaceId, workspaceName }: IAppHeaderProps) 
             )}
           </button>
         )}
-        <AppLogo shimmer={hasBusy} className={workspaceName ? "hidden shrink-0 min-[360px]:flex [&>span]:hidden" : "min-w-0 [&>span]:truncate"} />
         {workspaceName && (
           <>
-            <span className="hidden shrink-0 text-muted-foreground/40 text-sm min-[360px]:inline">/</span>
             {workspaceId ? (
               <button
                 type="button"

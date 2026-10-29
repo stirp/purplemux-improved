@@ -1,13 +1,13 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ISystemProcess } from '@/lib/process-utils';
+import { CODEX_LAUNCHER_SCRIPT } from '@/lib/providers/codex/launcher-path';
+import { CLAUDE_LAUNCHER_BOOTSTRAP, CLAUDE_LAUNCHER_SCRIPT } from '@/lib/providers/claude/launcher';
+import fs from 'fs/promises';
 const m = vi.hoisted(() => ({ processes: vi.fn(), argv: vi.fn(), exec: vi.fn(), delay: vi.fn(),
   rows: [] as ISystemProcess[], terminal: true, events: [] as string[] }));
 vi.mock('timers/promises', () => ({ setTimeout: m.delay }));
 vi.mock('child_process', () => ({ execFile: m.exec }));
 vi.mock('@/lib/process-utils', () => ({ listUserProcesses: m.processes, getProcessArgv: m.argv }));
-vi.mock('@/lib/local-agent-session', () => ({
-  classifyAgentArgv: (argv: string[]) => argv[0] === 'codex' || argv[0] === 'node' ? 'codex' : null,
-}));
 import { stopIdleAgentChain } from '@/lib/idle-agent-shutdown';
 import { killSession } from '@/lib/tmux';
 
@@ -18,7 +18,8 @@ beforeEach(() => {
   vi.resetAllMocks();
   m.rows = [shell, agent]; m.terminal = true; m.events = [];
   m.processes.mockImplementation(async () => [...m.rows]);
-  m.argv.mockImplementation(async (item) => [item.args]);
+  m.argv.mockImplementation(async (item) => item.args === 'node'
+    ? ['node', '/pkg/@openai/codex/bin/codex.js'] : [item.args]);
   m.delay.mockResolvedValue(undefined);
   kill = vi.spyOn(process, 'kill').mockImplementation((pid) => {
     m.events.push('signal:' + pid);
@@ -70,6 +71,64 @@ describe('graceful idle Agent shutdown before tmux destruction', () => {
     expect(kill).toHaveBeenCalledExactlyOnceWith(native.pid, 'SIGTERM');
     expect(m.terminal).toBe(true);
     expect(m.rows).toEqual([shell, launcher]);
+  });
+  it.each(['codex', 'claude'] as const)('waits for the application %s launcher after signaling only the native Agent', async (provider) => {
+    const launcher = { ...agent, args: 'node' };
+    const native = { ...agent, pid: 987003, ppid: launcher.pid, args: provider };
+    const argv = provider === 'codex' ? ['node', CODEX_LAUNCHER_SCRIPT]
+      : ['node', '-e', CLAUDE_LAUNCHER_BOOTSTRAP, '--'];
+    m.argv.mockImplementation(async (item) => item.pid === launcher.pid ? argv : [item.args]);
+    m.rows = [shell, launcher, native];
+    m.delay.mockImplementation(async () => {
+      expect(m.terminal).toBe(true);
+      expect(kill).toHaveBeenCalledExactlyOnceWith(native.pid, 'SIGTERM');
+      m.rows = [shell];
+      m.events.push('launcher-exited');
+    });
+    await killSession('terminal', () => stopIdleAgentChain([shell, launcher, native], provider));
+    expect(m.events.indexOf('launcher-exited')).toBeLessThan(m.events.indexOf('destroy-tmux'));
+  });
+  it('retains tmux when the application launcher survives the native Agent', async () => {
+    const launcher = { ...agent, args: 'node' };
+    const native = { ...agent, pid: 987003, ppid: launcher.pid };
+    m.argv.mockImplementation(async (item) => item.pid === launcher.pid ? ['node', CODEX_LAUNCHER_SCRIPT] : [item.args]);
+    m.rows = [shell, launcher, native];
+    await expect(killSession('terminal', () => stopIdleAgentChain([shell, launcher, native], 'codex'))).rejects.toThrow('not stopped');
+    expect(kill).toHaveBeenCalledExactlyOnceWith(native.pid, 'SIGTERM');
+    expect(m.rows).toEqual([shell, launcher]);
+    expect(m.terminal).toBe(true);
+  });
+  it('rejects a launcher-only chain without signaling anything', async () => {
+    const launcher = { ...agent, args: 'node' };
+    m.argv.mockImplementation(async (item) => item.pid === launcher.pid ? ['node', CODEX_LAUNCHER_SCRIPT] : [item.args]);
+    await expect(stopIdleAgentChain([shell, launcher], 'codex')).rejects.toThrow('identity changed');
+    expect(kill).not.toHaveBeenCalled();
+  });
+  it('never signals an independent child of a Node Claude Agent behind the application launcher', async () => {
+    const launcher = { ...agent, args: 'node launcher' };
+    const main = { ...agent, pid: 987003, ppid: launcher.pid, args: 'node /npm/bin/claude' };
+    const child = { ...agent, pid: 987004, ppid: main.pid, args: 'claude' };
+    vi.spyOn(fs, 'realpath').mockResolvedValue('/pkg/@anthropic-ai/claude-code/cli.js');
+    m.argv.mockImplementation(async (item) => item.pid === launcher.pid
+      ? ['node', '-e', CLAUDE_LAUNCHER_BOOTSTRAP]
+      : item.pid === main.pid ? ['node', '/npm/bin/claude'] : [item.args]);
+    m.rows = [shell, launcher, main, child];
+    await expect(killSession('terminal', () => stopIdleAgentChain(m.rows, 'claude'))).rejects.toThrow('identity changed');
+    expect(kill).not.toHaveBeenCalled();
+    expect(m.terminal).toBe(true);
+    expect(m.events).not.toContain('destroy-tmux');
+  });
+  it('stops the actual Node Claude leaf behind a historical single-line launcher', async () => {
+    const launcher = { ...agent, args: 'node launcher' };
+    const main = { ...agent, pid: 987003, ppid: launcher.pid, args: 'node /npm/bin/claude' };
+    vi.spyOn(fs, 'realpath').mockResolvedValue('/pkg/@anthropic-ai/claude-code/cli.js');
+    m.argv.mockImplementation(async (item) => item.pid === launcher.pid
+      ? ['node', '-e', CLAUDE_LAUNCHER_SCRIPT.trim().replace(/\n\s*/g, ' ')]
+      : item.pid === main.pid ? ['node', '/npm/bin/claude'] : [item.args]);
+    m.rows = [shell, launcher, main];
+    m.delay.mockImplementation(async () => { m.rows = [shell]; });
+    await stopIdleAgentChain([shell, launcher, main], 'claude');
+    expect(kill).toHaveBeenCalledExactlyOnceWith(main.pid, 'SIGTERM');
   });
   it('preserves the terminal if a new child starts during shutdown', async () => {
     m.delay.mockImplementation(async () => { m.rows.push({ ...agent, pid: 987003, args: 'build' }); });

@@ -74,6 +74,10 @@
     "workflowButton": "Commit et publier",
     "workflowTitle": "Commit, push et PR/MR",
     "workflowDescription": "Générez ou modifiez le message, confirmez le commit, puis poussez la branche et créez un brouillon de PR/MR. Les commits existants peuvent être publiés directement.",
-    "cleanPublish": "Aucune modification à committer. Vous pouvez pousser la branche actuelle ou créer un brouillon de PR/MR."
+    "cleanPublish": "Aucune modification à committer. Vous pouvez pousser la branche actuelle ou créer un brouillon de PR/MR.",
+    "generateCommitAndPublish": "Générer avec l’IA, committer, pousser et créer une PR/MR",
+    "commitAndPublish": "Committer, pousser et créer une PR/MR",
+    "publishAfterGeneration": "Après génération : committer, pousser et créer une PR/MR",
+    "publishQueued": "Publication automatique après génération"
   }
 }
