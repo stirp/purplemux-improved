@@ -23,7 +23,7 @@ import useWorkspaceStore from '@/hooks/use-workspace-store';
 import useWorkspaceLayoutStore from '@/hooks/use-workspace-layout-store';
 import useTabStore from '@/hooks/use-tab-store';
 import useSessionHistoryStore from '@/hooks/use-session-history-store';
-import { useLayoutStore } from '@/hooks/use-layout';
+import useLayout, { useLayoutStore } from '@/hooks/use-layout';
 
 const initialWorkspace = useWorkspaceStore.getState();
 const initialLayouts = useWorkspaceLayoutStore.getState();
@@ -41,6 +41,8 @@ const layout = (name: string): ILayoutData => ({
 });
 
 beforeEach(() => {
+  useLayoutStore.getState().clearLayout();
+  sessionStorage.clear();
   vi.stubGlobal('IS_REACT_ACT_ENVIRONMENT', true);
   const pending = new Promise<void>((resolve) => { resolveRequests = resolve; });
   fetchMock.mockReset().mockImplementation(async () => {
@@ -71,11 +73,12 @@ beforeEach(() => {
 afterEach(async () => {
   await act(async () => { root.unmount(); resolveRequests(); });
   container.remove();
+  useLayoutStore.getState().clearLayout();
   useWorkspaceStore.setState(initialWorkspace, true);
-  useWorkspaceLayoutStore.setState(initialLayouts, true);
   useTabStore.setState(initialTabs, true);
   useSessionHistoryStore.setState(initialHistory, true);
   useLayoutStore.setState(initialLayout, true);
+  useWorkspaceLayoutStore.setState(initialLayouts, true);
   vi.unstubAllGlobals();
 });
 
@@ -129,5 +132,42 @@ describe('Sessions reuse parent layout loading', () => {
     await act(async () => root.render(createElement(NotificationSheet, { open: false, onOpenChange })));
     await act(async () => root.render(createElement(NotificationSheet, { open: true, onOpenChange })));
     expectLayoutRequests(2);
+  });
+
+  it('uses mobile prefetch on the first workspace visit before revalidation finishes', async () => {
+    const Content = () => {
+      const workspaceId = useWorkspaceStore((state) => state.activeWorkspaceId);
+      const state = useLayout({ workspaceId });
+      return createElement('output', null, state.isLoading ? 'loading' : state.layout?.activePaneId);
+    };
+    await act(async () => root.render(createElement(MobileLayout, null, createElement(Content))));
+    expectLayoutRequests(2);
+    await act(async () => resolveRequests());
+    let resolveRefresh!: (value: unknown) => void;
+    fetchMock.mockImplementation(() => new Promise((resolve) => { resolveRefresh = resolve; }));
+    await act(async () => useWorkspaceStore.setState({ activeWorkspaceId: 'other' }));
+    expect(container.querySelector('output')?.textContent).toBe('pane');
+    expect(fetchMock.mock.calls.filter(([url]) => url === '/api/layout?workspace=other')).toHaveLength(2);
+    await act(async () => resolveRefresh({ ok: true, json: async () => layout('Server title') }));
+    expect(container.querySelector('output')?.textContent).toBe('pane');
+  });
+
+  it('shows shared cache updates and does not overwrite them with a delayed mobile menu refresh', async () => {
+    await act(async () => root.render(createElement(MobileLayout, null, null)));
+    await act(async () => resolveRequests());
+    let resolveRefresh!: () => void;
+    const pending = new Promise<void>((resolve) => { resolveRefresh = resolve; });
+    fetchMock.mockImplementation(async () => {
+      await pending;
+      return { ok: true, json: async () => layout('Stale menu title') };
+    });
+    await act(async () => (Array.from(container.querySelectorAll('button')).find((button) => button.textContent === 'Open navigation')!).click());
+    const latest = layout('Latest shared title');
+    await act(async () => useWorkspaceLayoutStore.getState().setLayout('ws', latest));
+    expect(document.body.textContent).toContain('Latest shared title');
+    await act(async () => resolveRefresh());
+    expect(useWorkspaceLayoutStore.getState().layouts.ws).toBe(latest);
+    expect(document.body.textContent).toContain('Latest shared title');
+    expectLayoutRequests(4);
   });
 });

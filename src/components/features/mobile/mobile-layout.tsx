@@ -4,6 +4,7 @@ import AppHeader from '@/components/layout/app-header';
 import MobileNavigationSheet from '@/components/features/mobile/mobile-navigation-sheet';
 import MobileWorkspaceTabBar from '@/components/features/mobile/mobile-workspace-tab-bar';
 import useWorkspaceStore from '@/hooks/use-workspace-store';
+import useWorkspaceLayoutStore from '@/hooks/use-workspace-layout-store';
 import { useLayoutStore, collectPanes } from '@/hooks/use-layout';
 import { navigateToTab } from '@/hooks/use-layout';
 import SettingsDialog from '@/components/features/workspace/settings-dialog';
@@ -32,15 +33,17 @@ const MobileLayout = ({ children }: IMobileLayoutProps) => {
 
   const registeredSelectWorkspace = useMobileLayoutActions((s) => s.onSelectWorkspace);
 
-  const [layoutCache, setLayoutCache] = useState<Record<string, ILayoutData>>({});
+  const layoutCache = useWorkspaceLayoutStore((s) => s.layouts);
   const handleReorderTabs = useCallback(async (workspaceId: string, paneId: string, tabIds: string[]) => {
+    const cached = useWorkspaceLayoutStore.getState().layouts[workspaceId];
     try {
       const res = await fetch(`/api/layout/pane/${encodeURIComponent(paneId)}/tabs/order?workspace=${encodeURIComponent(workspaceId)}`, {
         method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ tabIds }),
       });
       if (!res.ok) throw new Error();
       const data: ILayoutData = await res.json();
-      setLayoutCache((previous) => ({ ...previous, [workspaceId]: data }));
+      const cache = useWorkspaceLayoutStore.getState();
+      if (cache.layouts[workspaceId] === cached) cache.setLayout(workspaceId, data);
       const store = useLayoutStore.getState();
       if (store.workspaceId === workspaceId) await store.fetchLayout();
     } catch {
@@ -53,13 +56,6 @@ const MobileLayout = ({ children }: IMobileLayoutProps) => {
       useWorkspaceStore.getState().fetchWorkspaces();
     }
   }, [workspaces.length]);
-
-  // store의 layout을 cache에 반영 (render-phase adjustment)
-  const [prevStoreSnapshot, setPrevStoreSnapshot] = useState<{ layout: typeof storeLayout; wsId: typeof storeWorkspaceId }>({ layout: null, wsId: null });
-  if (storeLayout && storeWorkspaceId && (storeLayout !== prevStoreSnapshot.layout || storeWorkspaceId !== prevStoreSnapshot.wsId)) {
-    setPrevStoreSnapshot({ layout: storeLayout, wsId: storeWorkspaceId });
-    setLayoutCache((prev) => ({ ...prev, [storeWorkspaceId]: storeLayout }));
-  }
 
   // workspace 레이아웃 fetch (캐시에 없는 워크스페이스 발견 시 + 메뉴 열릴 때 refresh)
   const wsIds = useMemo(() => workspaces.map((ws) => ws.id).join(','), [workspaces]);
@@ -89,11 +85,12 @@ const MobileLayout = ({ children }: IMobileLayoutProps) => {
     const fetchAll = async () => {
       const results = await Promise.all(
         toFetch.map(async (ws) => {
+          const cached = useWorkspaceLayoutStore.getState().layouts[ws.id];
           try {
             const res = await fetch(`/api/layout?workspace=${ws.id}`);
             if (!res.ok) return null;
             const data: ILayoutData = await res.json();
-            return { id: ws.id, data };
+            return { id: ws.id, data, cached };
           } catch {
             return null;
           }
@@ -101,13 +98,10 @@ const MobileLayout = ({ children }: IMobileLayoutProps) => {
       );
 
       if (cancelled) return;
-      setLayoutCache((prev) => {
-        const next = { ...prev };
-        for (const r of results) {
-          if (r) next[r.id] = r.data;
-        }
-        return next;
-      });
+      for (const r of results) {
+        const cache = useWorkspaceLayoutStore.getState();
+        if (r && cache.layouts[r.id] === r.cached) cache.setLayout(r.id, r.data);
+      }
     };
     fetchAll();
     return () => { cancelled = true; };
