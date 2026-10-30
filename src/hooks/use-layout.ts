@@ -9,6 +9,7 @@ import type { IDiffSettings, ILayoutData, ITab, IPaneNode, TPanelType } from '@/
 import { clearInputDraft } from '@/hooks/use-web-input';
 import useTabStore from '@/hooks/use-tab-store';
 import useWorkspaceStore from '@/hooks/use-workspace-store';
+import useWorkspaceLayoutStore from '@/hooks/use-workspace-layout-store';
 import useTabMetadataStore from '@/hooks/use-tab-metadata-store';
 import { resolveTabNameForPanelTypeChange } from '@/lib/tab-name';
 import {
@@ -80,6 +81,22 @@ const saveSessionActiveState = (wsId: string, layout: ILayoutData) => {
   } catch { /* */ }
 };
 
+const restoreSessionActiveState = (wsId: string, layout: ILayoutData) => {
+  const panes = collectPanes(layout.root);
+  const storedPaneId = getSessionActivePaneId(wsId);
+  if (storedPaneId && panes.some((pane) => pane.id === storedPaneId)) layout.activePaneId = storedPaneId;
+  for (const pane of panes) {
+    const storedTabId = getSessionActiveTabId(pane.id);
+    if (storedTabId && pane.tabs.some((tab) => tab.id === storedTabId)) pane.activeTabId = storedTabId;
+    for (const tab of pane.tabs) {
+      const ratio = getSessionTerminalRatio(tab.id);
+      if (ratio !== null) tab.terminalRatio = ratio;
+      const collapsed = getSessionTerminalCollapsed(tab.id);
+      if (collapsed !== null) tab.terminalCollapsed = collapsed;
+    }
+  }
+};
+
 interface ILayoutState {
   layout: ILayoutData | null;
   isLoading: boolean;
@@ -121,6 +138,7 @@ let _abortController: AbortController | null = null;
 let _onFetchError: (() => void) | null = null;
 let _ratioTimer: ReturnType<typeof setTimeout> | null = null;
 let _suppressFetch = false;
+let _workspaceGeneration = 0;
 const _terminalTimers = new Map<string, ReturnType<typeof setTimeout>>();
 
 const wsQuery = (base: string, wsId: string | null): string => {
@@ -200,7 +218,22 @@ const useLayoutStore = create<ILayoutState>((set, get) => ({
 
   setWorkspaceId: (id) => {
     _suppressFetch = false;
-    set({ workspaceId: id });
+    if (id === get().workspaceId && get().layout) return;
+    _abortController?.abort();
+    _workspaceGeneration++;
+    const cached = id ? useWorkspaceLayoutStore.getState().layouts[id] : null;
+    const layout = cached ? cloneLayout(cached) : null;
+    if (layout && id) {
+      restoreSessionActiveState(id, layout);
+      const pendingTabId = get().pendingFocusTabId;
+      const pane = collectPanes(layout.root).find((pane) => pane.tabs.some((tab) => tab.id === pendingTabId));
+      if (pane && pendingTabId) {
+        layout.activePaneId = pane.id;
+        pane.activeTabId = pendingTabId;
+      }
+    }
+    set({ workspaceId: id, layout, isLoading: !!id && !layout, error: null, retryCount: 0,
+      isSplitting: false, ...updateDerived(layout, false) });
   },
 
   setLayout: (data) => {
@@ -217,18 +250,17 @@ const useLayoutStore = create<ILayoutState>((set, get) => ({
     const controller = new AbortController();
     _abortController = controller;
 
-    if (!get().layout) {
-      set({ isLoading: true, error: null });
-    }
+    set({ isLoading: !get().layout, error: null });
     try {
       const res = await fetch(wsQuery('/api/layout', targetWsId), { signal: controller.signal });
       if (!res.ok) throw new Error();
       const data: ILayoutData = await res.json();
-      if (controller.signal.aborted) return;
+      if (controller.signal.aborted || targetWsId !== get().workspaceId) return;
 
       const current = get().layout;
 
       if (shouldPreserve) {
+        restoreSessionActiveState(targetWsId, data);
         const fetchedPanes = collectPanes(data.root);
         if (current) {
           if (current.activePaneId && fetchedPanes.some((p) => p.id === current.activePaneId)) {
@@ -240,29 +272,12 @@ const useLayoutStore = create<ILayoutState>((set, get) => ({
               pane.activeTabId = localPane.activeTabId;
             }
           }
-        } else {
-          const storedPaneId = getSessionActivePaneId(targetWsId);
-          if (storedPaneId && fetchedPanes.some((p) => p.id === storedPaneId)) {
-            data.activePaneId = storedPaneId;
-          }
-          for (const pane of fetchedPanes) {
-            const storedTabId = getSessionActiveTabId(pane.id);
-            if (storedTabId && pane.tabs.some((t) => t.id === storedTabId)) {
-              pane.activeTabId = storedTabId;
-            }
-            for (const tab of pane.tabs) {
-              const storedRatio = getSessionTerminalRatio(tab.id);
-              if (storedRatio !== null) tab.terminalRatio = storedRatio;
-              const storedCollapsed = getSessionTerminalCollapsed(tab.id);
-              if (storedCollapsed !== null) tab.terminalCollapsed = storedCollapsed;
-            }
-          }
         }
       }
 
       if (current) {
-        const currentContent = { root: current.root, activePaneId: current.activePaneId };
-        const fetchedContent = { root: data.root, activePaneId: data.activePaneId };
+        const currentContent = { root: current.root, activePaneId: current.activePaneId, diffSettings: current.diffSettings };
+        const fetchedContent = { root: data.root, activePaneId: data.activePaneId, diffSettings: data.diffSettings };
         if (JSON.stringify(currentContent) === JSON.stringify(fetchedContent)) {
           const pendingTabId = get().pendingFocusTabId;
           if (pendingTabId) {
@@ -291,7 +306,12 @@ const useLayoutStore = create<ILayoutState>((set, get) => ({
         patchApi(wsQuery(`/api/layout/pane/${pendingPaneId}`, targetWsId), { activeTabId: pendingTabId });
       }
     } catch (err) {
+      if (controller.signal.aborted || targetWsId !== get().workspaceId) return;
       if (err instanceof DOMException && err.name === 'AbortError') return;
+      if (get().layout) {
+        toast.error(t('terminal', 'layoutFetchError'));
+        return;
+      }
       const retryCount = get().retryCount + 1;
       set({ retryCount });
       if (retryCount >= 3) {
@@ -303,6 +323,7 @@ const useLayoutStore = create<ILayoutState>((set, get) => ({
           });
           if (res.ok) {
             const { paneId, tab } = await res.json();
+            if (controller.signal.aborted || targetWsId !== get().workspaceId) return;
             const fallback: ILayoutData = {
               root: { type: 'pane', id: paneId, tabs: [tab], activeTabId: tab.id },
               activePaneId: paneId,
@@ -315,6 +336,7 @@ const useLayoutStore = create<ILayoutState>((set, get) => ({
           }
         } catch { /* fallthrough */ }
       }
+      if (controller.signal.aborted || targetWsId !== get().workspaceId) return;
       set({ error: t('terminal', 'layoutFetchError') });
       _onFetchError?.();
     } finally {
@@ -377,13 +399,17 @@ const useLayoutStore = create<ILayoutState>((set, get) => ({
 
   focusPane: (paneId) => {
     const { layout, workspaceId } = get();
-    if (!layout || layout.activePaneId === paneId) return;
+    if (!layout || !findPane(layout.root, paneId)) return;
+    if (layout.activePaneId === paneId) {
+      if (get().pendingFocusTabId) set({ pendingFocusTabId: null });
+      return;
+    }
 
+    set({ layout: { ...layout, activePaneId: paneId }, pendingFocusTabId: null });
 
-    set({ layout: { ...layout, activePaneId: paneId } });
-
+    const generation = _workspaceGeneration;
     patchApi(wsQuery('/api/layout', workspaceId), { activePaneId: paneId }).then((data) => {
-      if (data) applyLayoutPreserveFocus(set, get, data);
+      if (data && generation === _workspaceGeneration) applyLayoutPreserveFocus(set, get, data);
     });
   },
 
@@ -535,11 +561,13 @@ const useLayoutStore = create<ILayoutState>((set, get) => ({
   },
 
   switchTabInPane: (paneId, tabId) => {
+    set({ pendingFocusTabId: null });
     applyPaneUpdate(set, get, paneId, (pane) => ({ ...pane, activeTabId: tabId }));
 
     const { workspaceId } = get();
+    const generation = _workspaceGeneration;
     patchApi(wsQuery(`/api/layout/pane/${paneId}`, workspaceId), { activeTabId: tabId }).then((data) => {
-      if (data) applyLayoutPreserveFocus(set, get, data);
+      if (data && generation === _workspaceGeneration) applyLayoutPreserveFocus(set, get, data);
     });
   },
 
@@ -657,6 +685,7 @@ const useLayoutStore = create<ILayoutState>((set, get) => ({
 
   clearLayout: () => {
     _suppressFetch = true;
+    _workspaceGeneration++;
     _abortController?.abort();
     set({ layout: null, paneCount: 0, canSplit: false });
   },
@@ -730,6 +759,7 @@ useLayoutStore.subscribe((state, prevState) => {
   if (!state.layout || !state.workspaceId) return;
   if (state.layout === prevState.layout) return;
   saveSessionActiveState(state.workspaceId, state.layout);
+  useWorkspaceLayoutStore.getState().setLayout(state.workspaceId, state.layout);
 });
 
 export const setOnFetchError = (fn: (() => void) | null): void => {
@@ -850,9 +880,9 @@ const useLayout = ({ workspaceId, onFetchError }: { workspaceId: string | null; 
   }, [onFetchError]);
 
   useEffect(() => {
+    const store = useLayoutStore.getState();
+    store.setWorkspaceId(workspaceId);
     if (workspaceId) {
-      const store = useLayoutStore.getState();
-      store.setWorkspaceId(workspaceId);
       store.fetchLayout(workspaceId);
     }
   }, [workspaceId]);
@@ -867,9 +897,9 @@ const useLayout = ({ workspaceId, onFetchError }: { workspaceId: string | null; 
   }, []);
 
   return useLayoutStore(useShallow((s) => ({
-    layout: s.layout,
-    isLoading: s.isLoading,
-    error: s.error,
+    layout: s.workspaceId === workspaceId ? s.layout : null,
+    isLoading: s.workspaceId !== workspaceId ? !!workspaceId : s.isLoading,
+    error: s.workspaceId === workspaceId ? s.error : null,
     isSplitting: s.isSplitting,
     paneCount: s.paneCount,
     canSplit: s.canSplit,

@@ -1,0 +1,8 @@
+{
+  "scenario": "80 patches, 120 changed lines each, 20 immutable-entry regroupings",
+  "beforeColdMs": 464.52,
+  "afterColdMs": 431.1,
+  "beforeRepeatedMs": 8218.61,
+  "afterRepeatedMs": 1.12,
+  "note": "Synthetic Node calculation only; not browser navigation or network latency."
+}

@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { StoreApi } from 'zustand';
 import Router from 'next/router';
 import useWorkspaceStore from '@/hooks/use-workspace-store';
+import useWorkspaceLayoutStore from '@/hooks/use-workspace-layout-store';
 import useWebviewStore from '@/hooks/use-webview-store';
 import useTabStore from '@/hooks/use-tab-store';
 import useTabMetadataStore from '@/hooks/use-tab-metadata-store';
@@ -25,6 +26,7 @@ const restoreStores = [
   snapshotStore(useWorkspaceStore), snapshotStore(useWebviewStore), snapshotStore(useTabStore),
   snapshotStore(useTabMetadataStore), snapshotStore(useSidebarActions), snapshotStore(useMobileLayoutActions),
   snapshotStore(useSessionNavigation), snapshotStore(useLayoutStore),
+  snapshotStore(useWorkspaceLayoutStore),
 ];
 
 const tab = (providerId: 'claude' | 'codex', id = 'tab-target'): ITab => ({

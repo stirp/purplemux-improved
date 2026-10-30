@@ -18,11 +18,6 @@ export const useWorkspaceLayouts = (): Record<string, IPaneNode[]> => {
 
   const wsIds = useMemo(() => workspaces.map((ws) => ws.id).join(','), [workspaces]);
 
-  // 활성 레이아웃을 캐시에 반영해 두어 비활성 전환 시에도 점이 유지되도록 한다
-  useEffect(() => {
-    if (storeLayout && storeWorkspaceId) setLayout(storeWorkspaceId, storeLayout);
-  }, [storeLayout, storeWorkspaceId, setLayout]);
-
   useEffect(() => {
     const ids = wsIds ? wsIds.split(',') : [];
     const toFetch = ids.filter((id) => {
