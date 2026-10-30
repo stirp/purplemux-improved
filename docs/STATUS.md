@@ -159,6 +159,10 @@ The auto-transitions are handled inside `setAgentProcess`: when `agentProcess` b
 
 For newly created tabs, `useLayoutStore.createTabInPane` owns the launch-state decision. It enters `check` for command/resume requests only when no cwd was requested or the returned cwd matches the request. If the server falls back from a missing directory, it skips command/resume and the tab keeps the default `session-list` view. Desktop `PaneContainer` and mobile `MobileTerminalPage` only merge tab metadata after creation; they must preserve this decision rather than set `check` again.
 
+The new-tab picker reads native and retained sessions without creating a terminal. Selecting a session reuses `navigateToTabOrCreate`: existing tabs are focused; reclaimed sessions resume with their retained directory in the originating pane. This path applies the same returned-cwd guard before entering `check`, and opening or searching the picker does not change session state.
+
+Picker operations share an in-flight guard per workspace across panes and close/reopen cycles. Completion releases the guard even after the initiating picker unmounts; it cannot close a newly opened picker. Native identities already assigned to another workspace are excluded when directories overlap. Claude candidates use one full-list request per directory; existing paginated API consumers keep their original behavior.
+
 External process imports prepare a plain terminal without an agent binding until the source process exits. After delivering the verified session's resume command, `agent-process-manager.ts` binds the target, changes its panel type, registers it with StatusManager and calls `markAgentLaunch`. The API reports command delivery, not an idle/ready agent; existing hooks and process checks establish the actual state. An uncertain dispatch is persisted and cannot be resent blindly. External process rows do not write `TCliState` or manual workflow status.
 
 Gates (checked before the view switch):

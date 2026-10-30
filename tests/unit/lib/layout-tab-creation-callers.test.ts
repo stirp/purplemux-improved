@@ -87,6 +87,17 @@ afterEach(async () => {
 });
 
 describe.each(['desktop', 'mobile'] as const)('%s tab creation caller', (platform) => {
+  it('passes the shared picker launch command through unchanged', async () => {
+    const tab: ITab = { id: 'new', sessionName: 'new', name: '', order: 0, cwd: '/repo/missing', panelType: 'codex-cli' };
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true, json: async () => tab });
+    vi.stubGlobal('fetch', fetchMock);
+    await act(async () => root.render(platform === 'desktop'
+      ? createElement(PaneContainer, { paneId: 'pane-test', paneNumber: 1 }) : createElement(MobileTerminalPage)));
+    await act(async () => { await callbacks[platform]!('codex-cli', { command: 'codex --model custom' }); });
+    expect(JSON.parse(fetchMock.mock.calls[0][1].body).command).toBe('codex --model custom');
+    expect(useTabStore.getState().tabs.new.sessionView).toBe('check');
+  });
+
   describe.each(['claude-code', 'codex-cli'] as const)('%s', (panelType) => {
     it.each([
       ['command', true], ['resume', true], ['plain', true],

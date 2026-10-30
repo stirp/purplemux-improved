@@ -115,6 +115,31 @@ describe('workspace selection without a registered handler', () => {
 });
 
 describe('Sessions project navigation', () => {
+  it.each(['claude', 'codex'] as const)('resumes %s in the picker pane with the retained directory', async (providerId) => {
+    const targetLayout: ILayoutData = { ...layout([]), root: { type: 'split', orientation: 'horizontal', ratio: 0.5,
+      children: [layout([]).root, { type: 'pane', id: 'picker-pane', tabs: [], activeTabId: null }] } };
+    const onNavigate = vi.fn();
+    vi.mocked(fetch).mockResolvedValueOnce(response(targetLayout))
+      .mockResolvedValueOnce(response({ ...tab(providerId), cwd: '/retained' }));
+    await navigateToTabOrCreate('ws-target', 'expired', 'agent-target', 'Target', '/retained', providerId,
+      { paneId: 'picker-pane', onNavigate });
+    expect(vi.mocked(fetch).mock.calls[1]).toEqual(['/api/layout/pane/picker-pane/tabs?workspace=ws-target', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ panelType: providerId === 'codex' ? 'codex-cli' : 'claude-code', cwd: '/retained', resumeSessionId: 'agent-target' }),
+    }]);
+    expect(useTabStore.getState().tabs['tab-target'].sessionView).toBe('check');
+    expect(onNavigate).toHaveBeenCalledExactlyOnceWith('ws-target', 'tab-target');
+    expectUnchanged();
+  });
+
+  it('does not mark a resumed tab as launching when its directory falls back', async () => {
+    const onNavigate = vi.fn();
+    vi.mocked(fetch).mockResolvedValueOnce(response(layout([])))
+      .mockResolvedValueOnce(response({ ...tab('codex'), cwd: '/parent' }));
+    await navigateToTabOrCreate('ws-target', 'expired', 'agent-target', 'Target', '/parent/deleted', 'codex', { onNavigate });
+    expect(useTabStore.getState().tabs['tab-target']?.sessionView).not.toBe('check');
+  });
+
   it.each(['claude', 'codex'] as const)('validates and enters an existing %s session', async (providerId) => {
     vi.mocked(fetch).mockResolvedValueOnce(response(layout([tab(providerId)])));
     await navigateToSession(entry(providerId), 'tab-target');

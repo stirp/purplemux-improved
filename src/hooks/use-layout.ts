@@ -762,7 +762,7 @@ export const navigateToTabOrCreate = async (
   workspaceName: string,
   workspaceDir: string | null,
   providerId: 'claude' | 'codex' = 'claude',
-  options: { onNavigate?: (workspaceId: string, tabId: string) => void; requireExistingTab?: boolean } = {},
+  options: { onNavigate?: (workspaceId: string, tabId: string) => void; requireExistingTab?: boolean; paneId?: string } = {},
 ): Promise<void> => {
   const onNavigate = options.onNavigate ?? navigateToTab;
   const wsStore = useWorkspaceStore.getState();
@@ -818,7 +818,8 @@ export const navigateToTabOrCreate = async (
     if (options.requireExistingTab) return;
   }
 
-  const paneId = layout.activePaneId ?? getFirstPaneId(layout.root);
+  const paneId = options.paneId && findPane(layout.root, options.paneId)
+    ? options.paneId : layout.activePaneId ?? getFirstPaneId(layout.root);
   const cwd = workspaceDir ?? ws.directories[0];
   const body: Record<string, string | undefined> = { panelType, cwd };
   if (agentSessionId) body.resumeSessionId = agentSessionId;
@@ -831,7 +832,7 @@ export const navigateToTabOrCreate = async (
   if (!tabRes.ok) return;
   const newTab: ITab = await tabRes.json();
 
-  if (agentSessionId) {
+  if (agentSessionId && (!cwd || newTab.cwd === cwd)) {
     useTabStore.getState().initTab(newTab.id, { panelType, sessionView: 'check' });
   }
 

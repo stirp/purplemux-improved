@@ -184,27 +184,28 @@ const MobileTerminalPage = () => {
   }, []);
 
   const handleCreateTab = useCallback(async (panelType?: TPanelType, options?: { command?: string; resumeSessionId?: string }) => {
-    if (!currentPane) return;
-    let cmd: string | undefined;
+    if (!currentPane) return false;
+    let cmd = options?.command;
     if (options?.command === 'claude-new') {
-      if (!await ensureAgentInstalled('claude')) return;
+      if (!await ensureAgentInstalled('claude')) return false;
       cmd = buildClaudeLaunchCommand({
         workspaceId: activeWorkspaceId,
         dangerouslySkipPermissions: useConfigStore.getState().dangerouslySkipPermissions,
       });
     } else if (options?.command === 'codex-new') {
-      if (!await ensureAgentInstalled('codex')) return;
+      if (!await ensureAgentInstalled('codex')) return false;
       try {
         cmd = await fetchCodexLaunchCommand(activeWorkspaceId);
       } catch {
         toast.error(t('codexLaunchFailed'));
-        return;
+        return false;
       }
     }
     const newTab = await layout.createTabInPane(currentPane.id, panelType, cmd, options?.resumeSessionId);
     if (newTab) {
       useTabStore.getState().initTab(newTab.id, { panelType, workspaceId: activeWorkspaceId ?? '' });
     }
+    return !!newTab;
   }, [currentPane, ensureAgentInstalled, layout, activeWorkspaceId, t]);
 
   const handleCloseTab = useCallback(() => {
@@ -333,6 +334,7 @@ const MobileTerminalPage = () => {
       )}
 
       <MobileNewTabDialog
+        paneId={currentPane?.id ?? ''}
         open={newTabDialogOpen}
         onOpenChange={setNewTabDialogOpen}
         onCreateTab={handleCreateTab}
