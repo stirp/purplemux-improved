@@ -23,8 +23,13 @@ const setup = (t) => {
   const host = Object.assign(new EventEmitter(), { env: { PORT: '9123', HOST: '127.0.0.1', CUSTOM: 'preserved' }, pid: 42, exitCodes: [] });
   host.exit = (code) => host.exitCodes.push(code);
   const children = [];
+  const lifecycle = [];
+  const recorder = {
+    record: (event) => { lifecycle.push(event); return true; },
+    recordExit: (event) => { lifecycle.push(event); return true; },
+  };
   const fork = (file, args, options) => {
-    const child = Object.assign(new EventEmitter(), { file, args, options, signals: [], sent: [] });
+    const child = Object.assign(new EventEmitter(), { pid: 100 + children.length, file, args, options, signals: [], sent: [] });
     child.kill = (signal) => child.signals.push(signal);
     child.send = (message) => child.sent.push(message);
     children.push(child);
@@ -35,7 +40,7 @@ const setup = (t) => {
     for (const child of children) child.emit('exit', 0);
     fs.rmSync(root, { recursive: true, force: true });
   });
-  return { root, updates, original, next, host, children, fork };
+  return { root, updates, original, next, host, children, fork, recorder, lifecycle };
 };
 const ready = (child, version, port = 9123) => child.emit('message', { type: 'purplemux:ready', version, port });
 
@@ -81,6 +86,9 @@ test('a failed new process restores the old installation without changing the po
   s.children[0].emit('message', { type: 'purplemux:upgrade', directory: s.next });
   s.children[0].emit('exit', 0);
   s.children[1].emit('exit', 1);
+  assert.partialDeepStrictEqual(s.lifecycle.filter((event) => event.event === 'exit').at(-1), {
+    code: 1, signal: null, phase: 'starting', reason: 'startup_exit',
+  });
   assert.equal(s.children[2].file, path.join(s.original, 'dist/server.js'));
   assert.match(s.children[2].options.env.__PMUX_UPDATE_ERROR, /restored/);
   assert.equal(fs.existsSync(path.join(s.updates, 'active.json')), false);
@@ -108,6 +116,9 @@ test('does not accept a new server on a different port', (t) => {
   ready(s.children[1], '0.6.0', 9999);
   assert.deepEqual(s.children[1].signals, ['SIGTERM']);
   s.children[1].emit('exit', 0);
+  assert.partialDeepStrictEqual(s.lifecycle.filter((event) => event.event === 'exit').at(-1), {
+    code: 0, signal: null, phase: 'starting', reason: 'port_mismatch',
+  });
   assert.equal(s.children[2].file, path.join(s.original, 'dist/server.js'));
 });
 
@@ -133,4 +144,68 @@ test('subsequent launches select the saved update but prefer a newer explicit in
   startSupervisor(s.original, s);
   assert.equal(s.children[1].file, path.join(s.original, 'dist/server.js'));
   ready(s.children[1], '0.7.0');
+});
+
+test('records an unexpected signal after readiness and exits nonzero', (t) => {
+  const s = setup(t);
+  startSupervisor(s.original, s);
+  ready(s.children[0], '0.5.6');
+  s.children[0].emit('exit', null, 'SIGKILL');
+
+  assert.deepEqual(s.host.exitCodes, [1]);
+  assert.partialDeepStrictEqual(s.lifecycle.at(-1), {
+    event: 'exit', childPid: 100, code: null, signal: 'SIGKILL', phase: 'running', reason: 'unexpected_exit',
+  });
+});
+
+test('records a startup timeout before following the existing startup failure flow', async (t) => {
+  const s = setup(t);
+  s.startupTimeout = 5;
+  startSupervisor(s.original, s);
+  await new Promise((resolve) => setTimeout(resolve, 20));
+
+  assert.deepEqual(s.children[0].signals, ['SIGKILL']);
+  s.children[0].emit('exit', null, 'SIGKILL');
+  assert.deepEqual(s.host.exitCodes, [1]);
+  assert.partialDeepStrictEqual(s.lifecycle.at(-1), {
+    event: 'exit', code: null, signal: 'SIGKILL', phase: 'starting', reason: 'startup_timeout',
+  });
+});
+
+test('records a clean startup exit without treating it as a successful launch', (t) => {
+  const s = setup(t);
+  startSupervisor(s.original, s);
+  s.children[0].emit('exit', 0, null);
+
+  assert.deepEqual(s.host.exitCodes, [1]);
+  assert.partialDeepStrictEqual(s.lifecycle.at(-1), {
+    event: 'exit', code: 0, signal: null, phase: 'starting', reason: 'startup_exit',
+  });
+});
+
+test('records a parent-requested stop separately and preserves successful stop semantics', (t) => {
+  const s = setup(t);
+  startSupervisor(s.original, s);
+  ready(s.children[0], '0.5.6');
+  s.host.emit('SIGTERM');
+  s.children[0].emit('exit', null, 'SIGTERM');
+
+  assert.deepEqual(s.children[0].signals, ['SIGTERM']);
+  assert.deepEqual(s.host.exitCodes, [0]);
+  assert.partialDeepStrictEqual(s.lifecycle.at(-1), {
+    event: 'exit', signal: 'SIGTERM', reason: 'supervisor_signal', requestedSignal: 'SIGTERM',
+  });
+});
+
+test('records upgrade and spawn failure reasons without changing rollback control flow', (t) => {
+  const s = setup(t);
+  startSupervisor(s.original, s);
+  ready(s.children[0], '0.5.6');
+  s.children[0].emit('message', { type: 'purplemux:upgrade', directory: s.next });
+  s.children[0].emit('exit', 0, null);
+  assert.equal(s.lifecycle.find((event) => event.event === 'exit').reason, 'upgrade');
+
+  s.children[1].emit('error', new Error('spawn failure'));
+  assert.equal(s.lifecycle.filter((event) => event.event === 'exit').at(-1).reason, 'spawn_error');
+  assert.equal(s.children.length, 3);
 });

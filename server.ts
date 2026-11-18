@@ -33,9 +33,11 @@ import { getScheduledTaskScheduler } from './src/lib/scheduled-task-scheduler';
 import pkg from './package.json';
 import { initAppUpdates } from './src/lib/app-update-server';
 import { createDevRequestHandler } from './src/lib/dev-request-handler';
+import { installProcessFatalObserver } from './src/lib/process-fatal-observer';
 
 const log = createLogger('server');
 const dev = process.env.NODE_ENV !== 'production';
+installProcessFatalObserver();
 
 const verifyWebSocketAuth = async (request: IncomingMessage): Promise<boolean> => {
   const value = extractCookie(request.headers.cookie ?? '', SESSION_COOKIE);

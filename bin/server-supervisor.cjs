@@ -3,6 +3,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const os = require('node:os');
 const { fork } = require('node:child_process');
+const { createLifecycleRecorder } = require('./process-lifecycle.cjs');
 
 const newer = (a, b) => {
   const valid = (v) => typeof v === 'string' && /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/.test(v);
@@ -28,6 +29,7 @@ const startSupervisor = (originalDirectory, options = {}) => {
   const spawn = options.fork || fork;
   const updates = options.updates || path.join(os.homedir(), '.purplemux', 'updates');
   const pointer = path.join(updates, 'active.json');
+  const recorder = options.recorder || createLifecycleRecorder();
   const original = { directory: originalDirectory, version: JSON.parse(fs.readFileSync(path.join(originalDirectory, 'package.json'), 'utf8')).version };
   let active = original;
   try {
@@ -38,19 +40,25 @@ const startSupervisor = (originalDirectory, options = {}) => {
   let pending = null;
   let previous = original;
   let stopping = false;
+  let stoppingSignal = null;
   let actualPort;
 
   const launch = (target, candidate = false, updateError = '') => {
+    const startedAt = Date.now();
+    let terminationReason = null;
     child = spawn(path.join(target.directory, 'dist/server.js'), [], {
       stdio: ['inherit', 'inherit', 'inherit', 'ipc'],
       env: { ...host.env, NODE_ENV: 'production', __PMUX_APP_DIR: target.directory, __PMUX_SUPERVISED: '1', __PMUX_UPDATE_ERROR: updateError, ...(actualPort ? { PORT: actualPort } : {}) },
       execArgv: [],
     });
     const current = child;
+    const identity = { childPid: current.pid ?? null, version: target.version, directory: target.directory };
+    recorder.record({ event: 'spawn', ...identity, candidate, phase: 'starting' });
     let ready = false;
     let failed = false;
     const timeout = setTimeout(() => {
       failed = true;
+      terminationReason = 'startup_timeout';
       console.error('[updater] Server startup timed out');
       current.kill('SIGKILL');
     }, options.startupTimeout || 120_000);
@@ -59,6 +67,7 @@ const startSupervisor = (originalDirectory, options = {}) => {
       if (message.type === 'purplemux:ready' && message.version === target.version && Number.isInteger(message.port) && message.port > 0 && message.port <= 65535) {
         if (actualPort && Number(actualPort) !== message.port) {
           failed = true;
+          terminationReason = 'port_mismatch';
           current.kill('SIGTERM');
           return;
         }
@@ -73,9 +82,11 @@ const startSupervisor = (originalDirectory, options = {}) => {
           clearTimeout(timeout);
           actualPort = String(message.port);
           active = target;
+          recorder.record({ event: 'ready', ...identity, candidate, phase: 'running', port: message.port, startupMs: Date.now() - startedAt });
         } catch (error) {
           console.error('[updater] Cannot activate update:', error.message);
           failed = true;
+          terminationReason = 'activation_error';
           current.kill('SIGTERM');
         }
       } else if (message.type === 'purplemux:upgrade' && ready && !pending) {
@@ -84,6 +95,7 @@ const startSupervisor = (originalDirectory, options = {}) => {
           if (!newer(next.version, active.version)) throw new Error('Update must be newer than the running version');
           previous = active;
           pending = next;
+          terminationReason = 'upgrade';
           current.kill('SIGTERM');
         } catch (error) {
           console.error('[updater] Upgrade rejected:', error.message);
@@ -92,11 +104,17 @@ const startSupervisor = (originalDirectory, options = {}) => {
       }
     });
     let settled = false;
-    const finish = (code) => {
+    const finish = (code, signal, forcedReason) => {
       if (settled) return;
       settled = true;
       clearTimeout(timeout);
-      if (stopping) return host.exit(code || 0);
+      const reason = forcedReason || (stopping ? 'supervisor_signal' : terminationReason) || (ready ? 'unexpected_exit' : 'startup_exit');
+      recorder.recordExit({
+        event: 'exit', ...identity, candidate, phase: ready ? 'running' : 'starting', reason,
+        code: code ?? null, signal: signal ?? null, requestedSignal: stoppingSignal,
+        uptimeMs: Date.now() - startedAt,
+      });
+      if (stopping) return host.exit(code ?? 0);
       if (pending) {
         const next = pending;
         pending = null;
@@ -107,18 +125,20 @@ const startSupervisor = (originalDirectory, options = {}) => {
       } else if (!ready && target.directory !== original.directory) {
         launch(original);
       } else {
-        host.exit(code || (ready ? 0 : 1));
+        host.exit(signal ? 1 : code || (ready ? 0 : 1));
       }
     };
     current.on('error', (error) => {
       console.error('[updater] Server process error:', error.message);
-      finish(1);
+      finish(1, null, 'spawn_error');
     });
     current.on('exit', finish);
   };
   for (const signal of ['SIGINT', 'SIGTERM', 'SIGHUP']) host.on(signal, () => {
     if (stopping) return;
     stopping = true;
+    stoppingSignal = signal;
+    recorder.record({ event: 'stop_requested', childPid: child?.pid ?? null, requestedSignal: signal });
     child?.kill(signal);
   });
   launch(active);
