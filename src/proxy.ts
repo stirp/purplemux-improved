@@ -24,7 +24,12 @@ export const proxy = async (request: NextRequest) => {
     if (request.nextUrl.pathname.startsWith('/api/')) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401, headers: { 'Cache-Control': 'no-store' } });
     }
-    return NextResponse.redirect(new URL('/login', request.url));
+    // 必须保留 basePath：new URL('/login', request.url) 会跳到站点根路径，
+    // 子路径部署时登录流程会失败。nextUrl.clone() 会带上 basePath。
+    const loginUrl = request.nextUrl.clone();
+    loginUrl.pathname = '/login';
+    loginUrl.search = '';
+    return NextResponse.redirect(loginUrl);
   }
 
   const response = NextResponse.next();

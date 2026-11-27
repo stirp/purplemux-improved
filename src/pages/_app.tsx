@@ -1,4 +1,5 @@
 import ConfigThemeSync from '@/components/layout/config-theme-sync';
+import { installBasePathShim, withBase } from "@/lib/base-path";
 import { buildRegionTypographyCSS } from '@/lib/region-typography';
 import useCustomStyle from '@/hooks/use-custom-style';
 import "@/styles/globals.css";
@@ -37,6 +38,9 @@ import useConfigStore from "@/hooks/use-config-store";
 import { setMessages } from "@/lib/i18n";
 import { loadClientMessages } from "@/lib/load-client-messages";
 import AppErrorBoundary, { getRecoveryLabels } from "@/components/layout/app-error-boundary";
+
+// 子路径部署：给写死根路径的 fetch/WebSocket/EventSource 加前缀（幂等）
+installBasePathShim();
 
 export type TNextPageWithLayout<P = object, IP = P> = NextPage<P, IP> & {
   getLayout?: (page: ReactElement) => ReactNode;
@@ -185,7 +189,7 @@ export default function App({ Component, pageProps }: TAppPropsWithLayout) {
     let cancelled = false;
     let cleanup: (() => void) | null = null;
 
-    navigator.serviceWorker.register('/sw.js').then((reg) => {
+    navigator.serviceWorker.register(withBase('/sw.js')).then((reg) => {
       if (cancelled) return;
 
       const check = () => {

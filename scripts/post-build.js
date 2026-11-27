@@ -29,6 +29,27 @@ for (const f of ['CLAUDE.md', 'AGENTS.md']) {
   }
 }
 
+// 子路径部署：CSS 里的 url(/fonts/...) 是写死的根路径，构建后补上 basePath
+const { readBasePath } = require('./read-base-path.cjs');
+const basePath = readBasePath(root);
+if (basePath) {
+  const fs = require('fs');
+  const path = require('path');
+  const walk = (dir) => fs.existsSync(dir) ? fs.readdirSync(dir, { withFileTypes: true }).flatMap((e) => {
+    const full = path.join(dir, e.name);
+    return e.isDirectory() ? walk(full) : (e.name.endsWith('.css') ? [full] : []);
+  }) : [];
+  let patched = 0;
+  for (const full of walk(path.join(process.cwd(), '.next', 'static'))) {
+    const css = fs.readFileSync(full, 'utf8');
+    if (!css.includes('url(/fonts/')) continue;
+    fs.writeFileSync(full, css.split('url(/fonts/').join(`url(${basePath}/fonts/`));
+    patched += 1;
+  }
+  console.log(`[post-build] CSS font paths prefixed with ${basePath} (${patched} files)`);
+}
+
+
 const copies = [
   { src: path.join(root, 'public'), dest: path.join(standalone, 'public') },
   { src: path.join(root, '.next', 'static'), dest: path.join(standalone, '.next', 'static') },

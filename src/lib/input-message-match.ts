@@ -1,5 +1,6 @@
 import type { IQueuedInput } from '@/lib/input-queue';
 import type { ITimelineUserMessage } from '@/types/timeline';
+import { withBase } from '@/lib/base-path';
 
 const normalize = (text: string) => text.replace(/\r\n/g, '\n').trim();
 export const escapeInputAttachmentPath = (path: string) => path.replace(/[ \t\\'"(){}[\]!#$&;`|*?<>~^%]/g, '\\$&');
@@ -7,7 +8,7 @@ export const escapeInputAttachmentPath = (path: string) => path.replace(/[ \t\\'
 export const inputAttachmentImageUrl = (path: string): string | undefined => {
   const suffix = path.replace(/\\/g, '/').split('/uploads/')[1];
   if (!suffix || !/\.(?:png|jpe?g|gif|webp|bmp|svg|avif)$/i.test(suffix)) return undefined;
-  return `/api/uploads/${suffix.split('/').map(encodeURIComponent).join('/')}`;
+  return withBase(`/api/uploads/${suffix.split('/').map(encodeURIComponent).join('/')}`);
 };
 
 export const matchesInputMessage = (entry: ITimelineUserMessage, message: IQueuedInput, since: number | undefined): boolean => {

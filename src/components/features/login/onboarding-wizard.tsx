@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { withBase } from "@/lib/base-path";
 import { useTranslations } from 'next-intl';
 import { useTheme } from 'next-themes';
 import { AlertTriangle, ArrowLeft, ArrowRight, Check, Download, Eye, EyeOff, Globe, ListChecks, Lock, Loader2, Network, RefreshCcw, Terminal, Bot, Sun, Moon, Monitor, X } from 'lucide-react';
@@ -231,7 +232,7 @@ const OnboardingWizard = ({ onComplete, hostEnvLocked = false }: IOnboardingWiza
       });
 
       if (loginRes.ok) {
-        window.location.href = '/';
+        window.location.href = withBase('/');
         return;
       }
 

@@ -1,4 +1,5 @@
 import { useTranslations } from 'next-intl';
+import { withBase } from "@/lib/base-path";
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -39,7 +40,7 @@ export const LoginForm = ({ className, onSuccess, ...props }: ILoginFormProps) =
     } else if (onSuccess) {
       onSuccess();
     } else {
-      window.location.href = '/';
+      window.location.href = withBase('/');
     }
   };
 

@@ -1,4 +1,5 @@
 import fs from 'fs/promises';
+import { withBase } from '@/lib/base-path';
 import path from 'path';
 import os from 'os';
 import { createHash, randomBytes } from 'crypto';
@@ -74,7 +75,7 @@ const uploadPathToSegments = (filePath: string): string[] | null => {
 const uploadPathToImageUrl = (filePath: string): string | null => {
   const segments = uploadPathToSegments(filePath);
   if (!segments) return null;
-  return `/api/uploads/${segments.map(encodeURIComponent).join('/')}`;
+  return withBase(`/api/uploads/${segments.map(encodeURIComponent).join('/')}`);
 };
 
 export const getUploadImageHash = async (filePath: string): Promise<string | undefined> => {

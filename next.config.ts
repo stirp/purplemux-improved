@@ -10,7 +10,16 @@ const commitHash = (() => {
   }
 })();
 
+// 部署配置（purplemux.config.json / ~/.purplemux/config.json）里的 basePath。
+// 配置文件不存在或没写 basePath 时为空，等于部署在域名根路径（历史行为）。
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const { readBasePath } = require('./scripts/read-base-path.cjs') as {
+  readBasePath: (root?: string) => string;
+};
+const basePath = readBasePath(process.cwd());
+
 const nextConfig: NextConfig = {
+  basePath: basePath || undefined,
   turbopack: {
     root: __dirname,
   },
@@ -23,6 +32,7 @@ const nextConfig: NextConfig = {
   ])],
   env: {
     NEXT_PUBLIC_COMMIT_HASH: commitHash,
+    NEXT_PUBLIC_BASE_PATH: basePath,
   },
   output: 'standalone',
   bundlePagesRouterDependencies: true,

@@ -8,8 +8,9 @@ self.addEventListener('push', (event) => {
   const title = data.title || 'Task Complete';
   const options = {
     body: data.body || '',
-    icon: '/android-chrome-192x192.png',
-    badge: '/favicon-32x32.png',
+    // 子路径部署时用注册作用域解析，根部署下结果与原来的 '/xxx.png' 相同
+    icon: new URL('android-chrome-192x192.png', self.registration.scope).href,
+    badge: new URL('favicon-32x32.png', self.registration.scope).href,
     tag: data.claudeSessionId ? `session:${data.providerId || 'claude'}:${data.claudeSessionId}` : undefined,
     renotify: !!data.claudeSessionId,
     data: {

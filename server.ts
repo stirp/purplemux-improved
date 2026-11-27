@@ -4,6 +4,7 @@ import { createServer, request as httpRequest } from 'http';
 import type { IncomingMessage, ServerResponse } from 'http';
 import { createConnection } from 'net';
 import path from 'path';
+import fs from 'fs';
 import next from 'next';
 import { WebSocketServer } from 'ws';
 import { verifySessionToken, SESSION_COOKIE, extractCookie } from './src/lib/auth';
@@ -74,25 +75,26 @@ const handleWsUpgrade = (
   port: number,
 ) => {
   const url = new URL(request.url ?? '', `http://localhost:${port}`);
+  const pathname = stripBase(url.pathname);
 
-  if (url.pathname === '/api/terminal') {
+  if (pathname === '/api/terminal') {
     const sessionId = url.searchParams.get('session');
     wss.handleUpgrade(request, socket, head, (ws) => {
       wss.emit('connection', ws, request, sessionId);
     });
-  } else if (url.pathname === '/api/timeline') {
+  } else if (pathname === '/api/timeline') {
     timelineWss.handleUpgrade(request, socket, head, (ws) => {
       timelineWss.emit('connection', ws, request);
     });
-  } else if (url.pathname === '/api/sync') {
+  } else if (pathname === '/api/sync') {
     syncWss.handleUpgrade(request, socket, head, (ws) => {
       syncWss.emit('connection', ws);
     });
-  } else if (url.pathname === '/api/status') {
+  } else if (pathname === '/api/status') {
     statusWss.handleUpgrade(request, socket, head, (ws) => {
       statusWss.emit('connection', ws);
     });
-  } else if (url.pathname === '/api/install') {
+  } else if (pathname === '/api/install') {
     installWss.handleUpgrade(request, socket, head, (ws) => {
       installWss.emit('connection', ws, request);
     });
@@ -100,6 +102,41 @@ const handleWsUpgrade = (
 };
 
 const NO_AUTH_WS_PATHS = new Set(['/api/install']);
+
+// 站点挂到子路径时（PURPLEMUX_BASE_PATH=/purplemux），Next 的页面/静态资源仍需要
+// 完整路径，但本文件里对 /api/* 与 /_next/* 的匹配必须用剥离前缀后的路径。
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const { readBasePath } = require('./scripts/read-base-path.cjs') as {
+  readBasePath: (root?: string) => string;
+};
+
+/**
+ * basePath 由 Next 在构建期固化；运行期必须以构建产物为准，
+ * 否则会出现「WebSocket 用新前缀、页面路由用旧前缀」的错配。
+ */
+const bakedBasePath = (): string | undefined => {
+  try {
+    const file = path.join(process.cwd(), '.next', 'required-server-files.json');
+    const config = JSON.parse(fs.readFileSync(file, 'utf8')).config;
+    return typeof config?.basePath === 'string' ? config.basePath : undefined;
+  } catch {
+    return undefined;
+  }
+};
+
+const baked = bakedBasePath();
+const configured = readBasePath(process.cwd());
+if (baked !== undefined && configured !== baked) {
+  console.warn(
+    `[basePath] 构建产物为 ${baked || '(根路径)'}，配置文件为 ${configured || '(根路径)'}；` +
+      'basePath 需重新构建才生效，运行期使用构建值。',
+  );
+}
+const BASE_PATH = baked ?? configured;
+const stripBase = (pathname: string): string =>
+  BASE_PATH && (pathname === BASE_PATH || pathname.startsWith(`${BASE_PATH}/`))
+    ? (pathname.slice(BASE_PATH.length) || '/')
+    : pathname;
 
 const shutdownWs = async () => {
   stopIdleTabReclamation();
@@ -241,13 +278,14 @@ const startDev = async (port: number, appDir: string, bindHost: string): Promise
       return;
     }
     const url = new URL(request.url ?? '', `http://localhost:${port}`);
+    const pathname = stripBase(url.pathname);
 
-    if (url.pathname.startsWith('/_next/')) {
+    if (pathname.startsWith('/_next/')) {
       upgrade(request, socket, head);
       return;
     }
 
-    if (NO_AUTH_WS_PATHS.has(url.pathname)) {
+    if (NO_AUTH_WS_PATHS.has(pathname)) {
       handleWsUpgrade(wsServers, request, socket, head, port);
       return;
     }
@@ -259,7 +297,7 @@ const startDev = async (port: number, appDir: string, bindHost: string): Promise
       return;
     }
 
-    if (WS_PATHS.has(url.pathname)) {
+    if (WS_PATHS.has(pathname)) {
       handleWsUpgrade(wsServers, request, socket, head, port);
     } else {
       upgrade(request, socket, head);
@@ -316,8 +354,14 @@ const startProd = async (port: number, appDir: string, bindHost: string): Promis
       return;
     }
     const url = new URL(request.url ?? '', `http://localhost:${port}`);
+    const pathname = stripBase(url.pathname);
 
-    if (NO_AUTH_WS_PATHS.has(url.pathname)) {
+    if (pathname.startsWith('/_next/')) {
+      proxyUpgrade(request, socket, head, internalPort);
+      return;
+    }
+
+    if (NO_AUTH_WS_PATHS.has(pathname)) {
       handleWsUpgrade(wsServers, request, socket, head, port);
       return;
     }
@@ -329,7 +373,7 @@ const startProd = async (port: number, appDir: string, bindHost: string): Promis
       return;
     }
 
-    if (WS_PATHS.has(url.pathname)) {
+    if (WS_PATHS.has(pathname)) {
       handleWsUpgrade(wsServers, request, socket, head, port);
     } else {
       proxyUpgrade(request, socket, head, internalPort);

@@ -1,4 +1,5 @@
 import { useState, useCallback, useMemo, useRef, useEffect } from 'react';
+import { withBase } from "@/lib/base-path";
 import { useTranslations } from 'next-intl';
 import {
   ChevronsLeft,
@@ -65,7 +66,7 @@ const MAX_WIDTH = 480;
 
 const handleLogout = async () => {
   await fetch('/api/auth/logout', { method: 'POST' });
-  window.location.href = '/login';
+  window.location.href = withBase('/login');
 };
 
 const Sidebar = () => {

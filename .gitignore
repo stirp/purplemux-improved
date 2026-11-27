@@ -58,3 +58,6 @@ next-env.d.ts
 .playwright-mcp
 
 .claude/scheduled_tasks.lock
+
+# 本地部署配置（含 basePath 等按环境不同的值）
+purplemux.config.json

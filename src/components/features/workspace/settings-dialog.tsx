@@ -1,4 +1,5 @@
 import RegionTypographySettings from '@/components/features/settings/region-typography-settings';
+import { withBase } from "@/lib/base-path";
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
@@ -1191,7 +1192,7 @@ const SystemTab = () => {
   };
 
   const handleReset = () => {
-    window.location.href = '/reset';
+    window.location.href = withBase('/reset');
   };
 
   return (
